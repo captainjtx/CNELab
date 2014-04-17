@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deployment-project plugin="plugin.apptool" plugin-version="1.0">
+  <configuration target="target.mlapps" target-name="Package App" name="BioSigPlot" location="H:\Travail\Projets\BioSigPlot\eeglab12_0_1_0b\plugins\BioSigPlot" file="H:\Travail\Projets\BioSigPlot\eeglab12_0_1_0b\plugins\BioSigPlot\BioSigPlot.prj" build-checksum="116708998">
+    <param.appname>BioSigPlot</param.appname>
+    <param.authnamewatermark>Samuel Boudet</param.authnamewatermark>
+    <param.email />
+    <param.company />
+    <param.icon />
+    <param.summary>Open source tool for plotting multi-channel biomedical signlas with Matlab</param.summary>
+    <param.description>This tool is designated for researchers on both engineering and medecine who have to collaborate to vizualize and analyze signals.
+
+It is the ideal tool to plot EEG, Foetal Heart Rate (FHR) and many other signals with the standard tools used in clinical routine.</param.description>
+    <param.screenshot>H:\Travail\Projets\BioSigPlot\screenshot1.PNG</param.screenshot>
+    <param.version>0.1.2</param.version>
+    <param.products.name>
+      <item>Signal Processing Toolbox</item>
+      <item>MATLAB</item>
+    </param.products.name>
+    <param.products.id>
+      <item>8</item>
+      <item>1</item>
+    </param.products.id>
+    <param.products.version>
+      <item>6.18</item>
+      <item>8.0</item>
+    </param.products.version>
+    <param.platforms>
+      <item>win64</item>
+      <item>win32</item>
+    </param.platforms>
+    <param.output>H:\Travail\Projets\BioSigPlot\BioSigPlot.mlappinstall</param.output>
+    <param.guid>fd2b8d9b-6843-42b9-9bdb-623122df6434</param.guid>
+    <unset>
+      <param.email />
+      <param.company />
+      <param.icon />
+    </unset>
+    <fileset.main>
+      <file>${PROJECT_ROOT}\biosigdemo.m</file>
+    </fileset.main>
+    <fileset.depfun>
+      <file>${PROJECT_ROOT}\@BioSigPlot\BioSigPlot.m</file>
+      <file>${PROJECT_ROOT}\@BioSigPlot\preprocessedData.m</file>
+      <file>${PROJECT_ROOT}\@BioSigPlot\redraw.m</file>
+      <file>${PROJECT_ROOT}\@BioSigPlot\remakeAxes.m</file>
+      <file>${PROJECT_ROOT}\@BioSigPlotEEG\BioSigPlotEEG.m</file>
+      <file>${PROJECT_ROOT}\@BioSigPlotFHR\BioSigPlotFHR.m</file>
+      <file>${PROJECT_ROOT}\@BioSigPlotFHR\preprocessedData.m</file>
+      <file>${PROJECT_ROOT}\@BioSigPlotFHR\redraw.m</file>
+      <file>${PROJECT_ROOT}\@BioSigPlotFHR\remakeAxes.m</file>
+      <file>${PROJECT_ROOT}\butterfilt.m</file>
+      <file>${PROJECT_ROOT}\ConfigWindow.m</file>
+      <file>${PROJECT_ROOT}\EventWindow.m</file>
+      <file>${PROJECT_ROOT}\ExportWindow.m</file>
+      <file>${PROJECT_ROOT}\help\biosigdemo.html</file>
+      <file>${PROJECT_ROOT}\help\biosigdemo4publish.png</file>
+      <file>${PROJECT_ROOT}\help\biosigdemo4publish_01.png</file>
+      <file>${PROJECT_ROOT}\help\biosigdemo4publish_02.png</file>
+      <file>${PROJECT_ROOT}\help\biosigdemo4publish_03.png</file>
+      <file>${PROJECT_ROOT}\help\biosigdemo4publish_04.png</file>
+      <file>${PROJECT_ROOT}\help\biosigdemo4publish_05.png</file>
+      <file>${PROJECT_ROOT}\help\biosigdemo4publish_06.png</file>
+      <file>${PROJECT_ROOT}\help\biosigdemo4publish_07.png</file>
+      <file>${PROJECT_ROOT}\help\biosigdemo4publish_08.png</file>
+      <file>${PROJECT_ROOT}\help\BioSigPlot.BioSigPlot.html</file>
+      <file>${PROJECT_ROOT}\help\BioSigPlot.ExportPagesTo.html</file>
+      <file>${PROJECT_ROOT}\help\BioSigPlot.ExportPagesToMultiPages.html</file>
+      <file>${PROJECT_ROOT}\help\BioSigPlot.html</file>
+      <file>${PROJECT_ROOT}\help\BioSigPlot.StartFastRead.html</file>
+      <file>${PROJECT_ROOT}\help\BioSigPlot.StopFastRead.html</file>
+      <file>${PROJECT_ROOT}\help\BioSigPlotEEG.html</file>
+      <file>${PROJECT_ROOT}\help\BioSigPlotFHR.html</file>
+      <file>${PROJECT_ROOT}\help\butterfilt.html</file>
+      <file>${PROJECT_ROOT}\help\ConfigWindow.html</file>
+      <file>${PROJECT_ROOT}\help\Contents.html</file>
+      <file>${PROJECT_ROOT}\help\developerguide.html</file>
+      <file>${PROJECT_ROOT}\help\eegplugin_biosigplot.html</file>
+      <file>${PROJECT_ROOT}\help\eegplugin_biosigplot.m.html</file>
+      <file>${PROJECT_ROOT}\help\EventWindow.html</file>
+      <file>${PROJECT_ROOT}\help\ExportWindow.html</file>
+      <file>${PROJECT_ROOT}\help\fhr4publish.png</file>
+      <file>${PROJECT_ROOT}\help\fhr4publish_01.png</file>
+      <file>${PROJECT_ROOT}\help\fhrdemo.html</file>
+      <file>${PROJECT_ROOT}\help\helptoc.xml</file>
+      <file>${PROJECT_ROOT}\help\helpwin.css</file>
+      <file>${PROJECT_ROOT}\help\Installation.html</file>
+      <file>${PROJECT_ROOT}\help\obj2str.html</file>
+      <file>${PROJECT_ROOT}\help\pop_biosigplot.html</file>
+      <file>${PROJECT_ROOT}\help\pop_biosigplotica.html</file>
+      <file>${PROJECT_ROOT}\help\ReleaseHelpProcess.txt</file>
+      <file>${PROJECT_ROOT}\help\samfilter.html</file>
+      <file>${PROJECT_ROOT}\help\userguide.html</file>
+      <file>${PROJECT_ROOT}\help\VideoWindow.html</file>
+      <file>${PROJECT_ROOT}\obj2str.m</file>
+      <file>${PROJECT_ROOT}\ps2pdf.m</file>
+      <file>${PROJECT_ROOT}\VideoWindow.m</file>
+    </fileset.depfun>
+    <fileset.resources>
+      <file>${PROJECT_ROOT}\1020system19.mat</file>
+      <file>${PROJECT_ROOT}\1020system27.mat</file>
+      <file>${PROJECT_ROOT}\1020systemA1A2.mat</file>
+      <file>${PROJECT_ROOT}\@BioSigPlotEEG</file>
+      <file>${PROJECT_ROOT}\alternated.bmp</file>
+      <file>${PROJECT_ROOT}\BioSigPlotLicense.txt</file>
+      <file>${PROJECT_ROOT}\defaultconfig.cfg</file>
+      <file>${PROJECT_ROOT}\eeg1.bmp</file>
+      <file>${PROJECT_ROOT}\eeg2.bmp</file>
+      <file>${PROJECT_ROOT}\eeg3.bmp</file>
+      <file>${PROJECT_ROOT}\eeg4.bmp</file>
+      <file>${PROJECT_ROOT}\eeg5.bmp</file>
+      <file>${PROJECT_ROOT}\eeg6.bmp</file>
+      <file>${PROJECT_ROOT}\eeg7.bmp</file>
+      <file>${PROJECT_ROOT}\eeg8.bmp</file>
+      <file>${PROJECT_ROOT}\eeg9.bmp</file>
+      <file>${PROJECT_ROOT}\EEGdefaultconfig.cfg</file>
+      <file>${PROJECT_ROOT}\eegplugin_biosigplot.m</file>
+      <file>${PROJECT_ROOT}\evts.bmp</file>
+      <file>${PROJECT_ROOT}\eyesfilt19chan.mat</file>
+      <file>${PROJECT_ROOT}\faster.bmp</file>
+      <file>${PROJECT_ROOT}\FHRdefaultconfig.cfg</file>
+      <file>${PROJECT_ROOT}\FHRdemo.mat</file>
+      <file>${PROJECT_ROOT}\filterdemo.mat</file>
+      <file>${PROJECT_ROOT}\help</file>
+      <file>${PROJECT_ROOT}\horizontal.bmp</file>
+      <file>${PROJECT_ROOT}\ICA.bmp</file>
+      <file>${PROJECT_ROOT}\info.xml</file>
+      <file>${PROJECT_ROOT}\Longitudinal.bmp</file>
+      <file>${PROJECT_ROOT}\Mean Reference.bmp</file>
+      <file>${PROJECT_ROOT}\measurer.bmp</file>
+      <file>${PROJECT_ROOT}\montage1.bmp</file>
+      <file>${PROJECT_ROOT}\montage2.bmp</file>
+      <file>${PROJECT_ROOT}\montage3.bmp</file>
+      <file>${PROJECT_ROOT}\montage4.bmp</file>
+      <file>${PROJECT_ROOT}\multisigfilter.c</file>
+      <file>${PROJECT_ROOT}\multisigfilter.mexw32</file>
+      <file>${PROJECT_ROOT}\multisigfilter.mexw64</file>
+      <file>${PROJECT_ROOT}\off.bmp</file>
+      <file>${PROJECT_ROOT}\on.bmp</file>
+      <file>${PROJECT_ROOT}\pan.bmp</file>
+      <file>${PROJECT_ROOT}\pause.bmp</file>
+      <file>${PROJECT_ROOT}\play.bmp</file>
+      <file>${PROJECT_ROOT}\pop_biosigplot.m</file>
+      <file>${PROJECT_ROOT}\pop_biosigplotica.m</file>
+      <file>${PROJECT_ROOT}\Raw.bmp</file>
+      <file>${PROJECT_ROOT}\Readme.txt</file>
+      <file>${PROJECT_ROOT}\select.bmp</file>
+      <file>${PROJECT_ROOT}\slower.bmp</file>
+      <file>${PROJECT_ROOT}\stop.bmp</file>
+      <file>${PROJECT_ROOT}\superimpose.bmp</file>
+      <file>${PROJECT_ROOT}\superimposed.bmp</file>
+      <file>${PROJECT_ROOT}\Transverse.bmp</file>
+      <file>${PROJECT_ROOT}\vertical.bmp</file>
+      <file>${PROJECT_ROOT}\video.bmp</file>
+      <file>${PROJECT_ROOT}\videodemo.avi</file>
+    </fileset.resources>
+    <fileset.package />
+    <build-deliverables>
+      <file name="BioSigPlot.mlappinstall" location="H:\Travail\Projets\BioSigPlot" optional="false">H:\Travail\Projets\BioSigPlot\BioSigPlot.mlappinstall</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>C:\Program Files\MATLAB\R2012b</root>
+    </matlab>
+    <platform>
+      <unix>false</unix>
+      <mac>false</mac>
+      <windows>true</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>false</linux>
+      <solaris>false</solaris>
+      <osver>6.1</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>win64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>
+
