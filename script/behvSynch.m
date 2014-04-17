@@ -1,4 +1,4 @@
-function [behvMat,channelNames]=behvSynch(synch,sampleRate)
+function [behvMat,channelNames]=behvSynch(synch,stamp,sampleRate)
 %synch: synch signal from neuro-system
 %sampling frequency of synch needs to be the same
 
@@ -12,9 +12,9 @@ thresh_neuro=2;
 thresh_behv=0.5*10^-3;
 %debug variable
 
-sampleRate=500;
+% sampleRate=500;
 
-[FileName,FilePath]=uigetfile('*.mat','select the behavior data file');
+[FileName,FilePath]=uigetfile([pwd '/db/demo/*.mat'],'select the behavior data file','behv.mat');
 behv=load(fullfile(FilePath,FileName));
 
 trials=behv.trials;
@@ -38,15 +38,17 @@ end
 trigger=detrend(trigger);
 
 
-task=load('/Users/tengi/Desktop/SuperViewer/db/demo/demo.mat');
-neuroSynchName='Sound'; %synch channel name in task file
-
-
-for i=1:length(task.data.info)
-    if strcmpi(task.data.info{i}.name,neuroSynchName)
-        synch=task.data.dataMat{i};
-    end
-end
+% task=load('/Users/tengi/Desktop/SuperViewer/db/demo/LiMa_Neuro.mat');
+% task=load([pwd '/db/demo/neuro.mat']);
+% neuroSynchName='Sound'; %synch channel name in task file
+% 
+% 
+% for i=1:length(task.data.info)
+%     if strcmpi(task.data.info{i}.name,neuroSynchName)
+%         synch=task.data.dataMat{i};
+%         stamp=task.data.info{i}.stamp;
+%     end
+% end
 
 
 
@@ -90,9 +92,14 @@ behvMat=double(behvMat);
 
 behvMatMiddle=behvMat(:,start_behv:end_behv);
 %interpolate the behavior data according to neuro-system from start to end
-neuroTimeStamp=linspace(timeStamp(start_behv),timeStamp(end_behv),end_neuro-start_neuro+1);
+behvTimeStamp=timeStamp(start_behv:end_behv)-timeStamp(start_behv);
+behvTimeStamp=behvTimeStamp/behvTimeStamp(end);
 
-interpBehvMatMiddle=interp1(timeStamp(start_behv:end_behv),behvMatMiddle',neuroTimeStamp);
+neuroTimeStamp=stamp(start_neuro:end_neuro)-stamp(start_neuro);
+neuroTimeStamp=neuroTimeStamp/neuroTimeStamp(end);
+
+
+interpBehvMatMiddle=interp1(behvTimeStamp,behvMatMiddle',neuroTimeStamp);
 
 chanNum=size(interpBehvMatMiddle,2);
 behvMat=cat(2,zeros(chanNum,start_neuro-1),interpBehvMatMiddle',zeros(chanNum,length(synch)-end_neuro));
