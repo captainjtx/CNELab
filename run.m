@@ -2,7 +2,7 @@ function run()
 %RUN Summary of this function goes here
 %   Detailed explanation goes here
 
-[FileName,FilePath]=uigetfile('db/demo/demo.mat','select the task file');
+[FileName,FilePath]=uigetfile([pwd '/db/demo/*.mat'],'select the task file','neuro.mat');
 
 task=load(fullfile(FilePath,FileName));
 
@@ -27,12 +27,13 @@ neuroSynchName='Sound'; %synch channel name in task file
 for i=1:length(task.data.info)
     if strcmpi(task.data.info{i}.name,neuroSynchName)
         synch=task.data.dataMat{i};
+        stamp=task.data.info{i}.stamp;
     end
 end
 
 datamat=cat(1,datamat,synch');
 
-[behvMat,channelNames]=behvSynch(synch,sampleRate);
+[behvMat,channelNames]=behvSynch(synch,stamp,sampleRate);
 
 for i=1:size(behvMat,1)
     behvMat(i,:)=behvMat(i,:)/max(behvMat(i,:));

@@ -135,7 +135,7 @@ datamat=datamat(1:downsample:end,:);
 dataTime=timestamps(1:downsample:end);
 fs=fs/downsample;
 
-for i=1:size(dataMat,2)
+for i=1:size(datamat,2)
     data.dataMat{i}=datamat(:,i);
 end
 % data.timestamps=timestamps;
@@ -174,6 +174,7 @@ for i=1:size(datamat,2)
     data.info{i}.sampleRate=fs;
     data.info{i}.unit='mV';
     data.info{i}.name=channelnames{i};
+    data.info{i}.stamp=dataTime;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 task.data=data;
