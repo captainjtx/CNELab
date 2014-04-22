@@ -2,7 +2,7 @@ function run()
 %RUN Summary of this function goes here
 %   Detailed explanation goes here
 
-[FileName,FilePath]=uigetfile([pwd '/db/demo/*.mat'],'select the task file','neuro.mat');
+[FileName,FilePath]=uigetfile('*.mat','select the task file',[pwd '/db/demo/neuro.mat']);
 
 task=load(fullfile(FilePath,FileName));
 

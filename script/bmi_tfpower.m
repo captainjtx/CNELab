@@ -37,7 +37,7 @@ for i=1:size(eeg,2)
 end
 
 tfm=tfm/size(eeg,2);
-tfpower=tfm.^2/size(tfm,1);
+tfpower=2*tfm.^2/size(tfm,1);
 
 if nargout==0
     figure;

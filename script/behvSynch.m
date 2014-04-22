@@ -14,7 +14,7 @@ thresh_behv=0.5*10^-3;
 
 % sampleRate=500;
 
-[FileName,FilePath]=uigetfile([pwd '/db/demo/*.mat'],'select the behavior data file','behv.mat');
+[FileName,FilePath]=uigetfile('*.mat','select the behavior data file',[pwd '/db/demo/behv.mat']);
 behv=load(fullfile(FilePath,FileName));
 
 trials=behv.trials;
