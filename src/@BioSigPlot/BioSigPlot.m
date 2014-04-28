@@ -1,291 +1,291 @@
 classdef BioSigPlot < hgsetget
-%General class to visualize any multichannel biomedical signals and scroll
-%through the time.
-%
-% USAGE
-%   >> BioSigPlot(DATA, 'key1', value1 ...);
-%   OR
-%   >> a=BioSigPlot(DATA, 'key1', value1 ...);
-%     Then, to modify properties :
-%           >> a.key1=value1
-%        OR >> set(a,'key1',value1,'key2',value2,...) (Faster if there is more than 1 keys)
-%
-%     To get propertie values :
-%           >> val=a.key1
-%        OR >> val=get('key1',value1)
-%     The Modification of key is allowed (eg a.key1(i)=val)
-%     You can receive a notification when each key is modified
-%
-% INPUT
-%   DATA     object containing all signals. 3 format are accepted :
-%              -mat(n,m)  : there will be n signals with m time samples
-%              -mat(n,m,k): there will be k dataset
-%              -cell (data{k} is mat(nk,m)) there will be multiple dataset.
-%              The first with n1 channels, the second with n2,...
-%
-%              DATA can be access after as a read only property (a.Data)
-%
-%
-% READ/WRITE PROPERTIES
-% The followibg properties are accessible by constructor, get/set methods or .(dot) syntax
-%
-%   ChanLink
-%    <true|false> if true all datasets have the same channels
-%      eg. data vs filtered data, various ERP realisation,
-%      signal vs indice computed on signals)
-%    <Empty = auto> : true if all the datasets have the same number of
-%      channels, else false
-%
-%   ChanNames
-%     Cell with channel Names of raw data.
-%     (See Montage properties for the difference between Raw and Montage channel names)
-%     Default Format : ChanNames{i}{j} corresponds to Dataset i,channel j
-%     Other accepted format (for set) :
-%      - Channels{j} if ChanLink all the dataset will have the same channel names.
-%      - empty : Put number to channel names
-%
-%    Colors, NormalModeColor, AlternatedModeColor, SuperimposedModeColor
-%      Tables containing the colors of all dataset. The 3 columns corresponds
-%      to RGB with values between 0 and 1. Each line corresponds to
-%      a dataset.
-%      -NormalModeColors are the colors used when DataView is set to 'DAT*',
-%      'Horizontal' or 'Vertical'
-%      -AlternatedModeColors are the colors used when DataView is set to
-%      'Alternated'
-%      -SuperimposedModeColors are the colors used when DataView is set to
-%      'Superimposed'
-%      -Colors is never used but if you set it, NormalModeColor,
-%      AlternatedModeColor and SuperimposedModeColor will take its value.
-%
-%   Config
-%      Path to a CFG file corresponding to default values of properties.
-%      The CFG file contains the value for all keys in this section.
-%      You can use ConfigWindow to help you to modify the CFG file
-%      The default value is given by DefaultConfigFile (See INHERENCE
-%      Section)
-%
-%   DataView
-%     Current Data View Mode
-%     <'Superimposed'|'Alternated'|'Vertical'|'Horizontal'|'DAT1'|'DAT2'|...>
-%     The modes 'Superimposed' and 'Alternated' are not allowed if ChanLink
-%     is false.
-%     If there is only one dataset, the only possible value is 'DAT1'
-%
-%   DispChans
-%     Number of channels to display for each data set.
-%     Empty:means all
-%
-%   Evts
-%     List of Events. Each events have a latency and a String value
-%     Default format : {time1 'evt1';time2 'evt2';...}.
-%     Other accepted format (for set) :
-%     - struct array with any fields
-%     - Ok if transposed or if columns are inversed
-%
-%   Filtering
-%     <true|false> true if the data must be filter
-%
-%   StrongFilter
-%     <true|False> False: 1st order Butterworth filter (2nd for band stop)
-%     [It's often this type of filter which are implemented on manufacturer Software]
-%     True : 4th order Butterworth Filter with Forward-Backward process
-%     [Better filters]
-%     (Since the Forward-Backward process function has been re-programed,
-%     depending of the system, the Strong Filter can be as fast as 1st
-%     order Butterworth filter.)
-%
-%
-%   FilterLow, FilterHigh, FilterNotch
-%     FilterLow : The low value of filtering: Cut-off frequency of high pass filter
-%     FilterHigh :The high value of filtering: Cut-off frequency of low pass filter
-%     FilterNotch : The 2 notch filter values for 50 or 60Hz rejection. (eg. [58 62])
-%
-%   FirstDispChans
-%     First channel to display for each dataset. It corresponds to the
-%     scroll bar levels.
-%     Used only if DispChans is not empty.
-%
-%   InsideTicks
-%     <true|False>
-%      True: The ticks are put inside the Graph, and the graph size is maximised
-%      False:The ticks are put outside the Graph
-%
-%   Montage
-%     Information on various montages
-%     Default Format :
-%      -Cell of struct array: 1 cell for each dataset and one struct for each Montage
-%       Montage{i}(j).name     : Name of the Montage j for dataset i
-%       Montage{i}(j).mat      : Matrix to transform Raw Data to 'Montaged' Data
-%       Montage{i}(j).channames: Cell containing list of montage channanmes
-%       for j=1, the montage have to correspond to RAW data
-%     Other accepted format (for set) :
-%      -File path string of system info (eg '1020system19')
-%      -if no cells and ChanLink the Montage is set to all the DataSet
-%      -if empty automatically generate Raw Montage
-%     if ChanNames and Montage are set, the ChanNames must be in Raw data order
-%     and Montage{i}(j).channames must be in View order
-%
-%   MontageRef
-%     Montage number for each datasets
-%     Default Format : array
-%     Other accepted format (for set) : Montage name
-%
-%   MouseMode
-%     <'pan'|'Measurer'>
-%     Set the action on mouse movement or mouse click
-%
-%   Position
-%     [x y w h]
-%     poistion of the figure (in pixels)
-%         x,y : low left corner coordinates
-%         w width
-%         h height
-%
-%   ReadSpeedTime
-%     The time between pages when fast reading
-%
-%   Selection
-%     Time of Selected Periods: 
-%     Format: array [start1 start2 start3 ... ; end1 end2 end2 ...]
-%     start_n and end_n corresponding to the beggining and the end of the
-%     selection periods
-%
-%   SRate
-%     Sampling Rate
-%
-%   Spacing
-%     Space between 2 channels on Y units for each dataset
-%     Default Format : array (S1, S2,...) Si=Spacing for dataset i
-%     Other accepted format (for set) :
-%       number (if ChannLink) put all the dataset the same spacing
-%
-%   Time
-%     The time of the beginning of the current page (from the recording begginning
-%     (in TimeUnit))
-%
-%   TimeUnit
-%     The Time unit (for now only 's'(second) are allowed)
-%
-%   Title
-%     Title of the Graph
-%
-%   XGrid
-%     <true|False>
-%      true : show Grid line on each TimeUnit
-%
-%   YGrid
-%     <true|False>
-%      true : show Grid line on each channel
-%
-%   Video
-%     File path for the video (Supported format : See http://www.videolan.org/vlc/features.html)
-%
-%   VideoTime
-%     Time for video cursor (from the recording begginning (in TimeUnit))
-%
-%   WinLength
-%     Time of a Page during Viewing
-%
-% READ-ONLY PROPERTIES
-%   Data
-%     All the Signals
-%
-%   ChanSelect
-%     Selected Channels
-%
-%   PreprocData
-%    The currently preprocessed and drawed Data
-%
-%   Commands
-%     List of all commands to arrive on this state
-%
-%   DataNumber
-%     Number of Dataset
-%
-%   ChanNumber
-%     Channel number for the Raw data
-%
-%   MontageChanNumber
-%     Channel number for the current Montages
-%
-%   MontageChanNames
-%     Channel names for the current Montages
-%
-%   MouseTime
-%     The Time on which the mouse is on.
-%
-%   MouseChan
-%     The channel on which the mouse is on
-%
-%   MouseDataset
-%     The dataset on which the mouse is on
-%
-%
-% METHODS
-%   StartFastRead             
-%     Start Fast Reading
-%
-%   StopFastRead
-%     Stop Fast Reading
-%
-%   ExportPagesTo
-%     Export some pages to separate files
-%
-%   ExportPagesToMultiPages
-%     Export some pages to a single document
-%  
-%
-% EXAMPLES
-%  Example 1 : Compared viewing of EEG and filtered EEG (with AFOP method)
-% You can lauch <a href="matlab: biosigdemo">biosigdemo</a> to carry
-% out this sample step by step.
-%    %Plot Signals
-%    load filterdemo
-%    a=BioSigPlot({data fdata},'srate',250,'Montage','1020system19','video','videodemo.avi');
-%    %Define Events
-%    a.Evts={10 'Electrode';64 'Muscle';86 'Muscle';110,'End HVT';144 'Smile'};
-%    %Change the Montage to Mean Reference Montage (Note that the filtered
-%    %EEG is already Mean referenced)
-%    a.MontageRef=2;
-%    %Move through Time
-%    a.Time=40;
-%    %Change to Horizontal View
-%    a.DataView='Horizontal';
-%    %Change Scales of the 2 Datasets
-%    a.Spacing=100;
-%    %Change Spacing on the second dataset only
-%    a.Spacing(2)=200;
-%    %Change the scale of the third electrod on dataset 1 (2nd Montage ie Mean Reference)
-%    a.Montage{1}(2).mat(3,:)=a.Montage{1}(2).mat(3,:)/10;
-%    %Start The FastReading
-%    a.StartFastRead
-%    %Stop it
-%    a.StopFastRead
-%
-
-%123456789012345678901234567890123456789012345678901234567890123456789012
-%
-%     BioSigPlot Copyright (C) 2013 Samuel Boudet, Faculté Libre de Médecine,
-%     samuel.boudet@gmail.com
-%
-%     This file is part of BioSigPlot
-%
-%     BioSigPlot is free software: you can redistribute it and/or modify
-%     it under the terms of the GNU General Public License as published by
-%     the Free Software Foundation, either version 3 of the License, or
-%     (at your option) any later version.
-% 
-%     BioSigPlot is distributed in the hope that it will be useful,
-%     but WITHOUT ANY WARRANTY; without even the implied warranty of
-%     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-%     GNU General Public License for more details.
-% 
-%     You should have received a copy of the GNU General Public License
-%     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-%
-% V0.1.2 Beta - 13/02/2013
-
-
+    %General class to visualize any multichannel biomedical signals and scroll
+    %through the time.
+    %
+    % USAGE
+    %   >> BioSigPlot(DATA, 'key1', value1 ...);
+    %   OR
+    %   >> a=BioSigPlot(DATA, 'key1', value1 ...);
+    %     Then, to modify properties :
+    %           >> a.key1=value1
+    %        OR >> set(a,'key1',value1,'key2',value2,...) (Faster if there is more than 1 keys)
+    %
+    %     To get propertie values :
+    %           >> val=a.key1
+    %        OR >> val=get('key1',value1)
+    %     The Modification of key is allowed (eg a.key1(i)=val)
+    %     You can receive a notification when each key is modified
+    %
+    % INPUT
+    %   DATA     object containing all signals. 3 format are accepted :
+    %              -mat(n,m)  : there will be n signals with m time samples
+    %              -mat(n,m,k): there will be k dataset
+    %              -cell (data{k} is mat(nk,m)) there will be multiple dataset.
+    %              The first with n1 channels, the second with n2,...
+    %
+    %              DATA can be access after as a read only property (a.Data)
+    %
+    %
+    % READ/WRITE PROPERTIES
+    % The followibg properties are accessible by constructor, get/set methods or .(dot) syntax
+    %
+    %   ChanLink
+    %    <true|false> if true all datasets have the same channels
+    %      eg. data vs filtered data, various ERP realisation,
+    %      signal vs indice computed on signals)
+    %    <Empty = auto> : true if all the datasets have the same number of
+    %      channels, else false
+    %
+    %   ChanNames
+    %     Cell with channel Names of raw data.
+    %     (See Montage properties for the difference between Raw and Montage channel names)
+    %     Default Format : ChanNames{i}{j} corresponds to Dataset i,channel j
+    %     Other accepted format (for set) :
+    %      - Channels{j} if ChanLink all the dataset will have the same channel names.
+    %      - empty : Put number to channel names
+    %
+    %    Colors, NormalModeColor, AlternatedModeColor, SuperimposedModeColor
+    %      Tables containing the colors of all dataset. The 3 columns corresponds
+    %      to RGB with values between 0 and 1. Each line corresponds to
+    %      a dataset.
+    %      -NormalModeColors are the colors used when DataView is set to 'DAT*',
+    %      'Horizontal' or 'Vertical'
+    %      -AlternatedModeColors are the colors used when DataView is set to
+    %      'Alternated'
+    %      -SuperimposedModeColors are the colors used when DataView is set to
+    %      'Superimposed'
+    %      -Colors is never used but if you set it, NormalModeColor,
+    %      AlternatedModeColor and SuperimposedModeColor will take its value.
+    %
+    %   Config
+    %      Path to a CFG file corresponding to default values of properties.
+    %      The CFG file contains the value for all keys in this section.
+    %      You can use ConfigWindow to help you to modify the CFG file
+    %      The default value is given by DefaultConfigFile (See INHERENCE
+    %      Section)
+    %
+    %   DataView
+    %     Current Data View Mode
+    %     <'Superimposed'|'Alternated'|'Vertical'|'Horizontal'|'DAT1'|'DAT2'|...>
+    %     The modes 'Superimposed' and 'Alternated' are not allowed if ChanLink
+    %     is false.
+    %     If there is only one dataset, the only possible value is 'DAT1'
+    %
+    %   DispChans
+    %     Number of channels to display for each data set.
+    %     Empty:means all
+    %
+    %   Evts
+    %     List of Events. Each events have a latency and a String value
+    %     Default format : {time1 'evt1';time2 'evt2';...}.
+    %     Other accepted format (for set) :
+    %     - struct array with any fields
+    %     - Ok if transposed or if columns are inversed
+    %
+    %   Filtering
+    %     <true|false> true if the data must be filter
+    %
+    %   StrongFilter
+    %     <true|False> False: 1st order Butterworth filter (2nd for band stop)
+    %     [It's often this type of filter which are implemented on manufacturer Software]
+    %     True : 4th order Butterworth Filter with Forward-Backward process
+    %     [Better filters]
+    %     (Since the Forward-Backward process function has been re-programed,
+    %     depending of the system, the Strong Filter can be as fast as 1st
+    %     order Butterworth filter.)
+    %
+    %
+    %   FilterLow, FilterHigh, FilterNotch
+    %     FilterLow : The low value of filtering: Cut-off frequency of high pass filter
+    %     FilterHigh :The high value of filtering: Cut-off frequency of low pass filter
+    %     FilterNotch : The 2 notch filter values for 50 or 60Hz rejection. (eg. [58 62])
+    %
+    %   FirstDispChans
+    %     First channel to display for each dataset. It corresponds to the
+    %     scroll bar levels.
+    %     Used only if DispChans is not empty.
+    %
+    %   InsideTicks
+    %     <true|False>
+    %      True: The ticks are put inside the Graph, and the graph size is maximised
+    %      False:The ticks are put outside the Graph
+    %
+    %   Montage
+    %     Information on various montages
+    %     Default Format :
+    %      -Cell of struct array: 1 cell for each dataset and one struct for each Montage
+    %       Montage{i}(j).name     : Name of the Montage j for dataset i
+    %       Montage{i}(j).mat      : Matrix to transform Raw Data to 'Montaged' Data
+    %       Montage{i}(j).channames: Cell containing list of montage channanmes
+    %       for j=1, the montage have to correspond to RAW data
+    %     Other accepted format (for set) :
+    %      -File path string of system info (eg '1020system19')
+    %      -if no cells and ChanLink the Montage is set to all the DataSet
+    %      -if empty automatically generate Raw Montage
+    %     if ChanNames and Montage are set, the ChanNames must be in Raw data order
+    %     and Montage{i}(j).channames must be in View order
+    %
+    %   MontageRef
+    %     Montage number for each datasets
+    %     Default Format : array
+    %     Other accepted format (for set) : Montage name
+    %
+    %   MouseMode
+    %     <'pan'|'Measurer'>
+    %     Set the action on mouse movement or mouse click
+    %
+    %   Position
+    %     [x y w h]
+    %     poistion of the figure (in pixels)
+    %         x,y : low left corner coordinates
+    %         w width
+    %         h height
+    %
+    %   ReadSpeedTime
+    %     The time between pages when fast reading
+    %
+    %   Selection
+    %     Time of Selected Periods:
+    %     Format: array [start1 start2 start3 ... ; end1 end2 end2 ...]
+    %     start_n and end_n corresponding to the beggining and the end of the
+    %     selection periods
+    %
+    %   SRate
+    %     Sampling Rate
+    %
+    %   Spacing
+    %     Space between 2 channels on Y units for each dataset
+    %     Default Format : array (S1, S2,...) Si=Spacing for dataset i
+    %     Other accepted format (for set) :
+    %       number (if ChannLink) put all the dataset the same spacing
+    %
+    %   Time
+    %     The time of the beginning of the current page (from the recording begginning
+    %     (in TimeUnit))
+    %
+    %   TimeUnit
+    %     The Time unit (for now only 's'(second) are allowed)
+    %
+    %   Title
+    %     Title of the Graph
+    %
+    %   XGrid
+    %     <true|False>
+    %      true : show Grid line on each TimeUnit
+    %
+    %   YGrid
+    %     <true|False>
+    %      true : show Grid line on each channel
+    %
+    %   Video
+    %     File path for the video (Supported format : See http://www.videolan.org/vlc/features.html)
+    %
+    %   VideoTime
+    %     Time for video cursor (from the recording begginning (in TimeUnit))
+    %
+    %   WinLength
+    %     Time of a Page during Viewing
+    %
+    % READ-ONLY PROPERTIES
+    %   Data
+    %     All the Signals
+    %
+    %   ChanSelect
+    %     Selected Channels
+    %
+    %   PreprocData
+    %    The currently preprocessed and drawed Data
+    %
+    %   Commands
+    %     List of all commands to arrive on this state
+    %
+    %   DataNumber
+    %     Number of Dataset
+    %
+    %   ChanNumber
+    %     Channel number for the Raw data
+    %
+    %   MontageChanNumber
+    %     Channel number for the current Montages
+    %
+    %   MontageChanNames
+    %     Channel names for the current Montages
+    %
+    %   MouseTime
+    %     The Time on which the mouse is on.
+    %
+    %   MouseChan
+    %     The channel on which the mouse is on
+    %
+    %   MouseDataset
+    %     The dataset on which the mouse is on
+    %
+    %
+    % METHODS
+    %   StartFastRead
+    %     Start Fast Reading
+    %
+    %   StopFastRead
+    %     Stop Fast Reading
+    %
+    %   ExportPagesTo
+    %     Export some pages to separate files
+    %
+    %   ExportPagesToMultiPages
+    %     Export some pages to a single document
+    %
+    %
+    % EXAMPLES
+    %  Example 1 : Compared viewing of EEG and filtered EEG (with AFOP method)
+    % You can lauch <a href="matlab: biosigdemo">biosigdemo</a> to carry
+    % out this sample step by step.
+    %    %Plot Signals
+    %    load filterdemo
+    %    a=BioSigPlot({data fdata},'srate',250,'Montage','1020system19','video','videodemo.avi');
+    %    %Define Events
+    %    a.Evts={10 'Electrode';64 'Muscle';86 'Muscle';110,'End HVT';144 'Smile'};
+    %    %Change the Montage to Mean Reference Montage (Note that the filtered
+    %    %EEG is already Mean referenced)
+    %    a.MontageRef=2;
+    %    %Move through Time
+    %    a.Time=40;
+    %    %Change to Horizontal View
+    %    a.DataView='Horizontal';
+    %    %Change Scales of the 2 Datasets
+    %    a.Spacing=100;
+    %    %Change Spacing on the second dataset only
+    %    a.Spacing(2)=200;
+    %    %Change the scale of the third electrod on dataset 1 (2nd Montage ie Mean Reference)
+    %    a.Montage{1}(2).mat(3,:)=a.Montage{1}(2).mat(3,:)/10;
+    %    %Start The FastReading
+    %    a.StartFastRead
+    %    %Stop it
+    %    a.StopFastRead
+    %
+    
+    %123456789012345678901234567890123456789012345678901234567890123456789012
+    %
+    %     BioSigPlot Copyright (C) 2013 Samuel Boudet, Faculté Libre de Médecine,
+    %     samuel.boudet@gmail.com
+    %
+    %     This file is part of BioSigPlot
+    %
+    %     BioSigPlot is free software: you can redistribute it and/or modify
+    %     it under the terms of the GNU General Public License as published by
+    %     the Free Software Foundation, either version 3 of the License, or
+    %     (at your option) any later version.
+    %
+    %     BioSigPlot is distributed in the hope that it will be useful,
+    %     but WITHOUT ANY WARRANTY; without even the implied warranty of
+    %     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    %     GNU General Public License for more details.
+    %
+    %     You should have received a copy of the GNU General Public License
+    %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    %
+    % V0.1.2 Beta - 13/02/2013
+    
+    
     properties (Access = protected,Hidden) %Graphics Object
         Sliders
         MainPanel
@@ -326,6 +326,7 @@ classdef BioSigPlot < hgsetget
         TogPan
         TogEvts
         TogVideo
+        TogAnnotate
         MenuFile
         MenuExport
         MenuCopy
@@ -345,6 +346,7 @@ classdef BioSigPlot < hgsetget
         LineVideo
         LineMeasurer
         TxtMeasurer
+        WinEvtEdit              %Annotation Edit window
         TimerObj
         WinEvts
         WinVideo
@@ -456,7 +458,7 @@ classdef BioSigPlot < hgsetget
     
     
     methods
-
+        
         %*****************************************************************
         function obj=BioSigPlot(data,varargin)
             % Create an instance of BioSigPlot
@@ -467,7 +469,7 @@ classdef BioSigPlot < hgsetget
             %   >> obj=BioSigPlot(Data, 'key1', value1 ...);
             %
             % INPUT
-            %   Data       
+            %   Data
             %       object containing all signals. 3 formats are accepted :
             %           - matrix (n x m)  : there will be n signals with m time samples
             %           - matrix (n x m x k): there will be k dataset
@@ -481,8 +483,8 @@ classdef BioSigPlot < hgsetget
             %       this is equivalent to:
             %           >> set(obj,'key1',value1,'key2',value2,...) (Faster if there is more than 1 keys)
             %           OR
-            %           >> obj.key1=value1  
-            % 
+            %           >> obj.key1=value1
+            %
             % EXAMPLE
             %   load filterdemo;
             %   a=BioSigPlot(data,'Srate',250);
@@ -508,7 +510,6 @@ classdef BioSigPlot < hgsetget
             n=find(strcmpi('Config',g(1:2:end)))*2;
             if isempty(n), g=[{'Config' obj.DefaultConfigFile} g]; end
             
-            
             % Private Properties
             
             obj.IsSelecting=0;
@@ -522,7 +523,7 @@ classdef BioSigPlot < hgsetget
             set(obj,g{:});
         end
         
-         %*****************************************************************
+        %*****************************************************************
         function delete(obj)
             % Delete the figure
             if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
@@ -530,6 +531,10 @@ classdef BioSigPlot < hgsetget
             end
             if isa(obj.WinEvts,'EventWindow') && isvalid(obj.WinEvts)
                 delete(obj.WinEvts);
+            end
+            
+            if isa(obj.WinEvtEdit,'EventEditWindow') && isvalid(obj.WinEvtEdit)
+                delete(obj.WinEvtEdit);
             end
             
             h = obj.Fig;
@@ -540,8 +545,8 @@ classdef BioSigPlot < hgsetget
             end
         end % delete
         
-         %*****************************************************************
-        function set(obj,varargin) 
+        %*****************************************************************
+        function set(obj,varargin)
             NeedRemakeMontage=false;
             NeedResetView=false;
             NeedRemakeAxes=false;
@@ -710,7 +715,7 @@ classdef BioSigPlot < hgsetget
             % INPUT
             %   file
             %       Filename to export. Can be any Image format, .pdf, .ps or .fig(Matlab figure)
-            %       
+            %
             %   pages
             %       list of time corresponding to begginings of pages
             %
@@ -719,9 +724,9 @@ classdef BioSigPlot < hgsetget
             %
             %   width, height
             %       Dimension of the paper in unit
-            %         
+            %
             
-           
+            
             
             oldtime=obj.Time;
             n=find(file=='.',1,'last');
@@ -734,7 +739,7 @@ classdef BioSigPlot < hgsetget
                 
                 copyobj(obj.Axes(:),f);
                 try saveas(f,filename); catch, msgbox(['The following file cannot be written :' filename]); end %#ok<CTCH>
- 
+                
                 obj.Commands{end+1}=['a.ExportPagesTo(''' file ''',' obj2str(pages) ',' obj2str(varargin{:}) ');'];
             end
             close(f);
@@ -744,7 +749,7 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         function ExportPagesToMultiPages(obj,file,pages,varargin)
             % Export to a single mutli-page document (PDF or PS)
-            % 
+            %
             %
             % USAGE
             %   obj.ExportPagesToMultiPages(file,pages,'PaperUnits',unit,'PaperSize',[width height]);
@@ -754,7 +759,7 @@ classdef BioSigPlot < hgsetget
             % INPUT
             %   file
             %       Filename to export. Can be .pdf or .ps
-            %       
+            %
             %   pages
             %       list of time corresponding to begginings of pages
             %
@@ -763,7 +768,7 @@ classdef BioSigPlot < hgsetget
             %
             %   width, height
             %       Dimension of the paper in unit
-            %         
+            %
             
             oldtime=obj.Time;
             n=find(file=='.',1,'last');
@@ -1083,6 +1088,7 @@ classdef BioSigPlot < hgsetget
             set(obj.TogMeasurer,'State',offon{1+strcmpi(val,'Measurer')});
             set(obj.TogPan,'State',offon{1+strcmpi(val,'Pan')});
             set(obj.TogSelection,'State',offon{1+strcmpi(val,'Select')});
+            set(obj.TogAnnotate,'State',offon{1+strcmpi(val,'Annotate')});
         end
         
         %******************************************************************
@@ -1108,12 +1114,12 @@ classdef BioSigPlot < hgsetget
             a='defaultconfig';
         end
         
-         %*****************************************************************
+        %*****************************************************************
         function s=ControlBarSize(obj) %#ok<MANU>
             s=[1015 35];
         end
         
-
+        
         %******************************************************************
         function [nchan,ndata,yvalue]=getMouseInfo(obj)
             xlim=obj.WinLength*obj.SRate;
@@ -1146,7 +1152,7 @@ classdef BioSigPlot < hgsetget
         end
         
         
-       
+        
         %******************************************************************
         %**********General functions called when setting properties********
         %******************************************************************
@@ -1174,7 +1180,7 @@ classdef BioSigPlot < hgsetget
             obj.makeControls();
             obj.makeToolbar();
             obj.makeMenu();
-
+            
         end
         
         %******************************************************************
@@ -1295,6 +1301,8 @@ classdef BioSigPlot < hgsetget
             obj.TogSelection=uitoggletool(obj.Toolbar,'CData',imread('select.bmp'),'TooltipString','Selection','ClickedCallback',@(src,evt) ChangeMouseMode(obj,src));
             obj.TogEvts=uitoggletool(obj.Toolbar,'CData',imread('evts.bmp'),'TooltipString','Event Window','separator','on','Enable','off','ClickedCallback',@(src,evt) WinEvents(obj,src));
             obj.TogVideo=uitoggletool(obj.Toolbar,'CData',imread('video.bmp'),'TooltipString','Video Window','ClickedCallback',@(src,evt) WinVideoFcn(obj,src));
+            
+            obj.TogAnnotate=uitoggletool(obj.Toolbar,'CData',imread('annotate.bmp'),'TooltipString','Annotate events','separator','on','ClickedCallback',@(src,evt) ChangeMouseMode(obj,src));
         end
         
         %******************************************************************
@@ -1482,7 +1490,7 @@ classdef BioSigPlot < hgsetget
                 obj.Time=t;
                 obj.VideoTime=t;
             end
-
+            
         end
         
         %******************************************************************
@@ -1583,6 +1591,8 @@ classdef BioSigPlot < hgsetget
                     s='Pan';
                 elseif src==obj.TogSelection
                     s='Select';
+                elseif src==obj.TogAnnotate
+                    s='Annotate';
                 end
             end
             obj.MouseMode=s;
@@ -1593,38 +1603,8 @@ classdef BioSigPlot < hgsetget
             
             [nchan,ndata,yvalue]=getMouseInfo(obj); %#ok<ASGLU>
             time=obj.MouseTime;
-            if strcmpi(obj.MouseMode,'Measurer')
-                t=floor((obj.MouseTime-obj.Time)*obj.SRate);
-                if obj.StateMeasurer(1) == 0
-                    for i=1:length(obj.Axes)
-                        set(obj.LineMeasurer(i+4),'XData',[t t])
-                        set(obj.LineMeasurer(i+6),'YData',[yvalue(i) yvalue(i)])
-                        for j=1:length(obj.TxtMeasurer{i})
-                            p=get(obj.TxtMeasurer{i}(j),'position');
-                            p(1)=t+0.01*obj.WinLength*obj.SRate;
-                            set(obj.TxtMeasurer{i+4}(j),'Position',[p(1),yvalue(i)],'String',[num2str(floor(yvalue(ndata))) ' bpm']);
-                            obj.StateMeasurer(2)=time;
-                            obj.StateMeasurer(3)=yvalue(ndata);
-                        end
-                    end
-                else
-                    for i=1:length(obj.Axes)
-                        set(obj.LineMeasurer(i+4),'XData',[-1 -1])
-                        set(obj.LineMeasurer(i+6),'YData',[-1 -1])
-                        for j=1:length(obj.TxtMeasurer{i})
-                            set(obj.TxtMeasurer{i}(j),'String',[num2str(floor(yvalue(ndata))) ' bpm']);
-                            set(obj.TxtMeasurer{i+2}(j),'Position',[-200 -100]);
-                            set(obj.TxtMeasurer{i+4}(j),'Position',[-100,-100]);
-                        end
-                    end
-                end
-                refresh
-                if obj.StateMeasurer(1) == 0
-                    obj.StateMeasurer(1) = 1;
-                else
-                    obj.StateMeasurer(1) = 0;
-                end
-            elseif strcmpi(obj.MouseMode,'Select')
+            
+            if strcmpi(obj.MouseMode,'Select')
                 
                 if(strcmp(get(obj.Fig,'SelectionType'),'open'))
                     
@@ -1657,6 +1637,11 @@ classdef BioSigPlot < hgsetget
                         obj.SelectionStart=[];
                         redraw(obj);
                     end
+                end
+            elseif strcmpi(obj.MouseMode,'Annotate')
+                t=floor((obj.MouseTime-obj.Time)*obj.SRate);
+                for i=1:length(obj.Axes)
+                    set(obj.LineMeasurer(i),'XData',[t t],'Color',[159/255 0 197/255]);
                 end
             end
         end
@@ -1702,6 +1687,7 @@ classdef BioSigPlot < hgsetget
                 set(obj.Fig,'pointer','arrow')
             else
                 if ~strcmpi(obj.MouseMode,'Pan'), set(obj.Fig,'pointer','crosshair');end
+                %                 if strcmpi(obj.MouseMode,'Annotate'),set(obj.Fig,'pointer','fullcrosshair');end
                 
                 if strcmpi(obj.MouseMode,'Measurer')
                     obj.MouseMovementMeasurer();
@@ -1720,9 +1706,8 @@ classdef BioSigPlot < hgsetget
                         end
                         
                     end
+                    
                 end
-                
-                
                 
                 if strcmp(obj.TimeUnit,'min')
                     timestamp=time*60;
@@ -1813,8 +1798,8 @@ classdef BioSigPlot < hgsetget
                         end
                     end
                 end
-
-
+                
+                
                 if(strcmp(filetype,'image') || strcmp(filetype,'fig'))
                     obj.ExportPagesTo(file,pages,paperparams{:});
                 else
@@ -1822,7 +1807,7 @@ classdef BioSigPlot < hgsetget
                 end
             end
         end
-              
+        
         %******************************************************************
         function WinEvents(obj,src)
             if strcmpi(get(src,'State'),'on')

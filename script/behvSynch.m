@@ -3,7 +3,7 @@ function [behvMat,channelNames]=behvSynch(synch,stamp,sampleRate)
 %sampling frequency of synch needs to be the same
 
 %cutoff frequency for highpass filter of synch signal from neuro-system
-fc=10;
+fc=5;
 %order of the butter filter
 order=2;
 
@@ -93,10 +93,10 @@ behvMat=double(behvMat);
 behvMatMiddle=behvMat(:,start_behv:end_behv);
 %interpolate the behavior data according to neuro-system from start to end
 behvTimeStamp=timeStamp(start_behv:end_behv)-timeStamp(start_behv);
-behvTimeStamp=behvTimeStamp/behvTimeStamp(end);
+% behvTimeStamp=behvTimeStamp/behvTimeStamp(end);
 
 neuroTimeStamp=stamp(start_neuro:end_neuro)-stamp(start_neuro);
-neuroTimeStamp=neuroTimeStamp/neuroTimeStamp(end);
+% neuroTimeStamp=neuroTimeStamp/neuroTimeStamp(end);
 
 
 interpBehvMatMiddle=interp1(behvTimeStamp,behvMatMiddle',neuroTimeStamp);

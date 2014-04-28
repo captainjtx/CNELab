@@ -15,9 +15,10 @@ sampleRate=task.data.info{1}.sampleRate;
 
 annotations=task.annotations;
 
+startTime=task.data.info{1}.stamp(1);
 
 for i=1:length(annotations.text)
-    events{i,1}=annotations.index(i)/sampleRate;
+    events{i,1}=annotations.stamp(i)-startTime;
     events{i,2}=annotations.text{i};
 end
 

@@ -81,7 +81,7 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         end
         plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),obj.Spacing(i),Nchan(i):-1:1,obj.ChanSelect{i});
         if ~obj.ChanLink || i==1  || strcmp(obj.DataView,'Vertical') , plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.InsideTicks); end
-        DrawEvts(obj.Axes(i),obj.Evts,obj.Time,obj.WinLength,obj.SRate);
+        DrawEvts(obj,obj.Axes(i),obj.Evts,obj.Time,obj.WinLength,obj.SRate);
     end
 else
     
@@ -145,7 +145,7 @@ else
         plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.InsideTicks)
     end
     plotXTicks(obj.Axes,obj.Time,obj.WinLength,obj.InsideTicks)
-    DrawEvts(obj.Axes,obj.Evts,obj.Time,obj.WinLength,obj.SRate);
+    DrawEvts(obj,obj.Axes,obj.Evts,obj.Time,obj.WinLength,obj.SRate);
 end
 
 offon={'off','on'};
@@ -162,6 +162,12 @@ if strcmp(obj.MouseMode,'Measurer')
             obj.TxtMeasurer{i}(j)=text('Parent',obj.Axes(i),'position',[-1,j],'EdgeColor',[0 0 0],'BackgroundColor',[0.7 0.7 0],...
                 'VerticalAlignment','Top','Margin',1,'FontSize',10,'FontName','FixedWidth');
         end
+    end
+end
+
+if strcmp(obj.MouseMode,'Annotate')
+    for i=1:length(obj.Axes)
+        obj.LineMeasurer(i)=line([-1 -1],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]); 
     end
 end
 
@@ -258,15 +264,19 @@ for i=1:size(selection,2)
 end
 end
 
-function DrawEvts(axe,evts,t,dt,SRate)
+function DrawEvts(obj,axe,evts,t,dt,SRate)
 yl=get(axe,'Ylim');
+count=0;
 for i=1:size(evts,1)
     if evts{i,1}>=t && evts{i,1}<=t+dt
+        count=count+1;
         x=SRate*(evts{i,1}-t);
-        line([x x],[0 1000],'parent',axe,'Color',[0 0.7 0]);
+        EventLines(count)=line([x x],[0 1000],'parent',axe,'Color',[0 0.7 0]);
         text('Parent',axe,'position',[x yl(2)],'EdgeColor',[0 0 0],'BackgroundColor',[0.6 1 0.6],...
                 'VerticalAlignment','Top','Margin',1,'FontSize',12,'String',evts{i,2});
     end
 end
+obj.EventLines=EventLines;
+
 
 end

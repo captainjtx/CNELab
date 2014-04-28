@@ -156,7 +156,7 @@ annoTime=dataTime(k);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 annotations.text=text;
-annotations.index=round((annoTime-dataTime(1))/fs/downsample);
+annotations.stamp=annoTime/fs/downsample;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -170,17 +170,17 @@ for i=1:length(entfile)
 end
 
 for i=1:size(datamat,2)
-    data.info{i}.startTime=[];
     data.info{i}.sampleRate=fs;
     data.info{i}.unit='mV';
     data.info{i}.name=channelnames{i};
-    data.info{i}.stamp=dataTime;
+    data.info{i}.stamp=dataTime/fs/downsample;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 task.data=data;
 task.annotations=annotations;
 task.info.patientName=[eegfile.Info.Name.FirstName eegfile.Info.Name.MiddleName...
      eegfile.Info.Name.LastName];
+ 
 task.info.studyName=studyName;
 task.info.location=[];
 task.info.device='XLTEK EMU 128FS';

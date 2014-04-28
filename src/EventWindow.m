@@ -51,7 +51,7 @@ classdef EventWindow  < handle
     end
         
     methods
-        function obj=EventWindow(evts)
+            function obj=EventWindow(evts)
             obj.Fig=figure('MenuBar','none','position',[500 100 344 500],'NumberTitle','off','Name','Events','CloseRequestFcn',@(src,evts) delete(obj));
             for i=1:size(evts,1)
                 s{i}=sprintf('%8.2f -%s',evts{i,1},evts{i,2}); %#ok<AGROW>
