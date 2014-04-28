@@ -60,6 +60,7 @@ if ~isempty(obj.DispChans)
     end
 end
 
+EventLines=[];
 
 if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
     Nchan=obj.MontageChanNumber;
@@ -81,7 +82,10 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         end
         plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),obj.Spacing(i),Nchan(i):-1:1,obj.ChanSelect{i});
         if ~obj.ChanLink || i==1  || strcmp(obj.DataView,'Vertical') , plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.InsideTicks); end
-        DrawEvts(obj,obj.Axes(i),obj.Evts,obj.Time,obj.WinLength,obj.SRate);
+        tmp=DrawEvts(obj.Axes(i),obj.Evts,obj.Time,obj.WinLength,obj.SRate);
+        if ~isempty(tmp)
+            EventLines(i,:)=tmp;
+        end
     end
 else
     
@@ -145,8 +149,13 @@ else
         plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.InsideTicks)
     end
     plotXTicks(obj.Axes,obj.Time,obj.WinLength,obj.InsideTicks)
-    DrawEvts(obj,obj.Axes,obj.Evts,obj.Time,obj.WinLength,obj.SRate);
+    tmp=DrawEvts(obj.Axes,obj.Evts,obj.Time,obj.WinLength,obj.SRate);
+    if ~isempty(tmp)
+        EventLines(i,:)=tmp;
+    end
 end
+
+obj.EventLines=EventLines;
 
 offon={'off','on'};
 for i=1:length(obj.Axes)
@@ -264,9 +273,11 @@ for i=1:size(selection,2)
 end
 end
 
-function DrawEvts(obj,axe,evts,t,dt,SRate)
+function EventLines=DrawEvts(axe,evts,t,dt,SRate)
 yl=get(axe,'Ylim');
 count=0;
+EventLines=[];
+
 for i=1:size(evts,1)
     if evts{i,1}>=t && evts{i,1}<=t+dt
         count=count+1;
@@ -276,7 +287,5 @@ for i=1:size(evts,1)
                 'VerticalAlignment','Top','Margin',1,'FontSize',12,'String',evts{i,2});
     end
 end
-obj.EventLines=EventLines;
-
 
 end

@@ -347,6 +347,7 @@ classdef BioSigPlot < hgsetget
         LineMeasurer
         TxtMeasurer
         WinEvtEdit              %Annotation Edit window
+        EventLines
         TimerObj
         WinEvts
         WinVideo
@@ -387,6 +388,7 @@ classdef BioSigPlot < hgsetget
         AxesHeight              %Height ratio of Axes for Vertical Mode.
         YBorder                 %Vector of 2elements containing the space height between the last channel and the bottom and between the top and the first channel (Units: 'Spacing' relative)
         Selection               %Time of Selected area
+        
     end
     properties (Access=protected,Hidden)%Storage of public properties
         Config_
@@ -1683,11 +1685,14 @@ classdef BioSigPlot < hgsetget
         function MouseMovement(obj)
             [nchan,ndata]=getMouseInfo(obj);
             time=obj.MouseTime;
+            mouseIndex=floor((obj.MouseTime-obj.Time)*obj.SRate);
+            
             if ndata==0
                 set(obj.Fig,'pointer','arrow')
             else
-                if ~strcmpi(obj.MouseMode,'Pan'), set(obj.Fig,'pointer','crosshair');end
-                %                 if strcmpi(obj.MouseMode,'Annotate'),set(obj.Fig,'pointer','fullcrosshair');end
+                if ~strcmpi(obj.MouseMode,'Pan')
+                    set(obj.Fig,'pointer','crosshair')
+                end
                 
                 if strcmpi(obj.MouseMode,'Measurer')
                     obj.MouseMovementMeasurer();
@@ -1706,8 +1711,26 @@ classdef BioSigPlot < hgsetget
                         end
                         
                     end
-                    
+                elseif strcmpi(obj.MouseMode,'Annotate')
+                    set(obj.Fig,'pointer','cross')
                 end
+                
+                selected=0;
+                if ~isempty(obj.EventLines)
+                    for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
+                        XData=get(obj.EventLines(i),'XData');
+                        eventIndex=XData(1);
+                        if abs(mouseIndex-eventIndex)<20
+                            set(obj.EventLines(i),'Color',[159/255 0 197/255]);
+                            selected=1;
+                        else
+                            set(obj.EventLines(i),'Color',[0 0.7 0]);
+                        end
+                    end
+                end
+                
+                if selected,set(obj.Fig,'pointer','hand');end
+                    
                 
                 if strcmp(obj.TimeUnit,'min')
                     timestamp=time*60;

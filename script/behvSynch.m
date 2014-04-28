@@ -10,6 +10,10 @@ order=2;
 %threshould value to get a digital signal from envlope
 thresh_neuro=2;
 thresh_behv=0.5*10^-3;
+
+%Synchronization impulse number to start
+impulseStart=2;
+
 %debug variable
 
 % sampleRate=500;
@@ -70,22 +74,29 @@ synch_f=filter_symmetric(b,a,synch,sampleRate,0,'iir');
 %get the starting point of synch signal from neuro-system%%%%%%%%%%%%%%%%%%
 env=abs(hilbert(synch_f));
 denv=env>thresh_neuro;
-ind=find(denv);
+diffenv=diff(denv);
 
-start_neuro=ind(1);
+startInd=find(diffenv==1);
+endInd=find(diffenv==-1);
+
+start_neuro=startInd(impulseStart);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %get the ending point of synch signal from neuro-system%%%%%%%%%%%%%%%%%%%%
-end_neuro=ind(end);
+end_neuro=endInd(end);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %get the starting point of synch signal from behv-system%%%%%%%%%%%%%%%%%%%
 env=abs(hilbert(trigger));
 % plot(1:length(trigger),trigger,'b',1:length(env),env,'r');
-ind=find(env>thresh_behv);
+denv=env>thresh_behv;
+diffenv=diff(denv);
 
-start_behv=ind(1);
+startInd=find(diffenv==1);
+endInd=find(diffenv==-1);
+
+start_behv=startInd(impulseStart);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %get the ending point of synch signal from behv-system
-end_behv=ind(end);
+end_behv=endInd(end);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 behvMat=cat(1,trigger,acceleration,fingers,rollPitch);
 behvMat=double(behvMat);
