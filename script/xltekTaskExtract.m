@@ -139,6 +139,15 @@ datamat=filter_symmetric(b,a,datamat,fs,0,'fir');
 datamat=datamat(1:downsample:end,:);
 dataTime=timestamps(1:downsample:end);
 fs=fs/downsample;
+%notch filter
+fir_notch_50_500=load('FIR_NotchFilterBank_50_100_150_200_Fs_500');
+a=1;
+notchFilters=fir_notch_50_500.notchFilter;
+
+for i=1:length(notchFilters)
+    b=notchFilters(i).hNotch;
+    datamat=filter_symmetric(b,a,datamat,fs,0,'fir');
+end
 
 for i=1:size(datamat,2)
     data.dataMat{i}=datamat(:,i);
