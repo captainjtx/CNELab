@@ -126,9 +126,14 @@ end
 %%%%%%%%%%%%%%%%%%%down sample by 4%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %low pass filtering the data first
 %band pass filter
-fc=fs/downsample/2;
-[b,a]=butter(order,fc*2/fs,'low');
-datamat=filter_symmetric(b,a,datamat,fs,0,'iir');
+% fc=fs/downsample/2;
+% [b,a]=butter(order,fc*2/fs,'low');
+% datamat=filter_symmetric(b,a,datamat,fs,0,'iir');
+
+fir_lowpass_220_2000=load('FIR_LowPass_Filter_220Hz_Fs_2000Hz');
+a=1;
+b=fir_lowpass_220_2000.hL;
+datamat=filter_symmetric(b,a,datamat,fs,0,'fir');
 
 %down sampling the data
 datamat=datamat(1:downsample:end,:);

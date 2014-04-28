@@ -55,26 +55,22 @@ trigger=detrend(trigger);
 % end
 
 
-
-% subplot(2,1,1)
-% plot(synch)
-% title('neuro system synch channel');
-
-% subplot(2,1,2)
-% plot(trigger);
-% title('behavior system synch channel');
 %high pass the synch signal from neuro-system
 [b,a]=butter(order,fc/sampleRate*2,'high');
 synch_f=filter_symmetric(b,a,synch,sampleRate,0,'iir');
 
-% subplot(2,1,2)
-% plot(synch)
-% title('filtered synch channel')
-
 %get the starting point of synch signal from neuro-system%%%%%%%%%%%%%%%%%%
 env=abs(hilbert(synch_f));
+thresh_neuro=4*median(env);
 denv=env>thresh_neuro;
 diffenv=diff(denv);
+
+subplot(2,1,1)
+plot(synch_f,'b');
+hold on
+plot(env,'r');
+hold on
+plot([1 length(env)],[thresh_neuro thresh_neuro],'-m');
 
 startInd=find(diffenv==1);
 endInd=find(diffenv==-1);
@@ -87,8 +83,16 @@ end_neuro=endInd(end);
 %get the starting point of synch signal from behv-system%%%%%%%%%%%%%%%%%%%
 env=abs(hilbert(trigger));
 % plot(1:length(trigger),trigger,'b',1:length(env),env,'r');
+thresh_behv=13*median(env);
 denv=env>thresh_behv;
 diffenv=diff(denv);
+
+subplot(2,1,2)
+plot(trigger,'b');
+hold on
+plot(env,'r');
+hold on
+plot([1 length(env)],[thresh_behv thresh_behv],'-m');
 
 startInd=find(diffenv==1);
 endInd=find(diffenv==-1);
