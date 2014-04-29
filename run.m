@@ -44,7 +44,7 @@ behvMat(1,:)=behvMat(1,:)*0.1;
 
 behvMat(2:end,:)=behvMat(2:end,:)*0.25;
 
-bsp=BioSigPlot({datamat behvMat},'srate',sampleRate);
-bsp.Evts=events;
+BioSigPlot({datamat behvMat},'srate',sampleRate,'Evts',events);
+% bsp.Evts=events;
 end
 

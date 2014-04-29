@@ -41,20 +41,6 @@ end
 
 trigger=detrend(trigger);
 
-
-% task=load('/Users/tengi/Desktop/SuperViewer/db/demo/LiMa_Neuro.mat');
-% task=load([pwd '/db/demo/neuro.mat']);
-% neuroSynchName='Sound'; %synch channel name in task file
-% 
-% 
-% for i=1:length(task.data.info)
-%     if strcmpi(task.data.info{i}.name,neuroSynchName)
-%         synch=task.data.dataMat{i};
-%         stamp=task.data.info{i}.stamp;
-%     end
-% end
-
-
 %high pass the synch signal from neuro-system
 [b,a]=butter(order,fc/sampleRate*2,'high');
 synch_f=filter_symmetric(b,a,synch,sampleRate,0,'iir');
@@ -65,12 +51,12 @@ thresh_neuro=4*median(env);
 denv=env>thresh_neuro;
 diffenv=diff(denv);
 
-subplot(2,1,1)
-plot(synch_f,'b');
-hold on
-plot(env,'r');
-hold on
-plot([1 length(env)],[thresh_neuro thresh_neuro],'-m');
+% subplot(2,1,1)
+% plot(synch_f,'b');
+% hold on
+% plot(env,'r');
+% hold on
+% plot([1 length(env)],[thresh_neuro thresh_neuro],'-m');
 
 startInd=find(diffenv==1);
 endInd=find(diffenv==-1);
@@ -87,12 +73,12 @@ thresh_behv=13*median(env);
 denv=env>thresh_behv;
 diffenv=diff(denv);
 
-subplot(2,1,2)
-plot(trigger,'b');
-hold on
-plot(env,'r');
-hold on
-plot([1 length(env)],[thresh_behv thresh_behv],'-m');
+% subplot(2,1,2)
+% plot(trigger,'b');
+% hold on
+% plot(env,'r');
+% hold on
+% plot([1 length(env)],[thresh_behv thresh_behv],'-m');
 
 startInd=find(diffenv==1);
 endInd=find(diffenv==-1);

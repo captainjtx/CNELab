@@ -61,6 +61,8 @@ if ~isempty(obj.DispChans)
 end
 
 EventLines=[];
+EventTexts=[];
+EventIndex=[];
 
 if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
     Nchan=obj.MontageChanNumber;
@@ -82,9 +84,11 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         end
         plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),obj.Spacing(i),Nchan(i):-1:1,obj.ChanSelect{i});
         if ~obj.ChanLink || i==1  || strcmp(obj.DataView,'Vertical') , plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.InsideTicks); end
-        tmp=DrawEvts(obj.Axes(i),obj.Evts,obj.Time,obj.WinLength,obj.SRate);
-        if ~isempty(tmp)
-            EventLines(i,:)=tmp;
+        [Elines,Etexts,Eindex]=DrawEvts(obj.Axes(i),obj.Evts,obj.Time,obj.WinLength,obj.SRate);
+        if ~isempty(Elines)
+            EventLines(i,:)=Elines;
+            EventTexts(i,:)=Etexts;
+            EventIndex(i,:)=Eindex;
         end
     end
 else
@@ -149,13 +153,17 @@ else
         plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.InsideTicks)
     end
     plotXTicks(obj.Axes,obj.Time,obj.WinLength,obj.InsideTicks)
-    tmp=DrawEvts(obj.Axes,obj.Evts,obj.Time,obj.WinLength,obj.SRate);
-    if ~isempty(tmp)
-        EventLines(i,:)=tmp;
+    [Elines,Etexts,Eindex]=DrawEvts(obj.Axes,obj.Evts,obj.Time,obj.WinLength,obj.SRate);
+    if ~isempty(Elines)
+        EventLines(i,:)=Elines;
+        EventTexts(i,:)=Etexts;
+        EventIndex(i,:)=Eindex;
     end
 end
 
 obj.EventLines=EventLines;
+obj.EventTexts=EventTexts;
+% obj.EventDisplayIndex=EventIndex;
 
 offon={'off','on'};
 for i=1:length(obj.Axes)
@@ -273,18 +281,21 @@ for i=1:size(selection,2)
 end
 end
 
-function EventLines=DrawEvts(axe,evts,t,dt,SRate)
+function [EventLines,EventTexts,EventIndex]=DrawEvts(axe,evts,t,dt,SRate)
 yl=get(axe,'Ylim');
 count=0;
 EventLines=[];
+EventTexts=[];
+EventIndex=[];
 
 for i=1:size(evts,1)
     if evts{i,1}>=t && evts{i,1}<=t+dt
         count=count+1;
         x=SRate*(evts{i,1}-t);
         EventLines(count)=line([x x],[0 1000],'parent',axe,'Color',[0 0.7 0]);
-        text('Parent',axe,'position',[x yl(2)],'EdgeColor',[0 0 0],'BackgroundColor',[0.6 1 0.6],...
+        EventTexts(count)=text('Parent',axe,'position',[x yl(2)],'EdgeColor',[0 0.7 0],'BackgroundColor',[0.6 1 0.6],...
                 'VerticalAlignment','Top','Margin',1,'FontSize',12,'String',evts{i,2});
+        EventIndex(count)=i;
     end
 end
 

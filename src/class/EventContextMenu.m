@@ -7,20 +7,37 @@ classdef EventContextMenu < uicontextmenu
     
     properties
         hcmenu
+        editOption
+        deleteOption
+        caller
     end
     
     methods
-        function obj=EventContextMenu()
+        function obj=EventContextMenu(bsp)
             obj.hcmenu=uicontextmenu;
-            editOption    =    uimenu(obj.hcmenu,...
-                                        'Label',        'Edit',...
-                                        'Seperator',    'on',...
-                                        'callback',     @{});
-            deleteOption  =    uimenu(obj.hcmenu,...
-                                        'Label',        'Delete',...
-                                        'Seperator',    'on',...
-                                        'callback',     @{});
+            EventLines=bsp.EventLines;
+            EventTexts=bsp.EventTexts;
             
+            EventDisplayIndex=bsp.EventDisplayIndex;
+            
+            if ~isempty(EventLines)
+                for i=1:size(EventLines,1)*size(EventLines,2)
+                    
+                    eventIndex=EventDisplayIndex(i);
+                    
+                    obj.editOption    =    uimenu(obj.hcmenu,...
+                        'Label',        'Edit',...
+                        'Seperator',    'on',...
+                        'callback',     {@EventEditWindow,bsp,eventIndex});
+                    obj.deleteOption  =    uimenu(obj.hcmenu,...
+                        'Label',        'Delete',...
+                        'Seperator',    'on',...
+                        'callback',     {@eventDelete,EventLines(i),bsp,eventIndex});
+                    
+                    set(EventLines(i),'uicontextmenu',obj.hcmenu);
+                    set(EventTexts(i),'uicontextmenu',obj.hcmenu);
+                end
+            end
         end
         
         function delete(obj)
@@ -31,8 +48,13 @@ classdef EventContextMenu < uicontextmenu
             else
                 return
             end
-        end       
-          
+        end
+        
+        function eventDelete(src,evt,bsp,eventIndex)
+            
+        end
+        
+        
     end
     
     events
