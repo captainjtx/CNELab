@@ -12,10 +12,10 @@ SAfter=2;
 %     'ECG+','ECG-','EMG+','EMG-','Synch','C126','C127','C128'};
 
 % Li Ma
-% badChannels={'C27','C64','C75','C76','C100',...
-%     'ECG+','ECG-','EMG+','EMG-','Sound','C126','C127','C128'};
+badChannels={'C27','C64','C75','C76','C100',...
+    'ECG+','ECG-','EMG+','EMG-','Sound','C126','C127','C128'};
 
-badChannels={'Trigger','Acceleration X','Acceleration Y', 'Acceleration Z','Roll','Pitch'};
+% badChannels={'Trigger','Acceleration X','Acceleration Y', 'Acceleration Z','Roll','Pitch'};
 
 
 %movemnt type
@@ -52,7 +52,7 @@ for i=1:chanNum
 end
 
 dataMat=dataMat(:,channels);
-dataTS=data.info{1}.stamp;
+dataTS=data.info{1}.stamp-data.info{1}.stamp(1);
 
 movement_type_num=length(movements);
 segNum=zeros(movement_type_num,1);
@@ -63,7 +63,7 @@ annoTXT=annotations.text;
 
 
 mov_index=find(ismember(annoTXT,movements));
-annoTS=annoTS(mov_index);
+annoTS=annoTS(mov_index)-annoTS(1);
 annoTXT=annoTXT(mov_index);
 
 for i=2:length(annoTS)-1
@@ -72,7 +72,7 @@ for i=2:length(annoTS)-1
         for j=1:movement_type_num
             if strcmpi(annoTXT{i},movements{j})
                 segNum(j)=segNum(j)+1;
-                iAnno  = find(dataTS==annoTS(i));
+                iAnno  = annoTS(i)*fs+1;
                 varname=genvarname(movements{j});
                 segments.(varname)(:,:,segNum(j))=dataMat(iAnno-SBefore*fs:iAnno+SAfter*fs,:);
             end

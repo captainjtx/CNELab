@@ -346,9 +346,6 @@ classdef BioSigPlot < hgsetget
         LineVideo
         LineMeasurer
         TxtMeasurer
-        WinEvtEdit              %Annotation Edit window
-        EventLines              %Event lines displayed
-        EventTexts              %Event texts displayed
         TimerObj
         WinEvts
         WinVideo
@@ -462,6 +459,15 @@ classdef BioSigPlot < hgsetget
     
     properties
         EventDisplayIndex       %Indx of displayed events
+        WinEvtEdit              %Annotation Edit window
+        EventLines              %Event lines displayed
+        EventTexts              %Event texts displayed
+        EvtContextMenu          %Event Contex Menu
+        SelectedEvent
+        SelectedLines
+        
+        DragSelectedEvent
+        DragSelectedLines
     end
     
     methods
@@ -527,6 +533,14 @@ classdef BioSigPlot < hgsetget
             
             % Beginning of setting and starting Redraw
             
+            obj.EventLines=[];
+            obj.EventTexts=[];
+            %             obj.EvtContextMenu=EventContextMenu(obj);
+            obj.SelectedEvent=[];
+            obj.SelectedLines=[];
+            
+            obj.DragSelectedEvent=[];
+            obj.DragSelectedLines=[];
             set(obj,g{:});
         end
         
@@ -700,7 +714,7 @@ classdef BioSigPlot < hgsetget
         function val = get.YGridInterval(obj), val=obj.YGridInterval_; end
         function obj = set.Selection(obj,val), set(obj,'Selection',val); end
         function val = get.Selection(obj), val=obj.Selection_; end
-                
+        
         function obj = set.Position(obj,val), set(obj.Fig,'Position',val); end
         function val = get.Position(obj),     val=get(obj.Fig,'Position'); end
         function obj = set.Title(obj,val), set(obj.Fig,'Name',val); end
@@ -708,7 +722,7 @@ classdef BioSigPlot < hgsetget
         
         function obj = set.EventDisplayIndex(obj,val), obj.EventDisplayIndex=val; end
         function val = get.EventDisplayIndex(obj), val=obj.EventDisplayIndex; end
-
+        
         
         
         %*****************************************************************
@@ -1174,7 +1188,8 @@ classdef BioSigPlot < hgsetget
             
             obj.Fig=figure('MenuBar','none','ToolBar','none','DockControls','on','NumberTitle','off',...
                 'CloseRequestFcn',@(src,evts) delete(obj),'WindowScrollWheelFcn',@(src,evts) ChangeSliders(obj,src,evts),...
-                'WindowButtonMotionFcn',@(src,evt) MouseMovement(obj),'WindowButtonDownFcn',@(src,evt) MouseDown(obj),'Renderer','painters','ResizeFcn',@(src,evt) resize(obj));
+                'WindowButtonMotionFcn',@(src,evt) MouseMovement(obj),'WindowButtonDownFcn',@(src,evt) MouseDown(obj),...
+                'WindowButtonUpFcn',@(src,evt) MouseUp(obj),'Renderer','painters','ResizeFcn',@(src,evt) resize(obj));
             obj.PanObj=pan(obj.Fig);
             set(obj.PanObj,'Motion','vertical','ActionPostCallback',@(src,evts) ChangeSliders(obj,src,evts))
             obj.TimerObj = timer('TimerFcn',@(src ,evts) FastReadTime(obj),'ExecutionMode','fixedRate','BusyMode','queue');
@@ -1615,6 +1630,14 @@ classdef BioSigPlot < hgsetget
             [nchan,ndata,yvalue]=getMouseInfo(obj); %#ok<ASGLU>
             time=obj.MouseTime;
             
+            obj.DragSelectedEvent=[];
+            obj.DragSelectedLines=[];
+            if ~isempty(obj.SelectedEvent)
+                obj.DragSelectedEvent=obj.SelectedEvent;
+                obj.DragSelectedLines=obj.DragSelectedLines;
+                
+            end
+            
             if strcmpi(obj.MouseMode,'Select')
                 
                 if(strcmp(get(obj.Fig,'SelectionType'),'open'))
@@ -1656,7 +1679,21 @@ classdef BioSigPlot < hgsetget
                 end
             end
         end
-        
+        %==================================================================
+        function MouseUp(obj)
+            
+            if ~isempty(obj.DragSelectedEvent)
+                
+                EventList=obj.Evts;
+                EventList{obj.DragSelectedEvent,1}=obj.MouseTime;
+                
+                obj.DragSelectedEvent=[];
+                obj.DragSelectedLines=[];
+                
+                obj.Evts=EventList;
+                
+            end
+        end
         %******************************************************************
         function MouseMovementMeasurer(obj)
             t=floor((obj.MouseTime-obj.Time)*obj.SRate);
@@ -1726,13 +1763,16 @@ classdef BioSigPlot < hgsetget
                 
                 selected=0;
                 if ~isempty(obj.EventLines)
+                    obj.SelectedLines=[];
                     for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
                         XData=get(obj.EventLines(i),'XData');
                         eventIndex=XData(1);
-                        if abs(mouseIndex-eventIndex)<20
+                        if abs(mouseIndex-eventIndex)<50
                             set(obj.EventLines(i),'Color',[159/255 0 197/255]);
                             set(obj.EventTexts(i),'EdgeColor',[159/255 0 197/255],'BackgroundColor',[159/255 0 197/255]);
                             selected=1;
+                            
+                            obj.SelectedLines=[obj.SelectedLines i];
                         else
                             set(obj.EventLines(i),'Color',[0 0.7 0]);
                             set(obj.EventTexts(i),'EdgeColor',[0 0.7 0],'BackgroundColor',[0.6 1 0.6]);
@@ -1740,8 +1780,23 @@ classdef BioSigPlot < hgsetget
                     end
                 end
                 
-                if selected,set(obj.Fig,'pointer','hand');end
-                    
+                if selected
+                    set(obj.Fig,'pointer','hand');
+                    obj.SelectedEvent=obj.EventDisplayIndex(obj.SelectedLines(1));
+                else
+                    obj.SelectedEvent=[];
+                    obj.SelectedLines=[];
+                end
+                
+                if ~isempty(obj.DragSelectedEvent)
+                    for i=1:length(obj.Axes)
+                        set(obj.LineMeasurer(i),'XData',[mouseIndex mouseIndex],'Color',[0 0.7 0],'LineStyle','-.');
+                    end
+                    for i=1:length(obj.DragSelectedLines)
+                        set(obj.DragSelectedLines(i),'XData',[0 0]);
+                    end
+                end
+                
                 
                 if strcmp(obj.TimeUnit,'min')
                     timestamp=time*60;

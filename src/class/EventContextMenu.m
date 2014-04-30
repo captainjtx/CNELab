@@ -1,4 +1,4 @@
-classdef EventContextMenu < uicontextmenu
+classdef EventContextMenu
     %EVENTCONTEXTMENU Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -6,61 +6,74 @@ classdef EventContextMenu < uicontextmenu
     %followed by a pop up menu to edit or delete the event
     
     properties
-        hcmenu
         editOption
         deleteOption
         addOption
+        hcmenu
     end
     
     methods
         function obj=EventContextMenu(bsp)
-            obj.hcmenu=uicontextmenu;
-            EventLines=bsp.EventLines;
-            EventTexts=bsp.EventTexts;
             
-            EventDisplayIndex=bsp.EventDisplayIndex;
+            for i=1:length(bsp.Axes)
+                axes(bsp.Axes(i));
+                obj.hcmenu(i)=uicontextmenu;
+                
+                obj.addOption     = uimenu(obj.hcmenu(i),...
+                    'Label',        'Add',...
+                    'callback',     {@eventAdd,bsp});
+                
+                obj.editOption    = uimenu(obj.hcmenu(i),...
+                    'Label',        'Edit',...
+                    'callback',     {@EventEditWindow,bsp});
+                obj.deleteOption  = uimenu(obj.hcmenu(i),...
+                    'Label',        'Delete',...
+                    'callback',     {@eventDelete,bsp});
+            end
+        end
+        
+        function update(obj,bsp)
             
-            if ~isempty(EventLines)
-                for i=1:size(EventLines,1)*size(EventLines,2)
+            for i=1:length(bsp.Axes)
+                axes(bsp.Axes(i));
+                obj.hcmenu(i)=uicontextmenu;
+                
+                obj.addOption     = uimenu(obj.hcmenu(i),...
+                    'Label',        'Add',...
+                    'callback',     {@eventAdd,bsp});
+                
+                obj.editOption    = uimenu(obj.hcmenu(i),...
+                    'Label',        'Edit',...
+                    'callback',     {@EventEditWindow,bsp});
+                obj.deleteOption  = uimenu(obj.hcmenu(i),...
+                    'Label',        'Delete',...
+                    'callback',     {@eventDelete,bsp});
+                
+                if ~isempty(bsp.EventLines)
                     
-                    eventIndex=EventDisplayIndex(i);
+                    eventLines=bsp.EventLines;
+                    eventTexts=bsp.EventTexts;
                     
-                    
-                    obj.addOption     = uimenu(obj.hcmenu,...
-                        'Label',        'Add',...
-                        'Seperator',    'on',...
-                        'callback',     {@eventAdd,bsp});
-                    
-                    obj.editOption    = uimenu(obj.hcmenu,...
-                        'Label',        'Edit',...
-                        'Seperator',    'on',...
-                        'callback',     {@EventEditWindow,bsp,eventIndex});
-                    obj.deleteOption  = uimenu(obj.hcmenu,...
-                        'Label',        'Delete',...
-                        'Seperator',    'on',...
-                        'callback',     {@eventDelete,EventLines(i),bsp,eventIndex});
-                    
-                    set(EventLines(i),'uicontextmenu',obj.hcmenu);
-                    set(EventTexts(i),'uicontextmenu',obj.hcmenu);
+                    if ~isempty(eventLines)
+                        
+                        for j=1:size(eventLines,1)*size(eventLines,2)
+                            set(eventLines(j),'uicontextmenu',obj.hcmenu(i));
+                            set(eventTexts(j),'uicontextmenu',obj.hcmenu(i));
+                        end
+                    end
                 end
             end
+            
         end
-        
-        function delete(obj)
-            h=obj.hcmenu;
-            notify(obj,'MenuClose');
-            if ishandle(h)
-                delete(h);
-            else
-                return
-            end
-        end
-        
-        function eventDelete(src,evt,bsp,eventIndex)
-             eventList=bsp.Evts;
-             eventList(eventIndex,:)=[];
-             
-             bsp.Evts=eventList;
+    end
+    
+    methods(Static)
+        function eventDelete(src,evt,bsp)
+            eventIndex=bsp.SelectedEvent;
+            eventList=bsp.Evts;
+            eventList(eventIndex,:)=[];
+            
+            bsp.Evts=eventList;
         end
         
         function eventAdd(src,evt,bsp)
@@ -71,20 +84,19 @@ classdef EventContextMenu < uicontextmenu
             
             [t,IX]=sort(newEventList(:,1),1);
             
-            sortedNewEventList=newEventList
-            [sortedNewEventList,IX]=sort(newEventList,1);
+            for i=1:size(newEventList,1)
+                sortedNewEventList{i,1}=newEventList{IX(i),1};
+                sortedNewEventList{i,2}=newEventList{IX(i),2};
+                if IX(i)==size(newEventList,1)
+                    newEventIndex=i;
+                end
+            end
+            
             bsp.Evts=sortedNewEventList;
+            bsp.SelectedEvent=newEventIndex;
             
-            
-            newEventIndex=IX;
-            EventEditWindow(bsp,newEventIndex);
+            EventEditWindow(bsp);
         end
-        
-        
-    end
-    
-    events
-        MenuClose
     end
     
 end

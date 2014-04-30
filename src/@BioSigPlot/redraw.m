@@ -171,7 +171,7 @@ for i=1:length(obj.Axes)
 end
 
 
-if strcmp(obj.MouseMode,'Measurer')
+% if strcmp(obj.MouseMode,'Measurer')
     for i=1:length(obj.Axes)
         obj.LineMeasurer(i)=line([-1 -1],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]);
 
@@ -180,7 +180,7 @@ if strcmp(obj.MouseMode,'Measurer')
                 'VerticalAlignment','Top','Margin',1,'FontSize',10,'FontName','FixedWidth');
         end
     end
-end
+% end
 
 if strcmp(obj.MouseMode,'Annotate')
     for i=1:length(obj.Axes)
@@ -198,6 +198,7 @@ for i=1:length(obj.Axes)
     obj.LineVideo(i)=line([t t],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]);
 end
 
+% obj.EvtContextMenu.update(obj);
 
 end
 
