@@ -12,54 +12,63 @@ SAfter=2;
 %     'ECG+','ECG-','EMG+','EMG-','Synch','C126','C127','C128'};
 
 % Li Ma
-badChannels={'C27','C64','C75','C76','C100',...
-    'ECG+','ECG-','EMG+','EMG-','Sound','C126','C127','C128'};
+% badChannels={'C27','C64','C75','C76','C100',...
+%     'ECG+','ECG-','EMG+','EMG-','Sound','C126','C127','C128'};
+
+badChannels={'Trigger','Acceleration X','Acceleration Y', 'Acceleration Z','Roll','Pitch'};
 
 
 %movemnt type
-% movements={'Open','Close'};
-movements={'Apart','Together'};
-
+movements={'Open','Close'};
+% movements={'Apart','Together'};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 [FileName,FilePath]=uigetfile('*.mat','select task file');
-taskfile=load(fullfile(FilePath,FileName));
+task=load(fullfile(FilePath,FileName));
 
-task=taskfile.task;
 data=task.data;
+
 annotations=task.annotations;
-montage=task.montage;
-fs=task.samplefreq;
-chanNum=task.channum;
+
+chanNum=length(data.dataMat);
+
+for i=1:chanNum
+    dataMat(:,i)=data.dataMat{i};
+    channelNames{i}=data.info{i}.name;
+end
+
+fs=data.info{1}.sampleRate;
+
 
 channels=zeros(chanNum-length(badChannels),1);
+
 count=1;
 for i=1:chanNum
-    if ~ismember(montage.channelnames{i},badChannels)
+    if ~ismember(channelNames{i},badChannels)
         channels(count)=i;
         count=count+1;
     end
 end
 
-dataMat=data.datamat(:,channels);
-dataTS=data.timestamps;
+dataMat=dataMat(:,channels);
+dataTS=data.info{1}.stamp;
 
 movement_type_num=length(movements);
 segNum=zeros(movement_type_num,1);
 
-annoTS=annotations.timestamps;
+annoTS=annotations.stamp;
 annoTXT=annotations.text;
 
-originalfreq=task.originalfreq;
+
 
 mov_index=find(ismember(annoTXT,movements));
 annoTS=annoTS(mov_index);
 annoTXT=annoTXT(mov_index);
 
 for i=2:length(annoTS)-1
-    if (annoTS(i)-annoTS(i-1))>originalfreq*SBefore&&...
-            (annoTS(i+1)-annoTS(i))>originalfreq*SAfter
+    if (annoTS(i)-annoTS(i-1))>SBefore&&...
+            (annoTS(i+1)-annoTS(i))>SAfter
         for j=1:movement_type_num
             if strcmpi(annoTXT{i},movements{j})
                 segNum(j)=segNum(j)+1;
@@ -74,19 +83,20 @@ end
 segments.movements=movements;
 
 segments.samplefreq=fs;
-segments.originalfreq=originalfreq;
 
 channelnames=cell(length(channels),1);
 for i=1:length(channels)
-    channelnames{i}=montage.channelnames{channels(i)};
+    channelnames{i}=channelNames{channels(i)};
 end
+
 montage.channelnames=channelnames;
 montage.channelindex=channels;
 montage.badchannels=badChannels;
 
 segments.montage=montage;
 
-uisave('segments','segments.mat');
+[FileName,FilePath]=uiputfile('*.mat','save your segment file','segments.mat');
+save(fullfile(FilePath,FileName),'-struct','segments');
 end
 
 

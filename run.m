@@ -40,9 +40,9 @@ for i=1:size(behvMat,1)
     behvMat(i,:)=behvMat(i,:)/max(behvMat(i,:));
 end
 
-behvMat(1,:)=behvMat(1,:)*0.1;
+behvMat(1,:)=behvMat(1,:)*100;
 
-behvMat(2:end,:)=behvMat(2:end,:)*0.25;
+behvMat(2:end,:)=behvMat(2:end,:);
 
 BioSigPlot({datamat behvMat},'srate',sampleRate,'Evts',events);
 % bsp.Evts=events;

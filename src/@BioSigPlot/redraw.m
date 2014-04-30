@@ -163,7 +163,7 @@ end
 
 obj.EventLines=EventLines;
 obj.EventTexts=EventTexts;
-% obj.EventDisplayIndex=EventIndex;
+obj.EventDisplayIndex=EventIndex;
 
 offon={'off','on'};
 for i=1:length(obj.Axes)

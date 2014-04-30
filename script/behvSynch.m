@@ -47,7 +47,8 @@ synch_f=filter_symmetric(b,a,synch,sampleRate,0,'iir');
 
 %get the starting point of synch signal from neuro-system%%%%%%%%%%%%%%%%%%
 env=abs(hilbert(synch_f));
-thresh_neuro=4*median(env);
+thresh_neuro=90*median(env);
+% thresh_neuro=mean(env);
 denv=env>thresh_neuro;
 diffenv=diff(denv);
 
@@ -69,7 +70,9 @@ end_neuro=endInd(end);
 %get the starting point of synch signal from behv-system%%%%%%%%%%%%%%%%%%%
 env=abs(hilbert(trigger));
 % plot(1:length(trigger),trigger,'b',1:length(env),env,'r');
-thresh_behv=13*median(env);
+
+thresh_behv=25*median(env);
+% thresh_behv=mean(env);
 denv=env>thresh_behv;
 diffenv=diff(denv);
 
@@ -89,6 +92,7 @@ start_behv=startInd(impulseStart);
 end_behv=endInd(end);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 behvMat=cat(1,trigger,acceleration,fingers,rollPitch);
+% behvMat=cat(1,trigger,fingers);
 behvMat=double(behvMat);
 
 behvMatMiddle=behvMat(:,start_behv:end_behv);
@@ -99,6 +103,12 @@ behvTimeStamp=timeStamp(start_behv:end_behv)-timeStamp(start_behv);
 neuroTimeStamp=stamp(start_neuro:end_neuro)-stamp(start_neuro);
 % neuroTimeStamp=neuroTimeStamp/neuroTimeStamp(end);
 
+% subplot(2,1,1)
+% plot(neuroTimeStamp,synch_f(start_neuro:end_neuro),'b')
+% title('neuro')
+% subplot(2,1,2)
+% plot(behvTimeStamp,trigger(start_behv:end_behv),'r');
+% title('behv')
 
 interpBehvMatMiddle=interp1(behvTimeStamp,behvMatMiddle',neuroTimeStamp);
 

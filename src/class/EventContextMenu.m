@@ -9,7 +9,7 @@ classdef EventContextMenu < uicontextmenu
         hcmenu
         editOption
         deleteOption
-        caller
+        addOption
     end
     
     methods
@@ -25,11 +25,17 @@ classdef EventContextMenu < uicontextmenu
                     
                     eventIndex=EventDisplayIndex(i);
                     
-                    obj.editOption    =    uimenu(obj.hcmenu,...
+                    
+                    obj.addOption     = uimenu(obj.hcmenu,...
+                        'Label',        'Add',...
+                        'Seperator',    'on',...
+                        'callback',     {@eventAdd,bsp});
+                    
+                    obj.editOption    = uimenu(obj.hcmenu,...
                         'Label',        'Edit',...
                         'Seperator',    'on',...
                         'callback',     {@EventEditWindow,bsp,eventIndex});
-                    obj.deleteOption  =    uimenu(obj.hcmenu,...
+                    obj.deleteOption  = uimenu(obj.hcmenu,...
                         'Label',        'Delete',...
                         'Seperator',    'on',...
                         'callback',     {@eventDelete,EventLines(i),bsp,eventIndex});
@@ -51,7 +57,27 @@ classdef EventContextMenu < uicontextmenu
         end
         
         function eventDelete(src,evt,bsp,eventIndex)
+             eventList=bsp.Evts;
+             eventList(eventIndex,:)=[];
+             
+             bsp.Evts=eventList;
+        end
+        
+        function eventAdd(src,evt,bsp)
+            eventList=bsp.Evts;
+            newEvent{1,1}=bsp.MouseTime;
+            newEvent{1,2}='';
+            newEventList=cat(1,eventList,newEvent);
             
+            [t,IX]=sort(newEventList(:,1),1);
+            
+            sortedNewEventList=newEventList
+            [sortedNewEventList,IX]=sort(newEventList,1);
+            bsp.Evts=sortedNewEventList;
+            
+            
+            newEventIndex=IX;
+            EventEditWindow(bsp,newEventIndex);
         end
         
         

@@ -187,8 +187,10 @@ for i=1:size(datamat,2)
     data.info{i}.sampleRate=fs;
     data.info{i}.unit='mV';
     data.info{i}.name=channelnames{i};
-    data.info{i}.stamp=dataTime/fs/downsample;
+    data.info{i}.stamp=[];
 end
+
+data.info{1}.stamp=dataTime/fs/downsample;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 task.data=data;
 task.annotations=annotations;
@@ -199,7 +201,7 @@ task.info.studyName=studyName;
 task.info.location=[];
 task.info.device='XLTEK EMU 128FS';
 
-[FileName,FilePath]=uiputfile('*.mat','save your task file','task.mat');
+[FileName,FilePath]=uiputfile('*.mat','save your neuro task file','task.mat');
 save(fullfile(FilePath,FileName),'-struct','task');
 
 end

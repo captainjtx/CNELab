@@ -390,8 +390,6 @@ classdef BioSigPlot < hgsetget
         YBorder                 %Vector of 2elements containing the space height between the last channel and the bottom and between the top and the first channel (Units: 'Spacing' relative)
         Selection               %Time of Selected area
         
-%         EventDisplayIndex       %Indx of displayed events
-        
     end
     properties (Access=protected,Hidden)%Storage of public properties
         Config_
@@ -429,7 +427,6 @@ classdef BioSigPlot < hgsetget
         YBorder_
         Selection_
         
-%         EventDisplayIndex_
     end
     properties (SetAccess=protected) %Readonly properties
         Data                        %(Read-Only)All the Signals
@@ -463,6 +460,9 @@ classdef BioSigPlot < hgsetget
         Axes
     end
     
+    properties
+        EventDisplayIndex       %Indx of displayed events
+    end
     
     methods
         
@@ -700,14 +700,15 @@ classdef BioSigPlot < hgsetget
         function val = get.YGridInterval(obj), val=obj.YGridInterval_; end
         function obj = set.Selection(obj,val), set(obj,'Selection',val); end
         function val = get.Selection(obj), val=obj.Selection_; end
-        
-%         function obj = set.EventDisplayIndex(obj,val), set(obj,'EventDisplayIndex',val); end
-%         function val = get.EventDisplayIndex(obj), val=obj.EventDisplayIndex_; end
-        
+                
         function obj = set.Position(obj,val), set(obj.Fig,'Position',val); end
         function val = get.Position(obj),     val=get(obj.Fig,'Position'); end
         function obj = set.Title(obj,val), set(obj.Fig,'Name',val); end
         function val = get.Title(obj),     val=get(obj.Fig,'Name'); end
+        
+        function obj = set.EventDisplayIndex(obj,val), obj.EventDisplayIndex=val; end
+        function val = get.EventDisplayIndex(obj), val=obj.EventDisplayIndex; end
+
         
         
         %*****************************************************************
