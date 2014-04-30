@@ -170,7 +170,7 @@ annoTime=dataTime(k);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 annotations.text=text;
-annotations.stamp=annoTime/fs/downsample;
+annotations.stamp=annoTime/fs/downsample-dataTime(1);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -191,6 +191,7 @@ for i=1:size(datamat,2)
 end
 
 data.info{1}.stamp=dataTime/fs/downsample;
+data.info{1}.stamp=data.info{1}.stamp-data.info{1}.stamp(1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 task.data=data;
 task.annotations=annotations;

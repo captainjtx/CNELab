@@ -23,11 +23,11 @@ sampleRate=neuroTask.data.info{1}.sampleRate;
 
 for i=1:length(neuroTask.data.info)
     if strcmpi(neuroTask.data.info{i}.name,neuroSynchName)
-        synch=neuroTask.data.dataMat{i};
-        stamp=neuroTask.data.info{i}.stamp;
+        synch=neuroTask.data.dataMat{i};        
     end
 end
 
+stamp=neuroTask.data.info{1}.stamp;
 
 [behvMat,channelNames]=behvSynch(synch,stamp,sampleRate);
 
