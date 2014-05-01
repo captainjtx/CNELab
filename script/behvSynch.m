@@ -52,12 +52,12 @@ thresh_neuro=90*median(env);
 denv=env>thresh_neuro;
 diffenv=diff(denv);
 
-% subplot(2,1,1)
-% plot(synch_f,'b');
-% hold on
-% plot(env,'r');
-% hold on
-% plot([1 length(env)],[thresh_neuro thresh_neuro],'-m');
+subplot(2,1,1)
+plot(synch_f,'b');
+hold on
+plot(env,'r');
+hold on
+plot([1 length(env)],[thresh_neuro thresh_neuro],'-m');
 
 startInd=find(diffenv==1);
 endInd=find(diffenv==-1);
@@ -76,12 +76,12 @@ thresh_behv=25*median(env);
 denv=env>thresh_behv;
 diffenv=diff(denv);
 
-% subplot(2,1,2)
-% plot(trigger,'b');
-% hold on
-% plot(env,'r');
-% hold on
-% plot([1 length(env)],[thresh_behv thresh_behv],'-m');
+subplot(2,1,2)
+plot(trigger,'b');
+hold on
+plot(env,'r');
+hold on
+plot([1 length(env)],[thresh_behv thresh_behv],'-m');
 
 startInd=find(diffenv==1);
 endInd=find(diffenv==-1);

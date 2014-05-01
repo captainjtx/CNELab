@@ -342,6 +342,7 @@ classdef BioSigPlot < hgsetget
         MenuInsideTicks
         MenuXGrid
         MenuYGrid
+        MenuSave
         PanObj
         LineVideo
         LineMeasurer
@@ -424,6 +425,9 @@ classdef BioSigPlot < hgsetget
         YBorder_
         Selection_
         
+        StartTime_
+        TaskFiles_
+        
     end
     properties (SetAccess=protected) %Readonly properties
         Data                        %(Read-Only)All the Signals
@@ -463,11 +467,15 @@ classdef BioSigPlot < hgsetget
         EventLines              %Event lines displayed
         EventTexts              %Event texts displayed
         EvtContextMenu          %Event Contex Menu
+        
         SelectedEvent
         SelectedLines
         
         DragSelectedEvent
         DragSelectedLines
+        
+        StartTime
+        TaskFiles
     end
     
     methods
@@ -541,6 +549,7 @@ classdef BioSigPlot < hgsetget
             
             obj.DragSelectedEvent=[];
             obj.DragSelectedLines=[];
+            
             set(obj,g{:});
         end
         
@@ -580,7 +589,8 @@ classdef BioSigPlot < hgsetget
             keylist={'Config','SRate','WinLength','Spacing','DataView','Montage','MontageRef','Evts','Time','FirstDispChans',...
                 'DispChans','ChanLink','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
                 'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','XGrid','YGrid',...
-                'Position','Title','MouseMode','ReadSpeedTime','Video','VideoTime','AxesHeight','YBorder','YGridInterval','Selection'};
+                'Position','Title','MouseMode','ReadSpeedTime','Video','VideoTime','AxesHeight','YBorder','YGridInterval','Selection',...
+                'StartTime','TaskFiles'};
             
             if isempty(obj.Commands)
                 command='a=BioSigPlot(data';
@@ -597,7 +607,8 @@ classdef BioSigPlot < hgsetget
             for i=1:2:length(g)
                 if any(strcmpi(g{i},{'Config','SRate','WinLength','Spacing','Montage','DataView','MontageRef','Evts','Time','FirstDispChans',...
                         'DispChans','ChanLink','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
-                        'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','XGrid','YGrid','MouseMode','AxesHeight','YBorder','YGridInterval','Selection'}))
+                        'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','XGrid','YGrid','MouseMode','AxesHeight','YBorder','YGridInterval','Selection',...
+                        'StartTime','TaskFiles'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage','DataView','MontageRef','DispChans','ChanLink','InsideTicks','MouseMode','AxesHeight'}))
@@ -722,6 +733,13 @@ classdef BioSigPlot < hgsetget
         
         function obj = set.EventDisplayIndex(obj,val), obj.EventDisplayIndex=val; end
         function val = get.EventDisplayIndex(obj), val=obj.EventDisplayIndex; end
+        
+        
+        function obj = set.StartTime(obj,val), set(obj,'StartTime',val); end
+        function val = get.StartTime(obj), val=obj.StartTime_; end
+        
+        function obj = set.TaskFiles(obj,val), set(obj,'TaskFiles',val); end
+        function val = get.TaskFiles(obj), val=obj.TaskFiles_; end
         
         
         
@@ -1189,7 +1207,8 @@ classdef BioSigPlot < hgsetget
             obj.Fig=figure('MenuBar','none','ToolBar','none','DockControls','on','NumberTitle','off',...
                 'CloseRequestFcn',@(src,evts) delete(obj),'WindowScrollWheelFcn',@(src,evts) ChangeSliders(obj,src,evts),...
                 'WindowButtonMotionFcn',@(src,evt) MouseMovement(obj),'WindowButtonDownFcn',@(src,evt) MouseDown(obj),...
-                'WindowButtonUpFcn',@(src,evt) MouseUp(obj),'Renderer','painters','ResizeFcn',@(src,evt) resize(obj));
+                'WindowButtonUpFcn',@(src,evt) MouseUp(obj),'Renderer','painters','ResizeFcn',@(src,evt) resize(obj),...
+                'WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'WindowKeyReleaseFcn',@(src,evt) KeyRelease(obj,src,evt));
             obj.PanObj=pan(obj.Fig);
             set(obj.PanObj,'Motion','vertical','ActionPostCallback',@(src,evts) ChangeSliders(obj,src,evts))
             obj.TimerObj = timer('TimerFcn',@(src ,evts) FastReadTime(obj),'ExecutionMode','fixedRate','BusyMode','queue');
@@ -1229,6 +1248,7 @@ classdef BioSigPlot < hgsetget
         function makeMenu(obj)
             obj.MenuFile=uimenu(obj.Fig,'Label','File');
             obj.MenuExport=uimenu(obj.MenuFile,'Label','Export to','Callback',@(src,evt) obj.ExportToWindow);
+            obj.MenuSave=uimenu(obj.MenuFile,'Label','Save','Callback',@(src,evt) obj.SaveFile);
             obj.MenuCopy=uimenu(obj.MenuFile,'Label','Copy','Enable','off');
             obj.MenuSettings=uimenu(obj.Fig,'Label','Settings');
             obj.MenuCommands=uimenu(obj.MenuSettings,'Label','Command List',...
@@ -1626,6 +1646,7 @@ classdef BioSigPlot < hgsetget
         
         %******************************************************************
         function MouseDown(obj)
+            t=floor((obj.MouseTime-obj.Time)*obj.SRate);
             
             [nchan,ndata,yvalue]=getMouseInfo(obj); %#ok<ASGLU>
             time=obj.MouseTime;
@@ -1634,9 +1655,9 @@ classdef BioSigPlot < hgsetget
             obj.DragSelectedLines=[];
             if ~isempty(obj.SelectedEvent)
                 obj.DragSelectedEvent=obj.SelectedEvent;
-                obj.DragSelectedLines=obj.DragSelectedLines;
-                
+                obj.DragSelectedLines=obj.SelectedLines;
             end
+            
             
             if strcmpi(obj.MouseMode,'Select')
                 
@@ -1673,7 +1694,7 @@ classdef BioSigPlot < hgsetget
                     end
                 end
             elseif strcmpi(obj.MouseMode,'Annotate')
-                t=floor((obj.MouseTime-obj.Time)*obj.SRate);
+                
                 for i=1:length(obj.Axes)
                     set(obj.LineMeasurer(i),'XData',[t t],'Color',[159/255 0 197/255]);
                 end
@@ -1694,7 +1715,37 @@ classdef BioSigPlot < hgsetget
                 
             end
         end
+        %==================================================================
+        function KeyPress(obj,src,evt)
+            
+            switch evt.Character
+                case 'd'
+                    
+            end
+        end
+        
+        %==================================================================
+        function KeyRelease(obj,src,evt)
+            
+            if ~isempty(evt.Modifier)
+                if (strcmpi(evt.Modifier{1},'command')&&strcmpi(evt.Key,'backspace'))...
+                        ||(strcmpi(evt.Modifier{1},'shift')&&strcmpi(evt.Key,'d'))
+                    
+                    %delete the drag selected event
+                    if ~isempty(obj.SelectedEvent)
+                        EventList=obj.Evts;
+                        EventList(obj.SelectedEvent,:)=[];
+                        
+                        obj.SelectedEvent=[];
+                        obj.SelectedLines=[];
+                        
+                        obj.Evts=EventList;
+                    end
+                end
+            end
+        end
         %******************************************************************
+        
         function MouseMovementMeasurer(obj)
             t=floor((obj.MouseTime-obj.Time)*obj.SRate);
             
@@ -1791,9 +1842,6 @@ classdef BioSigPlot < hgsetget
                 if ~isempty(obj.DragSelectedEvent)
                     for i=1:length(obj.Axes)
                         set(obj.LineMeasurer(i),'XData',[mouseIndex mouseIndex],'Color',[0 0.7 0],'LineStyle','-.');
-                    end
-                    for i=1:length(obj.DragSelectedLines)
-                        set(obj.DragSelectedLines(i),'XData',[0 0]);
                     end
                 end
                 
@@ -1895,6 +1943,17 @@ classdef BioSigPlot < hgsetget
                     obj.ExportPagesToMultiPages(file,pages,paperparams{:});
                 end
             end
+        end
+        function SaveFile(obj)
+            %==================================================================
+            for i=1:size(obj.Evts,1)
+                annotations.stamp(i)=obj.Evts{i,1}+obj.StartTime;
+                annotations.text{i}=obj.Evts{i,2};
+            end
+            
+            [FileName,FilePath]=uiputfile('*.mat','save your annotations file','task.mat');
+            save(fullfile(FilePath,FileName),'-struct','annotations');
+            
         end
         
         %******************************************************************

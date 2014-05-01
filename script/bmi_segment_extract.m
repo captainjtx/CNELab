@@ -12,10 +12,10 @@ SAfter=2;
 %     'ECG+','ECG-','EMG+','EMG-','Synch','C126','C127','C128'};
 
 % Li Ma
-badChannels={'C27','C64','C75','C76','C100',...
-    'ECG+','ECG-','EMG+','EMG-','Sound','C126','C127','C128'};
+% badChannels={'C27','C64','C75','C76','C100',...
+%     'ECG+','ECG-','EMG+','EMG-','Sound','C126','C127','C128'};
 
-% badChannels={'Trigger','Acceleration X','Acceleration Y', 'Acceleration Z','Roll','Pitch'};
+badChannels={'Trigger','Acceleration X','Acceleration Y', 'Acceleration Z','Roll','Pitch'};
 
 %movemnt type
 movements={'Open','Close'};
@@ -26,9 +26,10 @@ movements={'Open','Close'};
 [FileName,FilePath]=uigetfile('*.mat','select task file');
 task=load(fullfile(FilePath,FileName));
 
-data=task.data;
+[FileName,FilePath]=uigetfile('*mat','select annotations file');
+annotations=load(fullfile(FilePath,FileName));
 
-annotations=task.annotations;
+data=task.data;
 
 chanNum=length(data.dataMat);
 
