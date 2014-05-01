@@ -170,7 +170,7 @@ annoTime=dataTime(k);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 annotations.text=text;
-annotations.stamp=annoTime/fs/downsample-dataTime(1);
+annotations.stamp=(annoTime-dataTime(1))/fs/downsample;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
