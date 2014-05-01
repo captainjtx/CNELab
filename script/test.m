@@ -40,7 +40,14 @@ for i=1:size(behvCloseSeg,3)
     xlim([-2 2]);
     disp(num2str(i));
     hold off
-    pause;
+%     pause;
+end
+
+figure
+
+for i=1:size(behvCloseSeg,2)
+    plot(stamp,squeeze(mean(behvCloseSeg(:,i,:),3)));
+    hold on
 end
 
 

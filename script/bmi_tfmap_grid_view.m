@@ -2,7 +2,7 @@ function bmi_tfmap_grid_view()
 
 [FileName,FilePath]=uigetfile('.mat','select segments file');
 segments=load(fullfile(FilePath,FileName));
-segments=segments.segments;
+segments=segments;
 
 [FileName,FilePath]=uigetfile('.mat','select rest file');
 restfile=load(fullfile(FilePath,FileName));
