@@ -194,7 +194,6 @@ data.info{1}.stamp=dataTime/fs/downsample;
 data.info{1}.stamp=data.info{1}.stamp-data.info{1}.stamp(1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 task.data=data;
-task.annotations=annotations;
 task.info.patientName=[eegfile.Info.Name.FirstName eegfile.Info.Name.MiddleName...
      eegfile.Info.Name.LastName];
  
@@ -204,6 +203,9 @@ task.info.device='XLTEK EMU 128FS';
 
 [FileName,FilePath]=uiputfile('*.mat','save your neuro task file','task.mat');
 save(fullfile(FilePath,FileName),'-struct','task');
+
+[FileName,FilePath]=uiputfile('*.mat','save your annotations file','anno.mat');
+save(fullfile(FilePath,FileName),'-struct','annotations');
 
 end
 

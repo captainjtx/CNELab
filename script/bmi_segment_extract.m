@@ -12,13 +12,14 @@ SAfter=2;
 %     'ECG+','ECG-','EMG+','EMG-','Synch','C126','C127','C128'};
 
 % Li Ma
-% badChannels={'C27','C64','C75','C76','C100',...
-%     'ECG+','ECG-','EMG+','EMG-','Sound','C126','C127','C128'};
+badChannels={'C27','C64','C75','C76','C100',...
+    'ECG+','ECG-','EMG+','EMG-','Sound','C126','C127','C128'};
 
-badChannels={'Trigger','Acceleration X','Acceleration Y', 'Acceleration Z','Roll','Pitch'};
+% badChannels={'Trigger','Acceleration X','Acceleration Y', 'Acceleration Z','Roll','Pitch'};
 
 %movemnt type
-movements={'Open','Close'};
+% movements={'Open','Close'};
+movements={'Relax'};
 % movements={'Apart','Together'};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
