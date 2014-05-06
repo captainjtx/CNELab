@@ -1,32 +1,48 @@
-function bmi_tfmap_channel_view(channelname)
-if nargin==0;
-    channelname='C17';
-end
-[FileName,FilePath]=uigetfile('*.mat','select a segment file');
-segments=load(fullfile(FilePath,FileName));
-segments=segments.segments;
-fs=segments.samplefreq;
-montage=segments.montage;
+function bmi_tfmap_channel_view()
+% user define region
+neuroSeg=load([pwd '/db/demo/neuroSeg.mat']);
+behvSeg=load([pwd '/db/demo/behvSeg.mat']);
+
+refNum=20; %use the first refNum point power to normalize time frequency map
+
+wd=200; %window length
+ov=180; %overlap length
+lc=0.5; %lower cut off frequency in Hz
+hc=200; %higher cut off frequency in Hz
+
+channelToDisplay={}; % empty default as all avaiable channels
+%--------------------------------------------------------------------------
+
+fs=neuroSeg.samplefreq;
+montage=neuroSeg.montage;
 channelnames=montage.channelnames;
-channelindex=montage.channelindex;
 
 movements=segments.movements;
-refNum=20;
 
-wd=200;
-ov=180;
-lc=0.5;
-hc=200;
+if isempty(channelToDisplay)
+    channelToDisplay=channelnames;
+end
 
+stamp=(1:size(neuroSeg,1))/fs;
+onset=size(neuroSeg,1)/2;
+
+stamp=stamp-onset;
 %movements
-for i=1:length(channelindex)
-    if strcmpi(channelnames(i),channelname)
+figure
+for i=1:length(channelnames)
+    if ismember(channelnames(i),channelToDisplay)
         
         for m=1:length(movements)
             
-            figure('name',[channelname ' - ' movements{m}]);
+            neuroMat=squeeze(neuroSeg.(movements{m})(:,i,:));
+            behvMat=squeeze(behvSeg.(movements(m))(:,i,:));
             
-            [tf,f,t]=bmi_tfmap(squeeze(segments.(movements{m})(:,i,:)),fs,wd,ov,lc,hc);
+            subplot(length(movements),3,m*3-2)
+            plot(repmat(reshape(stamp,length(stamp),1),1,size(neuroSeg.(movements{m}),3)),...
+                neuroMat);
+            
+            
+            [tf,f,t]=bmi_tfmap(neuroMat,fs,wd,ov,lc,hc);
             rf=mean(tf(:,1:refNum),2);
             relativeTFMap=tf./repmat(rf+0.01,1,size(tf,2));
             

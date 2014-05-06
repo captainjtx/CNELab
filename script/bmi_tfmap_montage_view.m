@@ -2,7 +2,6 @@ function bmi_tfmap_montage_view()
 
 [FileName,FilePath]=uigetfile('.mat','select segments file');
 segments=load(fullfile(FilePath,FileName));
-segments=segments;
 
 fs=segments.samplefreq;
 montage=segments.montage;

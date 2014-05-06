@@ -4,12 +4,14 @@ function run()
 
 %neuro task file loading+++++++++++++++++++++++++++++++++++++++++++++++++++
 [FileName,FilePath]=uigetfile('*.mat','select the neuro task file',[pwd '/db/demo/neuro.mat']);
-
+if ~FileName
+    exit
+end
 task=load(fullfile(FilePath,FileName));
 
 TaskFiles{1}=fullfile(FilePath,FileName);
 
-for i=1:30
+for i=1:60
     datamat(i,:)=task.data.dataMat{i};
 end
 
@@ -24,14 +26,17 @@ neuroSynchName='Sound'; %synch channel name in task file
 for i=1:length(task.data.info)
     if strcmpi(task.data.info{i}.name,neuroSynchName)
         synch=task.data.dataMat{i};
-        stamp=task.data.info{i}.stamp;
     end
 end
 
-datamat=cat(1,datamat,synch');
+% datamat=cat(1,datamat,synch');
 
 %behvaior task file loading++++++++++++++++++++++++++++++++++++++++++++++++
 [FileName,FilePath]=uigetfile('*.mat','select the behv task file',[pwd '/db/demo/behv.mat']);
+
+if ~FileName
+    exit
+end
 
 task=load(fullfile(FilePath,FileName));
 
@@ -50,6 +55,10 @@ behvMat(1,:)=behvMat(1,:)*1000;
 
 %Annotation file loading+++++++++++++++++++++++++++++++++++++++++++++++++++
 [FileName,FilePath]=uigetfile('*.mat','select the annotations file',[pwd '/db/demo/anno.mat']);
+if ~FileName
+    exit
+end
+
 annotations=load(fullfile(FilePath,FileName));
 
 for i=1:length(annotations.text)
