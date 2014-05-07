@@ -25,7 +25,8 @@
 
 function redraw(obj)
 
-
+obj.SelectedEvent=[];
+obj.SelectedLines=[];
 
 for i=1:length(obj.LineVideo)
     delete(obj.LineVideo(i));
@@ -294,8 +295,8 @@ for i=1:size(evts,1)
         count=count+1;
         x=SRate*(evts{i,1}-t);
         EventLines(count)=line([x x],[0 1000],'parent',axe,'Color',[0 0.7 0]);
-        EventTexts(count)=text('Parent',axe,'position',[x yl(2)],'EdgeColor',[0 0.7 0],'BackgroundColor',[0.6 1 0.6],...
-                'VerticalAlignment','Top','Margin',1,'FontSize',12,'String',evts{i,2});
+        EventTexts(count)=text('Parent',axe,'position',[x yl(2)],'BackgroundColor',[0.6 1 0.6],'EdgeColor',[0 0.7 0],...
+                'VerticalAlignment','Top','Margin',1,'FontSize',12,'String',evts{i,2},'Editing','off');
         EventIndex(count)=i;
     end
 end

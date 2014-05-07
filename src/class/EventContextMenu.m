@@ -15,51 +15,32 @@ classdef EventContextMenu
     methods
         function obj=EventContextMenu(bsp)
             
-            for i=1:length(bsp.Axes)
-                axes(bsp.Axes(i));
-                obj.hcmenu(i)=uicontextmenu;
-                
-                obj.addOption     = uimenu(obj.hcmenu(i),...
-                    'Label',        'Add',...
-                    'callback',     {@eventAdd,bsp});
-                
-                obj.editOption    = uimenu(obj.hcmenu(i),...
-                    'Label',        'Edit',...
-                    'callback',     {@EventEditWindow,bsp});
-                obj.deleteOption  = uimenu(obj.hcmenu(i),...
-                    'Label',        'Delete',...
-                    'callback',     {@eventDelete,bsp});
-            end
+            
+            obj.hcmenu=uicontextmenu;
+            
+            obj.addOption     = uimenu(obj.hcmenu,...
+                'Label',        'Add',...
+                'callback',     {@eventAdd,bsp});
+            
+            obj.editOption    = uimenu(obj.hcmenu,...
+                'Label',        'Edit',...
+                'callback',     {@EventEditWindow,bsp});
+            obj.deleteOption  = uimenu(obj.hcmenu,...
+                'Label',        'Delete',...
+                'callback',     {@eventDelete,bsp});
         end
         
         function update(obj,bsp)
-            
-            for i=1:length(bsp.Axes)
-                axes(bsp.Axes(i));
-                obj.hcmenu(i)=uicontextmenu;
+            if ~isempty(bsp.EventLines)
                 
-                obj.addOption     = uimenu(obj.hcmenu(i),...
-                    'Label',        'Add',...
-                    'callback',     {@eventAdd,bsp});
+                eventLines=bsp.EventLines;
+                eventTexts=bsp.EventTexts;
                 
-                obj.editOption    = uimenu(obj.hcmenu(i),...
-                    'Label',        'Edit',...
-                    'callback',     {@EventEditWindow,bsp});
-                obj.deleteOption  = uimenu(obj.hcmenu(i),...
-                    'Label',        'Delete',...
-                    'callback',     {@eventDelete,bsp});
-                
-                if ~isempty(bsp.EventLines)
+                if ~isempty(eventLines)
                     
-                    eventLines=bsp.EventLines;
-                    eventTexts=bsp.EventTexts;
-                    
-                    if ~isempty(eventLines)
-                        
-                        for j=1:size(eventLines,1)*size(eventLines,2)
-                            set(eventLines(j),'uicontextmenu',obj.hcmenu(i));
-                            set(eventTexts(j),'uicontextmenu',obj.hcmenu(i));
-                        end
+                    for j=1:size(eventLines,1)*size(eventLines,2)
+                        set(eventLines(j),'uicontextmenu',obj.hcmenu);
+                        set(eventTexts(j),'uicontextmenu',obj.hcmenu);
                     end
                 end
             end

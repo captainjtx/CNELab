@@ -66,9 +66,9 @@ for i=1:length(annotations.text)
     events{i,2}=annotations.text{i};
 end
 
-BioSigPlot({datamat behvMat},'srate',sampleRate,'Evts',events,'StartTime',startTime,'TaskFiles',TaskFiles);
+bsp=BioSigPlot({datamat behvMat},'srate',sampleRate,'Evts',events,'TaskFiles',TaskFiles);
 
-% assignin('base','bsp',bsp);
+assignin('base','bsp',bsp);
 % assignin('base','startTime',startTime);
 % bsp.Evts=events;
 end
