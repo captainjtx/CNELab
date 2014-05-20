@@ -40,8 +40,7 @@ for i=1:length(obj.TxtMeasurer)
     end
 end
 obj.LineMeasurer=[];obj.TxtMeasurer={};obj.LineVideo=[];
-t=max(1,obj.Time*obj.SRate+1):min((obj.Time+obj.WinLength)*obj.SRate,size(obj.Data{1},2));
-
+t=round(max(1,obj.Time*obj.SRate+1):min((obj.Time+obj.WinLength)*obj.SRate,size(obj.Data{1},2)));
 
 if isempty(obj.FirstDispChans_)
     obj.FirstDispChans_=ones(1,obj.DataNumber);
@@ -217,8 +216,14 @@ function plotData(axe,t,data,color,spacing,posY,chanSelect) %#ok<INUSD>
 %data=-data./(spacing'*ones(1,size(data,2)));
 data=-data/spacing;
 data=data+(posY'*ones(1,size(data,2)));
+
+t=linspace(t(1),t(end),size(data,2));
+
 x=[t NaN]'*ones(1,size(data,1));
+% x=t'*ones(1,size(data,1));
+
 y=[data NaN*ones(size(data,1),1)]';
+% y=data';
 
 line(x,y,'parent',axe,'Color',color)
 end

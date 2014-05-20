@@ -1,6 +1,8 @@
-function [behvMat,channelNames]=behvSynch(synch,stamp,sampleRate)
+function [behvMat,channelNames,videoStartTime]=behvSynch(synch,stamp,sampleRate)
+%This function synchronize the behavior data w.r.t the timestamp of neuro-system
+
 %synch: synch signal from neuro-system
-%sampling frequency of synch needs to be the same
+%sampling frequency of neuro system needs to be consistent (no jitter)
 
 %cutoff frequency for highpass filter of synch signal from neuro-system
 fc=5;
@@ -12,7 +14,7 @@ thresh_neuro=2;
 thresh_behv=0.5*10^-3;
 
 %Synchronization impulse number to start
-impulseStart=2;
+impulseStart=1;
 
 %debug variable
 
@@ -30,6 +32,7 @@ acceleration=[];
 fingers=[];
 rollPitch=[];
 timeStamp=[];
+timeFrame=[];
 
 for i=1:length(trials)
     trigger=cat(2,trigger,trials(i).Trigger);
@@ -37,6 +40,7 @@ for i=1:length(trials)
     fingers=cat(2,fingers,trials(i).Fingers);
     rollPitch=cat(2,rollPitch,trials(i).RollPitch);
     timeStamp=cat(2,timeStamp,trials(i).Time);
+    timeFrame=cat(2,timeFrame,trials(i).Video);% raw 1: timestamp;raw 2: frame
 end
 
 trigger=detrend(trigger);
@@ -52,6 +56,7 @@ thresh_neuro=90*median(env);
 denv=env>thresh_neuro;
 diffenv=diff(denv);
 
+figure
 subplot(2,1,1)
 plot(synch_f,'b');
 hold on
@@ -83,6 +88,9 @@ plot(env,'r');
 hold on
 plot([1 length(env)],[thresh_behv thresh_behv],'-m');
 
+disp('press any key to continue')
+pause;
+
 startInd=find(diffenv==1);
 endInd=find(diffenv==-1);
 
@@ -97,24 +105,39 @@ behvMat=double(behvMat);
 
 behvMatMiddle=behvMat(:,start_behv:end_behv);
 %interpolate the behavior data according to neuro-system from start to end
+
 behvTimeStamp=timeStamp(start_behv:end_behv)-timeStamp(start_behv);
 % behvTimeStamp=behvTimeStamp/behvTimeStamp(end);
 
 neuroTimeStamp=stamp(start_neuro:end_neuro)-stamp(start_neuro);
 % neuroTimeStamp=neuroTimeStamp/neuroTimeStamp(end);
 
-% subplot(2,1,1)
-% plot(neuroTimeStamp,synch_f(start_neuro:end_neuro),'b')
-% title('neuro')
-% subplot(2,1,2)
-% plot(behvTimeStamp,trigger(start_behv:end_behv),'r');
-% title('behv')
+figure
+subplot(2,1,1)
+plot(neuroTimeStamp,synch_f(start_neuro:end_neuro),'b')
+title('neuro')
+subplot(2,1,2)
+plot(behvTimeStamp,trigger(start_behv:end_behv),'r');
+title('behv')
+
+disp('press any key to continue')
+pause;
 
 interpBehvMatMiddle=interp1(behvTimeStamp,behvMatMiddle',neuroTimeStamp);
 
 chanNum=size(interpBehvMatMiddle,2);
 behvMat=cat(2,zeros(chanNum,start_neuro-1),interpBehvMatMiddle',zeros(chanNum,length(synch)-end_neuro));
 
+
+videoStartIndex=find(timeFrame(2,:)==1);
+videoStartTime=timeFrame(1,videoStartIndex(1));
+
+%task start time after zero padding
+taskStartTime=timeStamp(start_behv)-(start_neuro-1)/sampleRate;
+
+%Assuming the task started at time 0 (in consistent with bioSigPlot)
+%The corresponding time for the start of the video
+videoStartTime=videoStartTime-taskStartTime;
 
 channelNames={'Trigger','Acceleration X','Acceleration Y', 'Acceleration Z',...
     'Finger 1','Finger 2','Finger 3','Finger 4','Finger 5',...

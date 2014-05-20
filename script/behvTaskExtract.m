@@ -29,7 +29,7 @@ end
 
 stamp=neuroTask.data.info{1}.stamp;
 
-[behvMat,channelNames]=behvSynch(synch,stamp,sampleRate);
+[behvMat,channelNames,videoStartTime]=behvSynch(synch,stamp,sampleRate);
 
 for i=1:size(behvMat,1)
     task.data.dataMat{i}=behvMat(i,:);
@@ -41,12 +41,15 @@ end
 task.data.info{1}.stamp=stamp;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-task.annotations=annotations;
 
 task.info.patientName=neuroTask.info.patientName;
 task.info.studyName=studyName;
 task.info.location=[];
 task.info.device='Lenovo';
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+task.info.video.startTime=videoStartTime;
 
 [FileName,FilePath]=uiputfile('*.mat','save your behv task file','task.mat');
 save(fullfile(FilePath,FileName),'-struct','task');

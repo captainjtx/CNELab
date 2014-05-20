@@ -141,8 +141,8 @@ classdef BioSigPlot < hgsetget
     %         w width
     %         h height
     %
-    %   ReadSpeedTime
-    %     The time between pages when fast reading
+    %   PlayDeltaTime
+    %     The time step when play 
     %
     %   Selection
     %     Time of Selected Periods:
@@ -222,10 +222,10 @@ classdef BioSigPlot < hgsetget
     %
     %
     % METHODS
-    %   StartFastRead
+    %   StartPlay
     %     Start Fast Reading
     %
-    %   StopFastRead
+    %   StopPlay
     %     Stop Fast Reading
     %
     %   ExportPagesTo
@@ -257,10 +257,10 @@ classdef BioSigPlot < hgsetget
     %    a.Spacing(2)=200;
     %    %Change the scale of the third electrod on dataset 1 (2nd Montage ie Mean Reference)
     %    a.Montage{1}(2).mat(3,:)=a.Montage{1}(2).mat(3,:)/10;
-    %    %Start The FastReading
-    %    a.StartFastRead
+    %    %Start The Playing
+    %    a.StartPlay
     %    %Stop it
-    %    a.StopFastRead
+    %    a.StopPlay
     %
     
     %123456789012345678901234567890123456789012345678901234567890123456789012
@@ -299,7 +299,7 @@ classdef BioSigPlot < hgsetget
         EdtTime
         BtnNextSec
         BtnNextPage
-        BtnFastRead
+        BtnPlay
         TxtTime
         TxtY
         ChkFilter
@@ -333,12 +333,13 @@ classdef BioSigPlot < hgsetget
         MenuExportAnnotations
         MenuImport
         MenuImportAnnotations
+        MenuImportVideo
         
         MenuCopy
         MenuSettings
         MenuCommands
         MenuConfigurationState
-        MenuReadSpeedTime
+        MenuPlaySpeed
         MenuColors
         MenuChan
         MenuTime2disp
@@ -351,11 +352,13 @@ classdef BioSigPlot < hgsetget
         PanObj
         LineVideo
         LineMeasurer
+        
         TxtMeasurer
         TimerObj
         WinEvts
         WinVideo
         VideoListener
+        
     end
     properties (Dependent,SetObservable)      %Public properties Requiring a redraw and that can be defined at the beginning
         Config                  %Default config file [def: defaultconfig] contains all default values
@@ -385,7 +388,8 @@ classdef BioSigPlot < hgsetget
         YGrid                   %true : show Grid line on each channel
         YGridInterval           %Number of subdivision for the grid
         MouseMode               %the Mouse Mode :{'Pan'|'Measurer'}
-        ReadSpeedTime           %The time between pages during fast reading
+        PlaySpeed               %Play speed
+        PlayDeltaTime           %Play Delta Time
         Video                   %File path of the video
         VideoTime               %Time for video cursor
         Montage                 %Path for a system file wich contains info on Montage
@@ -422,7 +426,8 @@ classdef BioSigPlot < hgsetget
         XGrid_
         YGrid_
         MouseMode_
-        ReadSpeedTime_
+        PlaySpeed_
+        PlayDeltaTime_
         Video_
         VideoTime_
         Montage_
@@ -431,6 +436,8 @@ classdef BioSigPlot < hgsetget
         Selection_
         
         TaskFiles_
+        VideoStartTime_
+        VideoFile_
         
     end
     properties (SetAccess=protected) %Readonly properties
@@ -479,6 +486,14 @@ classdef BioSigPlot < hgsetget
         EditMode
         
         TaskFiles
+        
+        VideoObj
+        AudioObj
+        
+        VideoStartTime         %Start time of the first frame of the video
+        VideoFile              %File path of video
+        
+        VideoFig
     end
     
     methods
@@ -553,6 +568,8 @@ classdef BioSigPlot < hgsetget
             obj.DragMode=0;
             obj.EditMode=0;
             
+            obj.VideoFig=[];
+            
             set(obj,g{:});
         end
         
@@ -592,8 +609,8 @@ classdef BioSigPlot < hgsetget
             keylist={'Config','SRate','WinLength','Spacing','DataView','Montage','MontageRef','Evts','Time','FirstDispChans',...
                 'DispChans','ChanLink','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
                 'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','XGrid','YGrid',...
-                'Position','Title','MouseMode','ReadSpeedTime','Video','VideoTime','AxesHeight','YBorder','YGridInterval','Selection',...
-                'TaskFiles'};
+                'Position','Title','MouseMode','PlaySpeed','PlayDeltaTime','Video','VideoTime','AxesHeight','YBorder','YGridInterval','Selection',...
+                'TaskFiles','VideoStartTime','VideoFile'};
             
             if isempty(obj.Commands)
                 command='a=BioSigPlot(data';
@@ -611,7 +628,7 @@ classdef BioSigPlot < hgsetget
                 if any(strcmpi(g{i},{'Config','SRate','WinLength','Spacing','Montage','DataView','MontageRef','Evts','Time','FirstDispChans',...
                         'DispChans','ChanLink','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
                         'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','XGrid','YGrid','MouseMode','AxesHeight','YBorder','YGridInterval','Selection',...
-                        'TaskFiles'}))
+                        'TaskFiles','VideoStartTime','VideoFile','PlayDeltaTime'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage','DataView','MontageRef','DispChans','ChanLink','InsideTicks','MouseMode','AxesHeight'}))
@@ -625,7 +642,7 @@ classdef BioSigPlot < hgsetget
                     end
                     NeedRedraw=true;
                     
-                elseif any(strcmpi(g{i},{'ReadSpeedTime','Video','VideoTime'}))
+                elseif any(strcmpi(g{i},{'PlaySpeed','Video','VideoTime'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                 else
@@ -712,8 +729,11 @@ classdef BioSigPlot < hgsetget
         function val = get.YGrid(obj), val=obj.YGrid_; end
         function obj = set.MouseMode(obj,val), set(obj,'MouseMode',val); end
         function val = get.MouseMode(obj), val=obj.MouseMode_; end
-        function obj = set.ReadSpeedTime(obj,val), set(obj,'ReadSpeedTime',val); end
-        function val = get.ReadSpeedTime(obj), val=obj.ReadSpeedTime_; end
+        function obj = set.PlaySpeed(obj,val), set(obj,'PlaySpeed',val); end
+        function val = get.PlaySpeed(obj), val=obj.PlaySpeed_; end
+        function obj = set.PlayDeltaTime(obj,val), set(obj,'PlayDeltaTime',val); end
+        function val = get.PlayDeltaTime(obj), val=obj.PlayDeltaTime_; end
+        
         function obj = set.Video(obj,val), set(obj,'Video',val); end
         function val = get.Video(obj), val=obj.Video_; end
         function obj = set.VideoTime(obj,val), set(obj,'VideoTime',val); end
@@ -739,6 +759,12 @@ classdef BioSigPlot < hgsetget
         
         function obj = set.TaskFiles(obj,val), set(obj,'TaskFiles',val); end
         function val = get.TaskFiles(obj), val=obj.TaskFiles_; end
+        
+        function obj = set.VideoStartTime(obj,val), set(obj,'VideoStartTime',val);end
+        function val = get.VideoStartTime(obj), val=obj.VideoStartTime_; end
+        
+        function obj = set.VideoFile(obj,val), set(obj,'VideoFile',val);end
+        function val = get.VideoFile(obj), val=obj.VideoFile_; end
         
         
         
@@ -868,26 +894,26 @@ classdef BioSigPlot < hgsetget
         end
         
         %******************************************************************
-        function StartFastRead(obj)
+        function StartPlay(obj)
             % Begin Autoscrolling
             %
             % USAGE
-            % 	obj.StartFastRead();
+            % 	obj.StartPlay();
             
-            set(obj.BtnFastRead,'String','Stop','Callback',@(src,evt) StopFastRead(obj));
-            obj.Commands{end+1}='a.StartFastRead';
+            set(obj.BtnPlay,'String','Stop','Callback',@(src,evt) StopPlay(obj));
+            obj.Commands{end+1}='a.StartPlay';
             start(obj.TimerObj);
         end
         
         %******************************************************************
-        function StopFastRead(obj)
+        function StopPlay(obj)
             % Stop Autoscrolling
             %
             % USAGE
-            % 	obj.StopFastRead();
+            % 	obj.StopPlay();
             
-            set(obj.BtnFastRead,'String','Fast read','Callback',@(src,evt) StartFastRead(obj));
-            obj.Commands{end+1}='a.StopFastRead';
+            set(obj.BtnPlay,'String','Play','Callback',@(src,evt) StartPlay(obj));
+            obj.Commands{end+1}='a.StopPlay';
             stop(obj.TimerObj);
         end
         
@@ -1058,7 +1084,7 @@ classdef BioSigPlot < hgsetget
         function obj = set.Time_(obj,val)
             if ~isempty(obj.SRate)
                 m=floor((size(obj.Data{1},2)-1)/obj.SRate);
-                if val>m && strcmpi(get(obj.BtnFastRead,'String'),'Stop'), StopFastRead(obj);end
+                if val>m && strcmpi(get(obj.BtnPlay,'String'),'Stop'), StopPlay(obj);end
             else
                 m=val;
             end
@@ -1134,9 +1160,15 @@ classdef BioSigPlot < hgsetget
         end
         
         %******************************************************************
-        function obj = set.ReadSpeedTime_(obj,val)
-            obj.ReadSpeedTime_=val;
-            set(obj.TimerObj,'period',val)
+        function obj = set.PlaySpeed_(obj,val)
+            obj.PlaySpeed_=val;
+            
+        end
+        %==================================================================
+        function obj =set.PlayDeltaTime_(obj,val)
+            obj.PlayDeltaTime_=val;
+            set(obj.TimerObj,'period',val);
+%             set(obj.TimerObj,'period',0.1);
         end
         
         %******************************************************************
@@ -1147,6 +1179,28 @@ classdef BioSigPlot < hgsetget
             t=(val-obj.Time_)*obj.SRate_;
             for i=1:length(obj.LineVideo)
                 set(obj.LineVideo,'XData',[t t]);
+            end
+            
+            if ~isempty(obj.VideoObj)
+                totalFrame=length(obj.VideoObj.frames);
+                if obj.VideoStartTime>0    
+                    videoFrame=floor((val-obj.VideoStartTime)*obj.VideoObj.rate);
+
+                else
+                    videoFrame=floor(val*obj.VideoObj.rate);
+                    
+                end
+                if videoFrame<1
+                    videoFrame=1;
+                elseif videoFrame>totalFrame
+                    videoFrame=totalFrame;
+                end
+                if ~isempty(obj.VideoFig)
+                    figure(obj.VideoFig)
+                    image(obj.VideoObj.frames(videoFrame).cdata);
+%                     figure(obj.Fig)
+                end
+                
             end
         end
         
@@ -1210,7 +1264,7 @@ classdef BioSigPlot < hgsetget
                 'WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'WindowKeyReleaseFcn',@(src,evt) KeyRelease(obj,src,evt));
             obj.PanObj=pan(obj.Fig);
             set(obj.PanObj,'Motion','vertical','ActionPostCallback',@(src,evts) ChangeSliders(obj,src,evts))
-            obj.TimerObj = timer('TimerFcn',@(src ,evts) FastReadTime(obj),'ExecutionMode','fixedRate','BusyMode','queue');
+            obj.TimerObj = timer('TimerFcn',@(src ,evts) PlayTime(obj),'ExecutionMode','fixedRate','BusyMode','queue');
             %obj.TimerObj = timer('TimerFcn',@timeCallback,'ExecutionMode','fixedRate');
             
             % Panel declaration
@@ -1252,12 +1306,14 @@ classdef BioSigPlot < hgsetget
             
             obj.MenuImport=uimenu(obj.MenuFile,'Label','Import');
             obj.MenuImportAnnotations=uimenu(obj.MenuImport,'Label','Annotations','Callback',@(src,evt) obj.ImportAnnotations);
+            obj.MenuImportVideo=uimenu(obj.MenuImport,'Label','Video','Callback',@(src,evt) obj.ImportVideo);
+            
             obj.MenuCopy=uimenu(obj.MenuFile,'Label','Copy','Enable','off');
             obj.MenuSettings=uimenu(obj.Fig,'Label','Settings');
             obj.MenuCommands=uimenu(obj.MenuSettings,'Label','Command List',...
                 'Callback',@(src,evts) listdlg('ListString',obj.Commands,'ListSize',[700 500],'PromptString','List of commands'));
             obj.MenuConfigurationState=uimenu(obj.MenuSettings,'Label','Configuration file','Callback',@(src,evt) ConfigWindow(obj));
-            obj.MenuReadSpeedTime=uimenu(obj.MenuSettings,'Label','Set the time for fast reading','Callback',@(src,evt) MnuFastRead(obj));
+            obj.MenuPlaySpeed=uimenu(obj.MenuSettings,'Label','Set the speed for play','Callback',@(src,evt) MnuPlay(obj));
             obj.MenuChan=uimenu(obj.MenuSettings,'Label','Number of channels to display','Callback',@(src,evt) MnuChan2Display(obj));
             obj.MenuTime2disp=uimenu(obj.MenuSettings,'Label','Time range to display','Callback',@(src,evt) MnuTime2Display(obj));
             obj.MenuChanLink=uimenu(obj.MenuSettings,'Label','All datasets have the same channels',...
@@ -1286,7 +1342,7 @@ classdef BioSigPlot < hgsetget
             obj.EdtTime=uicontrol(obj.TimePanel,'Style','edit','String',0,'units','normalized','position',[.22 0.1 .26 .8],'BackgroundColor',[1 1 1],'Callback',@(src,evt) ChangeTime(obj,src));
             obj.BtnNextSec=uicontrol(obj.TimePanel,'Style','pushbutton','String','>','units','normalized','position',[.49 0.1 .1 .8],'Callback',@(src,evt) ChangeTime(obj,src));
             obj.BtnNextPage=uicontrol(obj.TimePanel,'Style','pushbutton','String','>>','units','normalized','position',[.60 0.1 .1 .8],'Callback',@(src,evt) ChangeTime(obj,src));
-            obj.BtnFastRead=uicontrol(obj.TimePanel,'Style','pushbutton','String','Fast read','units','normalized','position',[.71 0.1 .28 .8],'Callback',@(src,evt) StartFastRead(obj));
+            obj.BtnPlay=uicontrol(obj.TimePanel,'Style','pushbutton','String','Play','units','normalized','position',[.71 0.1 .28 .8],'Callback',@(src,evt) StartPlay(obj));
         end
         
         %******************************************************************
@@ -1515,7 +1571,7 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         function ChangeTime(obj,src)
             timemax=floor((size(obj.Data{1},2)-1)/obj.SRate);
-            if strcmpi(get(obj.BtnFastRead,'String'),'Stop'), StopFastRead(obj);end
+            if strcmpi(get(obj.BtnPlay,'String'),'Stop'), StopPlay(obj);end
             if src==obj.BtnNextPage
                 t=obj.Time+obj.WinLength;
             elseif src==obj.BtnPrevPage
@@ -1529,12 +1585,12 @@ classdef BioSigPlot < hgsetget
             end
             t=max(0,min(timemax,t));
             
-            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
-                delete(obj.VideoListener);
-                obj.WinVideo.Time=t;
+            if ~isempty(obj.VideoFile)
+%                 delete(obj.VideoListener);
+%                 obj.WinVideo.Time=t;
                 obj.Time=t;
                 obj.VideoTime=t;
-                obj.VideoListener=addlistener(obj.WinVideo,'VideoChangeTime',@(src,evtdat) UpdateVideoTime(obj));
+%                 obj.VideoListener=addlistener(obj.WinVideo,'VideoChangeTime',@(src,evtdat) UpdateVideoTime(obj));
             else
                 obj.Time=t;
                 obj.VideoTime=t;
@@ -1543,8 +1599,16 @@ classdef BioSigPlot < hgsetget
         end
         
         %******************************************************************
-        function FastReadTime(obj)
-            set(obj,'Time',obj.Time+obj.WinLength);
+        function PlayTime(obj)
+            
+            t=obj.VideoTime+obj.PlayDeltaTime;
+            
+            if t>=obj.Time&&t<=(obj.Time+obj.WinLength)
+                set(obj,'VideoTime',t);
+            elseif t>obj.Time+obj.WinLength
+                set(obj,'VideoTime',obj.Time+obj.WinLength);
+                set(obj,'Time',obj.Time+obj.WinLength);
+            end
             drawnow;
         end
         
@@ -1936,14 +2000,14 @@ classdef BioSigPlot < hgsetget
         end
         
         %******************************************************************
-        function MnuFastRead(obj)
+        function MnuPlay(obj)
             %**************************************************************************
-            % Dialog box to change the time for fast reading
+            % Dialog box to change the speed for play
             %**************************************************************************
-            t=inputdlg('Time between two pages when fast reading (s):');
+            t=inputdlg('Speed of play : X ');
             t=str2double(t);
             if ~isempty(t) && ~isnan(t)
-                obj.ReadSpeedTime=t;
+                obj.PlaySpeed=t;
             end
         end
         
@@ -1995,6 +2059,44 @@ classdef BioSigPlot < hgsetget
                 end
                 
                 obj.Evts=EventList;
+            end
+        end
+        
+        %==================================================================
+        function ImportVideo(obj)
+            formats=VideoReader.getFileFormats();
+            filterSpec=getFilterSpec(formats);
+            
+            [FileName,FilePath]=uigetfile(filterSpec,'select the video file','behv.avi');
+            if FileName~=0
+                
+               [video,audio]=mmread(fullfile(FilePath,FileName),1);
+
+               if ~isempty(video)
+                  disp('Video loading...(it can take some time)')
+                  videoTotalTime=video.totalDuration;
+                  obj.VideoFile=fullfile(FilePath,FileName);
+                  obj.PlayDeltaTime=1/video.rate;
+                  dataTime=floor((size(obj.Data{1},2)-1)/obj.SRate);
+                  obj.VideoFig=figure;
+                  if obj.VideoStartTime>0
+                      videoEndTime=dataTime-obj.VideoStartTime;
+                      if videoEndTime>videoTotalTime
+                          videoEndTime=videoTotalTime;
+                      end
+                      [obj.VideoObj,obj.AudioObj]=mmread(fullfile(FilePath,FileName),[],[0,videoEndTime]);
+                  else
+                      videoEndTime=abs(obj.VideoStartTime)+dataTime;
+                      if videoEndTime>videoTotalTime
+                          videoEndTime=videoTotalTime;
+                      end
+                      [obj.VideoObj,obj.AudioObj]=mmread(fullfile(FilePath,FileName),[],[abs(obj.VideoStartTime),videoEndTime]);
+                  end
+                  
+                  disp('Video loaded.')
+               else
+                   error('Cannot import the selected video');
+               end                
             end
         end
         

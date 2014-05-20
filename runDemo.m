@@ -1,4 +1,4 @@
-function run()
+function runDemo()
 %RUN Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -7,25 +7,25 @@ function run()
 if ~FileName
     exit
 end
-task=load(fullfile(FilePath,FileName));
+neuroTask=load(fullfile(FilePath,FileName));
 
 TaskFiles{1}=fullfile(FilePath,FileName);
 
 for i=1:60
-    datamat(i,:)=task.data.dataMat{i};
+    datamat(i,:)=neuroTask.data.dataMat{i};
 end
 
-sampleRate=task.data.info{1}.sampleRate;
+sampleRate=neuroTask.data.info{1}.sampleRate;
 
-startTime=task.data.info{1}.stamp(1);
+startTime=neuroTask.data.info{1}.stamp(1);
 
 
 neuroSynchName='Sound'; %synch channel name in task file
 
 
-for i=1:length(task.data.info)
-    if strcmpi(task.data.info{i}.name,neuroSynchName)
-        synch=task.data.dataMat{i};
+for i=1:length(neuroTask.data.info)
+    if strcmpi(neuroTask.data.info{i}.name,neuroSynchName)
+        synch=neuroTask.data.dataMat{i};
     end
 end
 
@@ -38,16 +38,16 @@ if ~FileName
     exit
 end
 
-task=load(fullfile(FilePath,FileName));
+behvTask=load(fullfile(FilePath,FileName));
 
 TaskFiles{2}=fullfile(FilePath,FileName);
 
 maskChannels={'Acceleration X','Acceleration Y', 'Acceleration Z','Roll','Pitch'};
 count=0;
-for i=1:length(task.data.dataMat)
-    if ~ismember(task.data.info{i}.name,maskChannels)
+for i=1:length(behvTask.data.dataMat)
+    if ~ismember(behvTask.data.info{i}.name,maskChannels)
         count=count+1;
-        behvMat(count,:)=task.data.dataMat{i};
+        behvMat(count,:)=behvTask.data.dataMat{i};
     end
 end
 
@@ -66,7 +66,8 @@ for i=1:length(annotations.text)
     events{i,2}=annotations.text{i};
 end
 
-bsp=BioSigPlot({datamat behvMat},'srate',sampleRate,'Evts',events,'TaskFiles',TaskFiles);
+bsp=BioSigPlot({datamat behvMat},'srate',sampleRate,'Evts',events,'TaskFiles',TaskFiles,...
+    'VideoStartTime',behvTask.info.video.startTime);
 
 assignin('base','bsp',bsp);
 % assignin('base','startTime',startTime);
