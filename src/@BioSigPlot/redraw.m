@@ -190,8 +190,8 @@ end
 
 
 for i=1:length(obj.Axes) 
-    if obj.VideoTime>obj.Time && obj.VideoTime<obj.Time+obj.WinLength
-        t=(obj.VideoTime-obj.Time)*obj.SRate;
+    if obj.VideoLineTime>0 && obj.VideoLineTime<obj.WinLength
+        t=obj.VideoLineTime*obj.SRate;
     else
         t=-1;
     end

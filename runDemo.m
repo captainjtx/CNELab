@@ -19,9 +19,7 @@ sampleRate=neuroTask.data.info{1}.sampleRate;
 
 startTime=neuroTask.data.info{1}.stamp(1);
 
-
 neuroSynchName='Sound'; %synch channel name in task file
-
 
 for i=1:length(neuroTask.data.info)
     if strcmpi(neuroTask.data.info{i}.name,neuroSynchName)
@@ -69,6 +67,11 @@ end
 bsp=BioSigPlot({datamat behvMat},'srate',sampleRate,'Evts',events,'TaskFiles',TaskFiles,...
     'VideoStartTime',behvTask.info.video.startTime);
 
+% if isfield(behvTask.info.video,'timeFrame')
+%     if ~isempty(behvTask.info.video.timeFrame)
+%         bsp.VideoTimeFrame=behvTask.info.video.timeFrame;
+%     end
+% end
 assignin('base','bsp',bsp);
 % assignin('base','startTime',startTime);
 % bsp.Evts=events;

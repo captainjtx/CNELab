@@ -17,19 +17,18 @@ neuroSynchName='Sound'; %synch channel name in neuro task file
 
 neuroTask=load(fullfile(FilePath,FileName));
 
-annotations=neuroTask.annotations;
 
 sampleRate=neuroTask.data.info{1}.sampleRate;
 
 for i=1:length(neuroTask.data.info)
     if strcmpi(neuroTask.data.info{i}.name,neuroSynchName)
-        synch=neuroTask.data.dataMat{i};        
+        synch=neuroTask.data.dataMat{i};
     end
 end
 
 stamp=neuroTask.data.info{1}.stamp;
 
-[behvMat,channelNames,videoStartTime]=behvSynch(synch,stamp,sampleRate);
+[behvMat,channelNames,videoStartTime,timeFrame]=behvSynch(synch,stamp,sampleRate);
 
 for i=1:size(behvMat,1)
     task.data.dataMat{i}=behvMat(i,:);
@@ -50,6 +49,7 @@ task.info.device='Lenovo';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 task.info.video.startTime=videoStartTime;
+task.info.video.timeFrame=timeFrame;
 
 [FileName,FilePath]=uiputfile('*.mat','save your behv task file','task.mat');
 save(fullfile(FilePath,FileName),'-struct','task');
