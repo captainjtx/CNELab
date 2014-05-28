@@ -159,6 +159,15 @@ shiftTime=neuroTimeStamp(start_neuro)-behvTimeStamp(start_behv);
 
 videoTimeFrame(:,1)=videoTimeFrame(:,1)-videoStartTime;
 
+[frames,iframe,j]=unique(videoTimeFrame(:,2));
+
+videoTimeFrame=videoTimeFrame(iframe,:);
+
+ind=find(videoTimeFrame(:,2)>0);
+videoTimeFrame=videoTimeFrame(ind,:);
+
+videoTimeFrame(:,2)=1:size(videoTimeFrame,1);
+
 videoStartTime=videoStartTime+shiftTime;
 
 

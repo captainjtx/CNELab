@@ -440,7 +440,6 @@ classdef BioSigPlot < hgsetget
         VideoStartTime_
         VideoFile_
         VideoTimeFrame_
-        VideoLineTime_
         
     end
     properties (SetAccess=protected) %Readonly properties
@@ -495,10 +494,10 @@ classdef BioSigPlot < hgsetget
         
         VideoStartTime         %Start time of the first frame of the video
         VideoFile              %File path of video
-        
-        VideoFig
+        VideoHandle
         TotalVideoFrame
         VideoFrame
+        VideoFrameInd
         VideoTimeFrame
         VideoTotalTime
         
@@ -554,6 +553,8 @@ classdef BioSigPlot < hgsetget
                 error('All data must have the same number of time samples');
             end
             
+            obj.VideoLineTime=0;
+            
             obj.buildfig;
             
             g=varargin;
@@ -580,7 +581,7 @@ classdef BioSigPlot < hgsetget
             obj.DragMode=0;
             obj.EditMode=0;
             
-            obj.VideoFig=[];
+            obj.VideoHandle=[];
             
             set(obj,g{:});
         end
@@ -654,7 +655,7 @@ classdef BioSigPlot < hgsetget
                     end
                     NeedRedraw=true;
                     
-                elseif any(strcmpi(g{i},{'PlaySpeed','VideoLineTime'}))
+                elseif any(strcmpi(g{i},{'PlaySpeed'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                 else
@@ -749,8 +750,6 @@ classdef BioSigPlot < hgsetget
         function obj = set.VideoTimerPeriod(obj,val), set(obj,'VideoTimerPeriod',val); end
         function val = get.VideoTimerPeriod(obj), val=obj.VideoTimerPeriod_; end
         
-        function obj = set.VideoLineTime(obj,val), set(obj,'VideoLineTime',val); end
-        function val = get.VideoLineTime(obj), val=obj.VideoLineTime_; end
         function obj = set.Montage(obj,val), set(obj,'Montage',val); end
         function val = get.Montage(obj), val=obj.Montage_; end
         function obj = set.AxesHeight(obj,val), set(obj,'AxesHeight',val); end
@@ -1106,8 +1105,9 @@ classdef BioSigPlot < hgsetget
             obj.Time_=min(max(val,0),m);
             set(obj.EdtTime,'String',obj.Time_);
             if ~isempty(obj.VideoTimeFrame)
-                ind=dsearchn(obj.VideoTimeFrame(:,1),obj.Time_+obj.VideoLineTime_-obj.VideoStartTime);
-                if ~isempty(obj.VideoFig)
+                ind=dsearchn(obj.VideoTimeFrame(:,1),obj.Time_+obj.VideoLineTime-obj.VideoStartTime);
+                if ~isempty(obj.VideoHandle)
+                    obj.VideoFrameInd=ind(1);
                     obj.VideoFrame=obj.VideoTimeFrame(ind(1),2);
                 end
             end
@@ -1193,15 +1193,16 @@ classdef BioSigPlot < hgsetget
         end
         %==================================================================
         function obj =set.VideoTimerPeriod_(obj,val)
-            val=max(val,0.1);
             obj.VideoTimerPeriod_=val;
             set(obj.VideoTimer,'period',val);
         end
         
         %******************************************************************
-        function obj = set.VideoLineTime_(obj,val)
-            val=max(0,min(val,obj.WinLength));
-            obj.VideoLineTime_=val;
+        function obj = set.VideoLineTime(obj,val)
+            if ~isempty(obj.WinLength)
+                val=max(0,min(val,obj.WinLength));
+            end
+            obj.VideoLineTime=val;
             %try
             
             t=val*obj.SRate_;
@@ -1213,13 +1214,12 @@ classdef BioSigPlot < hgsetget
         
         %==================================================================
         function obj=set.VideoFrame(obj,val)
-            obj.VideoFrame=max(1,min(val,obj.TotalVideoFrame));
             
-            if ~isempty(obj.VideoFig)
-                figure(obj.VideoFig);
-                
-                imshow(obj.VideoObj.frames(obj.VideoFrame).cdata);
-                
+            obj.VideoFrame=min(max(1,val),obj.TotalVideoFrame);
+            
+            if ~isempty(obj.VideoHandle)
+                set(obj.VideoHandle,'CData',obj.VideoObj.frames(val).cdata);
+                drawnow
             end
         end
         
@@ -1612,17 +1612,32 @@ classdef BioSigPlot < hgsetget
         end
         %******************************************************************
         function UpdateVideo(obj)
-            obj.VideoFrame=obj.VideoFrame+1;   
+            
+            videoFrameInd=max(1,min(obj.VideoFrameInd+1,size(obj.VideoTimeFrame,1)));
+            videoTimeFrame=obj.VideoTimeFrame;
+            
+            videoFrame=videoTimeFrame(videoFrameInd,2);
+            
+            if videoFrame~=obj.VideoFrame
+                obj.VideoFrame=videoFrame;
+%                 set(obj,'VideoFrame',videoFrame);
+            end
+            
+            obj.VideoFrameInd=videoFrameInd;
+            
         end
         %==================================================================
         function PlayTime(obj)
-            t=obj.VideoTimeFrame(obj.VideoFrame,1)+obj.VideoStartTime;
+            t=obj.VideoTimeFrame(obj.VideoFrameInd,1)+obj.VideoStartTime;
+            
+            obj.VideoLineTime=t-obj.Time;
             
             if (t-obj.Time)>obj.WinLength
+                obj.VideoLineTime=0;
                 set(obj,'Time',obj.Time+obj.WinLength);
             end
             
-            set(obj,'VideoLineTime',t-obj.Time);
+            
 
         end
         
@@ -2085,13 +2100,13 @@ classdef BioSigPlot < hgsetget
             if FileName~=0
                 [video,audio]=mmread(fullfile(FilePath,FileName),1);
                 if ~isempty(video)
-                    
-                    
                     videoTotalTime=video.totalDuration;
                     obj.VideoFile=fullfile(FilePath,FileName);
                     
                     dataTime=floor((size(obj.Data{1},2)-1)/obj.SRate);
-                    obj.VideoFig=figure;
+                    f=figure;
+                    obj.VideoHandle=imagesc(video.frames(1).cdata);
+                    drawnow
                     
                     disp('Video loading...');
                     obj.VideoTotalTime=videoTotalTime;
@@ -2117,11 +2132,17 @@ classdef BioSigPlot < hgsetget
                         timeframe(:,1)=timeframe(:,1)-timeframe(1,1);
                         obj.VideoTimeFrame=timeframe;
                     else
+%                         [frames,iframe,j]=unique(obj.VideoTimeFrame(:,2));
+%                         obj.VideoTimeFrame=obj.VideoTimeFrame(iframe,:);
+%                         obj.VideoTimeFrame(:,2)=0:size(obj.VideoTimeFrame,1)-1;
                         [obj.VideoObj,obj.AudioObj]=mmread(fullfile(FilePath,FileName));
                     end
                     
+                    obj.VideoTimerPeriod=1/obj.VideoObj.rate;
                     obj.TotalVideoFrame=length(obj.VideoObj.frames);
                     obj.VideoFrame=1;
+                    ind=find(obj.VideoTimeFrame(:,2)==1);
+                    obj.VideoFrameInd=ind(1);
                     obj.VideoLineTime=0;
 
                     disp('Video loaded.')
