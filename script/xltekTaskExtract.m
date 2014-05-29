@@ -168,9 +168,12 @@ k=dsearchn(dataTime,annoTime');
 annoTime=dataTime(k);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for i=1:length(text)
+    annotations{i,2}=text{i};
+    annotations{i,1}=(annoTime(i)-dataTime(1))/fs/downsample;
+end
 
-annotations.text=text;
-annotations.stamp=(annoTime-dataTime(1))/fs/downsample;
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

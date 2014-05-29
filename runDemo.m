@@ -59,9 +59,16 @@ end
 
 annotations=load(fullfile(FilePath,FileName));
 
-for i=1:length(annotations.text)
-    events{i,1}=annotations.stamp(i)-startTime;
-    events{i,2}=annotations.text{i};
+if isfield(annotations,'text')&&isfield(annotations,'stamp')
+    for i=1:length(annotations.text)
+        events{i,1}=annotations.stamp(i)-startTime;
+        events{i,2}=annotations.text{i};
+    end
+else
+    events=annotations;
+    for i=1:size(events,1)
+        events{i,1}=events{i,1}-startTime;
+    end
 end
 
 bsp=BioSigPlot({datamat behvMat},'srate',sampleRate,'Evts',events,'TaskFiles',TaskFiles,...

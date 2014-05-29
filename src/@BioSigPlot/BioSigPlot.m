@@ -357,7 +357,7 @@ classdef BioSigPlot < hgsetget
         LineMeasurer
         
         TxtMeasurer
-       
+        
         WinEvts
         WinVideo
         VideoListener
@@ -554,6 +554,7 @@ classdef BioSigPlot < hgsetget
             end
             
             obj.VideoLineTime=0;
+            obj.VideoStartTime=0;
             
             obj.buildfig;
             
@@ -589,9 +590,9 @@ classdef BioSigPlot < hgsetget
         %*****************************************************************
         function delete(obj)
             % Delete the figure
-%             if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
-%                 delete(obj.WinVideo)
-%             end
+            %             if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+            %                 delete(obj.WinVideo)
+            %             end
             if isa(obj.WinEvts,'EventWindow') && isvalid(obj.WinEvts)
                 delete(obj.WinEvts);
             end
@@ -1620,7 +1621,7 @@ classdef BioSigPlot < hgsetget
             
             if videoFrame~=obj.VideoFrame
                 obj.VideoFrame=videoFrame;
-%                 set(obj,'VideoFrame',videoFrame);
+                %                 set(obj,'VideoFrame',videoFrame);
             end
             
             obj.VideoFrameInd=videoFrameInd;
@@ -1638,7 +1639,7 @@ classdef BioSigPlot < hgsetget
             end
             
             
-
+            
         end
         
         %******************************************************************
@@ -2067,14 +2068,10 @@ classdef BioSigPlot < hgsetget
         end
         function ExportAnnotations(obj)
             %==================================================================
-            for i=1:size(obj.Evts,1)
-                annotations.stamp(i)=obj.Evts{i,1};
-                annotations.text{i}=obj.Evts{i,2};
-            end
+            annotations=obj.Evts;
             
             [FileName,FilePath]=uiputfile('*.mat','save your annotations file','anno.mat');
             save(fullfile(FilePath,FileName),'-struct','annotations');
-            
         end
         
         function ImportAnnotations(obj)
@@ -2082,11 +2079,15 @@ classdef BioSigPlot < hgsetget
             [FileName,FilePath]=uigetfile('*.mat','select your annotations file','anno.mat');
             if FileName~=0
                 annotations=load(fullfile(FilePath,FileName));
-                for i=1:length(annotations.stamp)
-                    EventList{i,1}=annotations.stamp(i);
-                    EventList{i,2}=annotations.text{i};
-                end
                 
+                if isfield(annotations,'stamp')&&isfield(annotations,'text')
+                    for i=1:length(annotations.stamp)
+                        EventList{i,1}=annotations.stamp(i);
+                        EventList{i,2}=annotations.text{i};
+                    end
+                else
+                    EventList=annotations;
+                end
                 obj.Evts=EventList;
             end
         end
@@ -2132,9 +2133,9 @@ classdef BioSigPlot < hgsetget
                         timeframe(:,1)=timeframe(:,1)-timeframe(1,1);
                         obj.VideoTimeFrame=timeframe;
                     else
-%                         [frames,iframe,j]=unique(obj.VideoTimeFrame(:,2));
-%                         obj.VideoTimeFrame=obj.VideoTimeFrame(iframe,:);
-%                         obj.VideoTimeFrame(:,2)=0:size(obj.VideoTimeFrame,1)-1;
+                        %                         [frames,iframe,j]=unique(obj.VideoTimeFrame(:,2));
+                        %                         obj.VideoTimeFrame=obj.VideoTimeFrame(iframe,:);
+                        %                         obj.VideoTimeFrame(:,2)=0:size(obj.VideoTimeFrame,1)-1;
                         [obj.VideoObj,obj.AudioObj]=mmread(fullfile(FilePath,FileName));
                     end
                     
@@ -2144,7 +2145,7 @@ classdef BioSigPlot < hgsetget
                     ind=find(obj.VideoTimeFrame(:,2)==1);
                     obj.VideoFrameInd=ind(1);
                     obj.VideoLineTime=0;
-
+                    
                     disp('Video loaded.')
                     
                 else
@@ -2166,28 +2167,28 @@ classdef BioSigPlot < hgsetget
         
         %******************************************************************
         function WinVideoFcn(obj,src)
-%             if strcmpi(get(src,'State'),'on')
-%                 if ~strcmp(computer,'PCWIN')
-%                     set(src,'State','off')
-%                     msgbox('Only works on Windows with Matlab 32bits version')
-%                     return;
-%                 end
-%                 if isempty(obj.Video)
-%                     [f,p]=uigetfile('*.*','Select a Video File');
-%                     if f~=0,obj.Video=[p f];end
-%                 end
-%                 
-%                 if ~isempty(obj.Video)
-%                     obj.WinVideo=VideoWindow(obj.Video);
-%                     obj.WinVideo.Time=obj.VideoTime;
-%                     obj.VideoListener=addlistener(obj.WinVideo,'VideoChangeTime',@(src,evtdat) UpdateVideoTime(obj));
-%                     addlistener(obj.WinVideo,'VideoClosed',@(src,evtdat) set(obj.TogVideo,'State','off'));
-%                 else
-%                     set(src,'State','off')
-%                 end
-%             else
-%                 delete(obj.WinVideo);
-%             end
+            %             if strcmpi(get(src,'State'),'on')
+            %                 if ~strcmp(computer,'PCWIN')
+            %                     set(src,'State','off')
+            %                     msgbox('Only works on Windows with Matlab 32bits version')
+            %                     return;
+            %                 end
+            %                 if isempty(obj.Video)
+            %                     [f,p]=uigetfile('*.*','Select a Video File');
+            %                     if f~=0,obj.Video=[p f];end
+            %                 end
+            %
+            %                 if ~isempty(obj.Video)
+            %                     obj.WinVideo=VideoWindow(obj.Video);
+            %                     obj.WinVideo.Time=obj.VideoTime;
+            %                     obj.VideoListener=addlistener(obj.WinVideo,'VideoChangeTime',@(src,evtdat) UpdateVideoTime(obj));
+            %                     addlistener(obj.WinVideo,'VideoClosed',@(src,evtdat) set(obj.TogVideo,'State','off'));
+            %                 else
+            %                     set(src,'State','off')
+            %                 end
+            %             else
+            %                 delete(obj.WinVideo);
+            %             end
         end
         
         

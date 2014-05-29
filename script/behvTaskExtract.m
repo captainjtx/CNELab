@@ -28,7 +28,39 @@ end
 
 stamp=neuroTask.data.info{1}.stamp;
 
-[behvMat,channelNames,videoStartTime,timeFrame]=behvSynch(synch,stamp,sampleRate);
+[FileName,FilePath]=uigetfile('*.mat','select the behavior data file',[pwd '/db/demo/behv.mat']);
+behv=load(fullfile(FilePath,FileName));
+
+trials=behv.trials;
+settings=behv.settings;
+TriggerExeTimings=behv.TriggerExeTimings;
+
+behvSynch=[];
+acceleration=[];
+fingers=[];
+rollPitch=[];
+behvTimeStamp=[];
+behvVideoTimeFrame=[];
+
+for i=1:length(trials)
+    behvSynch=cat(2,behvSynch,trials(i).Trigger);
+    acceleration=cat(2,acceleration,trials(i).Acceleration);
+    fingers=cat(2,fingers,trials(i).Fingers);
+    rollPitch=cat(2,rollPitch,trials(i).RollPitch);
+    behvTimeStamp=cat(2,behvTimeStamp,trials(i).Time);
+    behvVideoTimeFrame=cat(2,behvVideoTimeFrame,trials(i).Video);% raw 1: timestamp;raw 2: frame
+end
+behvTimeStamp=behvTimeStamp';
+behvVideoTimeFrame=behvVideoTimeFrame';
+behvMat=cat(1,behvSynch,acceleration,fingers,rollPitch);
+behvMat=double(behvMat);
+
+[behvMat,videoStartTime,timeFrame]=neuroBehvSynch(synch,stamp,sampleRate,...
+    behvMat,behvSynch,behvTimeStamp,behvVideoTimeFrame);
+
+channelNames={'Trigger','Acceleration X','Acceleration Y', 'Acceleration Z',...
+    'Finger 1','Finger 2','Finger 3','Finger 4','Finger 5',...
+    'Roll','Pitch'};
 
 for i=1:size(behvMat,1)
     task.data.dataMat{i}=behvMat(i,:);
