@@ -1,4 +1,3 @@
-function runDemo()
 %RUN Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -70,7 +69,7 @@ else
         events{i,1}=events{i,1}-startTime;
     end
 end
-
+%==========================================================================
 bsp=BioSigPlot({datamat behvMat},'srate',sampleRate,'Evts',events,'TaskFiles',TaskFiles,...
     'VideoStartTime',behvTask.info.video.startTime);
 
@@ -82,5 +81,3 @@ end
 assignin('base','bsp',bsp);
 % assignin('base','startTime',startTime);
 % bsp.Evts=events;
-end
-

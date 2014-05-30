@@ -4,6 +4,11 @@ function [behvMat,videoStartTime,videoTimeFrame]=neuroBehvSynch(neuroSynch,neuro
 %synch: synch signal from neuro-system
 %sampling frequency of neuro system needs to be consistent (no jitter)
 
+
+
+%Synchronization impulse number to start
+impulseStart=3;
+
 %cutoff frequency for highpass filter of synch signal from neuro-system
 fc=5;
 %order of the butter filter
@@ -12,9 +17,6 @@ order=2;
 %threshould value to get a digital signal from envlope
 thresh_neuro=2;
 thresh_behv=0.5*10^-3;
-
-%Synchronization impulse number to start
-impulseStart=2;
 
 %debug variable
 
@@ -100,6 +102,7 @@ deltaTimeStamp=neuroTimeStampSE(1+find(neuro_diff>0))-behvTimeStampSE(1+find(beh
 
 subplot(2,1,2)
 plot(deltaTimeStamp);
+ylim([-0.2 0.2]);
 title('Timestamp difference at each pulse start')
 disp('Make sure timestamp difference is within a resonable range !')
 disp('If the differences are high, try to manually select different impulse start')

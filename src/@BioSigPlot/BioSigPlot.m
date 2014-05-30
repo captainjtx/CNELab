@@ -333,9 +333,9 @@ classdef BioSigPlot < hgsetget
         MenuFile
         MenuExport
         MenuExportFigure
-        MenuExportAnnotations
+        MenuExportEvents
         MenuImport
-        MenuImportAnnotations
+        MenuImportEvents
         MenuImportVideo
         
         MenuCopy
@@ -505,6 +505,8 @@ classdef BioSigPlot < hgsetget
         
         MainTimer
         VideoTimer
+        
+        IsEvtsSaved
     end
     
     methods
@@ -554,7 +556,7 @@ classdef BioSigPlot < hgsetget
             end
             
             obj.VideoLineTime=0;
-            obj.VideoStartTime=0;
+            %             obj.VideoStartTime=0;
             
             obj.buildfig;
             
@@ -583,8 +585,9 @@ classdef BioSigPlot < hgsetget
             obj.EditMode=0;
             
             obj.VideoHandle=[];
-            
             set(obj,g{:});
+            
+            obj.IsEvtsSaved=true;
         end
         
         %*****************************************************************
@@ -593,6 +596,18 @@ classdef BioSigPlot < hgsetget
             %             if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
             %                 delete(obj.WinVideo)
             %             end
+            
+            if ~isempty(obj.Evts)&&~obj.IsEvtsSaved
+                default='yes';
+                choice=questdlg('There are changes in events, do you want to save them before exit?',...
+                    'warning','yes','no',default);
+                switch choice
+                    case 'yes'
+                        ExportEvents(obj);
+                    case 'no'
+                end
+                
+            end
             if isa(obj.WinEvts,'EventWindow') && isvalid(obj.WinEvts)
                 delete(obj.WinEvts);
             end
@@ -1039,6 +1054,7 @@ classdef BioSigPlot < hgsetget
         
         %******************************************************************
         function obj = set.Evts_(obj,val)
+            obj.IsEvtsSaved=false;
             obj.Evts_=val;
             if ~isempty(obj.Evts_)
                 if isstruct(obj.Evts_)
@@ -1322,10 +1338,10 @@ classdef BioSigPlot < hgsetget
             obj.MenuFile=uimenu(obj.Fig,'Label','File');
             obj.MenuExport=uimenu(obj.MenuFile,'Label','Export');
             obj.MenuExportFigure=uimenu(obj.MenuExport,'Label','Figure','Callback',@(src,evt) obj.ExportToWindow);
-            obj.MenuExportAnnotations=uimenu(obj.MenuExport,'Label','Annotations','Callback',@(src,evt) obj.ExportAnnotations);
+            obj.MenuExportEvents=uimenu(obj.MenuExport,'Label','Events','Callback',@(src,evt) obj.ExportEvents);
             
             obj.MenuImport=uimenu(obj.MenuFile,'Label','Import');
-            obj.MenuImportAnnotations=uimenu(obj.MenuImport,'Label','Annotations','Callback',@(src,evt) obj.ImportAnnotations);
+            obj.MenuImportEvents=uimenu(obj.MenuImport,'Label','Events','Callback',@(src,evt) obj.ImportEvents);
             obj.MenuImportVideo=uimenu(obj.MenuImport,'Label','Video','Callback',@(src,evt) obj.ImportVideo);
             
             obj.MenuCopy=uimenu(obj.MenuFile,'Label','Copy','Enable','off');
@@ -2066,29 +2082,57 @@ classdef BioSigPlot < hgsetget
                 end
             end
         end
-        function ExportAnnotations(obj)
+        function ExportEvents(obj)
             %==================================================================
-            annotations=obj.Evts;
-            
-            [FileName,FilePath]=uiputfile('*.mat','save your annotations file','anno.mat');
-            save(fullfile(FilePath,FileName),'-struct','annotations');
+            Events=obj.Evts;
+            if ~isempty(Events)
+                [FileName,FilePath]=uiputfile('*.mat','save your Events','evts.mat');
+                if FileName~=0
+                    save(fullfile(FilePath,FileName),'-struct','Events');
+                    obj.IsEvtsSaved=true;
+                end
+            end
         end
         
-        function ImportAnnotations(obj)
+        function ImportEvents(obj)
             
-            [FileName,FilePath]=uigetfile('*.mat','select your annotations file','anno.mat');
+            if isempty(obj.Evts)
+                choice='overwrite';
+            else
+                default='overwrite';
+                choice=questdlg('Do you want to overwrite or overlap the existed events?','warning',...
+                    'overwrite','overlap','cancel',default);
+            end
+            
+            if strcmpi(choice,'cancel')
+                return
+            end
+            
+            [FileName,FilePath]=uigetfile('*.mat','select your events file','evts.mat');
             if FileName~=0
-                annotations=load(fullfile(FilePath,FileName));
+                Events=load(fullfile(FilePath,FileName));
                 
-                if isfield(annotations,'stamp')&&isfield(annotations,'text')
-                    for i=1:length(annotations.stamp)
-                        EventList{i,1}=annotations.stamp(i);
-                        EventList{i,2}=annotations.text{i};
+                if isfield(Events,'stamp')&&isfield(Events,'text')
+                    for i=1:length(Events.stamp)
+                        NewEventList{i,1}=Events.stamp(i);
+                        NewEventList{i,2}=Events.text{i};
                     end
                 else
-                    EventList=annotations;
+                    NewEventList=Events;
                 end
-                obj.Evts=EventList;
+                if iscell(NewEventList)
+                    if size(NewEventList,2)==2
+                        switch choice
+                            case 'overwrite'
+                                obj.Evts=NewEventList;
+                                obj.IsEvtsSaved=true;
+                            case 'overlap'
+                                obj.Evts=cat(1,obj.Evts,NewEventList);
+                                obj.IsEvtsSaved=false;
+                            case 'cancel'
+                        end
+                    end
+                end
             end
         end
         
