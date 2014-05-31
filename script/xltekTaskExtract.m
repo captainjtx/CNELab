@@ -169,8 +169,8 @@ annoTime=dataTime(k);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 for i=1:length(text)
-    annotations{i,2}=text{i};
-    annotations{i,1}=(annoTime(i)-dataTime(1))/fs/downsample;
+    events{i,2}=text{i};
+    events{i,1}=(annoTime(i)-dataTime(1))/fs/downsample;
 end
 
 
@@ -207,8 +207,8 @@ task.info.device='XLTEK EMU 128FS';
 [FileName,FilePath]=uiputfile('*.mat','save your neuro task file','task.mat');
 save(fullfile(FilePath,FileName),'-struct','task');
 
-[FileName,FilePath]=uiputfile('*.mat','save your annotations file','anno.mat');
-save(fullfile(FilePath,FileName),'-struct','annotations');
+[FileName,FilePath]=uiputfile('*.mat','save your events file','evts.mat');
+save(fullfile(FilePath,FileName),'events');
 
 end
 
