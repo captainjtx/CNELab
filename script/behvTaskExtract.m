@@ -1,4 +1,4 @@
-function behvTaskExtract()
+function behvTaskExtract(neuroSynchName)
 %This function convert the behv data into standard task file format
 %Workflow:
 %1................synchronize the behv data with neuro data
@@ -8,7 +8,11 @@ function behvTaskExtract()
 %study name
 studyName='HandRelexionExtension';
 
-neuroSynchName='Sound'; %synch channel name in neuro task file
+% neuroSynchName='Sound'; %synch channel name in neuro task file
+
+if nargin==0
+    neuroSynchName='Synch';
+end 
 
 %==========================================================================
 
@@ -56,7 +60,7 @@ behvMat=cat(1,behvSynch,acceleration,fingers,rollPitch);
 behvMat=double(behvMat);
 
 [behvMat,videoStartTime,timeFrame]=neuroBehvSynch(synch,stamp,sampleRate,...
-    behvMat,behvSynch,behvTimeStamp,behvVideoTimeFrame);
+    behvMat,behvSynch,behvTimeStamp,behvVideoTimeFrame,2);
 
 channelNames={'Trigger','Acceleration X','Acceleration Y', 'Acceleration Z',...
     'Finger 1','Finger 2','Finger 3','Finger 4','Finger 5',...

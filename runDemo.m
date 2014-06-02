@@ -2,9 +2,9 @@
 %   Detailed explanation goes here
 
 %neuro task file loading+++++++++++++++++++++++++++++++++++++++++++++++++++
-[FileName,FilePath]=uigetfile('*.mat','select the neuro task file',[pwd '/db/demo/neuro.mat']);
+[FileName,FilePath]=uigetfile('*.mat','select the neuro task file',[pwd '../data']);
 if ~FileName
-    exit
+    return
 end
 neuroTask=load(fullfile(FilePath,FileName));
 
@@ -29,10 +29,10 @@ end
 % datamat=cat(1,datamat,synch');
 
 %behvaior task file loading++++++++++++++++++++++++++++++++++++++++++++++++
-[FileName,FilePath]=uigetfile('*.mat','select the behv task file',[pwd '/db/demo/behv.mat']);
+[FileName,FilePath]=uigetfile('*.mat','select the behv task file',[pwd '../data']);
 
 if ~FileName
-    exit
+    return
 end
 
 behvTask=load(fullfile(FilePath,FileName));
@@ -51,9 +51,9 @@ end
 behvMat(1,:)=behvMat(1,:)*1000;
 
 %Annotation file loading+++++++++++++++++++++++++++++++++++++++++++++++++++
-[FileName,FilePath]=uigetfile('*.mat','select the annotations file',[pwd '/db/demo/anno.mat']);
+[FileName,FilePath]=uigetfile('*.mat','select the annotations file',[pwd '../data']);
 if ~FileName
-    exit
+    return
 end
 
 annotations=load(fullfile(FilePath,FileName));

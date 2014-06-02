@@ -1,4 +1,5 @@
-function [behvMat,videoStartTime,videoTimeFrame]=neuroBehvSynch(neuroSynch,neuroTimeStamp,sampleRate,behvMat,behvSynch,behvTimeStamp,behvVideoTimeFrame)
+function [behvMat,videoStartTime,videoTimeFrame]=neuroBehvSynch(neuroSynch,neuroTimeStamp,...
+    sampleRate,behvMat,behvSynch,behvTimeStamp,behvVideoTimeFrame,impulseStart)
 %This function synchronize the behavior data w.r.t the timestamp of neuro-system
 
 %synch: synch signal from neuro-system
@@ -7,7 +8,9 @@ function [behvMat,videoStartTime,videoTimeFrame]=neuroBehvSynch(neuroSynch,neuro
 
 
 %Synchronization impulse number to start
-impulseStart=3;
+if nargin==7
+    impulseStart=1;
+end
 
 %cutoff frequency for highpass filter of synch signal from neuro-system
 fc=5;
@@ -38,6 +41,7 @@ diffenv=diff(denv);
 figure
 subplot(2,1,1)
 plot(neuroTimeStamp,synch_f,'b');
+title('neuro system')
 hold on
 plot(neuroTimeStamp,env,'r');
 hold on
@@ -62,6 +66,7 @@ diffenv=diff(denv);
 
 subplot(2,1,2)
 plot(behvTimeStamp,behvSynch,'b');
+title('behv system')
 hold on
 plot(behvTimeStamp,env,'r');
 hold on

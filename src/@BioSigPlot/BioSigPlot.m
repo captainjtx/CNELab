@@ -1234,7 +1234,7 @@ classdef BioSigPlot < hgsetget
             
             obj.VideoFrame=min(max(1,val),obj.TotalVideoFrame);
             
-            if ~isempty(obj.VideoHandle)
+            if ishandle(obj.VideoHandle)
                 set(obj.VideoHandle,'CData',obj.VideoObj.frames(val).cdata);
                 drawnow
             end

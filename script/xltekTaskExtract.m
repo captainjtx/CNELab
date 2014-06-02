@@ -203,7 +203,6 @@ task.info.device='XLTEK EMU 128FS';
 
 [FileName,FilePath]=uiputfile('*.mat','save your neuro task file','task.mat');
 save(fullfile(FilePath,FileName),'-struct','task');
-events.evts
 [FileName,FilePath]=uiputfile('*.mat','save your events file','evts.mat');
 save(fullfile(FilePath,FileName),'-struct','events');
 

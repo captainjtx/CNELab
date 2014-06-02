@@ -2,7 +2,7 @@
 % 2,Add new annotations menu button
 % 3,Video Synchronization 
 
-Exit save ask.
+% Exit save ask.
 Channel name Channel Color
 Channel gain change
 
@@ -20,5 +20,6 @@ getaligneddata
 
 TFMap GUI segmentation
 
+background color green
 
 
