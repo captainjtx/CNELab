@@ -2084,7 +2084,10 @@ classdef BioSigPlot < hgsetget
         end
         function ExportEvents(obj)
             %==================================================================
-            Events=obj.Evts;
+            for i=1:size(obj.Evts,1)
+                Events.stamp(i)=obj.Evts{i,1};
+                Events.text{i}=obj.Evts{i,2};
+            end
             if ~isempty(Events)
                 [FileName,FilePath]=uiputfile('*.mat','save your Events','evts.mat');
                 if FileName~=0
@@ -2117,8 +2120,6 @@ classdef BioSigPlot < hgsetget
                         NewEventList{i,1}=Events.stamp(i);
                         NewEventList{i,2}=Events.text{i};
                     end
-                else
-                    NewEventList=Events;
                 end
                 if iscell(NewEventList)
                     if size(NewEventList,2)==2

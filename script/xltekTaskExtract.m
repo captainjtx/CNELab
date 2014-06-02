@@ -168,12 +168,9 @@ k=dsearchn(dataTime,annoTime');
 annoTime=dataTime(k);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-for i=1:length(text)
-    events{i,2}=text{i};
-    events{i,1}=(annoTime(i)-dataTime(1))/fs/downsample;
-end
 
-
+events.text=text;
+events.stamp=(annoTime-dataTime(1))/fs/downsample;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -206,9 +203,9 @@ task.info.device='XLTEK EMU 128FS';
 
 [FileName,FilePath]=uiputfile('*.mat','save your neuro task file','task.mat');
 save(fullfile(FilePath,FileName),'-struct','task');
-
+events.evts
 [FileName,FilePath]=uiputfile('*.mat','save your events file','evts.mat');
-save(fullfile(FilePath,FileName),'events');
+save(fullfile(FilePath,FileName),'-struct','events');
 
 end
 
