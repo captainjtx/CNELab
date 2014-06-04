@@ -2094,7 +2094,7 @@ classdef BioSigPlot < hgsetget
                                                 '*.evt','Event File (*.evt)'}...
                                                 ,'save your Events','untitled');
                 if FileName~=0
-                    save(fullfile(FilePath,FileName),'-struct','Events');
+                    save(fullfile(FilePath,FileName),'-struct','Events','-mat');
                     obj.IsEvtsSaved=true;
                 end
             end

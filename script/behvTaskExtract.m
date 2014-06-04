@@ -100,7 +100,7 @@ task.info.video.startTime=videoStartTime;
 task.info.video.timeFrame=timeFrame;
 
 [FileName,FilePath]=uiputfile('*.medf','save your behv task file','behv.medf');
-save(fullfile(FilePath,FileName),'-struct','task');
+save(fullfile(FilePath,FileName),'-struct','task','-mat');
 
 end
 
