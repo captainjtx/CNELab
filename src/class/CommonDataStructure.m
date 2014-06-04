@@ -27,7 +27,7 @@ classdef CommonDataStructure < handle
             
             cds=obj.CDS;
             
-            [FileName,FilePath]=uiputfile('*.cds','Save your common data structure','untitled.cds');
+            [FileName,FilePath]=uiputfile({'*.cds';'*.mat'},'Save your common data structure','untitled');
             
             if ~FileName
                 return
