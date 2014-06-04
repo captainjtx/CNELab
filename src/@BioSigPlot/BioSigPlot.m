@@ -2089,7 +2089,10 @@ classdef BioSigPlot < hgsetget
                 Events.text{i}=obj.Evts{i,2};
             end
             if ~isempty(Events)
-                [FileName,FilePath]=uiputfile({'*.mat';'*.evt'},'save your Events');
+                [FileName,FilePath]=uiputfile({'*.mat;*.evt','Event Files (*.mat;*.evt)';...
+                                                '*.mat','Matlab Mat file (*.mat)';
+                                                '*.evt','Event File (*.evt)'}...
+                                                ,'save your Events','untitled');
                 if FileName~=0
                     save(fullfile(FilePath,FileName),'-struct','Events');
                     obj.IsEvtsSaved=true;
@@ -2111,7 +2114,10 @@ classdef BioSigPlot < hgsetget
                 return
             end
             
-            [FileName,FilePath]=uigetfile({'*.mat';'*.evt'},'select your events file');
+            [FileName,FilePath]=uigetfile({'*.mat*.evt','Event Files (*.mat;*.evt)';...
+                                           '*.mat','Matlab Mat File (*.mat)';
+                                           '*.evt','Event File (*.evt)'},...
+                                           'select your events file');
             if FileName~=0
                 Events=load(fullfile(FilePath,FileName),'-mat');
                 
