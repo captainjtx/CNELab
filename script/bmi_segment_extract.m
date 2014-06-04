@@ -24,10 +24,10 @@ movements={'Relax'};
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-[FileName,FilePath]=uigetfile('*.mat','select task file');
+[FileName,FilePath]=uigetfile('*.medf','select task file');
 task=load(fullfile(FilePath,FileName));
 
-[FileName,FilePath]=uigetfile('*mat','select annotations file');
+[FileName,FilePath]=uigetfile('*.mat','select annotations file');
 annotations=load(fullfile(FilePath,FileName));
 
 data=task.data;

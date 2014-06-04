@@ -1234,7 +1234,7 @@ classdef BioSigPlot < hgsetget
             
             obj.VideoFrame=min(max(1,val),obj.TotalVideoFrame);
             
-            if ~isempty(obj.VideoHandle)
+            if ishandle(obj.VideoHandle)
                 set(obj.VideoHandle,'CData',obj.VideoObj.frames(val).cdata);
                 drawnow
             end
@@ -2089,7 +2089,10 @@ classdef BioSigPlot < hgsetget
                 Events.text{i}=obj.Evts{i,2};
             end
             if ~isempty(Events)
-                [FileName,FilePath]=uiputfile('*.mat','save your Events','evts.mat');
+                [FileName,FilePath]=uiputfile({'*.mat;*.evt','Event Files (*.mat;*.evt)';...
+                                                '*.mat','Matlab Mat file (*.mat)';
+                                                '*.evt','Event File (*.evt)'}...
+                                                ,'save your Events','untitled');
                 if FileName~=0
                     save(fullfile(FilePath,FileName),'-struct','Events');
                     obj.IsEvtsSaved=true;
@@ -2111,9 +2114,12 @@ classdef BioSigPlot < hgsetget
                 return
             end
             
-            [FileName,FilePath]=uigetfile('*.mat','select your events file','evts.mat');
+            [FileName,FilePath]=uigetfile({'*.mat*.evt','Event Files (*.mat;*.evt)';...
+                                           '*.mat','Matlab Mat File (*.mat)';
+                                           '*.evt','Event File (*.evt)'},...
+                                           'select your events file');
             if FileName~=0
-                Events=load(fullfile(FilePath,FileName));
+                Events=load(fullfile(FilePath,FileName),'-mat');
                 
                 if isfield(Events,'stamp')&&isfield(Events,'text')
                     for i=1:length(Events.stamp)

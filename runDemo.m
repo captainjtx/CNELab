@@ -2,16 +2,20 @@
 %   Detailed explanation goes here
 
 %neuro task file loading+++++++++++++++++++++++++++++++++++++++++++++++++++
-[FileName,FilePath]=uigetfile('*.mat','select the neuro task file',[pwd '/db/demo/neuro.mat']);
+
+clear 
+clc
+
+[FileName,FilePath]=uigetfile({'*.medf';'*.mat'},'select the neuro task file',[pwd '../data']);
 if ~FileName
-    exit
+    return
 end
-neuroTask=load(fullfile(FilePath,FileName));
+neuroTask=load(fullfile(FilePath,FileName),'-mat');
 
 TaskFiles{1}=fullfile(FilePath,FileName);
-
-for i=1:60
-    datamat(i,:)=neuroTask.data.dataMat{i};
+chanIndex=1:60;
+for i=1:length(chanIndex)
+    datamat(chanIndex(i),:)=(neuroTask.data.dataMat{chanIndex(i)})';
 end
 
 sampleRate=neuroTask.data.info{1}.sampleRate;
@@ -29,13 +33,13 @@ end
 % datamat=cat(1,datamat,synch');
 
 %behvaior task file loading++++++++++++++++++++++++++++++++++++++++++++++++
-[FileName,FilePath]=uigetfile('*.mat','select the behv task file',[pwd '/db/demo/behv.mat']);
+[FileName,FilePath]=uigetfile({'*.medf';'*.mat'},'select the behv task file',[pwd '../data']);
 
 if ~FileName
-    exit
+    return
 end
 
-behvTask=load(fullfile(FilePath,FileName));
+behvTask=load(fullfile(FilePath,FileName),'-mat');
 
 TaskFiles{2}=fullfile(FilePath,FileName);
 
@@ -51,12 +55,12 @@ end
 behvMat(1,:)=behvMat(1,:)*1000;
 
 %Annotation file loading+++++++++++++++++++++++++++++++++++++++++++++++++++
-[FileName,FilePath]=uigetfile('*.mat','select the annotations file',[pwd '/db/demo/anno.mat']);
+[FileName,FilePath]=uigetfile('*.evt','select the annotations file',[pwd '../data']);
 if ~FileName
-    exit
+    return
 end
 
-annotations=load(fullfile(FilePath,FileName));
+annotations=load(fullfile(FilePath,FileName),'-mat');
 
 if isfield(annotations,'text')&&isfield(annotations,'stamp')
     for i=1:length(annotations.text)

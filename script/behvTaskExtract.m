@@ -1,4 +1,4 @@
-function behvTaskExtract()
+function behvTaskExtract(neuroSynchName)
 %This function convert the behv data into standard task file format
 %Workflow:
 %1................synchronize the behv data with neuro data
@@ -8,13 +8,25 @@ function behvTaskExtract()
 %study name
 studyName='HandRelexionExtension';
 
-neuroSynchName='Sound'; %synch channel name in neuro task file
+% neuroSynchName='Sound'; %synch channel name in neuro task file
 
+if nargin==0
+    neuroSynchName='Synch';
+end 
+
+impulseStart=2;
+startEdge='rise';
+
+impulseEnd=1;
+endEdge='fall';
 %==========================================================================
 
 
-[FileName,FilePath]=uigetfile('*.mat','select the related neuro task file');
+[FileName,FilePath]=uigetfile('*.medf','select the related neuro task file',pwd);
 
+if ~FileName
+    return
+end
 neuroTask=load(fullfile(FilePath,FileName));
 
 
@@ -28,7 +40,10 @@ end
 
 stamp=neuroTask.data.info{1}.stamp;
 
-[FileName,FilePath]=uigetfile('*.mat','select the behavior data file',[pwd '/db/demo/behv.mat']);
+[FileName,FilePath]=uigetfile('*.mat','select the original behavior data file',pwd);
+if ~FileName
+    return
+end
 behv=load(fullfile(FilePath,FileName));
 
 trials=behv.trials;
@@ -56,7 +71,8 @@ behvMat=cat(1,behvSynch,acceleration,fingers,rollPitch);
 behvMat=double(behvMat);
 
 [behvMat,videoStartTime,timeFrame]=neuroBehvSynch(synch,stamp,sampleRate,...
-    behvMat,behvSynch,behvTimeStamp,behvVideoTimeFrame);
+    behvMat,behvSynch,behvTimeStamp,behvVideoTimeFrame,...
+    impulseStart,startEdge,impulseEnd,endEdge);
 
 channelNames={'Trigger','Acceleration X','Acceleration Y', 'Acceleration Z',...
     'Finger 1','Finger 2','Finger 3','Finger 4','Finger 5',...
@@ -83,7 +99,7 @@ task.info.device='Lenovo';
 task.info.video.startTime=videoStartTime;
 task.info.video.timeFrame=timeFrame;
 
-[FileName,FilePath]=uiputfile('*.mat','save your behv task file','task.mat');
+[FileName,FilePath]=uiputfile('*.medf','save your behv task file','behv.medf');
 save(fullfile(FilePath,FileName),'-struct','task');
 
 end
