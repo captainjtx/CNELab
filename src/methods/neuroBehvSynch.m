@@ -1,5 +1,5 @@
 function [behvMat,videoStartTime,videoTimeFrame]=neuroBehvSynch(neuroSynch,neuroTimeStamp,...
-    sampleRate,behvMat,behvSynch,behvTimeStamp,behvVideoTimeFrame,impulseStart)
+    sampleRate,behvMat,behvSynch,behvTimeStamp,behvVideoTimeFrame,impulseStart,startEdge,impulseEnd,endEdge)
 %This function synchronize the behavior data w.r.t the timestamp of neuro-system
 
 %synch: synch signal from neuro-system
@@ -8,8 +8,15 @@ function [behvMat,videoStartTime,videoTimeFrame]=neuroBehvSynch(neuroSynch,neuro
 
 
 %Synchronization impulse number to start
-if nargin==7
+if nargin<=7
     impulseStart=1;
+    startEdge='rise';
+    
+    impulseEnd=1;
+    endEdge='fall';
+elseif nargin==9
+    impulseEnd=1;
+    endEdge='fall';
 end
 
 %cutoff frequency for highpass filter of synch signal from neuro-system
@@ -32,57 +39,78 @@ behvSynch=detrend(behvSynch);
 synch_f=filter_symmetric(b,a,neuroSynch,sampleRate,0,'iir');
 
 %get the starting point of synch signal from neuro-system%%%%%%%%%%%%%%%%%%
-env=abs(hilbert(synch_f));
-thresh_neuro=90*median(env);
+neuroEnv=abs(hilbert(synch_f));
+thresh_neuro=90*median(neuroEnv);
 % thresh_neuro=mean(env);
-denv=env>thresh_neuro;
-diffenv=diff(denv);
+neuroDenv=neuroEnv>thresh_neuro;
+neuroDiffenv=diff(neuroDenv);
 
 figure
 subplot(2,1,1)
 plot(neuroTimeStamp,synch_f,'b');
 title('neuro system')
 hold on
-plot(neuroTimeStamp,env,'r');
+plot(neuroTimeStamp,neuroEnv,'r');
 hold on
-plot([neuroTimeStamp(1) neuroTimeStamp(length(env))],[thresh_neuro thresh_neuro],'-m');
+plot([neuroTimeStamp(1) neuroTimeStamp(length(neuroEnv))],[thresh_neuro thresh_neuro],'-m');
 
-startInd=find(diffenv==1)+1;
-endInd=find(diffenv==-1)+1;
+riseInd=find(neuroDiffenv==1)+1;
+fallInd=find(neuroDiffenv==-1)+1;
 
-start_neuro=startInd(impulseStart);
+switch startEdge
+    case 'rise'
+        start_neuro=riseInd(impulseStart);
+    case 'fall'
+        start_neuro=fallInd(impulseStart);
+end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %get the ending point of synch signal from neuro-system%%%%%%%%%%%%%%%%%%%%
-end_neuro=endInd(end);
+switch endEdge
+    case 'rise'
+        end_neuro=riseInd(end+1-impulseEnd);
+    case 'fall'
+        end_neuro=fallInd(end+1-impulseEnd);
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %get the starting point of synch signal from behv-system%%%%%%%%%%%%%%%%%%%
-env=abs(hilbert(behvSynch));
+behvEnv=abs(hilbert(behvSynch));
 % plot(1:length(trigger),trigger,'b',1:length(env),env,'r');
 
-thresh_behv=25*median(env);
+thresh_behv=25*median(behvEnv);
 % thresh_behv=mean(env);
-denv=env>thresh_behv;
-diffenv=diff(denv);
+behvDenv=behvEnv>thresh_behv;
+behvDiffenv=diff(behvDenv);
 
 subplot(2,1,2)
 plot(behvTimeStamp,behvSynch,'b');
 title('behv system')
 hold on
-plot(behvTimeStamp,env,'r');
+plot(behvTimeStamp,behvEnv,'r');
 hold on
-plot([behvTimeStamp(1) behvTimeStamp(length(env))],[thresh_behv thresh_behv],'-m');
+plot([behvTimeStamp(1) behvTimeStamp(length(behvEnv))],[thresh_behv thresh_behv],'-m');
 
 disp('Check the auto thresholding')
 disp('Press any key to continue')
 pause;
 
-startInd=find(diffenv==1)+1;
-endInd=find(diffenv==-1)+1;
+riseInd=find(behvDiffenv==1)+1;
+fallInd=find(behvDiffenv==-1)+1;
 
-start_behv=startInd(impulseStart);
+switch startEdge
+    case 'rise'
+        start_behv=riseInd(impulseStart);
+    case 'fall'
+        start_behv=fallInd(impulseStart);
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %get the ending point of synch signal from behv-system
-end_behv=endInd(end);
+switch endEdge
+    case 'rise'
+        end_behv=riseInd(end+1-impulseEnd);
+    case 'fall'
+        end_behv=fallInd(end+1-impulseEnd);
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 behvMatMiddle=behvMat(:,start_behv:end_behv);
@@ -94,29 +122,31 @@ behvTimeStampSE=behvTimeStamp(start_behv:end_behv)-behvTimeStamp(start_behv);
 neuroTimeStampSE=neuroTimeStamp(start_neuro:end_neuro)-neuroTimeStamp(start_neuro);
 % neuroTimeStamp=neuroTimeStamp/neuroTimeStamp(end);
 
+% interpolate the data=====================================================
+interpBehvMatMiddle=interp1(behvTimeStampSE,behvMatMiddle',neuroTimeStampSE);
+
+%timestamp shift check=====================================================
+
 figure
-neuro_diff=diff(abs(hilbert(synch_f(start_neuro:end_neuro)))>thresh_neuro);
-behv_diff=diff(abs(hilbert(behvSynch(start_behv:end_behv)))>thresh_behv);
 
 subplot(2,1,1)
-plot(neuroTimeStampSE(2:end),neuro_diff,'b',behvTimeStampSE(2:end),behv_diff,'r');
-title('start and end of the impulse train');
-legend({'neuro pulse','behv pulse'})
+neuro_diff=neuroDiffenv(start_neuro-1:end_neuro-1);
 
-deltaTimeStamp=neuroTimeStampSE(1+find(neuro_diff>0))-behvTimeStampSE(1+find(behv_diff>0));
+behv_diff=behvDiffenv(start_behv-1:end_behv-1);
+
+plot(neuroTimeStampSE,neuro_diff,'b',behvTimeStampSE,behv_diff,'r');
+title('digital rising and falling edge of impulse train before interpolation');
+legend({'neuro pulse','behv pulse'});
+
+deltaTimeStamp=neuroTimeStampSE(find(neuro_diff>0))-behvTimeStampSE(find(behv_diff>0));
 
 subplot(2,1,2)
 plot(deltaTimeStamp);
 ylim([-0.2 0.2]);
-title('Timestamp difference at each pulse start')
-disp('Make sure timestamp difference is within a resonable range !')
-disp('If the differences are high, try to manually select different impulse start')
-disp('press any key to continue')
-
+title('Timestamp difference at rising edge of pulse train before interpolation')
 pause
 
-
-interpBehvMatMiddle=interp1(behvTimeStampSE,behvMatMiddle',neuroTimeStampSE);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 chanNum=size(interpBehvMatMiddle,2);
 behvMat=cat(2,zeros(chanNum,start_neuro-1),interpBehvMatMiddle',zeros(chanNum,length(neuroSynch)-end_neuro));
