@@ -1,4 +1,4 @@
-function behvTaskExtract(neuroSynchName)
+function behvTaskExtract()
 %This function convert the behv data into standard task file format
 %Workflow:
 %1................synchronize the behv data with neuro data
@@ -8,13 +8,11 @@ function behvTaskExtract(neuroSynchName)
 %study name
 studyName='HandRelexionExtension';
 
-% neuroSynchName='Sound'; %synch channel name in neuro task file
+%synch channel name in neuro task file
+defaultSynchNames={'Sound','Synch'};
+synchName=[];
 
-if nargin==0
-    neuroSynchName='Synch';
-end 
-
-impulseStart=2;
+impulseStart=1;
 startEdge='rise';
 
 impulseEnd=1;
@@ -27,16 +25,53 @@ endEdge='fall';
 if ~FileName
     return
 end
-neuroTask=load(fullfile(FilePath,FileName));
+neuroTask=load(fullfile(FilePath,FileName),'-mat');
 
 
 sampleRate=neuroTask.data.info{1}.sampleRate;
-
-for i=1:length(neuroTask.data.info)
-    if strcmpi(neuroTask.data.info{i}.name,neuroSynchName)
-        synch=neuroTask.data.dataMat{i};
+%GUI for synch channel name of neuro system********************************
+while (1)
+    synch=[];
+    for i=1:length(neuroTask.data.info)
+        if isempty(synchName)
+            if ismember(neuroTask.data.info{i}.name,defaultSynchNames)
+                synch=neuroTask.data.dataMat{i};
+            end
+        else
+            if strcmpi(neuroTask.data.info{i}.name,synchName)
+                synch=neuroTask.data.dataMat{i};
+            end
+        end
     end
+    
+    if isempty(synch)
+        cprintf('Errors','[Error]\n')
+        cprintf('Errors','Cannot find synch channel in neuro task file. Please check the channel name.\n')
+        cprintf('SystemCommands','Do you want to change the name of the synch channel ?[Y/N]\n')
+        s=input('','s');
+        
+        if strcmpi(s,'n')
+            return
+        else
+            
+            prompt = {'Name of the synch channel in neuro-system'};
+            dlg_title = 'ok-continue cancel-reak';
+            num_lines = 1;
+            def = {synchName};
+            
+            answer = inputdlg(prompt,dlg_title,num_lines,def);
+            if ~isempty(answer)
+                synchName=answer{1};
+            else
+                return
+            end
+        end
+    else
+        break
+    end
+    
 end
+%==========================================================================
 
 stamp=neuroTask.data.info{1}.stamp;
 
@@ -44,7 +79,7 @@ stamp=neuroTask.data.info{1}.stamp;
 if ~FileName
     return
 end
-behv=load(fullfile(FilePath,FileName));
+behv=load(fullfile(FilePath,FileName),'-mat');
 
 trials=behv.trials;
 settings=behv.settings;

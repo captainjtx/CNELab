@@ -1,10 +1,8 @@
+function runDemo()
 %RUN Summary of this function goes here
 %   Detailed explanation goes here
 
 %neuro task file loading+++++++++++++++++++++++++++++++++++++++++++++++++++
-
-clear 
-clc
 
 [FileName,FilePath]=uigetfile({'*.medf';'*.mat'},'select the neuro task file',[pwd '../data']);
 if ~FileName
@@ -85,3 +83,4 @@ end
 assignin('base','bsp',bsp);
 % assignin('base','startTime',startTime);
 % bsp.Evts=events;
+end
