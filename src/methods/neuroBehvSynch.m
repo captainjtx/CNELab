@@ -48,6 +48,7 @@ neuroDiffenv=diff(neuroDenv);
 figure
 subplot(2,1,1)
 plot(neuroTimeStamp,synch_f,'b');
+xlabel('s')
 title('neuro system')
 hold on
 plot(neuroTimeStamp,neuroEnv,'r');
@@ -84,14 +85,17 @@ behvDiffenv=diff(behvDenv);
 
 subplot(2,1,2)
 plot(behvTimeStamp,behvSynch,'b');
+xlabel('s');
+
 title('behv system')
 hold on
 plot(behvTimeStamp,behvEnv,'r');
 hold on
 plot([behvTimeStamp(1) behvTimeStamp(length(behvEnv))],[thresh_behv thresh_behv],'-m');
 
-disp('Check the auto thresholding')
-disp('Press any key to continue')
+cprintf('Yellow','[Caution]')
+cprintf('Blue','Check the auto thresholding')
+cprintf('Orange','Press any key to continue')
 pause;
 
 riseInd=find(behvDiffenv==1)+1;
@@ -142,9 +146,19 @@ deltaTimeStamp=neuroTimeStampSE(find(neuro_diff>0))-behvTimeStampSE(find(behv_di
 
 subplot(2,1,2)
 plot(deltaTimeStamp);
+
+ylabel('s');
+
 ylim([-0.2 0.2]);
 title('Timestamp difference at rising edge of pulse train before interpolation')
+
+cprintf('Yellow','[Caution]')
+cprintf('Blue','Make sure the timestamp difference is within a resonable range! Otherwise, try to change impulse start and end. ')
+cprintf('Orange','Press any key to continue')
+
 pause
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

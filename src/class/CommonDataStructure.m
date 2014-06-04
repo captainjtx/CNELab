@@ -35,7 +35,7 @@ classdef CommonDataStructure < handle
             if ~FileName
                 return
             end
-            save(fullfile(FilePath,FileName),'-struct','cds');
+            save(fullfile(FilePath,FileName),'-struct','cds','-mat');
         end
         
         function import(obj)

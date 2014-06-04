@@ -202,9 +202,9 @@ task.info.location=[];
 task.info.device='XLTEK EMU 128FS';
 
 [FileName,FilePath]=uiputfile('*.medf','save your neuro task file','neuro.medf');
-save(fullfile(FilePath,FileName),'-struct','task');
+save(fullfile(FilePath,FileName),'-struct','task','-mat');
 [FileName,FilePath]=uiputfile('*.evt','save your events file','anno.evt');
-save(fullfile(FilePath,FileName),'-struct','events');
+save(fullfile(FilePath,FileName),'-struct','events','-mat');
 
 end
 

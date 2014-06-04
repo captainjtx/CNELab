@@ -24,6 +24,9 @@
 % V0.1.1 Beta - 13/02/2013 - Initial Version
 
 function remakeAxes(obj)
+%Lemon Chiffon
+backgroundColor=[255, 250, 205]/256;
+
 for i=1:length(obj.LineVideo)
     delete(obj.LineVideo(i));
 end
@@ -71,7 +74,7 @@ if strcmp(obj.DataView,'Horizontal')
             end
         end
         obj.Axes(i)=axes('parent',obj.MainPanel,'XLim',[0 obj.WinLength*obj.SRate],'XTick',0:obj.SRate:obj.WinLength*obj.SRate,...
-            'TickLength',[.005 0],'position',position);
+            'TickLength',[.005 0],'position',position,'color',backgroundColor);
     end
     if ~isempty(obj.DispChans) && obj.ChanLink
         m=max(0.00001,Nchan(i)-obj.DispChans);
@@ -100,7 +103,7 @@ elseif strcmp(obj.DataView,'Vertical')
             end
         end
         obj.Axes(i)=axes('parent',obj.MainPanel,'XLim',[0 obj.WinLength*obj.SRate],'XTick',0:obj.SRate:obj.WinLength*obj.SRate,...
-            'TickLength',[.005 0],'position',position);
+            'TickLength',[.005 0],'position',position,'color',backgroundColor);
     end
     if ~isempty(obj.DispChans) && obj.ChanLink
         m=max(0.00001,Nchan(i)-obj.DispChans);
@@ -127,7 +130,7 @@ else
             'min',0,'max',m,'SliderStep',[1 obj.DispChans]/max(1,m),'Callback',@(src,evt) ChangeSliders(obj,src));
     end
     obj.Axes=axes('parent',obj.MainPanel,'XLim',[0 obj.WinLength*obj.SRate],'XTick',0:obj.SRate:obj.WinLength*obj.SRate,...
-        'TickLength',[.005 0],'position',position);
+        'TickLength',[.005 0],'position',position,'color',backgroundColor);
 end
 
 if ~isempty(obj.DispChans) && strcmp(obj.MouseMode,'Pan')
