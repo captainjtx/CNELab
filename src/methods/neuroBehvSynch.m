@@ -74,8 +74,9 @@ while(flag)
     plot([behvTimeStamp(1) behvTimeStamp(length(behvEnv))],[thresh_behv thresh_behv],'-m');
     hold off
     
-    cprintf('Yellow','[GUI]\n')
-    cprintf('SystemCommands','Do you think it is good to continue ? [Y/N]\n');
+    cprintf('Yellow','\n[GUI]\n')
+    cprintf('SystemCommands',['\nNeuro threshould: ',num2str(thresh_neuro),'\nBehv threshould: ',num2str(thresh_behv),...
+        '\n\nDo you think it is good to continue ? [Y/N]\n']);
     s=input('','s');
     
     if strcmpi(s,'y')
@@ -184,8 +185,12 @@ while(flag)
     ylim([-0.2 0.2]);
     title('Timestamp difference at rising edge of pulse train before interpolation')
     
-    cprintf('Yellow','[GUI]\n')
-    cprintf('SystemCommands','Do you think it is good to continue ? [Y/N]\n');
+    cprintf('Yellow','\n[GUI]\n')
+    cprintf('SystemCommands',['\nStart impulse counted forward: ', num2str(impulseStart),...
+                              '\nStarting edge: ', startEdge,...
+                              '\nEnd impulse counted backward: ', num2str(impulseEnd),...
+                              '\nEnding edge: ', endEdge,...
+                              '\n\nDo you think it is good to continue ? [Y/N]\n']);
     
     s=input('','s');
     
