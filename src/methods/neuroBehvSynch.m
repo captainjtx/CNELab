@@ -180,9 +180,9 @@ while(flag)
     subplot(2,1,2)
     plot(deltaTimeStamp);
     
-    ylabel('s');
+    ylabel('Second');
     
-    ylim([-0.2 0.2]);
+    ylim([-0.1 0.1]);
     title('Timestamp difference at rising edge of pulse train before interpolation')
     
     cprintf('Yellow','\n[GUI]\n')

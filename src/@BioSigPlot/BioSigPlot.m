@@ -507,6 +507,8 @@ classdef BioSigPlot < hgsetget
         VideoTimer
         
         IsEvtsSaved
+        
+        MAudioPlayer
     end
     
     methods
@@ -932,6 +934,10 @@ classdef BioSigPlot < hgsetget
             obj.Commands{end+1}='a.StartPlay';
             start(obj.MainTimer);
             start(obj.VideoTimer);
+            
+%             audioStart=(obj.VideoFrameInd-1)*obj.VideoTimerPeriod;
+%             audioStart=round(audioStart*get(obj.MAudioPlayer,'SampleRate'));
+%             play(obj.MAudioPlayer,audioStart);
         end
         
         %******************************************************************
@@ -939,12 +945,13 @@ classdef BioSigPlot < hgsetget
             % Stop Autoscrolling
             %
             % USAGE
-            % 	obj.StopPlay();
+            % 	obj.StopPlay(); 
             
             set(obj.BtnPlay,'String','Play','Callback',@(src,evt) StartPlay(obj));
             obj.Commands{end+1}='a.StopPlay';
             stop(obj.MainTimer);
             stop(obj.VideoTimer);
+%             pause(obj.MAudioPlayer);
         end
         
         %*****************************************************************
@@ -2090,9 +2097,9 @@ classdef BioSigPlot < hgsetget
             end
             if ~isempty(Events)
                 [FileName,FilePath]=uiputfile({'*.mat;*.evt','Event Files (*.mat;*.evt)';...
-                                                '*.mat','Matlab Mat file (*.mat)';
-                                                '*.evt','Event File (*.evt)'}...
-                                                ,'save your Events','untitled');
+                    '*.mat','Matlab Mat file (*.mat)';
+                    '*.evt','Event File (*.evt)'}...
+                    ,'save your Events','untitled');
                 if FileName~=0
                     save(fullfile(FilePath,FileName),'-struct','Events','-mat');
                     obj.IsEvtsSaved=true;
@@ -2115,9 +2122,9 @@ classdef BioSigPlot < hgsetget
             end
             
             [FileName,FilePath]=uigetfile({'*.mat*.evt','Event Files (*.mat;*.evt)';...
-                                           '*.mat','Matlab Mat File (*.mat)';
-                                           '*.evt','Event File (*.evt)'},...
-                                           'select your events file');
+                '*.mat','Matlab Mat File (*.mat)';
+                '*.evt','Event File (*.evt)'},...
+                'select your events file');
             if FileName~=0
                 Events=load(fullfile(FilePath,FileName),'-mat');
                 
@@ -2156,11 +2163,10 @@ classdef BioSigPlot < hgsetget
                     obj.VideoFile=fullfile(FilePath,FileName);
                     
                     dataTime=floor((size(obj.Data{1},2)-1)/obj.SRate);
-                    f=figure;
-                    obj.VideoHandle=imagesc(video.frames(1).cdata);
-                    drawnow
                     
-                    disp('Video loading...');
+                    cprintf('Yellow','\nVideo loading...\n');
+                    h = waitbar(0,'Video loading...');
+                    
                     obj.VideoTotalTime=videoTotalTime;
                     if isempty(obj.VideoTimeFrame)
                         
@@ -2184,27 +2190,40 @@ classdef BioSigPlot < hgsetget
                         timeframe(:,1)=timeframe(:,1)-timeframe(1,1);
                         obj.VideoTimeFrame=timeframe;
                     else
-                        %                         [frames,iframe,j]=unique(obj.VideoTimeFrame(:,2));
-                        %                         obj.VideoTimeFrame=obj.VideoTimeFrame(iframe,:);
-                        %                         obj.VideoTimeFrame(:,2)=0:size(obj.VideoTimeFrame,1)-1;
                         [obj.VideoObj,obj.AudioObj]=mmread(fullfile(FilePath,FileName));
                     end
                     
-                    obj.VideoTimerPeriod=1/obj.VideoObj.rate;
+                    obj.VideoTimerPeriod=1/obj.VideoObj.rate*2;
                     obj.TotalVideoFrame=length(obj.VideoObj.frames);
                     obj.VideoFrame=1;
                     ind=find(obj.VideoTimeFrame(:,2)==1);
                     obj.VideoFrameInd=ind(1);
                     obj.VideoLineTime=0;
                     
-                    disp('Video loaded.')
+                    
+                    if ~isempty(obj.AudioObj.data)
+                        obj.MAudioPlayer=audioplayer(obj.AudioObj.data,length(obj.AudioObj.data)/...
+                            ((length(obj.VideoObj.frames)-1)*obj.VideoTimerPeriod));
+                    end
+                    
+                    
+                    steps = 100;
+                    for step = 1:steps
+                        % computations take place here
+                        waitbar(step / steps)
+                    end
+                    close(h)
+                    
+                    figure;
+                    obj.VideoHandle=imagesc(video.frames(1).cdata);
+                    drawnow
+                    cprintf('Green','\nVideo loaded!\n')
                     
                 else
                     error('Cannot import the selected video');
                 end
             end
         end
-        
         %******************************************************************
         function WinEvents(obj,src)
             if strcmpi(get(src,'State'),'on')
