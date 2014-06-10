@@ -5,7 +5,7 @@ cds=CommonDataStructure();
 
 cds.import();
 
-bsp=BioSigPlot({cds.Data.Data' cds.Data.Data'});
+bsp=BioSigPlot({cds.Data.Data'});
 
 %**************************************************************************
 if isempty(cds.Montage.SampleRate)||(cds.Montage.SampleRate==0)

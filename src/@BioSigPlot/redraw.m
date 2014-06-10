@@ -145,11 +145,11 @@ else
         plotYTicks(obj.Axes,obj.MontageChanNames{1},obj.InsideTicks)
     else
         i=str2double(obj.DataView(4));
-        obj.PreprocData=preprocessedData(obj,i);
+        obj.PreprocData{i}=preprocessedData(obj,i);
         if obj.Spacing(i)==0
             obj.Spacing(i)=4*std(obj.PreprocData{i}(:));
         end
-        plotData(obj.Axes,t-t(1)+1,obj.PreprocData,obj.NormalModeColors(rem(i-1,end)+1,:),obj.Spacing(i),obj.MontageChanNumber(i):-1:1,obj.ChanSelect{i});
+        plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),obj.Spacing(i),obj.MontageChanNumber(i):-1:1,obj.ChanSelect{i});
         plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.InsideTicks)
     end
     plotXTicks(obj.Axes,obj.Time,obj.WinLength,obj.InsideTicks)
