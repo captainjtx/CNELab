@@ -10,7 +10,7 @@ Channel seperately filter
 
 Predefined annotation labels
 
-CDS construction
+% CDS construction
 
 GUI for simulink 
 
@@ -21,5 +21,7 @@ getaligneddata
 TFMap GUI segmentation
 
 background color green
+
+denoise test
 
 

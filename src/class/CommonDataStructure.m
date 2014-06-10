@@ -5,7 +5,9 @@ classdef CommonDataStructure < handle
     %06/03/2014
     
     properties (Access=public)
-        CDS
+        Data
+        Montage
+        PatientInfo
     end
     
     methods
@@ -13,7 +15,12 @@ classdef CommonDataStructure < handle
             if nargin==0
                 cds=CommonDataStructure.initial();
                 
-                obj.CDS=cds;
+                obj.Data=cds.Data;
+                obj.Montage=cds.Montage;
+                obj.PatientInfo=cds.PatientInfo;
+            else
+                d=varargin{1};
+                obj.assign(d);
             end
         end
         
@@ -23,14 +30,32 @@ classdef CommonDataStructure < handle
             end
         end
         
+        function assign(obj,s)
+            
+            if isfield(s,'Data')
+                obj.Data=s.Data;
+            end
+            
+            if isfield(s,'Montage')
+                obj.Montage=s.Montage;
+            end
+            
+            if isfield(s,'PatientInfo')
+                obj.PatientInfo=s.PatientInfo;
+            end
+            
+        end
         function export(obj)
             
-            cds=obj.CDS;
+            cds.Data=obj.Data;
+            cds.Montage=obj.Montage;
+            cds.PatientInfo=obj.PatientInfo;
             
-            [FileName,FilePath]=uiputfile({'*.cds;*.mat','Common Data Structure Formats (*.cds;*.mat)';...
-                                           '*.mat','Matlab Mat File (*.mat)';
-                                           '*.cds','Common Data Structure Fromat (*.cds)'}...
-                                           ,'Save your common data structure','untitled');
+            [FileName,FilePath]=uiputfile({...
+                '*.cds;*.mat','Common Data Structure Formats (*.cds;*.mat)';...
+                '*.mat','Matlab Mat File (*.mat)';
+                '*.cds','Common Data Structure Fromat (*.cds)'}...
+                ,'Save your common data structure','untitled');
             
             if ~FileName
                 return
@@ -54,18 +79,18 @@ classdef CommonDataStructure < handle
             switch FilterIndex
                 case 2
                     cds=load(fullfile(FilePath,FileName),'-mat');
-                    obj.CDS=CommonDataStructure.readFromCDS(cds);
+                    obj.assign(CommonDataStructure.readFromCDS(cds));
                     
                 case 3
                     
                     cds=load(fullfile(FilePath,FileName),'-mat');
-                    obj.CDS=CommonDataStructure.readFromOldCDS(cds);
+                    obj.assign(CommonDataStructure.readFromOldCDS(cds));
                     
                 case 4
                     
                     medf=load(fullfile(FilePath,FileName),'-mat');
-                    obj.CDS=CommonDataStructure.readFromMEDF(medf);
-                                        
+                    obj.assign(CommonDataStructure.readFromMEDF(medf));
+                    
             end
         end
         
@@ -84,136 +109,139 @@ classdef CommonDataStructure < handle
                 FilterIndex=2;
             end
         end
-        function obj=initial()
+        function s=initial()
             %Auto generate an empty cds
             %Refer to /doc/manual for more information on the data
             %structure
             
             %obj.Data construction
-            obj.Data.Data=[];
-            obj.Data.Annotations=[];
-            obj.Data.Artifact=[];
-            obj.Data.TimeStamps=[];
-            obj.Data.Unit.Data=[];
-            obj.Data.Unit.Stamp=[];
-            obj.Data.Video.StartTime=[];
-            obj.Data.Video.TimeFrame=[];
+            s.Data.Data=[];
+            s.Data.Annotations=[];
+            s.Data.Artifact=[];
+            s.Data.TimeStamps=[];
+            s.Data.Unit.Data=[];
+            s.Data.Unit.Stamp=[];
+            s.Data.Video.StartTime=[];
+            s.Data.Video.TimeFrame=[];
             
             %obj.Montage construction
-            obj.Montage.ChannelNames=[];
-            obj.Montage.GroupNames=[];
-            obj.Montage.HeadboxType=[];
-            obj.Montage.Amplifier=[];
-            obj.Montage.Name=[];
-            obj.Montage.Notes=[];
-            obj.Montage.SampleRate=[];
+            s.Montage.ChannelNames=[];
+            s.Montage.GroupNames=[];
+            s.Montage.HeadboxType=[];
+            s.Montage.Amplifier=[];
+            s.Montage.Name=[];
+            s.Montage.Notes=[];
+            s.Montage.SampleRate=[];
             
             %obj.PatientInfo construction
-            obj.PatientInfo.Case=[];
-            obj.PatientInfo.Experiment=[];
-            obj.PatientInfo.Index=[];
-            obj.PatientInfo.Params.TmExtend=[];
-            obj.PatientInfo.Params.TmMinimumData=[];
-            obj.PatientInfo.Params.NDownSample=[];
-            obj.PatientInfo.Side=[];
-            obj.PatientInfo.Study=[];
-            obj.PatientInfo.Task=[];
-            obj.PatientInfo.Time=[];
-            obj.PatientInfo.Location=[];
+            s.PatientInfo.Case=[];
+            s.PatientInfo.Experiment=[];
+            s.PatientInfo.Index=[];
+            s.PatientInfo.Params.TmExtend=[];
+            s.PatientInfo.Params.TmMinimumData=[];
+            s.PatientInfo.Params.NDownSample=[];
+            s.PatientInfo.Side=[];
+            s.PatientInfo.Study=[];
+            s.PatientInfo.Task=[];
+            s.PatientInfo.Time=[];
+            s.PatientInfo.Location=[];
         end
-        function obj=readFromCDS(cds)
+        function s=readFromCDS(cds)
             
-            obj=CommonDataStructure.initial();
+            s=CommonDataStructure.initial();
             
-            %obj.data construction
+            %s.data construction
             if isfield(cds,'Data')
+                if isfield(cds.Data,'Data')
+                    s.Data.Data=cds.Data.Data;
+                end
                 if isfield(cds.Data,'Annotations')
-                    obj.Data.Annotations=cds.Data.Annotations;
+                    s.Data.Annotations=cds.Data.Annotations;
                 end
                 if isfield(cds.Data,'Artifact')
-                    obj.Data.Artifact=cds.Data.Artifact;
+                    s.Data.Artifact=cds.Data.Artifact;
                 end
                 if isfield(cds.Data,'TimeStamps')
-                    obj.Data.TimeStamps=cds.Data.TimeStamps;
+                    s.Data.TimeStamps=cds.Data.TimeStamps;
                 end
                 
             end
             
-            %obj.Montage construction
+            %s.Montage construction
             if isfield(cds,'Montage')
                 if isfield(cds.Montage,'ChannelNames')
-                    obj.Montage.ChannelNames=cds.Montage.ChannelNames;
+                    s.Montage.ChannelNames=cds.Montage.ChannelNames;
                 end
                 if isfield(cds.Montage,'GroupNames')
-                    obj.Montage.GroupNames=cds.Montage.GroupNames;
+                    s.Montage.GroupNames=cds.Montage.GroupNames;
                 end
                 if isfield(cds.Montage,'HeadboxType')
-                    obj.Montage.HeadboxType=cds.Montage.HeadboxType;
+                    s.Montage.HeadboxType=cds.Montage.HeadboxType;
                 end
                 if isfield(cds.Montage,'Amplifier')
-                    obj.Montage.Amplifier=cds.Montage.Amplifier;
+                    s.Montage.Amplifier=cds.Montage.Amplifier;
                 end
                 if isfield(cds.Montage,'Name')
-                    obj.Montage.Name=cds.Montage.Name;
+                    s.Montage.Name=cds.Montage.Name;
                 end
                 if isfield(cds.Montage,'Notes')
-                    obj.Montage.Notes=cds.Montage.Notes;
+                    s.Montage.Notes=cds.Montage.Notes;
                 end
                 
                 if isfield(cds.Montage,'SampleRate')
-                    obj.Montage.SampleRate=cds.Montage.SampleRate;
+                    s.Montage.SampleRate=cds.Montage.SampleRate;
                 end
             end
-            %obj.PatientInfo construction
+            %s.PatientInfo construction
             
             if isfield(cds,'PatientInfo')
                 if isfield(cds.PatientInfo,'Case')
-                    obj.PatientInfo.Case=cds.PatientInfo.Case;
+                    s.PatientInfo.Case=cds.PatientInfo.Case;
                 end
                 if isfield(cds.PatientInfo,'Experiment')
-                    obj.PatientInfo.Experiment=cds.PatientInfo.Experiment;
+                    s.PatientInfo.Experiment=cds.PatientInfo.Experiment;
                 end
                 if isfield(cds.PatientInfo,'Index')
-                    obj.PatientInfo.Index=cds.PatientInfo.Index;
+                    s.PatientInfo.Index=cds.PatientInfo.Index;
                 end
                 if isfield(cds.PatientInfo,'Params')
                     if isfield(cds.PatientInfo.Params,'TmExtend')
-                        obj.PatientInfo.Params.TmExtend=cds.PatientInfo.Params.TmExtend;
+                        s.PatientInfo.Params.TmExtend=cds.PatientInfo.Params.TmExtend;
                     end
                     if isfield(cds.PatientInfo.Params,'TmMinimumData')
-                        obj.PatientInfo.Params.TmMinimumData=cds.PatientInfo.Params.TmMinimumData;
+                        s.PatientInfo.Params.TmMinimumData=cds.PatientInfo.Params.TmMinimumData;
                     end
                     if isfield(cds.PatientInfo.Params,'NDownSample')
-                        obj.PatientInfo.Params.NDownSample=cds.PatientInfo.Params.NDownSample;
+                        s.PatientInfo.Params.NDownSample=cds.PatientInfo.Params.NDownSample;
                     end
                 end
                 if isfield(cds.PatientInfo,'Side')
-                    obj.PatientInfo.Side=cds.PatientInfo.Side;
+                    s.PatientInfo.Side=cds.PatientInfo.Side;
                 end
                 if isfield(cds.PatientInfo,'Study')
-                    obj.PatientInfo.Study=cds.PatientInfo.Study;
+                    s.PatientInfo.Study=cds.PatientInfo.Study;
                 end
                 if isfield(cds.PatientInfo,'Task')
-                    obj.PatientInfo.Task=cds.PatientInfo.Task;
+                    s.PatientInfo.Task=cds.PatientInfo.Task;
                 end
                 if isfield(cds.PatientInfo,'Time')
-                    obj.PatientInfo.Time=cds.PatientInfo.Time;
+                    s.PatientInfo.Time=cds.PatientInfo.Time;
                 end
                 if isfield(cds.PatientInfo,'Location')
-                    obj.PatientInfo.Location=cds.PatientInfo.Location;
+                    s.PatientInfo.Location=cds.PatientInfo.Location;
                 end
             end
             
         end
         
-        function obj=readFromMEDF(medf)
-            obj=CommonDataStructure.initial();
+        function s=readFromMEDF(medf)
+            s=CommonDataStructure.initial();
             
             if isfield(medf,'data')
                 if isfield(medf.data,'dataMat')
                     for i=1:length(medf.data.dataMat)
                         try
-                            obj.Data.Data(:,i)=reshape(medf.data.dataMat{i},...
+                            s.Data.Data(:,i)=reshape(medf.data.dataMat{i},...
                                 length(medf.data.dataMat{i}),1);
                         catch exception
                             
@@ -235,18 +263,18 @@ classdef CommonDataStructure < handle
                 
                 if isfield(medf.data,'info')
                     if isfield(medf.data.info{1},'sampleRate')
-                        obj.Montage.SampleRate=medf.data.info{1}.sampleRate;
+                        s.Montage.SampleRate=medf.data.info{1}.sampleRate;
                     end
                     if isfield(medf.data.info{1},'unit')
-                        obj.Data.Unit.Data=medf.data.info{1}.unit;
+                        s.Data.Unit.Data=medf.data.info{1}.unit;
                     end
                     if isfield(medf.data.info{1},'stamp')
-                        obj.Data.TimeStamps=medf.data.info{1}.stamp;
+                        s.Data.TimeStamps=medf.data.info{1}.stamp;
                     end
                     
                     for i=1:length(medf.data.info)
                         if isfield(medf.data.info{i},'name')
-                            obj.Montage.ChannelNames{i}=medf.data.info{i}.name;
+                            s.Montage.ChannelNames{i}=medf.data.info{i}.name;
                         end
                     end
                 end
@@ -254,122 +282,136 @@ classdef CommonDataStructure < handle
             
             if isfield(medf,'info')
                 if isfield(medf.info,'studyName')
-                    obj.PatientInfo.Task=medf.info.studyName;
+                    s.PatientInfo.Task=medf.info.studyName;
                 end
                 
                 if isfield(medf.info,'location')
-                    obj.PatientInfo.Location=medf.info.location;
+                    s.PatientInfo.Location=medf.info.location;
                 end
                 
                 if isfield(medf.info,'device')
-                    obj.Montage.Amplifier=medf.info.device;
+                    s.Montage.Amplifier=medf.info.device;
                 end
                 
                 if isfield(medf.info,'video')
                     if isfield(medf.info.video,'startTime')
-                        obj.Data.Video.StartTime=medf.info.video.startTime;
+                        s.Data.Video.StartTime=medf.info.video.startTime;
                     end
                     if isfield(medf.info.video,'timeFrame')
-                        obj.Data.Video.timeFrame=medf.info.video.timeFrame;
+                        s.Data.Video.timeFrame=medf.info.video.timeFrame;
                     end
                 end
             end
             
         end
-         function obj=readFromOldCDS(cds)
+        function s=readFromOldCDS(oldcds)
             
-            obj=CommonDataStructure.initial();
+            s=CommonDataStructure.initial();
             
             %obj.data construction
-            if isfield(cds,'data')
-                if isfield(cds.data,'annotations')
-                    obj.Data.Annotations=cds.data.annotations;
+            if isfield(oldcds,'data')
+                if isfield(oldcds.data,'data')
+                    s.Data.Data=oldcds.data.data;
                 end
-                if isfield(cds.data,'artifact')
-                    obj.Data.Artifact=cds.data.artifact;
+                if isfield(oldcds.data,'annotations')
+                    s.Data.Annotations=oldcds.data.annotations;
                 end
-                if isfield(cds.data,'timestamps')
-                    obj.Data.TimeStamps=cds.data.timestamps;
+                if isfield(oldcds.data,'artifact')
+                    s.Data.Artifact=oldcds.data.artifact;
+                end
+                if isfield(oldcds.data,'timestamps')
+                    s.Data.TimeStamps=oldcds.data.timestamps;
                 end
                 
             end
             
             %obj.Montage construction
-            if isfield(cds,'montage')
-                if isfield(cds.montage,'ChannelNames')
-                    obj.Montage.ChannelNames=cds.montage.ChannelNames;
+            if isfield(oldcds,'montage')
+                if isfield(oldcds.montage,'ChannelNames')
+                    s.Montage.ChannelNames=oldcds.montage.ChannelNames;
                 end
-                if isfield(cds.montage,'GroupNames')
-                    obj.Montage.GroupNames=cds.montage.GroupNames;
+                if isfield(oldcds.montage,'GroupNames')
+                    s.Montage.GroupNames=oldcds.montage.GroupNames;
                 end
-                if isfield(cds.montage,'HeadboxType')
-                    obj.Montage.HeadboxType=cds.montage.HeadboxType;
+                if isfield(oldcds.montage,'HeadboxType')
+                    s.Montage.HeadboxType=oldcds.montage.HeadboxType;
                 end
-                if isfield(cds.montage,'Amplifier')
-                    obj.Montage.Amplifier=cds.montage.Amplifier;
+                if isfield(oldcds.montage,'Amplifier')
+                    s.Montage.Amplifier=oldcds.montage.Amplifier;
                 end
-                if isfield(cds.montage,'Name')
-                    obj.Montage.Name=cds.montage.Name;
+                if isfield(oldcds.montage,'Name')
+                    s.Montage.Name=oldcds.montage.Name;
                 end
-                if isfield(cds.montage,'Notes')
-                    obj.Montage.Notes=cds.montage.Notes;
+                if isfield(oldcds.montage,'Notes')
+                    s.Montage.Notes=oldcds.montage.Notes;
                 end
                 
-                if isfield(cds.montage,'SampleRate')
-                    obj.Montage.SampleRate=cds.montage.SampleRate;
+                if isfield(oldcds.montage,'SampleRate')
+                    s.Montage.SampleRate=oldcds.montage.SampleRate;
+                    s.Data.TimeStamps=s.Data.TimeStamps/s.Montage.SampleRate;
+                    evts=s.Data.Annotations;
+                    evts(:,1)=num2cell(cell2mat(evts(:,1))/s.Montage.SampleRate);
+                    s.Data.Annotations=evts;
                 end
             end
             %obj.PatientInfo construction
             
-            if isfield(cds,'patientInfo')
-                if isfield(cds.patientInfo,'Case')
-                    obj.PatientInfo.Case=cds.patientInfo.Case;
+            if isfield(oldcds,'patientInfo')
+                if isfield(oldcds.patientInfo,'Case')
+                    s.PatientInfo.Case=oldcds.patientInfo.Case;
                 end
-                if isfield(cds.patientInfo,'Experiment')
-                    obj.PatientInfo.Experiment=cds.patientInfo.Experiment;
+                if isfield(oldcds.patientInfo,'Experiment')
+                    s.PatientInfo.Experiment=oldcds.patientInfo.Experiment;
                 end
-                if isfield(cds.patientInfo,'Index')
-                    obj.PatientInfo.Index=cds.patientInfo.Index;
+                if isfield(oldcds.patientInfo,'Index')
+                    s.PatientInfo.Index=oldcds.patientInfo.Index;
                 end
-                if isfield(cds.patientInfo,'Params')
-                    if isfield(cds.patientInfo.Params,'tmExtend')
-                        obj.PatientInfo.Params.TmExtend=cds.patientInfo.Params.tmExtend;
+                if isfield(oldcds.patientInfo,'Params')
+                    if isfield(oldcds.patientInfo.Params,'tmExtend')
+                        s.PatientInfo.Params.TmExtend=oldcds.patientInfo.Params.tmExtend;
                     end
-                    if isfield(cds.patientInfo.Params,'tmMinimumData')
-                        obj.PatientInfo.Params.TmMinimumData=cds.patientInfo.Params.tmMinimumData;
+                    if isfield(oldcds.patientInfo.Params,'tmMinimumData')
+                        s.PatientInfo.Params.TmMinimumData=oldcds.patientInfo.Params.tmMinimumData;
                     end
-                    if isfield(cds.patientInfo.Params,'nDownSample')
-                        obj.PatientInfo.Params.NDownSample=cds.patientInfo.Params.nDownSample;
+                    if isfield(oldcds.patientInfo.Params,'nDownSample')
+                        s.PatientInfo.Params.NDownSample=oldcds.patientInfo.Params.nDownSample;
+                        n=s.PatientInfo.Params.NDownSample;
+                        if n~=0
+                            s.Data.TimeStamps=s.Data.TimeStamps/n;
+                            evts=s.Data.Annotations;
+                            evts(:,1)=num2cell(cell2mat(evts(:,1))/n);
+                            s.Data.Annotations=evts;
+                        end
                     end
                 end
-                if isfield(cds.patientInfo,'Side')
-                    obj.PatientInfo.Side=cds.patientInfo.Side;
+                if isfield(oldcds.patientInfo,'Side')
+                    s.PatientInfo.Side=oldcds.patientInfo.Side;
                 end
-                if isfield(cds.patientInfo,'Study')
-                    obj.PatientInfo.Study=cds.patientInfo.Study;
+                if isfield(oldcds.patientInfo,'Study')
+                    s.PatientInfo.Study=oldcds.patientInfo.Study;
                 end
-                if isfield(cds.patientInfo,'Task')
-                    obj.PatientInfo.Task=cds.patientInfo.Task;
+                if isfield(oldcds.patientInfo,'Task')
+                    s.PatientInfo.Task=oldcds.patientInfo.Task;
                 end
-                if isfield(cds.patientInfo,'Time')
-                    obj.PatientInfo.Time=cds.patientInfo.Time;
+                if isfield(oldcds.patientInfo,'Time')
+                    s.PatientInfo.Time=oldcds.patientInfo.Time;
                 end
-                if isfield(cds.patientInfo,'Location')
-                    obj.PatientInfo.Location=cds.patientInfo.Location;
+                if isfield(oldcds.patientInfo,'Location')
+                    s.PatientInfo.Location=oldcds.patientInfo.Location;
                 end
             end
             
-         end
+        end
         
-         function demo()
-             
-             obj=CommonDataStructure();
-             assignin('base','obj',obj);
-             
-             obj.import();
-             
-             obj.export();
-         end
+        function demo()
+            
+            obj=CommonDataStructure();
+            assignin('base','obj',obj);
+            
+            obj.import();
+            
+            obj.export();
+        end
         
         
     end

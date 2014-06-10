@@ -307,3 +307,48 @@ for i=1:size(evts,1)
 end
 
 end
+
+function [data2View,channelIndex]=SelectData2View(varargin)
+%data: original data (column wise)
+%pageNumber: the max number of channel displayed in one page
+%pageIndex: the chosen page to display,start from 1
+%mask: a vector store the channel mask, length(mask) should equal size(data,2)
+% 0-not display; 1-display
+
+%data2View: data to view (column wise)
+%channelIndex: the index of data2View on data
+
+if nargin==1
+    data2View=varargin{1};
+    return
+elseif nargin==2
+    data=varargin{1};
+    pageNumber=varargin{2};
+    pageIndex=1;
+    mask=[];
+elseif nargin==3
+    data=varargin{1};
+    pageNumber=varargin{2};
+    pageIndex=varargin{3};
+    mask=[];
+else
+    data=varargin{1};
+    pageNumber=varargin{2};
+    pageIndex=varargin{3};
+    mask=varargin{4};
+end
+
+channelStart=pageNumber*(pageIndex-1)+1;
+
+channelEnd=min(channelStart+pageNumber-1,size(data,2));
+
+channelMask=[zeros(1,channelStart-1),ones(1,channelEnd-channelStart+1),zeros(1,size(data,2)-channelEnd)];
+
+if ~isempty(mask)
+    channelMask=channelMask&mask;
+end
+
+channelIndex=find(channelMask==1);
+
+data2View=data(:,channelIndex);
+end

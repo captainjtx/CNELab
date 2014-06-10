@@ -11,9 +11,9 @@ end
 neuroTask=load(fullfile(FilePath,FileName),'-mat');
 
 TaskFiles{1}=fullfile(FilePath,FileName);
-chanIndex=1:60;
+chanIndex=60:120;
 for i=1:length(chanIndex)
-    datamat(chanIndex(i),:)=(neuroTask.data.dataMat{chanIndex(i)})';
+    datamat(i,:)=(neuroTask.data.dataMat{chanIndex(i)})';
 end
 
 sampleRate=neuroTask.data.info{1}.sampleRate;

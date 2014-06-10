@@ -399,6 +399,11 @@ classdef BioSigPlot < hgsetget
         YBorder                 %Vector of 2elements containing the space height between the last channel and the bottom and between the top and the first channel (Units: 'Spacing' relative)
         Selection               %Time of Selected area
         
+        PageChannelNumber       %The maximum default channel number of one page
+        PageSectionNumber       %The section number of page
+        ChannelMask             %The channel mask to display
+        BadChannels             %The bad channels
+        
     end
     properties (Access=protected,Hidden)%Storage of public properties
         Config_
@@ -435,6 +440,10 @@ classdef BioSigPlot < hgsetget
         AxesHeight_
         YBorder_
         Selection_
+        PageChannelNumber_
+        PageSectionNumber_
+        ChannelMask_
+        BadChannels_
         
         TaskFiles_
         VideoStartTime_
@@ -641,7 +650,8 @@ classdef BioSigPlot < hgsetget
                 'DispChans','ChanLink','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
                 'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','XGrid','YGrid',...
                 'Position','Title','MouseMode','PlaySpeed','MainTimerPeriod','VideoTimerPeriod','AxesHeight','YBorder','YGridInterval','Selection',...
-                'TaskFiles','VideoStartTime','VideoFile','VideoTimeFrame','VideoLineTime','MainTimer','VideoTimer'};
+                'TaskFiles','VideoStartTime','VideoFile','VideoTimeFrame','VideoLineTime','MainTimer','VideoTimer','PageChannelNumber',...
+                'PageSectionNumber','ChannelMask','BadChannels'};
             
             if isempty(obj.Commands)
                 command='a=BioSigPlot(data';
@@ -659,7 +669,8 @@ classdef BioSigPlot < hgsetget
                 if any(strcmpi(g{i},{'Config','SRate','WinLength','Spacing','Montage','DataView','MontageRef','Evts','Time','FirstDispChans',...
                         'DispChans','ChanLink','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
                         'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','XGrid','YGrid','MouseMode','AxesHeight','YBorder','YGridInterval','Selection',...
-                        'TaskFiles','VideoStartTime','VideoFile','MainTimerPeriod','VideoTimerPeriod','VideoTimeFrame'}))
+                        'TaskFiles','VideoStartTime','VideoFile','MainTimerPeriod','VideoTimerPeriod','VideoTimeFrame','PageChannelNumber','PageSectionNumber',...
+                        'ChannelMask','BadChannels'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage','DataView','MontageRef','DispChans','ChanLink','InsideTicks','MouseMode','AxesHeight'}))
@@ -796,6 +807,17 @@ classdef BioSigPlot < hgsetget
         function obj = set.VideoFile(obj,val), set(obj,'VideoFile',val);end
         function val = get.VideoFile(obj), val=obj.VideoFile_; end
         
+        function obj = set.PageChannelNumber(obj,val), set(obj,'PageChannelNumber',val);end
+        function val = get.PageChannelNumber(obj), val=obj.PageChannelNumber_; end
+        
+        function obj = set.PageSectionNumber(obj,val), set(obj,'PageSectionNumber',val);end
+        function val = get.PageSectionNumber(obj), val=obj.PageSectionNumber_; end
+        
+        function obj = set.ChannelMask(obj,val), set(obj,'ChannelMask',val); end
+        function val = get.ChannelMask(obj), val=obj.ChannelMask_; end
+        
+        function obj = set.BadChannels(obj,val), set(obj,'BadChannels',val); end
+        function val = get.BadChannels(obj), val=obj.BadChannels_; end
         
         
         %*****************************************************************
@@ -935,9 +957,9 @@ classdef BioSigPlot < hgsetget
             start(obj.MainTimer);
             start(obj.VideoTimer);
             
-%             audioStart=(obj.VideoFrameInd-1)*obj.VideoTimerPeriod;
-%             audioStart=round(audioStart*get(obj.MAudioPlayer,'SampleRate'));
-%             play(obj.MAudioPlayer,audioStart);
+            %             audioStart=(obj.VideoFrameInd-1)*obj.VideoTimerPeriod;
+            %             audioStart=round(audioStart*get(obj.MAudioPlayer,'SampleRate'));
+            %             play(obj.MAudioPlayer,audioStart);
         end
         
         %******************************************************************
@@ -945,13 +967,13 @@ classdef BioSigPlot < hgsetget
             % Stop Autoscrolling
             %
             % USAGE
-            % 	obj.StopPlay(); 
+            % 	obj.StopPlay();
             
             set(obj.BtnPlay,'String','Play','Callback',@(src,evt) StartPlay(obj));
             obj.Commands{end+1}='a.StopPlay';
             stop(obj.MainTimer);
             stop(obj.VideoTimer);
-%             pause(obj.MAudioPlayer);
+            %             pause(obj.MAudioPlayer);
         end
         
         %*****************************************************************
@@ -1221,6 +1243,27 @@ classdef BioSigPlot < hgsetget
             set(obj.VideoTimer,'period',val);
         end
         
+        %==================================================================
+        %******************************************************************
+        function obj=set.PageChannelNumber_(obj,val)
+            obj.PageChannelNumber_=val;
+        end
+        %==================================================================
+        %******************************************************************
+        function obj=set.PageSectionNumber_(obj,val)
+            obj.PageSectionNumber_=val;
+        end
+        %==================================================================
+        %******************************************************************
+        function obj=set.ChannelMask_(obj,val)
+            obj.ChannelMask_=val;
+        end
+        %==================================================================
+        %******************************************************************
+        function obj=set.BadChannels_(obj,val)
+            obj.BadChannels_=val;
+        end
+        %==================================================================
         %******************************************************************
         function obj = set.VideoLineTime(obj,val)
             if ~isempty(obj.WinLength)
@@ -1234,9 +1277,8 @@ classdef BioSigPlot < hgsetget
                 set(obj.LineVideo,'XData',[t t]);
             end
         end
-        
-        
         %==================================================================
+        %******************************************************************
         function obj=set.VideoFrame(obj,val)
             
             obj.VideoFrame=min(max(1,val),obj.TotalVideoFrame);
@@ -1248,6 +1290,9 @@ classdef BioSigPlot < hgsetget
         end
         
     end
+    
+    %==================================================================
+    
     methods (Access=protected)
         function a=DefaultConfigFile(obj) %#ok<MANU>
             a='defaultconfig';
