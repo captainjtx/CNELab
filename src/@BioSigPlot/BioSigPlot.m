@@ -305,12 +305,15 @@ classdef BioSigPlot < hgsetget
         BtnPlay
         TxtTime
         TxtY
+        
+        PopFilterTarget
         ChkFilter
         ChkStrongFilter
         EdtFilterLow
         EdtFilterHigh
         EdtFilterNotch1
         EdtFilterNotch2
+        
         PopSpacingTarget
         EdtSpacing
         BtnAddSpacing
@@ -1273,7 +1276,7 @@ classdef BioSigPlot < hgsetget
         
         %*****************************************************************
         function s=ControlBarSize(obj) %#ok<MANU>
-            s=[1015 35];
+            s=[1100,35];
         end
         
         
@@ -1323,6 +1326,7 @@ classdef BioSigPlot < hgsetget
                 'WindowButtonMotionFcn',@(src,evt) MouseMovement(obj),'WindowButtonDownFcn',@(src,evt) MouseDown(obj),...
                 'WindowButtonUpFcn',@(src,evt) MouseUp(obj),'Renderer','painters','ResizeFcn',@(src,evt) resize(obj),...
                 'WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'WindowKeyReleaseFcn',@(src,evt) KeyRelease(obj,src,evt));
+            
             obj.PanObj=pan(obj.Fig);
             set(obj.PanObj,'Motion','vertical','ActionPostCallback',@(src,evts) ChangeSliders(obj,src,evts))
             obj.MainTimer = timer('TimerFcn',@(src ,evts) PlayTime(obj),'ExecutionMode','fixedRate','BusyMode','queue');
@@ -1346,8 +1350,8 @@ classdef BioSigPlot < hgsetget
         function makeControls(obj)
             obj.timeControlPanel(obj.ControlPanel,[0 0 .2 1]);
             obj.infoControlPanel(obj.ControlPanel,[0.2 0 .2 1]);
-            obj.filterControlPanel(obj.ControlPanel,[.4 0 .31 1]);
-            obj.scaleControlPanel(obj.ControlPanel,[0.71 0 .25 1]);
+            obj.filterControlPanel(obj.ControlPanel,[.4 0 .45 1]);
+            obj.scaleControlPanel(obj.ControlPanel,[0.85 0 .15 1]);
             
         end
         
@@ -1391,7 +1395,7 @@ classdef BioSigPlot < hgsetget
         
         %******************************************************************
         function infoControlPanel(obj,parent,position)
-            obj.InfoPanel=uipanel(parent,'units','normalized','position',position,'BorderType','none');
+            obj.InfoPanel=uipanel(parent,'units','normalized','position',position);
             obj.TxtTime=uicontrol(obj.InfoPanel,'Style','text','units','normalized','position',[0 .5 1 .4],'HorizontalAlignment','Left','String','Time : 0:00:00.00 - sample 0');
             obj.TxtY=uicontrol(obj.InfoPanel,'Style','text','units','normalized','position',[0 0 1 .4],'HorizontalAlignment','Left','String','Chan :  - value 0');
         end
@@ -1409,21 +1413,31 @@ classdef BioSigPlot < hgsetget
         
         %******************************************************************
         function filterControlPanel(obj,parent,position)
-            obj.FilterPanel=uibuttongroup('Parent',parent,'Position',position,'units','normalized');
-            obj.ChkFilter=uicontrol(obj.FilterPanel,'Style','checkbox','units','normalized','position',[0 .55 .31 .4],'String','Filtering',...
+            
+            obj.FilterPanel=uipanel('Parent',parent,'Position',position,'units','normalized');
+            
+            FilterPanelForEachData=uipanel('Parent',obj.FilterPanel,'Position',[0.2,0,0.8,1],'units','normalized');
+            
+            list=[{'All'} num2cell(1:obj.DataNumber)];
+            uicontrol(obj.FilterPanel,'Style','text','String','Filtering:','units','normalized','position',[0 0.15 0.1 0.6],'HorizontalAlignment','right');
+            obj.PopFilterTarget=uicontrol(obj.FilterPanel,'Style','popupmenu','String',list,'units','normalized','position',[0.1 .05 .07 .8],'BackgroundColor',[1 1 1],...
+                'Callback',@(src,evt) ChangeFilterTarget(obj));
+            
+            
+            obj.ChkFilter=uicontrol(FilterPanelForEachData,'Style','checkbox','units','normalized','position',[0 .55 .2 .4],'String','Enable',...
                 'Callback',@(src,evt) set(obj,'Filtering',get(src,'Value')));
-            obj.ChkStrongFilter=uicontrol(obj.FilterPanel,'Style','checkbox','units','normalized','position',[0 .05 .31 .4],'String','High Order',...
+            obj.ChkStrongFilter=uicontrol(FilterPanelForEachData,'Style','checkbox','units','normalized','position',[0 .05 .2 .4],'String','High Order',...
                 'Callback',@(src,evt) set(obj,'StrongFilter',get(src,'Value')));
-            uicontrol(obj.FilterPanel,'Style','text','String','Low:','units','normalized','position',[.32 .2 .09 .6],'HorizontalAlignment','right');
-            obj.EdtFilterLow=uicontrol(obj.FilterPanel,'Style','edit','units','normalized','position',[.43 .1 .08 .8],'BackgroundColor',[1 1 1],...
+            uicontrol(FilterPanelForEachData,'Style','text','String','Low:','units','normalized','position',[.22 .2 .09 .6],'HorizontalAlignment','right');
+            obj.EdtFilterLow=uicontrol(FilterPanelForEachData,'Style','edit','units','normalized','position',[.33 .1 .08 .8],'BackgroundColor',[1 1 1],...
                 'Callback',@(src,evt) set(obj,'FilterLow',str2double(get(src,'String'))));
-            uicontrol(obj.FilterPanel,'Style','text','String','High:','units','normalized','position',[.52 .2 .09 .6],'HorizontalAlignment','right');
-            obj.EdtFilterHigh=uicontrol(obj.FilterPanel,'Style','edit','units','normalized','position',[.62 .1 .08 .8],'BackgroundColor',[1 1 1],...
+            uicontrol(FilterPanelForEachData,'Style','text','String','High:','units','normalized','position',[.42 .2 .09 .6],'HorizontalAlignment','right');
+            obj.EdtFilterHigh=uicontrol(FilterPanelForEachData,'Style','edit','units','normalized','position',[.52 .1 .08 .8],'BackgroundColor',[1 1 1],...
                 'Callback',@(src,evt) set(obj,'FilterHigh',str2double(get(src,'String'))));
-            uicontrol(obj.FilterPanel,'Style','text','String','Notch:','units','normalized','position',[.72 .2 .09 .6],'HorizontalAlignment','right');
-            obj.EdtFilterNotch1=uicontrol(obj.FilterPanel,'Style','edit','units','normalized','position',[.82 .1 .08 .8],'BackgroundColor',[1 1 1],...
+            uicontrol(FilterPanelForEachData,'Style','text','String','Notch:','units','normalized','position',[.65 .2 .09 .6],'HorizontalAlignment','right');
+            obj.EdtFilterNotch1=uicontrol(FilterPanelForEachData,'Style','edit','units','normalized','position',[.8 .1 .08 .8],'BackgroundColor',[1 1 1],...
                 'Callback',@(src,evt) set(obj,'FilterNotch1',str2double(get(src,'String'))));
-            obj.EdtFilterNotch2=uicontrol(obj.FilterPanel,'Style','edit','units','normalized','position',[.9 .1 .08 .8],'BackgroundColor',[1 1 1],...
+            obj.EdtFilterNotch2=uicontrol(FilterPanelForEachData,'Style','edit','units','normalized','position',[.9 .1 .08 .8],'BackgroundColor',[1 1 1],...
                 'Callback',@(src,evt) set(obj,'FilterNotch2',str2double(get(src,'String'))));
         end
         
@@ -1431,11 +1445,11 @@ classdef BioSigPlot < hgsetget
         function scaleControlPanel(obj,parent,position)
             obj.ScalePanel=uibuttongroup('Parent',parent,'units','normalized','position',position);
             list=[{'All'} num2cell(1:obj.DataNumber)];
-            uicontrol(obj.ScalePanel,'Style','text','String','Target data','units','normalized','position',[0 .2 .28 .6],'HorizontalAlignment','Right');
-            obj.PopSpacingTarget=uicontrol(obj.ScalePanel,'Style','popupmenu','String',list,'units','normalized','position',[0.3 .1 .15 .8],'BackgroundColor',[1 1 1],'Callback',@(src,evt) ChangeSpacingTarget(obj));
-            obj.EdtSpacing=uicontrol(obj.ScalePanel,'Style','edit','units','normalized','position',[.47 .1 .15 .8],'BackgroundColor',[1 1 1],'Callback',@(src,evt) ChangeSpacing(obj,src));
-            obj.BtnAddSpacing=uicontrol(obj.ScalePanel,'Style','pushbutton','String','+','units','normalized','position',[.63 0.55 .07 .35],'Callback',@(src,evt) ChangeSpacing(obj,src));
-            obj.BtnRemSpacing=uicontrol(obj.ScalePanel,'Style','pushbutton','String','-','units','normalized','position',[.63 0.1 .07 .35],'Callback',@(src,evt) ChangeSpacing(obj,src));
+            uicontrol(obj.ScalePanel,'Style','text','String','Spacing:','units','normalized','position',[0 .15 0.31 .6],'HorizontalAlignment','Right');
+            obj.PopSpacingTarget=uicontrol(obj.ScalePanel,'Style','popupmenu','String',list,'units','normalized','position',[0.31 .2 .19 .6],'BackgroundColor',[1 1 1],'Callback',@(src,evt) ChangeSpacingTarget(obj));
+            obj.EdtSpacing=uicontrol(obj.ScalePanel,'Style','edit','units','normalized','position',[.5 .1 .38 .8],'BackgroundColor',[1 1 1],'Callback',@(src,evt) ChangeSpacing(obj,src));
+            obj.BtnAddSpacing=uicontrol(obj.ScalePanel,'Style','pushbutton','String','+','units','normalized','position',[.88 0.55 .1 .35],'Callback',@(src,evt) ChangeSpacing(obj,src));
+            obj.BtnRemSpacing=uicontrol(obj.ScalePanel,'Style','pushbutton','String','-','units','normalized','position',[.88 0.1 .1 .35],'Callback',@(src,evt) ChangeSpacing(obj,src));
         end
         
         %******************************************************************
@@ -1685,6 +1699,10 @@ classdef BioSigPlot < hgsetget
         end
         
         %******************************************************************
+        %==================================================================
+        function ChangeFilterTarget(obj)
+            
+        end
         function ChangeSpacingTarget(obj)
             if get(obj.PopSpacingTarget,'Value')==1
                 if all(obj.Spacing==obj.Spacing(1))
@@ -2322,7 +2340,7 @@ classdef BioSigPlot < hgsetget
             end
             ctrlsize=obj.ControlBarSize;
             set(obj.MainPanel,'position',[0 ctrlsize(2) pos(3) pos(4)-ctrlsize(2)]);
-            set(obj.ControlPanel,'position',[0 0 ctrlsize(1) ctrlsize(2)]);
+            set(obj.ControlPanel,'position',[0 0 pos(3) ctrlsize(2)]);
         end
     end
     
