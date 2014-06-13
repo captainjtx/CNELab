@@ -12,12 +12,12 @@
 %     it under the terms of the GNU General Public License as published by
 %     the Free Software Foundation, either version 3 of the License, or
 %     (at your option) any later version.
-% 
+%
 %     BioSigPlot is distributed in the hope that it will be useful,
 %     but WITHOUT ANY WARRANTY; without even the implied warranty of
 %     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 %     GNU General Public License for more details.
-% 
+%
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
@@ -47,7 +47,7 @@ if isempty(obj.FirstDispChans_)
 end
 
 if ~isempty(obj.DispChans)
-    obj.FirstDispChans_=max(min(obj.FirstDispChans_,obj.MontageChanNumber-obj.DispChans+1),1);
+    obj.FirstDispChans_=max(min(obj.FirstDispChans_,obj.MontageChanNumber-min(obj.DispChans,obj.MontageChanNumber)+1),1);
     if obj.ChanLink
         set(obj.Sliders,'value',get(obj.Sliders,'max')-obj.FirstDispChans_(1)+1)
     elseif any(strcmp(obj.DataView_,{'Vertical','Horizontal'}))
@@ -71,7 +71,8 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         if isempty(obj.DispChans) %No elevator
             ylim=[1-obj.YBorder_(1) Nchan(i)+obj.YBorder_(2)];
         else
-            ylim=[Nchan(i)+2-obj.YBorder_(1)-obj.FirstDispChans(i)-obj.DispChans      Nchan(i)+obj.YBorder_(2)-obj.FirstDispChans(i)+1];
+
+            ylim=[Nchan(i)+2-obj.YBorder_(1)-obj.FirstDispChans(i)-min(Nchan(i),obj.DispChans)      Nchan(i)+obj.YBorder_(2)-obj.FirstDispChans(i)+1];
         end
         cla(obj.Axes(i))
         set(obj.Axes(i),'Ylim',ylim,'Ytick',1:Nchan(i),'YTickLabel',{},'XtickLabel',{});
@@ -80,7 +81,11 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         if strcmp(obj.DataView,'Horizontal') || i==obj.DataNumber, plotXTicks(obj.Axes(i),obj.Time,obj.WinLength,obj.InsideTicks); end
         obj.PreprocData{i}=preprocessedData(obj,i);
         if obj.Spacing(i)==0
-            obj.Spacing(i)=4*std(obj.PreprocData{i}(:));
+            tmp=std(obj.PreprocData{i}(:));
+            
+            if tmp
+               obj.Spacing(i)=4*tmp;
+            end
         end
         plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),obj.Spacing(i),Nchan(i):-1:1,obj.ChanSelect{i});
         if ~obj.ChanLink || i==1  || strcmp(obj.DataView,'Vertical') , plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.InsideTicks); end
@@ -108,9 +113,9 @@ else
         ylim=[0 Nchan+1];
     else
         %ylim=[obj.FirstDispChans(n)-1 obj.FirstDispChans(n)+obj.DispChans];
-        ylim=[obj.MontageChanNumber(n)+2-obj.YBorder_(1)-obj.FirstDispChans(n)-obj.DispChans    obj.MontageChanNumber(n)+obj.YBorder_(2)-obj.FirstDispChans(n)+1];
+        ylim=[obj.MontageChanNumber(n)+2-obj.YBorder_(1)-obj.FirstDispChans(n)-min(obj.DispChans,obj.MontageChanNumber(n))    obj.MontageChanNumber(n)+obj.YBorder_(2)-obj.FirstDispChans(n)+1];
         if strcmp(obj.DataView,'Alternated')
-            ylim=[(obj.MontageChanNumber(n)+1-obj.FirstDispChans(n)-obj.DispChans)*obj.DataNumber+1-obj.YBorder_(1)   obj.DataNumber*(obj.MontageChanNumber(n)+1-obj.FirstDispChans(n))+obj.YBorder_(2)];
+            ylim=[(obj.MontageChanNumber(n)+1-obj.FirstDispChans(n)-min(obj.DispChans,obj.MontageChanNumber(n)))*obj.DataNumber+1-obj.YBorder_(1)   obj.DataNumber*(obj.MontageChanNumber(n)+1-obj.FirstDispChans(n))+obj.YBorder_(2)];
             %ylim=[obj.DataNumber*(obj.FirstDispChans(n)-1) obj.DataNumber*(obj.FirstDispChans(n)-1+obj.DispChans)+1];
         end
     end
@@ -126,7 +131,10 @@ else
         for i=obj.DataNumber:-1:1
             obj.PreprocData{i}=preprocessedData(obj,i);
             if obj.Spacing(i)==0
-                obj.Spacing(i)=4*std(obj.PreprocData{i}(:));
+                tmp=std(obj.PreprocData{i}(:));
+                if tmp
+                   obj.Spacing(i)=4*tmp;
+                end
             end
             plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.AlternatedModeColors(rem(i-1,end)+1,:),obj.Spacing(i),obj.DataNumber*obj.MontageChanNumber(1)+1-i:-obj.DataNumber:1,obj.ChanSelect{i});
         end
@@ -138,7 +146,10 @@ else
         for i=1:obj.DataNumber
             obj.PreprocData{i}=preprocessedData(obj,i);
             if obj.Spacing(i)==0
-                obj.Spacing(i)=4*std(obj.PreprocData{i}(:));
+                tmp=std(obj.PreprocData{i}(:));
+                if tmp
+                   obj.Spacing(i)=4*tmp;
+                end
             end
             plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.SuperimposedModeColors(rem(i-1,end)+1,:),obj.Spacing(i),obj.MontageChanNumber(i):-1:1,obj.ChanSelect{i});
         end
@@ -147,7 +158,10 @@ else
         i=str2double(obj.DataView(4));
         obj.PreprocData{i}=preprocessedData(obj,i);
         if obj.Spacing(i)==0
-            obj.Spacing(i)=4*std(obj.PreprocData{i}(:));
+            tmp=std(obj.PreprocData{i}(:));
+            if tmp
+               obj.Spacing(i)=4*tmp;
+            end
         end
         plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),obj.Spacing(i),obj.MontageChanNumber(i):-1:1,obj.ChanSelect{i});
         plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.InsideTicks)
@@ -172,24 +186,24 @@ end
 
 
 % if strcmp(obj.MouseMode,'Measurer')
-    for i=1:length(obj.Axes)
-        obj.LineMeasurer(i)=line([-1 -1],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]);
-
-        for j=1:Nchan(i)
-            obj.TxtMeasurer{i}(j)=text('Parent',obj.Axes(i),'position',[-1,j],'EdgeColor',[0 0 0],'BackgroundColor',[0.7 0.7 0],...
-                'VerticalAlignment','Top','Margin',1,'FontSize',10,'FontName','FixedWidth');
-        end
+for i=1:length(obj.Axes)
+    obj.LineMeasurer(i)=line([-1 -1],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]);
+    
+    for j=1:Nchan(i)
+        obj.TxtMeasurer{i}(j)=text('Parent',obj.Axes(i),'position',[-1,j],'EdgeColor',[0 0 0],'BackgroundColor',[0.7 0.7 0],...
+            'VerticalAlignment','Top','Margin',1,'FontSize',10,'FontName','FixedWidth');
     end
+end
 % end
 
 if strcmp(obj.MouseMode,'Annotate')
     for i=1:length(obj.Axes)
-        obj.LineMeasurer(i)=line([-1 -1],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]); 
+        obj.LineMeasurer(i)=line([-1 -1],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]);
     end
 end
 
 
-for i=1:length(obj.Axes) 
+for i=1:length(obj.Axes)
     if obj.VideoLineTime>0 && obj.VideoLineTime<obj.WinLength
         t=obj.VideoLineTime*obj.SRate;
     else
@@ -203,17 +217,21 @@ end
 end
 
 %**************************************************************************
-function plotData(axe,t,data,color,spacing,posY,chanSelect) %#ok<INUSD>
+function plotData(axe,t,data,color,spacing,posY,ChanSelect) %#ok<INUSD>
 % Plot data function
-% axe :axes to plot                                                
+% axe :axes to plot
 % t : the time values
 % data :   data matrix
 % color :  data line color
 % spacing : spacing in µV between 2 channels
 % posY : the position of channel
-% chanSelect : list of selected chans
+% ChanSelect : list of selected chans
 
 %data=-data./(spacing'*ones(1,size(data,2)));
+if ~isempty(ChanSelect)
+    data=data(ChanSelect,:);
+    posY=data(ChanSelect);
+end
 data=-data/spacing;
 data=data+(posY'*ones(1,size(data,2)));
 
@@ -231,7 +249,7 @@ end
 %**************************************************************************
 function plotXTicks(axe,time,WinLength,insideticks)
 % Plot X ticks
-% axe :  axes to plot                                               
+% axe :  axes to plot
 % time : starting time
 % WinLength :  window time lentgth
 % insideticks :1 (Ticks are inside) 0 (Ticks are outside)
@@ -248,10 +266,10 @@ end
 
 %**************************************************************************
 function plotYTicks(axe,ChanNames,insideticks)
-% Write channels names on Y Ticks 
-%  axe :  axes to plot  
+% Write channels names on Y Ticks
+%  axe :  axes to plot
 % ChanNames : cell of channel names that will be writted
-% insideticks :1 (Ticks are inside) 0 (Ticks are outside)                                                                  * 
+% insideticks :1 (Ticks are inside) 0 (Ticks are outside)                                                                  *
 
 if insideticks
     lim=get(axe,'Ylim');
@@ -301,54 +319,9 @@ for i=1:size(evts,1)
         x=SRate*(evts{i,1}-t);
         EventLines(count)=line([x x],[0 1000],'parent',axe,'Color',[0 0.7 0]);
         EventTexts(count)=text('Parent',axe,'position',[x yl(2)],'BackgroundColor',[0.6 1 0.6],'EdgeColor',[0 0.7 0],...
-                'VerticalAlignment','Top','Margin',1,'FontSize',12,'String',evts{i,2},'Editing','off');
+            'VerticalAlignment','Top','Margin',1,'FontSize',12,'String',evts{i,2},'Editing','off');
         EventIndex(count)=i;
     end
 end
 
-end
-
-function [data2View,channelIndex]=SelectData2View(varargin)
-%data: original data (column wise)
-%pageNumber: the max number of channel displayed in one page
-%pageIndex: the chosen page to display,start from 1
-%mask: a vector store the channel mask, length(mask) should equal size(data,2)
-% 0-not display; 1-display
-
-%data2View: data to view (column wise)
-%channelIndex: the index of data2View on data
-
-if nargin==1
-    data2View=varargin{1};
-    return
-elseif nargin==2
-    data=varargin{1};
-    pageNumber=varargin{2};
-    pageIndex=1;
-    mask=[];
-elseif nargin==3
-    data=varargin{1};
-    pageNumber=varargin{2};
-    pageIndex=varargin{3};
-    mask=[];
-else
-    data=varargin{1};
-    pageNumber=varargin{2};
-    pageIndex=varargin{3};
-    mask=varargin{4};
-end
-
-channelStart=pageNumber*(pageIndex-1)+1;
-
-channelEnd=min(channelStart+pageNumber-1,size(data,2));
-
-channelMask=[zeros(1,channelStart-1),ones(1,channelEnd-channelStart+1),zeros(1,size(data,2)-channelEnd)];
-
-if ~isempty(mask)
-    channelMask=channelMask&mask;
-end
-
-channelIndex=find(channelMask==1);
-
-data2View=data(:,channelIndex);
 end

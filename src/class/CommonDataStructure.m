@@ -63,14 +63,20 @@ classdef CommonDataStructure < handle
             save(fullfile(FilePath,FileName),'-struct','cds','-mat');
         end
         
-        function import(obj)
-            
+        function y=import(obj)
+            y=0;
             [FileName,FilePath,FilterIndex]=uigetfile({...
                 '*.mat;*.cds;*.cds.old;*.medf','Supported formats (*.mat;*.cds;*.cds.old;*.medf)';...
                 '*.cds','common data structure (*.cds)';...
                 '*.cds.old','old common data structure (*.cds.old)';...
                 '*.medf','matlab edf format (*.medf)'},...
                 'Select your data file','data.mat');
+            
+            if ~FileName
+                return
+            else
+                y=1;
+            end
             
             if FilterIndex==1
                 s=load(fullfile(FilePath,FileName),'-mat');
@@ -399,6 +405,60 @@ classdef CommonDataStructure < handle
                 if isfield(oldcds.patientInfo,'Location')
                     s.PatientInfo.Location=oldcds.patientInfo.Location;
                 end
+            end
+            
+        end
+        
+        function cds=multiImport()
+            [FileName,FilePath,FilterIndex]=uigetfile({...
+                '*.mat;*.cds;*.cds.old;*.medf','Supported formats (*.mat;*.cds;*.cds.old;*.medf)';...
+                '*.cds','common data structure (*.cds)';...
+                '*.cds.old','old common data structure (*.cds.old)';...
+                '*.medf','matlab edf format (*.medf)'},...
+                'Select your data file','data.mat','MultiSelect','on');
+            
+            if ~iscell(FileName)
+                if ~FileName
+                    cds=[];
+                    return
+                else
+                    FileName={FileName};
+                end
+            end
+            
+            if FilterIndex==1
+                s=cell(1,length(FileName));
+                for i=1:length(FileName)
+                    s{i}=load(fullfile(FilePath,FileName{i}),'-mat');
+                    
+                    FilterIndex(i)=CommonDataStructure.dataStructureCheck(s{i});
+                end
+            else
+                FilterIndex=ones(1,length(FileName))*FilterIndex;
+            end
+            
+            cds=cell(1,length(FilterIndex));
+            for i=1:length(FileName)
+                cds{i}=CommonDataStructure();
+            end
+            
+            for i=1:length(FileName)
+            switch FilterIndex(i)
+                case 2
+                    tmp=load(fullfile(FilePath,FileName{i}),'-mat');
+                    cds{i}.assign(CommonDataStructure.readFromCDS(tmp));
+                    
+                case 3
+                    
+                    tmp=load(fullfile(FilePath,FileName{i}),'-mat');
+                    cds{i}.assign(CommonDataStructure.readFromOldCDS(tmp));
+                    
+                case 4
+                    
+                    tmp=load(fullfile(FilePath,FileName{i}),'-mat');
+                    cds{i}.assign(CommonDataStructure.readFromMEDF(tmp));
+                    
+            end
             end
             
         end
