@@ -71,7 +71,7 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         if isempty(obj.DispChans) %No elevator
             ylim=[1-obj.YBorder_(1) Nchan(i)+obj.YBorder_(2)];
         else
-
+            
             ylim=[Nchan(i)+2-obj.YBorder_(1)-obj.FirstDispChans(i)-min(Nchan(i),obj.DispChans)      Nchan(i)+obj.YBorder_(2)-obj.FirstDispChans(i)+1];
         end
         cla(obj.Axes(i))
@@ -82,10 +82,7 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         obj.PreprocData{i}=preprocessedData(obj,i);
         if obj.Spacing(i)==0
             tmp=std(obj.PreprocData{i}(:));
-            
-            if tmp
-               obj.Spacing(i)=4*tmp;
-            end
+            obj.Spacing(i)=4*tmp;
         end
         plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),obj.Spacing(i),Nchan(i):-1:1,obj.ChanSelect{i});
         if ~obj.ChanLink || i==1  || strcmp(obj.DataView,'Vertical') , plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.InsideTicks); end
@@ -132,9 +129,7 @@ else
             obj.PreprocData{i}=preprocessedData(obj,i);
             if obj.Spacing(i)==0
                 tmp=std(obj.PreprocData{i}(:));
-                if tmp
-                   obj.Spacing(i)=4*tmp;
-                end
+                obj.Spacing(i)=4*tmp;
             end
             plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.AlternatedModeColors(rem(i-1,end)+1,:),obj.Spacing(i),obj.DataNumber*obj.MontageChanNumber(1)+1-i:-obj.DataNumber:1,obj.ChanSelect{i});
         end
@@ -147,9 +142,7 @@ else
             obj.PreprocData{i}=preprocessedData(obj,i);
             if obj.Spacing(i)==0
                 tmp=std(obj.PreprocData{i}(:));
-                if tmp
-                   obj.Spacing(i)=4*tmp;
-                end
+                obj.Spacing(i)=4*tmp;
             end
             plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.SuperimposedModeColors(rem(i-1,end)+1,:),obj.Spacing(i),obj.MontageChanNumber(i):-1:1,obj.ChanSelect{i});
         end
@@ -159,9 +152,7 @@ else
         obj.PreprocData{i}=preprocessedData(obj,i);
         if obj.Spacing(i)==0
             tmp=std(obj.PreprocData{i}(:));
-            if tmp
-               obj.Spacing(i)=4*tmp;
-            end
+            obj.Spacing(i)=4*tmp;
         end
         plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),obj.Spacing(i),obj.MontageChanNumber(i):-1:1,obj.ChanSelect{i});
         plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.InsideTicks)

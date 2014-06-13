@@ -718,7 +718,11 @@ classdef BioSigPlot < hgsetget
         function val = get.SRate(obj), val=obj.SRate_; end
         function obj = set.WinLength(obj,val), set(obj,'WinLength',val); end
         function val = get.WinLength(obj), val=obj.WinLength_; end
-        function obj = set.Spacing(obj,val), set(obj,'Spacing',val); end
+        function obj = set.Spacing(obj,val)
+            if sum(val~=obj.Spacing)
+                set(obj,'Spacing',val); 
+            end
+        end
         function val = get.Spacing(obj), val=obj.Spacing_; end
         function obj = set.ChanNames(obj,val), set(obj,'ChanNames',val); end
         function val = get.ChanNames(obj), val=obj.ChanNames_; end
