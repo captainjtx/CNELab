@@ -1095,9 +1095,26 @@ classdef BioSigPlot < hgsetget
         
         %******************************************************************
         function obj = set.Filtering_(obj,val)
-            obj.Filtering_=val;
-            set(obj.ChkFilter,'Value',val);
-            if val, offon='on'; else offon='off'; end
+            n=get(obj.PopFilterTarget,'Value');
+            
+            if length(val)==1
+               if n==1
+                   obj.Filtering_=ones(1,obj.DataNumber)*val;
+               else
+                   obj.Filtering_(n-1)=val;
+               end
+            else
+                obj.Filtering_=val;
+            end
+            
+            if n==1
+                newVal=obj.Filtering(1);
+            else
+                newVal=obj.Filtering(n-1);
+            end
+            
+            set(obj.ChkFilter,'Value',newVal);
+            if newVal, offon='on'; else offon='off'; end
             set(obj.ChkStrongFilter,'Enable',offon)
             set(obj.EdtFilterLow,'Enable',offon)
             set(obj.EdtFilterHigh,'Enable',offon)
@@ -1108,27 +1125,94 @@ classdef BioSigPlot < hgsetget
         
         %******************************************************************
         function obj = set.StrongFilter_(obj,val)
-            obj.StrongFilter_=val;
-            set(obj.ChkStrongFilter,'Value',val);
+            n=get(obj.PopFilterTarget,'Value');
+            
+            if length(val)==1
+                if n==1
+                    obj.StrongFilter_=ones(1,obj.DataNumber)*val;
+                else
+                    obj.StrongFilter_(n-1)=val;
+                end
+            else
+                obj.StrongFilter_=val;
+            end
+            
+            if n==1
+                newVal=obj.StrongFilter(1);
+            else
+                newVal=obj.StrongFilter(n-1);
+            end
+            
+            set(obj.ChkStrongFilter,'Value',newVal);
         end
         
         %******************************************************************
         function obj = set.FilterLow_(obj,val)
-            obj.FilterLow_=val;
-            set(obj.EdtFilterLow,'String',val)
+            n=get(obj.PopFilterTarget,'Value');
+            
+            if length(val)==1
+                if n==1
+                    obj.FilterLow_=ones(1,obj.DataNumber)*val;
+                else
+                    obj.FilterLow_(n-1)=val;
+                end
+            else
+                obj.FilterLow_=val;
+            end
+            
+            if n==1
+                newVal=obj.FilterLow(1);
+            else
+                newVal=obj.FilterLow(n-1);
+            end
+            
+            set(obj.EdtFilterLow,'String',newVal)
         end
         
         %******************************************************************
         function obj = set.FilterHigh_(obj,val)
-            obj.FilterHigh_=val;
-            set(obj.EdtFilterHigh,'String',val)
+            n=get(obj.PopFilterTarget,'Value');
+            
+            if length(val)==1
+                if n==1
+                    obj.FilterHigh_=ones(1,obj.DataNumber)*val;
+                else
+                    obj.FilterHigh_(n-1)=val;
+                end
+            else
+                obj.FilterHigh_=val;
+            end
+            
+            if n==1
+                newVal=obj.FilterHigh(1);
+            else
+                newVal=obj.FilterHigh(n-1);
+            end
+
+            set(obj.EdtFilterHigh,'String',newVal)
         end
         
         %******************************************************************
         function obj = set.FilterNotch_(obj,val)
-            obj.FilterNotch_=val;
-            set(obj.EdtFilterNotch1,'String',val(1))
-            set(obj.EdtFilterNotch2,'String',val(2))
+            n=get(obj.PopFilterTarget,'Value');
+            
+            if size(val,1)==1
+                if n==1
+                    obj.FilterNotch_=repmat(val,2,1);
+                else
+                    obj.FilterNotch_(n-1,:)=val;
+                end
+            else
+                obj.FilterNotch_=val;
+            end
+            
+            if n==1
+                newVal=obj.FilterNotch(1,:);
+            else
+                newVal=obj.FilterNotch(n-1,:);
+            end
+            set(obj.EdtFilterNotch1,'String',newVal(1))
+            set(obj.EdtFilterNotch2,'String',newVal(2))
         end
         
         %******************************************************************
@@ -1421,8 +1505,8 @@ classdef BioSigPlot < hgsetget
             FilterPanelForEachData=uipanel('Parent',obj.FilterPanel,'Position',[0.2,0,0.8,1],'units','normalized');
             
             list=[{'All'} num2cell(1:obj.DataNumber)];
-            uicontrol(obj.FilterPanel,'Style','text','String','Filter','units','normalized','position',[0 0.2 0.05 0.5],'HorizontalAlignment','right');
-            obj.PopFilterTarget=uicontrol(obj.FilterPanel,'Style','popupmenu','String',list,'units','normalized','position',[0.07 .2 .09 .6],'BackgroundColor',[1 1 1],...
+            uicontrol(obj.FilterPanel,'Style','text','String','Filter ','units','normalized','position',[0 0.2 0.07 0.5],'HorizontalAlignment','right');
+            obj.PopFilterTarget=uicontrol(obj.FilterPanel,'Style','popupmenu','String',list,'units','normalized','position',[0.08 .2 .09 .6],'BackgroundColor',[1 1 1],...
                 'Callback',@(src,evt) ChangeFilterTarget(obj));
             
             
@@ -1447,7 +1531,7 @@ classdef BioSigPlot < hgsetget
         function scaleControlPanel(obj,parent,position)
             obj.ScalePanel=uibuttongroup('Parent',parent,'units','normalized','position',position);
             list=[{'All'} num2cell(1:obj.DataNumber)];
-            uicontrol(obj.ScalePanel,'Style','text','String','Space','units','normalized','position',[0 .2 0.2 .5],'HorizontalAlignment','right');
+            uicontrol(obj.ScalePanel,'Style','text','String','Space ','units','normalized','position',[0 .2 0.24 .5],'HorizontalAlignment','right');
             obj.PopSpacingTarget=uicontrol(obj.ScalePanel,'Style','popupmenu','String',list,'units','normalized','position',[0.25 0.2 .25 .6],'BackgroundColor',[1 1 1],'Callback',@(src,evt) ChangeSpacingTarget(obj));
             obj.EdtSpacing=uicontrol(obj.ScalePanel,'Style','edit','units','normalized','position',[.6 .1 .28 .8],'BackgroundColor',[1 1 1],'Callback',@(src,evt) ChangeSpacing(obj,src));
             obj.BtnAddSpacing=uicontrol(obj.ScalePanel,'Style','pushbutton','String','+','units','normalized','position',[.88 0.55 .1 .35],'Callback',@(src,evt) ChangeSpacing(obj,src));
@@ -1703,7 +1787,71 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         %==================================================================
         function ChangeFilterTarget(obj)
-            
+            if get(obj.PopFilterTarget,'Value')==1
+                if all(obj.Filtering==obj.Filtering(1))
+                    set(obj.ChkFilter,'Value',obj.Filtering(1));
+                    if obj.Filtering(1)==1
+                        if all(obj.StrongFilter==obj.StrongFilter(1))
+                            set(obj.ChkStrongFilter,'Value',obj.StrongFilter(1));
+                        else
+                            set(obj.ChkStrongFilter,'Value','0');
+                        end
+                        
+                        if all(obj.FilterLow==obj.FilterLow(1))
+                            set(obj.EdtFilterLow,'String',num2str(obj.FilterLow(1)));
+                        else
+                            set(obj.EdtFilterLow,'String','0');
+                        end
+                        
+                        if all(obj.FilterHigh==obj.FilterHigh(1))
+                            set(obj.EdtFilterHigh,'String',num2str(obj.FilterHigh(1)));
+                        else
+                            set(obj.EdtFilterHigh,'String','0');
+                        end
+                        
+                        if all(obj.FilterNotch(:,1)==obj.FilterNotch(1,1))
+                            set(obj.EdtFilterNotch1,'String',num2str(obj.FilterNotch(1,1)));
+                        else
+                            set(obj.EdtFilterNotch1,'String','0');
+                        end
+                        
+                        if all(obj.FilterNotch(:,2)==obj.FilterNotch(1,2))
+                            set(obj.EdtFilterNotch2,'String',num2str(obj.FilterNotch(1,2)));
+                        else
+                            set(obj.EdtFilterNotch2,'String','0');
+                        end
+                    end
+                    
+                else
+                   obj.Filtering=zeros(1,obj.DataNumber);
+                end
+            else
+                
+                n=get(obj.PopFilterTarget,'Value')-1;
+                set(obj.ChkFilter,'Value',obj.Filtering(n));
+                
+                if  obj.Filtering(n)
+                    offon='on';
+                else
+                    offon='off';
+                end
+                
+                set(obj.ChkStrongFilter,'Enable',offon);
+                set(obj.ChkStrongFilter,'Value',obj.StrongFilter(n));
+                
+                set(obj.EdtFilterLow,'Enable',offon);
+                set(obj.EdtFilterLow,'String',num2str(obj.FilterLow(n)));
+                
+                set(obj.EdtFilterHigh,'Enable',offon);
+                set(obj.EdtFilterHigh,'String',num2str(obj.FilterHigh(n)));
+                
+                set(obj.EdtFilterNotch1,'Enable',offon);
+                set(obj.EdtFilterNotch1,'String',num2str(obj.FilterNotch(n,1)));
+                
+                set(obj.EdtFilterNotch2,'Enable',offon);
+                set(obj.EdtFilterNotch2,'String',num2str(obj.FilterNotch(n,2)));
+                
+            end
         end
         function ChangeSpacingTarget(obj)
             if get(obj.PopSpacingTarget,'Value')==1

@@ -51,15 +51,23 @@ function d=preprocessedData(obj,n)
 t=ceil(obj.Time*obj.SRate+1):min(ceil((obj.Time+obj.WinLength)*obj.SRate),size(obj.Data{1},2));
 d=(obj.Montage{n}(obj.MontageRef(n)).mat*obj.ChanOrderMat{n})*double(obj.Data{n}(:,t));
 
-order=1;
 fs=obj.SRate;
 ext=100;
 phs=0;
 ftyp='iir';
 
-if obj.Filtering
-    fl=obj.FilterLow;
-    fh=obj.FilterHigh;
+if obj.StrongFilter(n)
+    order=2;
+else
+    order=1;
+end
+
+if obj.Filtering(n)
+    fl=obj.FilterLow(n);
+    fh=obj.FilterHigh(n);
+    
+    fn1=obj.FilterNotch(n,1);
+    fn2=obj.FilterNotch(n,2);
     
     if fl==0
         if fh~=0
@@ -78,11 +86,18 @@ if obj.Filtering
             end
         end         
     end
+    d=d';
     
     if exist('b','var')&&exist('a','var')
-    d=filter_symmetric(b,a,d',ext,phs,ftyp);
-    d=d';
+        d=filter_symmetric(b,a,d,ext,phs,ftyp);
     end
+    
+    if fn1~=0&&fn2~=0&&fn1<fn2
+        [b,a]=butter(order,[fl,fh]/(fs/2),'stop');
+        d=filter_symmetric(b,a,d,ext,phs,ftyp);
+    end
+    
+    d=d';
     
 end
 
