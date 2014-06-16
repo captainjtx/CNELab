@@ -1276,7 +1276,7 @@ classdef BioSigPlot < hgsetget
         
         %*****************************************************************
         function s=ControlBarSize(obj) %#ok<MANU>
-            s=[1100,35];
+            s=[1100,40];
         end
         
         
@@ -1321,7 +1321,7 @@ classdef BioSigPlot < hgsetget
         function buildfig(obj)
             % Designing of all figure controls
             
-            obj.Fig=figure('MenuBar','none','ToolBar','none','DockControls','on','NumberTitle','off',...
+            obj.Fig=figure('MenuBar','none','ToolBar','none','DockControls','off','NumberTitle','off',...
                 'CloseRequestFcn',@(src,evts) delete(obj),'WindowScrollWheelFcn',@(src,evts) ChangeSliders(obj,src,evts),...
                 'WindowButtonMotionFcn',@(src,evt) MouseMovement(obj),'WindowButtonDownFcn',@(src,evt) MouseDown(obj),...
                 'WindowButtonUpFcn',@(src,evt) MouseUp(obj),'Renderer','painters','ResizeFcn',@(src,evt) resize(obj),...
@@ -1335,8 +1335,10 @@ classdef BioSigPlot < hgsetget
             % Panel declaration
             set(obj.Fig,'Units','pixels')
             pos=get(obj.Fig,'position');
+            
+            set(obj.Fig,'position',[0,0 pos(3) pos(4)]);
             ctrlsize=obj.ControlBarSize;
-            obj.MainPanel=uipanel(obj.Fig,'units','pixels','position',[0 ctrlsize(2) pos(3) pos(4)-ctrlsize(2)],'BorderType','none');
+            obj.MainPanel=uipanel(obj.Fig,'units','pixels','position',[0 ctrlsize(2) ctrlsize(1) pos(4)-ctrlsize(2)],'BorderType','none');
             obj.ControlPanel=uipanel(obj.Fig,'units','pixels','position',[0 0 ctrlsize(1) ctrlsize(2)],'BorderType','none');
             obj.Toolbar=uitoolbar(obj.Fig);
             
@@ -1350,8 +1352,8 @@ classdef BioSigPlot < hgsetget
         function makeControls(obj)
             obj.timeControlPanel(obj.ControlPanel,[0 0 .2 1]);
             obj.infoControlPanel(obj.ControlPanel,[0.2 0 .2 1]);
-            obj.filterControlPanel(obj.ControlPanel,[.4 0 .45 1]);
-            obj.scaleControlPanel(obj.ControlPanel,[0.85 0 .15 1]);
+            obj.filterControlPanel(obj.ControlPanel,[.4 0 .43 1]);
+            obj.scaleControlPanel(obj.ControlPanel,[0.83 0 .15 1]);
             
         end
         
@@ -1419,8 +1421,8 @@ classdef BioSigPlot < hgsetget
             FilterPanelForEachData=uipanel('Parent',obj.FilterPanel,'Position',[0.2,0,0.8,1],'units','normalized');
             
             list=[{'All'} num2cell(1:obj.DataNumber)];
-            uicontrol(obj.FilterPanel,'Style','text','String','Filtering:','units','normalized','position',[0 0.15 0.1 0.6],'HorizontalAlignment','right');
-            obj.PopFilterTarget=uicontrol(obj.FilterPanel,'Style','popupmenu','String',list,'units','normalized','position',[0.1 .05 .07 .8],'BackgroundColor',[1 1 1],...
+            uicontrol(obj.FilterPanel,'Style','text','String','Filter','units','normalized','position',[0 0.2 0.05 0.5],'HorizontalAlignment','left');
+            obj.PopFilterTarget=uicontrol(obj.FilterPanel,'Style','popupmenu','String',list,'units','normalized','position',[0.07 .2 .09 .6],'BackgroundColor',[1 1 1],...
                 'Callback',@(src,evt) ChangeFilterTarget(obj));
             
             
@@ -1445,9 +1447,9 @@ classdef BioSigPlot < hgsetget
         function scaleControlPanel(obj,parent,position)
             obj.ScalePanel=uibuttongroup('Parent',parent,'units','normalized','position',position);
             list=[{'All'} num2cell(1:obj.DataNumber)];
-            uicontrol(obj.ScalePanel,'Style','text','String','Spacing:','units','normalized','position',[0 .15 0.31 .6],'HorizontalAlignment','Right');
-            obj.PopSpacingTarget=uicontrol(obj.ScalePanel,'Style','popupmenu','String',list,'units','normalized','position',[0.31 .2 .19 .6],'BackgroundColor',[1 1 1],'Callback',@(src,evt) ChangeSpacingTarget(obj));
-            obj.EdtSpacing=uicontrol(obj.ScalePanel,'Style','edit','units','normalized','position',[.5 .1 .38 .8],'BackgroundColor',[1 1 1],'Callback',@(src,evt) ChangeSpacing(obj,src));
+            uicontrol(obj.ScalePanel,'Style','text','String','Space','units','normalized','position',[0 .2 0.2 .5],'HorizontalAlignment','Left');
+            obj.PopSpacingTarget=uicontrol(obj.ScalePanel,'Style','popupmenu','String',list,'units','normalized','position',[0.25 0.2 .25 .6],'BackgroundColor',[1 1 1],'Callback',@(src,evt) ChangeSpacingTarget(obj));
+            obj.EdtSpacing=uicontrol(obj.ScalePanel,'Style','edit','units','normalized','position',[.6 .1 .28 .8],'BackgroundColor',[1 1 1],'Callback',@(src,evt) ChangeSpacing(obj,src));
             obj.BtnAddSpacing=uicontrol(obj.ScalePanel,'Style','pushbutton','String','+','units','normalized','position',[.88 0.55 .1 .35],'Callback',@(src,evt) ChangeSpacing(obj,src));
             obj.BtnRemSpacing=uicontrol(obj.ScalePanel,'Style','pushbutton','String','-','units','normalized','position',[.88 0.1 .1 .35],'Callback',@(src,evt) ChangeSpacing(obj,src));
         end
