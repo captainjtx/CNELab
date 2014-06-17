@@ -441,7 +441,7 @@ classdef BioSigPlot < hgsetget
         AxesHeight_
         YBorder_
         Selection_
-
+        
         BadChannels_
         
         TaskFiles_
@@ -723,7 +723,7 @@ classdef BioSigPlot < hgsetget
         function val = get.WinLength(obj), val=obj.WinLength_; end
         function obj = set.Spacing(obj,val)
             if sum(val~=obj.Spacing)
-                set(obj,'Spacing',val); 
+                set(obj,'Spacing',val);
             end
         end
         function val = get.Spacing(obj), val=obj.Spacing_; end
@@ -1098,11 +1098,11 @@ classdef BioSigPlot < hgsetget
             n=get(obj.PopFilterTarget,'Value');
             
             if length(val)==1
-               if n==1
-                   obj.Filtering_=ones(1,obj.DataNumber)*val;
-               else
-                   obj.Filtering_(n-1)=val;
-               end
+                if n==1
+                    obj.Filtering_=ones(1,obj.DataNumber)*val;
+                else
+                    obj.Filtering_(n-1)=val;
+                end
             else
                 obj.Filtering_=val;
             end
@@ -1188,7 +1188,7 @@ classdef BioSigPlot < hgsetget
             else
                 newVal=obj.FilterHigh(n-1);
             end
-
+            
             set(obj.EdtFilterHigh,'String',newVal)
         end
         
@@ -1317,7 +1317,7 @@ classdef BioSigPlot < hgsetget
             obj.VideoTimerPeriod_=val;
             set(obj.VideoTimer,'period',val);
         end
-
+        
         %==================================================================
         %******************************************************************
         function obj=set.BadChannels_(obj,val)
@@ -1823,7 +1823,7 @@ classdef BioSigPlot < hgsetget
                     end
                     
                 else
-                   obj.Filtering=zeros(1,obj.DataNumber);
+                    obj.Filtering=zeros(1,obj.DataNumber);
                 end
             else
                 
@@ -1964,19 +1964,21 @@ classdef BioSigPlot < hgsetget
             obj.SelectedLines=[];
             if ~isempty(obj.EventLines)
                 for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
-                    XData=get(obj.EventLines(i),'XData');
-                    eventIndex=XData(1);
-                    if abs(t-eventIndex)<50
-                        
-                        set(obj.EventLines(i),'Color',[159/255 0 197/255]);
-                        set(obj.EventTexts(i),'EdgeColor',[159/255 0 197/255],'BackgroundColor',[159/255 0 197/255]);
-                        obj.SelectedLines=[obj.SelectedLines i];
-                        obj.SelectedEvent=obj.EventDisplayIndex(i);
-                        obj.DragMode=1;
-                    else
-                        set(obj.EventLines(i),'Color',[0 0.7 0]);
-                        set(obj.EventTexts(i),'EdgeColor',[0 0.7 0],'BackgroundColor',[0.6 1 0.6]);
-                        
+                    if ishandle(obj.EventLines(i))&&obj.EventLines(i)
+                        XData=get(obj.EventLines(i),'XData');
+                        eventIndex=XData(1);
+                        if abs(t-eventIndex)<50
+                            
+                            set(obj.EventLines(i),'Color',[159/255 0 197/255]);
+                            set(obj.EventTexts(i),'EdgeColor',[159/255 0 197/255],'BackgroundColor',[159/255 0 197/255]);
+                            obj.SelectedLines=[obj.SelectedLines i];
+                            obj.SelectedEvent=obj.EventDisplayIndex(i);
+                            obj.DragMode=1;
+                        else
+                            set(obj.EventLines(i),'Color',[0 0.7 0]);
+                            set(obj.EventTexts(i),'EdgeColor',[0 0.7 0],'BackgroundColor',[0.6 1 0.6]);
+                            
+                        end
                     end
                 end
             end
@@ -2076,9 +2078,9 @@ classdef BioSigPlot < hgsetget
                 end
                 
                 if (strcmpi(evt.Modifier{1},'command')||...
-                    strcmpi(evt.Modifier{1},'control'))
+                        strcmpi(evt.Modifier{1},'control'))
                     if ismember(evt.Key,{'1','2','3','4','5','6','7','8','9'})
-                      
+                        
                         return
                     end
                 end
@@ -2171,10 +2173,12 @@ classdef BioSigPlot < hgsetget
                 
                 if ~isempty(obj.EventLines)
                     for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
-                        XData=get(obj.EventLines(i),'XData');
-                        eventIndex=XData(1);
-                        if abs(mouseIndex-eventIndex)<50
-                            set(obj.Fig,'pointer','hand');
+                        if ishandle(obj.EventLines(i))&&obj.EventLines(i)
+                            XData=get(obj.EventLines(i),'XData');
+                            eventIndex=XData(1);
+                            if abs(mouseIndex-eventIndex)<50
+                                set(obj.Fig,'pointer','hand');
+                            end
                         end
                     end
                 end
@@ -2313,7 +2317,7 @@ classdef BioSigPlot < hgsetget
             end
             newData=cds.Data.Data';
             obj.Data=[obj.Data,{newData}];
-   
+            
             l=cell2mat(cellfun(@size,obj.Data,'UniformOutput',false)');
             if ~all(l(1,2)==l(:,2))
                 error('All data must have the same number of time samples');
