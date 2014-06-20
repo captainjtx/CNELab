@@ -9,6 +9,7 @@ addpath(genpath([pwd '/usr']),'-frozen');
 addpath(genpath([pwd '/lib']),'-frozen');
 addpath(genpath([pwd '/script']),'-frozen');
 addpath(genpath([pwd '/cfg']),'-frozen');
+addpath(genpath([pwd '/test']),'-frozen');
 savepath;
 
 end

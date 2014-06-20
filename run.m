@@ -59,7 +59,7 @@ end
 evts=[];
 for i=1:length(cds)
     if ~isempty(cds{i}.Data.Annotations)
-        evts=cat(1,evts,cds.Data.Annotations);
+        evts=cat(1,evts,cds{i}.Data.Annotations);
         evts(:,1)=num2cell(cell2mat(evts(:,1))-startTime);
     else
         evts=[];

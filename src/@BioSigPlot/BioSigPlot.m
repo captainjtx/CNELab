@@ -1074,7 +1074,11 @@ classdef BioSigPlot < hgsetget
         
         %******************************************************************
         function obj = set.Evts_(obj,val)
-            obj.IsEvtsSaved=false;
+            if isempty(obj.Evts)
+                obj.IsEvtsSaved=true;
+            else
+                obj.IsEvtsSaved=false;
+            end
             obj.Evts_=val;
             if ~isempty(obj.Evts_)
                 if isstruct(obj.Evts_)
