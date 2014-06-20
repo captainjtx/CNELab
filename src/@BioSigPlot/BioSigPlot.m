@@ -156,11 +156,11 @@ classdef BioSigPlot < hgsetget
     %   SRate
     %     Sampling Rate
     %
-    %   Spacing
+    %   Gain
     %     Space between 2 channels on Y units for each dataset
-    %     Default Format : array (S1, S2,...) Si=Spacing for dataset i
+    %     Default Format : array (S1, S2,...) Si=Gain for dataset i
     %     Other accepted format (for set) :
-    %       number (if ChannLink) put all the dataset the same spacing
+    %       number (if ChannLink) put all the dataset the same Gain
     %
     %   Time
     %     The time of the beginning of the current page (from the recording begginning
@@ -255,9 +255,9 @@ classdef BioSigPlot < hgsetget
     %    %Change to Horizontal View
     %    a.DataView='Horizontal';
     %    %Change Scales of the 2 Datasets
-    %    a.Spacing=100;
-    %    %Change Spacing on the second dataset only
-    %    a.Spacing(2)=200;
+    %    a.Gain=100;
+    %    %Change Gain on the second dataset only
+    %    a.Gain(2)=200;
     %    %Change the scale of the third electrod on dataset 1 (2nd Montage ie Mean Reference)
     %    a.Montage{1}(2).mat(3,:)=a.Montage{1}(2).mat(3,:)/10;
     %    %Start The Playing
@@ -314,10 +314,10 @@ classdef BioSigPlot < hgsetget
         EdtFilterNotch1
         EdtFilterNotch2
         
-        PopSpacingTarget
-        EdtSpacing
-        BtnAddSpacing
-        BtnRemSpacing
+        PopGainTarget
+        EdtGain
+        BtnAddGain
+        BtnRemGain
         TxtScale
         ArrScale
         Toolbar
@@ -371,7 +371,7 @@ classdef BioSigPlot < hgsetget
         Config                  %Default config file [def: defaultconfig] contains all default values
         SRate                   %Sampling rate
         WinLength               %Time length of windows
-        Spacing                 %Spacing beetween 2 channels
+        Gain                 %Gain beetween 2 channels
         ChanNames               %Cell with channel names corresponding to raw data.
         Evts                    %List of events.
         Time                    %Current time (in TimeUnit) of the current
@@ -400,7 +400,7 @@ classdef BioSigPlot < hgsetget
         VideoTimerPeriod        %Period of the Video timer
         Montage                 %Path for a system file wich contains info on Montage
         AxesHeight              %Height ratio of Axes for Vertical Mode.
-        YBorder                 %Vector of 2elements containing the space height between the last channel and the bottom and between the top and the first channel (Units: 'Spacing' relative)
+        YBorder                 %Vector of 2elements containing the space height between the last channel and the bottom and between the top and the first channel (Units: 'Gain' relative)
         Selection               %Time of Selected area
         
         BadChannels             %The bad channels
@@ -410,7 +410,7 @@ classdef BioSigPlot < hgsetget
         Config_
         SRate_
         WinLength_
-        Spacing_
+        Gain_
         ChanNames_
         Evts_
         Time_
@@ -644,7 +644,7 @@ classdef BioSigPlot < hgsetget
             %Rearrangement: make sure there is no conflict on the order of
             %properties. Constraint config must be before all and Colors
             %must be before *ModeColors
-            keylist={'Config','SRate','WinLength','Spacing','DataView','Montage','MontageRef','Evts','Time','FirstDispChans',...
+            keylist={'Config','SRate','WinLength','Gain','DataView','Montage','MontageRef','Evts','Time','FirstDispChans',...
                 'DispChans','ChanLink','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
                 'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','XGrid','YGrid',...
                 'Position','Title','MouseMode','PlaySpeed','MainTimerPeriod','VideoTimerPeriod','AxesHeight','YBorder','YGridInterval','Selection',...
@@ -663,7 +663,7 @@ classdef BioSigPlot < hgsetget
             if ~isempty(n), g=g([n-1 n 1:n-2 n+1:end]); end
             
             for i=1:2:length(g)
-                if any(strcmpi(g{i},{'Config','SRate','WinLength','Spacing','Montage','DataView','MontageRef','Evts','Time','FirstDispChans',...
+                if any(strcmpi(g{i},{'Config','SRate','WinLength','Gain','Montage','DataView','MontageRef','Evts','Time','FirstDispChans',...
                         'DispChans','ChanLink','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
                         'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','XGrid','YGrid','MouseMode','AxesHeight','YBorder','YGridInterval','Selection',...
                         'TaskFiles','VideoStartTime','VideoFile','MainTimerPeriod','VideoTimerPeriod','VideoTimeFrame','BadChannels'}))
@@ -672,7 +672,7 @@ classdef BioSigPlot < hgsetget
                     if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage','DataView','MontageRef','DispChans','ChanLink','InsideTicks','MouseMode','AxesHeight'}))
                         NeedRemakeAxes=true;
                     end
-                    if any(strcmpi(g{i},{'Config','Spacing','Montage','ChanLink','ChanNames','DataView','MontageRef'}))
+                    if any(strcmpi(g{i},{'Config','Gain','Montage','ChanLink','ChanNames','DataView','MontageRef'}))
                         if any(strcmpi(g{i},{'Config','Montage','ChanLink','ChanNames'}))
                             NeedRemakeMontage=true;
                         end
@@ -721,12 +721,12 @@ classdef BioSigPlot < hgsetget
         function val = get.SRate(obj), val=obj.SRate_; end
         function obj = set.WinLength(obj,val), set(obj,'WinLength',val); end
         function val = get.WinLength(obj), val=obj.WinLength_; end
-        function obj = set.Spacing(obj,val)
-            if sum(val~=obj.Spacing)
-                set(obj,'Spacing',val);
+        function obj = set.Gain(obj,val)
+            if sum(val~=obj.Gain)
+                set(obj,'Gain',val);
             end
         end
-        function val = get.Spacing(obj), val=obj.Spacing_; end
+        function val = get.Gain(obj), val=obj.Gain_; end
         function obj = set.ChanNames(obj,val), set(obj,'ChanNames',val); end
         function val = get.ChanNames(obj), val=obj.ChanNames_; end
         function obj = set.Evts(obj,val), set(obj,'Evts',val); end
@@ -1253,12 +1253,12 @@ classdef BioSigPlot < hgsetget
         function obj = set.DataView_(obj,val)
             obj.DataView_=val;
             if ~isempty(val)
-                if (obj.ChanLink && (isempty(obj.Spacing) || all(obj.Spacing(:)==obj.Spacing(1)))) ||...
+                if (obj.ChanLink && (isempty(obj.Gain) || all(obj.Gain(:)==obj.Gain(1)))) ||...
                         any(strcmpi(obj.DataView_,{'Superimposed','Alternated','Vertical','Horizontal'}))
-                    set(obj.PopSpacingTarget,'Value',1);
+                    set(obj.PopGainTarget,'Value',1);
                 else
                     n=str2double(val(4));
-                    set(obj.PopSpacingTarget,'Value',n+1);
+                    set(obj.PopGainTarget,'Value',n+1);
                 end
             end
         end
@@ -1535,11 +1535,11 @@ classdef BioSigPlot < hgsetget
         function scaleControlPanel(obj,parent,position)
             obj.ScalePanel=uibuttongroup('Parent',parent,'units','normalized','position',position);
             list=[{'All'} num2cell(1:obj.DataNumber)];
-            uicontrol(obj.ScalePanel,'Style','text','String','Space ','units','normalized','position',[0 .2 0.24 .5],'HorizontalAlignment','right');
-            obj.PopSpacingTarget=uicontrol(obj.ScalePanel,'Style','popupmenu','String',list,'units','normalized','position',[0.25 0.2 .25 .6],'BackgroundColor',[1 1 1],'Callback',@(src,evt) ChangeSpacingTarget(obj));
-            obj.EdtSpacing=uicontrol(obj.ScalePanel,'Style','edit','units','normalized','position',[.6 .1 .28 .8],'BackgroundColor',[1 1 1],'Callback',@(src,evt) ChangeSpacing(obj,src));
-            obj.BtnAddSpacing=uicontrol(obj.ScalePanel,'Style','pushbutton','String','+','units','normalized','position',[.88 0.55 .1 .35],'Callback',@(src,evt) ChangeSpacing(obj,src));
-            obj.BtnRemSpacing=uicontrol(obj.ScalePanel,'Style','pushbutton','String','-','units','normalized','position',[.88 0.1 .1 .35],'Callback',@(src,evt) ChangeSpacing(obj,src));
+            uicontrol(obj.ScalePanel,'Style','text','String','Gain ','units','normalized','position',[0 .2 0.24 .5],'HorizontalAlignment','right');
+            obj.PopGainTarget=uicontrol(obj.ScalePanel,'Style','popupmenu','String',list,'units','normalized','position',[0.25 0.2 .25 .6],'BackgroundColor',[1 1 1],'Callback',@(src,evt) ChangeGainTarget(obj));
+            obj.EdtGain=uicontrol(obj.ScalePanel,'Style','edit','units','normalized','position',[.6 .1 .28 .8],'BackgroundColor',[1 1 1],'Callback',@(src,evt) ChangeGain(obj,src));
+            obj.BtnAddGain=uicontrol(obj.ScalePanel,'Style','pushbutton','String','+','units','normalized','position',[.88 0.55 .1 .35],'Callback',@(src,evt) ChangeGain(obj,src));
+            obj.BtnRemGain=uicontrol(obj.ScalePanel,'Style','pushbutton','String','-','units','normalized','position',[.88 0.1 .1 .35],'Callback',@(src,evt) ChangeGain(obj,src));
         end
         
         %******************************************************************
@@ -1620,19 +1620,26 @@ classdef BioSigPlot < hgsetget
                     obj.ChanNames_{i}=num2cell(1:size(obj.Data{i},1));
                     obj.ChanNames_{i}=cellfun(@num2str,obj.ChanNames_{i},'UniformOutput',false);
                     obj.ChanOrderMat{i}=eye(obj.ChanNumber(i));
-                elseif ~isempty(obj.Montage{i}) && isnan(str2double(obj.ChanNames_{i}{1}))
-                    obj.ChanOrderMat{i}=eye(obj.DataSize(i));
-                    p=zeros(1,size(obj.ChanOrderMat{i},1));
-                    for j=1:size(obj.ChanOrderMat{i},1)
-                        for k=1:length(obj.ChanNames_{i})
-                            if strcmpi(obj.Montage_{i}(1).ChanNames_{j},obj.ChanNames_{i}{k})
-                                p(j)=k;
+                elseif ~isempty(obj.Montage{i})
+                    
+                    if all(ismember(obj.ChanNames_{i},obj.Montage_{i}(1).channames))
+                        
+                        obj.ChanOrderMat{i}=eye(obj.ChanNumber(i));
+                        p=zeros(1,size(obj.ChanOrderMat{i},1));
+                        for j=1:size(obj.ChanOrderMat{i},1)
+                            for k=1:length(obj.ChanNames_{i})
+                                if strcmpi(obj.Montage_{i}(1).channames{j},obj.ChanNames_{i}{k})
+                                    p(j)=k;
+                                end
                             end
                         end
-                    end
-                    obj.ChanOrderMat(1:size(obj.ChanOrderMat{i},1),:)=obj.ChanOrderMat{i}(p(1:size(obj.ChanOrderMat{i},1)),:);
-                    for j=1:length(obj.Montage_{i})
-                        obj.Montage_{i}(j).mat=obj.Montage_{i}(j).mat*obj.ChanOrderMat{i};
+                        obj.ChanOrderMat(1:size(obj.ChanOrderMat{i},1),:)=obj.ChanOrderMat{i}(p(1:size(obj.ChanOrderMat{i},1)),:);
+                        for j=1:length(obj.Montage_{i})
+                            obj.Montage_{i}(j).mat=obj.Montage_{i}(j).mat*obj.ChanOrderMat{i};
+                        end
+                    elseif length(obj.ChanNames_{i})==length(obj.Montage_{i}(1).channames)
+                        obj.ChanOrderMat{i}=eye(obj.ChanNumber(i));
+                        obj.Montage_{i}=struct('name','Raw','mat',obj.ChanOrderMat{i},'channames',obj.ChanNames_(i));
                     end
                 end
                 if isempty(obj.Montage{i})
@@ -1722,12 +1729,12 @@ classdef BioSigPlot < hgsetget
                 catch,set(obj.TogMontage(obj.MontageRef_(1)),'State','on'); end %#ok<CTCH>
             end
             
-            if length(obj.Spacing_)==1
+            if length(obj.Gain_)==1
                 clear tmp;
-                tmp(1:obj.DataNumber)=obj.Spacing_;
-                set(obj,'Spacing_',tmp);
+                tmp(1:obj.DataNumber)=obj.Gain_;
+                set(obj,'Gain_',tmp);
             end
-            ChangeSpacingTarget(obj);
+            ChangeGainTarget(obj);
         end
         
         %******************************************************************
@@ -1857,37 +1864,37 @@ classdef BioSigPlot < hgsetget
                 
             end
         end
-        function ChangeSpacingTarget(obj)
-            if get(obj.PopSpacingTarget,'Value')==1
-                if all(obj.Spacing==obj.Spacing(1))
-                    set(obj.EdtSpacing,'String',obj.Spacing(1))
+        function ChangeGainTarget(obj)
+            if get(obj.PopGainTarget,'Value')==1
+                if all(obj.Gain==obj.Gain(1))
+                    set(obj.EdtGain,'String',obj.Gain(1))
                 else
-                    set(obj.EdtSpacing,'String','-')
+                    set(obj.EdtGain,'String','-')
                 end
             else
-                n=get(obj.PopSpacingTarget,'Value')-1;
-                set(obj.EdtSpacing,'String',obj.Spacing(n))
+                n=get(obj.PopGainTarget,'Value')-1;
+                set(obj.EdtGain,'String',obj.Gain(n))
             end
         end
         
         %******************************************************************
-        function ChangeSpacing(obj,src)
-            if get(obj.PopSpacingTarget,'Value')==1
-                if src==obj.BtnAddSpacing
-                    obj.Spacing=obj.Spacing*2^.25;
-                elseif src==obj.BtnRemSpacing
-                    obj.Spacing=obj.Spacing*2^-.25;
+        function ChangeGain(obj,src)
+            if get(obj.PopGainTarget,'Value')==1
+                if src==obj.BtnAddGain
+                    obj.Gain=obj.Gain*2^.25;
+                elseif src==obj.BtnRemGain
+                    obj.Gain=obj.Gain*2^-.25;
                 else
-                    obj.Spacing=str2double(get(src,'String'));
+                    obj.Gain=str2double(get(src,'String'));
                 end
             else
-                n=get(obj.PopSpacingTarget,'Value')-1;
-                if src==obj.BtnAddSpacing
-                    obj.Spacing(n)=obj.Spacing(n)*2^.25;
-                elseif src==obj.BtnRemSpacing
-                    obj.Spacing(n)=obj.Spacing(n)*2^-.25;
+                n=get(obj.PopGainTarget,'Value')-1;
+                if src==obj.BtnAddGain
+                    obj.Gain(n)=obj.Gain(n)*2^.25;
+                elseif src==obj.BtnRemGain
+                    obj.Gain(n)=obj.Gain(n)*2^-.25;
                 else
-                    obj.Spacing(n)=str2double(get(src,'String'));
+                    obj.Gain(n)=str2double(get(src,'String'));
                 end
             end
         end

@@ -49,6 +49,18 @@ end
 bsp.SRate=fs;
 %==========================================================================
 %**************************************************************************
+ChanNames=cell(1,length(cds));
+for i=1:length(cds)
+    if ~isempty(cds{i}.Montage.ChannelNames)
+        ChanNames{i}=cds{i}.Montage.ChannelNames;
+    else
+        ChanNames{i}=[];
+    end
+end
+bsp.ChanNames=ChanNames;
+
+%==========================================================================
+%**************************************************************************
 startTime=0;
 for i=1:length(cds)
     if ~isempty(cds{i}.Data.TimeStamps)

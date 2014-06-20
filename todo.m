@@ -20,7 +20,7 @@ getaligneddata
 
 TFMap GUI segmentation
 
-background color green
+% background color green
 
 denoise test
 
