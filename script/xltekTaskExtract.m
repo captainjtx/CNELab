@@ -1,4 +1,5 @@
-function xltekTaskExtract()
+clc
+clear
 
 %user defined region=======================================================
 %study name
@@ -205,7 +206,4 @@ task.info.device='XLTEK EMU 128FS';
 save(fullfile(FilePath,FileName),'-struct','task','-mat');
 [FileName,FilePath]=uiputfile('*.evt','save your events file','anno.evt');
 save(fullfile(FilePath,FileName),'-struct','events','-mat');
-
-end
-
 

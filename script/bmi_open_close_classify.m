@@ -1,4 +1,5 @@
-function bmi_open_close_classify()
+clc
+clear
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -208,7 +209,7 @@ for i=1:length(channelnames)
 end
 
 disp(errorPMat);
-end
+
 
 
 

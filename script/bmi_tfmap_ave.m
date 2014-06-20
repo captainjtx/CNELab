@@ -1,4 +1,6 @@
-function bmi_tfmap_ave()
+clc
+clear
+
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -66,9 +68,6 @@ for m=1:length(movements)
     title('position')
     xlabel('time (s)')
     legend('finger 1','finger 2','finger 3','finger 4','finger 5');
-
-end
-
 
 end
 

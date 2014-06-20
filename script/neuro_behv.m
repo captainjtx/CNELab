@@ -1,4 +1,6 @@
-function neuro_behv()
+clc
+clear
+
 %TEST Summary of this function goes here
 %   Detailed explanation goes here
 neuroSeg=load([pwd '/db/demo/neuroSeg.mat']);
@@ -54,7 +56,6 @@ subplot(3,1,2)
     hold on
     subplot(3,1,3)
     imagesc(mean(behvSeg(:,:,:),3)');
-end
 
 
 

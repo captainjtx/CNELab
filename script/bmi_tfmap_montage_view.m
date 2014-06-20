@@ -1,4 +1,5 @@
-function bmi_tfmap_montage_view()
+clc
+clear
 
 [FileName,FilePath]=uigetfile('.mat','select segments file');
 segments=load(fullfile(FilePath,FileName));
@@ -34,5 +35,5 @@ for m=1:length(movements)
         axis off;
     end
 end
-end
+
 

@@ -1,4 +1,6 @@
-function task=bmi_edf2mat()
+clc
+clear
+
 [FileName,FilePath]=uigetfile('*.edf','select a edf file');
 
 [head,signalHead,signalCell]=blockEdfLoad(fullfile(FilePath,FileName));
@@ -30,5 +32,5 @@ task.data=data;
 task.info=info;
 task.other=other;
 
-uisve('task','edfdata.mat');
-end
+uisave('task','edfdata.mat');
+

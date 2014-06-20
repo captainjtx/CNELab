@@ -1,4 +1,6 @@
-function uncertainty_time_stat()
+clear
+clc
+
 % patient by patient statistics
 outputFilePath='/Users/tengi/Desktop/Projects/BMI/data/Uncertainty/Analysis/TimeDiff';
 
@@ -142,4 +144,3 @@ ReactionDT=ReactionDT/file.montage.SampleRate;
 ActionDT=ActionDT/file.montage.SampleRate;
 
 
-end

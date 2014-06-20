@@ -1,4 +1,5 @@
-function segments=bmi_segment_extract()
+clc
+clear
 %user defined region=======================================================
 %get segments seconds before onset and after onset
 SBefore=2;
@@ -98,7 +99,6 @@ segments.montage=montage;
 
 [FileName,FilePath]=uiputfile('*.mat','save your segment file','segments.mat');
 save(fullfile(FilePath,FileName),'-struct','segments');
-end
 
 
 

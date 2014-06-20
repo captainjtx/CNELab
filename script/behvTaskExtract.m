@@ -1,4 +1,5 @@
-function behvTaskExtract()
+clc
+clear
 %This function convert the behv data into standard task file format
 %Workflow:
 %1................synchronize the behv data with neuro data
@@ -136,8 +137,6 @@ task.info.video.timeFrame=timeFrame;
 
 [FileName,FilePath]=uiputfile('*.medf','save your behv task file','behv.medf');
 save(fullfile(FilePath,FileName),'-struct','task','-mat');
-
-end
 
 
 
