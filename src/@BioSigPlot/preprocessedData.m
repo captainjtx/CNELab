@@ -52,7 +52,7 @@ t=ceil(obj.Time*obj.SRate+1):min(ceil((obj.Time+obj.WinLength)*obj.SRate),size(o
 d=(obj.Montage{n}(obj.MontageRef(n)).mat*obj.ChanOrderMat{n})*double(obj.Data{n}(:,t));
 
 fs=obj.SRate;
-ext=100;
+ext=round(size(d,2)/5);
 phs=0;
 ftyp='iir';
 

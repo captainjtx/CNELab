@@ -66,10 +66,11 @@ classdef CommonDataStructure < handle
         function y=import(obj)
             y=0;
             [FileName,FilePath,FilterIndex]=uigetfile({...
-                '*.mat;*.cds;*.cds.old;*.medf','Supported formats (*.mat;*.cds;*.cds.old;*.medf)';...
+                '*.mat;*.cds;*.cds.old;*.medf;*.fif','Supported formats (*.mat;*.cds;*.cds.old;*.medf;*.fif)';...
                 '*.cds','common data structure (*.cds)';...
-                '*.cds.old','old common data structure (*.cds.old)';...
-                '*.medf','matlab edf format (*.medf)'},...
+                '*.ocds','old common data structure (*.ocds)';...
+                '*.medf','matlab edf format (*.medf)';...
+                '*.fif','NeuroMag MEG format (*.fif)'},...
                 'Select your data file','data.mat');
             
             if ~FileName
@@ -79,42 +80,60 @@ classdef CommonDataStructure < handle
             end
             
             if FilterIndex==1
-                s=load(fullfile(FilePath,FileName),'-mat');
-                FilterIndex=CommonDataStructure.dataStructureCheck(s);
+                FilterIndex=CommonDataStructure.dataStructureCheck(FileName);
             end
+            
+            filename=fullfile(FilePath,FileName);
+            
             switch FilterIndex
                 case 2
-                    cds=load(fullfile(FilePath,FileName),'-mat');
-                    obj.assign(CommonDataStructure.readFromCDS(cds));
+                    obj.assign(CommonDataStructure.readFromCDS(filename));
                     
                 case 3
-                    
-                    cds=load(fullfile(FilePath,FileName),'-mat');
-                    obj.assign(CommonDataStructure.readFromOldCDS(cds));
+                    obj.assign(CommonDataStructure.readFromOldCDS(filename));
                     
                 case 4
+                    obj.assign(CommonDataStructure.readFromMEDF(filename));
+                case 5
                     
-                    medf=load(fullfile(FilePath,FileName),'-mat');
-                    obj.assign(CommonDataStructure.readFromMEDF(medf));
+                    obj.assign(CommonDataStructure.readFromFIF(filename));
                     
             end
         end
         
     end
     methods (Static=true)
-        function FilterIndex=dataStructureCheck(s)
-            if isfield(s,'data')
-                if isfield(s.data,'dataMat')&&isfield(s.data,'info')
-                    FilterIndex=4;
-                    return
-                elseif isfield(s.data,'data')
-                    FilterIndex=3;
-                    return
-                end
-            elseif isfield(s,'Data')&&isfield(s,'Montage')&&isfield(s,'PatientInfo')
+        function FilterIndex=dataStructureCheck(filename)
+            [pathstr, name, ext] = fileparts(filename);
+            if strcmpi(ext,'.cds')
                 FilterIndex=2;
+                return  
+            elseif strcmpi(ext,'.ocds')
+                FilterIndex=3;
+                return
+            elseif strcmpi(ext,'.medf')
+                FilterIndex=4;
+                return
+            elseif strcmpi(ext,'.fif')
+                FilterIndex=5;
+                return
+            elseif strcmpi(ext,'.mat')
+                
+                s=load(filename,'-mat');
+                if isfield(s,'data')
+                    if isfield(s.data,'dataMat')&&isfield(s.data,'info')
+                        FilterIndex=4;
+                        return
+                    elseif isfield(s.data,'data')
+                        FilterIndex=3;
+                        return
+                    end
+                elseif isfield(s,'Data')&&isfield(s,'Montage')&&isfield(s,'PatientInfo')
+                    FilterIndex=2;
+                end
             end
         end
+        
         function s=initial()
             %Auto generate an empty cds
             %Refer to /doc/manual for more information on the data
@@ -125,10 +144,13 @@ classdef CommonDataStructure < handle
             s.Data.Annotations=[];
             s.Data.Artifact=[];
             s.Data.TimeStamps=[];
-            s.Data.Unit.Data=[];
-            s.Data.Unit.Stamp=[];
+            s.Data.Units=[];
             s.Data.Video.StartTime=[];
             s.Data.Video.TimeFrame=[];
+            s.Data.HighPass=[];
+            s.Data.LowPass=[];
+            s.Data.DownSample=[];
+            s.Data.SampleRate=[];
             
             %obj.Montage construction
             s.Montage.ChannelNames=[];
@@ -137,110 +159,23 @@ classdef CommonDataStructure < handle
             s.Montage.Amplifier=[];
             s.Montage.Name=[];
             s.Montage.Notes=[];
-            s.Montage.SampleRate=[];
             
             %obj.PatientInfo construction
             s.PatientInfo.Case=[];
             s.PatientInfo.Experiment=[];
             s.PatientInfo.Index=[];
-            s.PatientInfo.Params.TmExtend=[];
-            s.PatientInfo.Params.TmMinimumData=[];
-            s.PatientInfo.Params.NDownSample=[];
             s.PatientInfo.Side=[];
             s.PatientInfo.Study=[];
             s.PatientInfo.Task=[];
             s.PatientInfo.Time=[];
             s.PatientInfo.Location=[];
         end
-        function s=readFromCDS(cds)
-            
-            s=CommonDataStructure.initial();
-            
-            %s.data construction
-            if isfield(cds,'Data')
-                if isfield(cds.Data,'Data')
-                    s.Data.Data=cds.Data.Data;
-                end
-                if isfield(cds.Data,'Annotations')
-                    s.Data.Annotations=cds.Data.Annotations;
-                end
-                if isfield(cds.Data,'Artifact')
-                    s.Data.Artifact=cds.Data.Artifact;
-                end
-                if isfield(cds.Data,'TimeStamps')
-                    s.Data.TimeStamps=cds.Data.TimeStamps;
-                end
-                
-            end
-            
-            %s.Montage construction
-            if isfield(cds,'Montage')
-                if isfield(cds.Montage,'ChannelNames')
-                    s.Montage.ChannelNames=cds.Montage.ChannelNames;
-                end
-                if isfield(cds.Montage,'GroupNames')
-                    s.Montage.GroupNames=cds.Montage.GroupNames;
-                end
-                if isfield(cds.Montage,'HeadboxType')
-                    s.Montage.HeadboxType=cds.Montage.HeadboxType;
-                end
-                if isfield(cds.Montage,'Amplifier')
-                    s.Montage.Amplifier=cds.Montage.Amplifier;
-                end
-                if isfield(cds.Montage,'Name')
-                    s.Montage.Name=cds.Montage.Name;
-                end
-                if isfield(cds.Montage,'Notes')
-                    s.Montage.Notes=cds.Montage.Notes;
-                end
-                
-                if isfield(cds.Montage,'SampleRate')
-                    s.Montage.SampleRate=cds.Montage.SampleRate;
-                end
-            end
-            %s.PatientInfo construction
-            
-            if isfield(cds,'PatientInfo')
-                if isfield(cds.PatientInfo,'Case')
-                    s.PatientInfo.Case=cds.PatientInfo.Case;
-                end
-                if isfield(cds.PatientInfo,'Experiment')
-                    s.PatientInfo.Experiment=cds.PatientInfo.Experiment;
-                end
-                if isfield(cds.PatientInfo,'Index')
-                    s.PatientInfo.Index=cds.PatientInfo.Index;
-                end
-                if isfield(cds.PatientInfo,'Params')
-                    if isfield(cds.PatientInfo.Params,'TmExtend')
-                        s.PatientInfo.Params.TmExtend=cds.PatientInfo.Params.TmExtend;
-                    end
-                    if isfield(cds.PatientInfo.Params,'TmMinimumData')
-                        s.PatientInfo.Params.TmMinimumData=cds.PatientInfo.Params.TmMinimumData;
-                    end
-                    if isfield(cds.PatientInfo.Params,'NDownSample')
-                        s.PatientInfo.Params.NDownSample=cds.PatientInfo.Params.NDownSample;
-                    end
-                end
-                if isfield(cds.PatientInfo,'Side')
-                    s.PatientInfo.Side=cds.PatientInfo.Side;
-                end
-                if isfield(cds.PatientInfo,'Study')
-                    s.PatientInfo.Study=cds.PatientInfo.Study;
-                end
-                if isfield(cds.PatientInfo,'Task')
-                    s.PatientInfo.Task=cds.PatientInfo.Task;
-                end
-                if isfield(cds.PatientInfo,'Time')
-                    s.PatientInfo.Time=cds.PatientInfo.Time;
-                end
-                if isfield(cds.PatientInfo,'Location')
-                    s.PatientInfo.Location=cds.PatientInfo.Location;
-                end
-            end
-            
+        function s=readFromCDS(filename)
+            s=load(filename,'-mat');
         end
         
-        function s=readFromMEDF(medf)
+        function s=readFromMEDF(filename)
+            medf=load(filename,'-mat');
             s=CommonDataStructure.initial();
             
             if isfield(medf,'data')
@@ -269,11 +204,15 @@ classdef CommonDataStructure < handle
                 
                 if isfield(medf.data,'info')
                     if isfield(medf.data.info{1},'sampleRate')
-                        s.Montage.SampleRate=medf.data.info{1}.sampleRate;
+                        s.Data.SampleRate=medf.data.info{1}.sampleRate;
                     end
-                    if isfield(medf.data.info{1},'unit')
-                        s.Data.Unit.Data=medf.data.info{1}.unit;
+                    
+                    for i=1:length(medf.data.info)
+                        if isfield(medf.data.info{i},'unit')
+                            s.Data.Units{i}=medf.data.info{i}.unit;
+                        end
                     end
+                    
                     if isfield(medf.data.info{1},'stamp')
                         s.Data.TimeStamps=medf.data.info{1}.stamp;
                     end
@@ -304,14 +243,14 @@ classdef CommonDataStructure < handle
                         s.Data.Video.StartTime=medf.info.video.startTime;
                     end
                     if isfield(medf.info.video,'timeFrame')
-                        s.Data.Video.timeFrame=medf.info.video.timeFrame;
+                        s.Data.Video.TimeFrame=medf.info.video.timeFrame;
                     end
                 end
             end
             
         end
-        function s=readFromOldCDS(oldcds)
-            
+        function s=readFromOldCDS(filename)
+            oldcds=load(filename,'-mat');
             s=CommonDataStructure.initial();
             
             %obj.data construction
@@ -353,7 +292,7 @@ classdef CommonDataStructure < handle
                 end
                 
                 if isfield(oldcds.montage,'SampleRate')
-                    s.Montage.SampleRate=oldcds.montage.SampleRate;
+                    s.Data.SampleRate=oldcds.montage.SampleRate;
                     s.Data.TimeStamps=s.Data.TimeStamps/s.Montage.SampleRate;
                     evts=s.Data.Annotations;
                     evts(:,1)=num2cell(cell2mat(evts(:,1))/s.Montage.SampleRate);
@@ -373,14 +312,14 @@ classdef CommonDataStructure < handle
                     s.PatientInfo.Index=oldcds.patientInfo.Index;
                 end
                 if isfield(oldcds.patientInfo,'Params')
-                    if isfield(oldcds.patientInfo.Params,'tmExtend')
-                        s.PatientInfo.Params.TmExtend=oldcds.patientInfo.Params.tmExtend;
-                    end
-                    if isfield(oldcds.patientInfo.Params,'tmMinimumData')
-                        s.PatientInfo.Params.TmMinimumData=oldcds.patientInfo.Params.tmMinimumData;
-                    end
+%                     if isfield(oldcds.patientInfo.Params,'tmExtend')
+%                         s.PatientInfo.Params.TmExtend=oldcds.patientInfo.Params.tmExtend;
+%                     end
+%                     if isfield(oldcds.patientInfo.Params,'tmMinimumData')
+%                         s.PatientInfo.Params.TmMinimumData=oldcds.patientInfo.Params.tmMinimumData;
+%                     end
                     if isfield(oldcds.patientInfo.Params,'nDownSample')
-                        s.PatientInfo.Params.NDownSample=oldcds.patientInfo.Params.nDownSample;
+                        s.Data.DownSample=oldcds.patientInfo.Params.nDownSample;
                         n=s.PatientInfo.Params.NDownSample;
                         if n~=0
                             s.Data.TimeStamps=s.Data.TimeStamps/n;
@@ -409,13 +348,101 @@ classdef CommonDataStructure < handle
             
         end
         
+        function s=readFromFIF(filename)
+          
+            s=CommonDataStructure.initial();
+            try
+                raw=fiff_setup_read_raw(filename);
+            catch
+                try
+                    raw=fiff_setup_read_raw(filename,1);
+                catch me
+                    rethrow(me);
+                end
+            end
+            
+            if ~isempty(raw)
+                if isfield(raw,'info')
+                    if isfield(raw.info,'sfreq')
+                        s.Data.SampleRate=raw.info.sfreq;
+                    end
+                    if isfield(raw.info,'lowpass')
+                        s.Data.LowPass=raw.info.lowpass;
+                    end
+                    if isfield(raw.info,'highpass')
+                        s.Data.HighPass=raw.info.highpass;
+                    end
+                    
+                    if isfield(raw.info,'ch_names')
+                        s.Montage.ChannelNames=raw.info.ch_names;
+                    end
+                end
+                
+                include=[];
+                want_meg=1;
+                want_eeg=0;
+                want_stim=0;
+                meg_picks=fiff_pick_types(raw.info,want_meg,want_eeg,want_stim,include,raw.info.bads);
+                
+                want_meg=0;
+                want_eeg=1;
+                want_stim=0;
+                eeg_picks=fiff_pick_types(raw.info,want_meg,want_eeg,want_stim,include,raw.info.bads);
+                
+                all_picks=[meg_picks,eeg_picks];
+                
+                if ~isempty(all_picks)
+                    ChannelNames=s.Montage.ChannelNames(all_picks);
+                    [data,times]=fiff_read_raw_segment(raw,raw.first_samp,raw.last_samp,all_picks);
+                    units=cell(1,length(all_picks));
+                    %transform the meg channel units to ft & ft/cm
+                    
+                    [units{meg_picks}]=deal('ft');
+                    [units{meg_picks(3:3:end)}]=deal('ft/cm');
+                    [units{eeg_picks}]=deal('uV');
+                    data(meg_picks,:)=data(meg_picks,:)*10^12;
+                    data(eeg_picks,:)=data(eeg_picks,:)*10^6;
+                    
+                    want_mag1=1;
+                    want_mag2=1;
+                    want_gra=0;   
+                    
+                    if ~want_mag1
+                        data(meg_picks(1:3:end),:)=[];
+                        units(meg_picks(1:3:end))=[];
+                        ChannelNames(meg_picks(1:3:end))=[];
+                    end
+                    if ~want_mag2
+                        data(meg_picks(2:3:end),:)=[];
+                        units(meg_picks(2:3:end))=[];
+                        ChannelNames(meg_picks(2:3:end))=[];
+                    end
+                    
+                    if ~want_gra
+                        data(meg_picks(3:3:end),:)=[];
+                        units(meg_picks(3:3:end))=[];
+                        ChannelNames(meg_picks(3:3:end))=[];
+                    end
+                    
+                    s.Data.Data=data';
+                    s.Data.TimeStamps=times;
+                    s.Data.Units=units;
+                    s.Montage.ChannelNames=ChannelNames;
+                end
+                
+                
+            end
+        end
+        
         function cds=multiImport()
             [FileName,FilePath,FilterIndex]=uigetfile({...
-                '*.mat;*.cds;*.cds.old;*.medf','Supported formats (*.mat;*.cds;*.cds.old;*.medf)';...
+                '*.mat;*.cds;*.cds.old;*.medf;*.fif','Supported formats (*.mat;*.cds;*.cds.old;*.medf;*.fif)';...
                 '*.cds','common data structure (*.cds)';...
-                '*.cds.old','old common data structure (*.cds.old)';...
-                '*.medf','matlab edf format (*.medf)'},...
-                'Select your data file','data.mat','MultiSelect','on');
+                '*.ocds','old common data structure (*.ocds)';...
+                '*.medf','matlab edf format (*.medf)';...
+                '*.fif','NeuroMag MEG format (*.fif)'},...
+                'Select your data file','data.mat',...
+                'MultiSelect','on');
             
             if ~iscell(FileName)
                 if ~FileName
@@ -427,11 +454,8 @@ classdef CommonDataStructure < handle
             end
             
             if FilterIndex==1
-                s=cell(1,length(FileName));
                 for i=1:length(FileName)
-                    s{i}=load(fullfile(FilePath,FileName{i}),'-mat');
-                    
-                    FilterIndex(i)=CommonDataStructure.dataStructureCheck(s{i});
+                    FilterIndex(i)=CommonDataStructure.dataStructureCheck(FileName{i});
                 end
             else
                 FilterIndex=ones(1,length(FileName))*FilterIndex;
@@ -443,22 +467,19 @@ classdef CommonDataStructure < handle
             end
             
             for i=1:length(FileName)
-            switch FilterIndex(i)
-                case 2
-                    tmp=load(fullfile(FilePath,FileName{i}),'-mat');
-                    cds{i}.assign(CommonDataStructure.readFromCDS(tmp));
-                    
-                case 3
-                    
-                    tmp=load(fullfile(FilePath,FileName{i}),'-mat');
-                    cds{i}.assign(CommonDataStructure.readFromOldCDS(tmp));
-                    
-                case 4
-                    
-                    tmp=load(fullfile(FilePath,FileName{i}),'-mat');
-                    cds{i}.assign(CommonDataStructure.readFromMEDF(tmp));
-                    
-            end
+                filename=fullfile(FilePath,FileName{i});
+                switch FilterIndex(i)
+                    case 2
+                        cds{i}.assign(CommonDataStructure.readFromCDS(filename));
+                        
+                    case 3
+                        cds{i}.assign(CommonDataStructure.readFromOldCDS(filename));
+                        
+                    case 4
+                        cds{i}.assign(CommonDataStructure.readFromMEDF(filename));
+                    case 5
+                        cds{i}.assign(CommonDataStructure.readFromFIF(filename));  
+                end
             end
             
         end

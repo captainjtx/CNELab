@@ -82,7 +82,11 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         obj.PreprocData{i}=preprocessedData(obj,i);
         if obj.Gain(i)==0
             tmp=std(obj.PreprocData{i}(:));
-            obj.Gain(i)=5/tmp;
+            if tmp
+                obj.Gain(i)=0.2/tmp;
+            else
+                obj.Gain(i)=1;
+            end
         end
         plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),obj.Gain(i),Nchan(i):-1:1,obj.ChanSelect{i});
         if ~obj.ChanLink || i==1  || strcmp(obj.DataView,'Vertical') , plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.InsideTicks); end
@@ -129,7 +133,11 @@ else
             obj.PreprocData{i}=preprocessedData(obj,i);
             if obj.Gain(i)==0
                 tmp=std(obj.PreprocData{i}(:));
-                obj.Gain(i)=5/tmp;
+                if tmp
+                    obj.Gain(i)=0.2/tmp;
+                else
+                    obj.Gain(i)=1;
+                end
             end
             plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.AlternatedModeColors(rem(i-1,end)+1,:),obj.Gain(i),obj.DataNumber*obj.MontageChanNumber(1)+1-i:-obj.DataNumber:1,obj.ChanSelect{i});
         end
@@ -142,7 +150,12 @@ else
             obj.PreprocData{i}=preprocessedData(obj,i);
             if obj.Gain(i)==0
                 tmp=std(obj.PreprocData{i}(:));
-                obj.Gain(i)=5/tmp;
+                if tmp
+                    obj.Gain(i)=0.2/tmp;
+                else
+                    obj.Gain(i)=1;
+                end
+                   
             end
             plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.SuperimposedModeColors(rem(i-1,end)+1,:),obj.Gain(i),obj.MontageChanNumber(i):-1:1,obj.ChanSelect{i});
         end
@@ -152,7 +165,11 @@ else
         obj.PreprocData{i}=preprocessedData(obj,i);
         if obj.Gain(i)==0
             tmp=std(obj.PreprocData{i}(:));
-            obj.Gain(i)=5/tmp;
+            if tmp
+                obj.Gain(i)=0.2/tmp;
+            else
+                obj.Gain(i)=1;
+            end
         end
         plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),obj.Gain(i),obj.MontageChanNumber(i):-1:1,obj.ChanSelect{i});
         plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.InsideTicks)

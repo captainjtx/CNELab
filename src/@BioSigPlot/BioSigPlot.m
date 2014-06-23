@@ -336,6 +336,8 @@ classdef BioSigPlot < hgsetget
         MenuFile
         MenuExport
         MenuExportFigure
+        MenuExportFigureMirror
+        MenuExportFigureAdvanced
         MenuExportEvents
         MenuImport
         MenuImportDataSet
@@ -371,8 +373,9 @@ classdef BioSigPlot < hgsetget
         Config                  %Default config file [def: defaultconfig] contains all default values
         SRate                   %Sampling rate
         WinLength               %Time length of windows
-        Gain                 %Gain beetween 2 channels
+        Gain                    %Gain beetween 2 channels
         ChanNames               %Cell with channel names corresponding to raw data.
+        Units                   %Units of the data
         Evts                    %List of events.
         Time                    %Current time (in TimeUnit) of the current
         DispChans               %Number of channels to display for each data set.
@@ -412,6 +415,7 @@ classdef BioSigPlot < hgsetget
         WinLength_
         Gain_
         ChanNames_
+        Units_
         Evts_
         Time_
         DispChans_
@@ -646,7 +650,7 @@ classdef BioSigPlot < hgsetget
             %must be before *ModeColors
             keylist={'Config','SRate','WinLength','Gain','DataView','Montage','MontageRef','Evts','Time','FirstDispChans',...
                 'DispChans','ChanLink','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
-                'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','XGrid','YGrid',...
+                'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','Units','XGrid','YGrid',...
                 'Position','Title','MouseMode','PlaySpeed','MainTimerPeriod','VideoTimerPeriod','AxesHeight','YBorder','YGridInterval','Selection',...
                 'TaskFiles','VideoStartTime','VideoFile','VideoTimeFrame','VideoLineTime','MainTimer','VideoTimer','BadChannels'};
             
@@ -665,7 +669,7 @@ classdef BioSigPlot < hgsetget
             for i=1:2:length(g)
                 if any(strcmpi(g{i},{'Config','SRate','WinLength','Gain','Montage','DataView','MontageRef','Evts','Time','FirstDispChans',...
                         'DispChans','ChanLink','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
-                        'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','XGrid','YGrid','MouseMode','AxesHeight','YBorder','YGridInterval','Selection',...
+                        'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','Units','XGrid','YGrid','MouseMode','AxesHeight','YBorder','YGridInterval','Selection',...
                         'TaskFiles','VideoStartTime','VideoFile','MainTimerPeriod','VideoTimerPeriod','VideoTimeFrame','BadChannels'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
@@ -729,6 +733,8 @@ classdef BioSigPlot < hgsetget
         function val = get.Gain(obj), val=obj.Gain_; end
         function obj = set.ChanNames(obj,val), set(obj,'ChanNames',val); end
         function val = get.ChanNames(obj), val=obj.ChanNames_; end
+        function obj = set.Units(obj,val), set(obj,'Units',val); end
+        function val = get.Units(obj), val=obj.Units_; end
         function obj = set.Evts(obj,val), set(obj,'Evts',val); end
         function val = get.Evts(obj), val=obj.Evts_; end
         function obj = set.Time(obj,val), set(obj,'Time',val);end
@@ -814,127 +820,6 @@ classdef BioSigPlot < hgsetget
         %*****************************************************************
         % ***************** User available methods  **********************
         %*****************************************************************
-        function ExportPagesTo(obj,file,pages,varargin)
-            % Export some pages to separate files
-            % (One document per page)
-            %
-            % USAGE
-            %   obj.ExportPagesTo(file,pages,'PaperUnits',unit,'PaperSize',[width height]);
-            %   OR
-            %   obj.ExportPagesTo(file,pages,'PaperUnits',unit,'PaperType',paper,'PaperOrientation',orientation);
-            %
-            % INPUT
-            %   file
-            %       Filename to export. Can be any Image format, .pdf, .ps or .fig(Matlab figure)
-            %
-            %   pages
-            %       list of time corresponding to begginings of pages
-            %
-            %   unit
-            %       Paper size unit ('inches' | 'centimeters' | 'points')
-            %
-            %   width, height
-            %       Dimension of the paper in unit
-            %
-            
-            
-            
-            oldtime=obj.Time;
-            n=find(file=='.',1,'last');
-            f=figure('Visible','off',varargin{:});
-            set(f,'paperpositionMode','manual','paperunits','Normalized','PaperPosition',[0.02 0.02 0.96 0.96]);
-            for p=pages
-                obj.Time=p;
-                filename=[file(1:n-1) '-' num2str(p) file(n:end)];
-                clf(f);
-                
-                copyobj(obj.Axes(:),f);
-                try saveas(f,filename); catch, msgbox(['The following file cannot be written :' filename]); end %#ok<CTCH>
-                
-                obj.Commands{end+1}=['a.ExportPagesTo(''' file ''',' obj2str(pages) ',' obj2str(varargin{:}) ');'];
-            end
-            close(f);
-            obj.Time=oldtime;
-        end
-        
-        %******************************************************************
-        function ExportPagesToMultiPages(obj,file,pages,varargin)
-            % Export to a single mutli-page document (PDF or PS)
-            %
-            %
-            % USAGE
-            %   obj.ExportPagesToMultiPages(file,pages,'PaperUnits',unit,'PaperSize',[width height]);
-            %   OR
-            %   obj.ExportPagesToMultiPages(file,pages,'PaperUnits',unit,'PaperType',paper,'PaperOrientation',orientation);
-            %
-            % INPUT
-            %   file
-            %       Filename to export. Can be .pdf or .ps
-            %
-            %   pages
-            %       list of time corresponding to begginings of pages
-            %
-            %   unit
-            %       Paper size unit ('inches' | 'centimeters' | 'points')
-            %
-            %   width, height
-            %       Dimension of the paper in unit
-            %
-            
-            oldtime=obj.Time;
-            n=find(file=='.',1,'last');
-            if strcmpi(file(n+1:end),'pdf')
-                tmpname='tmp.ps';
-            else
-                tmpname=file;
-            end
-            f=figure('Visible','off',varargin{:});
-            set(f,'paperpositionMode','manual','paperunits','Normalized','PaperPosition',[0.02 0.02 0.96 0.96]);
-            firstpage=1;
-            for p=pages
-                obj.Time=p;
-                clf(f);
-                
-                copyobj(obj.Axes(:),f);
-                if (firstpage)
-                    print(['-f' num2str(f)],'-dpsc','tmp.ps');
-                    firstpage=0;
-                else
-                    print(['-f' num2str(f)],'-append','-dpsc','tmp.ps');
-                end
-                
-            end
-            close(f);
-            if strcmpi(file(n+1:end),'pdf')
-                g=struct(varargin{:});
-                
-                if isfield(g,'PaperType')
-                    if strcmpi(g.PaperType,'usletter')
-                        gspapersize='letter';
-                    else
-                        gspapersize=g.PaperType;
-                    end
-                    ps2pdf('psfile',tmpname,'pdffile',file,'gspapersize', gspapersize);
-                elseif isfield(g,'PaperUnits') && isfield(g,'PaperSize')
-                    if strcmpi(g.PaperUnits,'inches')
-                        dims=round(g.PaperSize*72);
-                    elseif strcmpi(g.PaperUnits,'centimeters')
-                        dims=round(g.PaperSize*72/2.54);
-                    else
-                        dims=round(g.PaperSize);
-                    end
-                    ps2pdf('psfile',tmpname,'pdffile',file,'gsdevicewidthpoints',dims(1),'gsdeviceheightpoints',dims(2));
-                else
-                    ps2pdf('psfile',tmpname,'pdffile',file);
-                end
-                
-                delete(tmpname);
-            end
-            
-            obj.Time=oldtime;
-            obj.Commands{end+1}=['a.ExportPagesToMultiPages(''' file ''',' obj2str(pages)  ',' obj2str(varargin{:}) ');'];
-            
-        end
         
         %******************************************************************
         function StartPlay(obj)
@@ -1097,6 +982,7 @@ classdef BioSigPlot < hgsetget
             end
         end
         
+        %==================================================================
         %******************************************************************
         function obj = set.Filtering_(obj,val)
             n=get(obj.PopFilterTarget,'Value');
@@ -1438,8 +1324,8 @@ classdef BioSigPlot < hgsetget
         
         %******************************************************************
         function makeControls(obj)
-            obj.timeControlPanel(obj.ControlPanel,[0 0 .2 1]);
-            obj.infoControlPanel(obj.ControlPanel,[0.2 0 .2 1]);
+            obj.timeControlPanel(obj.ControlPanel,[0 0 .17 1]);
+            obj.infoControlPanel(obj.ControlPanel,[0.17 0 .23 1]);
             obj.filterControlPanel(obj.ControlPanel,[.4 0 .43 1]);
             obj.scaleControlPanel(obj.ControlPanel,[0.83 0 .15 1]);
             
@@ -1456,8 +1342,11 @@ classdef BioSigPlot < hgsetget
         function makeMenu(obj)
             obj.MenuFile=uimenu(obj.Fig,'Label','File');
             obj.MenuExport=uimenu(obj.MenuFile,'Label','Export');
-            obj.MenuExportFigure=uimenu(obj.MenuExport,'Label','Figure','Callback',@(src,evt) obj.ExportToWindow);
+            obj.MenuExportFigure=uimenu(obj.MenuExport,'Label','Figure');
+            obj.MenuExportFigureMirror=uimenu(obj.MenuExportFigure,'Label','Mirror','Callback',@(src,evt) obj.ExportToFigure);
+            obj.MenuExportFigureAdvanced=uimenu(obj.MenuExportFigure,'Label','Advanced','Callback',@(src,evt) obj.ExportToWindow);
             obj.MenuExportEvents=uimenu(obj.MenuExport,'Label','Events','Callback',@(src,evt) obj.ExportEvents);
+            
             
             obj.MenuImport=uimenu(obj.MenuFile,'Label','Import');
             obj.MenuImportDataSet=uimenu(obj.MenuImport,'Label','DataSet','Callback',@(src,evt) obj.ImportDataSet);
@@ -2124,19 +2013,33 @@ classdef BioSigPlot < hgsetget
                         s=[obj.MontageChanNames{1}{nchan} ':'];
                         for k=1:obj.DataNumber
                             s=[s ' ' num2str(k) '-' num2str(obj.PreprocData{k}(nchan,t))]; %#ok<AGROW>
+                            if ~isempty(obj.Units{k})
+                                s=[s ' ' obj.Units{k}{nchan}];
+                            end
                         end
                     elseif strcmpi(obj.DataView,'Alternated')
                         nchan=sum(obj.MontageChanNumber)-j;
                         ndata=rem(nchan,obj.DataNumber)+1;
                         nchan=floor(nchan/obj.DataNumber)+1;
                         s=['(' num2str(ndata) ')' obj.MontageChanNames{1}{nchan} ':' num2str(obj.PreprocData{ndata}(nchan,t))];
+                        if ~isempty(obj.Units{ndata})
+                           s=[s ' ' obj.Units{ndata}{nchan}];
+                        end
                     elseif any(strcmpi(obj.DataView,{'Horizontal','Vertical'}))
                         nchan=obj.MontageChanNumber(i)-j+1;
                         s=[obj.MontageChanNames{i}{nchan} ':' num2str(obj.PreprocData{i}(nchan,t))];
+                        
+                        if ~isempty(obj.Units{i})
+                           s=[s ' ' obj.Units{i}{nchan}];
+                        end
                     else
                         ndata=str2double(obj.DataView(4));
                         nchan=obj.MontageChanNumber(ndata)-j+1;
                         s=[obj.MontageChanNames{ndata}{nchan} ':' num2str(obj.PreprocData(nchan,t))];
+                        
+                        if ~isempty(obj.Units{ndata})
+                           s=[s ' ' obj.Units{ndata}{nchan}];
+                        end
                     end
                     set(obj.TxtMeasurer{i}(j),'Position',p,'String',s);
                 end
@@ -2222,7 +2125,11 @@ classdef BioSigPlot < hgsetget
                     else
                         v=obj.PreprocData(nchan,max(round((time-obj.Time)*obj.SRate),1));
                     end
-                    set(obj.TxtY,'String',['Data : ' num2str(ndata) ' - Chan : '  c{nchan} ' - Value : ' num2str(v)]);
+                    s=['Data : ' num2str(ndata) ' - Chan : '  c{nchan} ' - Value : ' num2str(v)];
+                    if ~isempty(obj.Units{ndata})
+                        s=[s,' ',obj.Units{ndata}{nchan}];
+                    end
+                    set(obj.TxtY,'String',s);
                 else
                     set(obj.TxtY,'String',['Data : ' num2str(ndata) ' - Chan : '  c{nchan} ' - Value : OUT']);
                 end
@@ -2277,29 +2184,12 @@ classdef BioSigPlot < hgsetget
         end
         
         %******************************************************************
+        function ExportToFigure(obj)
+            f=figure('Name','Mirror figure','Position',get(obj.Fig,'Position'));
+            copyobj(obj.Axes(:),f);
+        end
         function ExportToWindow(obj)
-            [file,filetype,pages,paperparams]=ExportWindow();
-            if ~isempty(file)
-                if strcmpi(pages,'CurrentPage')
-                    pages=obj.Time;
-                elseif strcmpi(pages,'Whole')
-                    pages=0:obj.WinLength:((size(obj.Data{1},2)-1)/obj.SRate);
-                elseif strcmpi(pages,'Selection')
-                    pages=[];
-                    for i=1:size(obj.Selection,2)
-                        for d=floor(obj.Selection(1,i)):obj.WinLength:obj.Selection(2,i)
-                            pages=[pages d]; %#ok<AGROW>
-                        end
-                    end
-                end
-                
-                
-                if(strcmp(filetype,'image') || strcmp(filetype,'fig'))
-                    obj.ExportPagesTo(file,pages,paperparams{:});
-                else
-                    obj.ExportPagesToMultiPages(file,pages,paperparams{:});
-                end
-            end
+            ExportWindow(obj);
         end
         function ExportEvents(obj)
             %==================================================================
@@ -2425,7 +2315,7 @@ classdef BioSigPlot < hgsetget
                         [obj.VideoObj,obj.AudioObj]=mmread(fullfile(FilePath,FileName));
                     end
                     
-                    obj.VideoTimerPeriod=1/obj.VideoObj.rate*2;
+                    obj.VideoTimerPeriod=1/obj.VideoObj.rate;
                     obj.TotalVideoFrame=length(obj.VideoObj.frames);
                     obj.VideoFrame=1;
                     ind=find(obj.VideoTimeFrame(:,2)==1);

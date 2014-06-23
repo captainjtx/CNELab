@@ -22,15 +22,15 @@ if isempty(cds)
     return;
 end
 
-fs=cds{1}.Montage.SampleRate;
+fs=cds{1}.Data.SampleRate;
 
 for i=2:length(cds)
     
-    if cds{i}.Montage.SampleRate~=cds{i-1}.Montage.SampleRate
+    if cds{i}.Data.SampleRate~=cds{i-1}.Data.SampleRate
         fs=1;
         cprintf('Error',['Sampling frequency in data set ' num2str(i-1) ' and ' num2str(i) ' is not the same!']);
     else
-        fs=cds{i}.Montage.SampleRate;
+        fs=cds{i}.Data.SampleRate;
     end
     
 end
@@ -80,7 +80,39 @@ end
 
 bsp.Evts=evts;
 %==========================================================================
+%**************************************************************************
+VideoStartTime=0;
+VideoTimeFrame=[];
 
+for i=1:length(cds)
+    if ~isempty(cds{i}.Data.Video.StartTime)
+        VideoStartTime=cds{i}.Data.Video.StartTime;
+    end
+    
+    if ~isempty(cds{i}.Data.Video.TimeFrame)
+        VideoTimeFrame=cds{i}.Data.Video.TimeFrame;
+    end
+end
+
+bsp.VideoStartTime=VideoStartTime;
+bsp.VideoTimeFrame=VideoTimeFrame;
+%==========================================================================
+%**************************************************************************
+Units=cell(length(cds),1);
+for i=1:length(cds)
+    if iscell(cds{i}.Data.Units)
+        if length(cds{i}.Data.Units)==size(cds{i}.Data.Data,2)
+            Units{i}=cds{i}.Data.Units;
+        end
+    elseif ischar(cds{i}.Data.Units)
+        Units{i}=cell(1,size(cds{i}.Data.Data,2));
+        [Units{i}{:}]=deal(cds{i}.Data.Units);     
+    end
+end
+
+bsp.Units=Units;
+
+%==========================================================================
 assignin('base','bsp',bsp);
 
 end
