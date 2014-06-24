@@ -2126,7 +2126,7 @@ classdef BioSigPlot < hgsetget
                         v=obj.PreprocData(nchan,max(round((time-obj.Time)*obj.SRate),1));
                     end
                     s=['Data : ' num2str(ndata) ' - Chan : '  c{nchan} ' - Value : ' num2str(v)];
-                    if ~isempty(obj.Units{ndata})
+                    if ~isempty(obj.Units)
                         s=[s,' ',obj.Units{ndata}{nchan}];
                     end
                     set(obj.TxtY,'String',s);
