@@ -2022,14 +2022,14 @@ classdef BioSigPlot < hgsetget
                         ndata=rem(nchan,obj.DataNumber)+1;
                         nchan=floor(nchan/obj.DataNumber)+1;
                         s=['(' num2str(ndata) ')' obj.MontageChanNames{1}{nchan} ':' num2str(obj.PreprocData{ndata}(nchan,t))];
-                        if ~isempty(obj.Units{ndata})
+                        if ~isempty(obj.Units)
                            s=[s ' ' obj.Units{ndata}{nchan}];
                         end
                     elseif any(strcmpi(obj.DataView,{'Horizontal','Vertical'}))
                         nchan=obj.MontageChanNumber(i)-j+1;
                         s=[obj.MontageChanNames{i}{nchan} ':' num2str(obj.PreprocData{i}(nchan,t))];
                         
-                        if ~isempty(obj.Units{i})
+                        if ~isempty(obj.Units)
                            s=[s ' ' obj.Units{i}{nchan}];
                         end
                     else
@@ -2037,7 +2037,7 @@ classdef BioSigPlot < hgsetget
                         nchan=obj.MontageChanNumber(ndata)-j+1;
                         s=[obj.MontageChanNames{ndata}{nchan} ':' num2str(obj.PreprocData(nchan,t))];
                         
-                        if ~isempty(obj.Units{ndata})
+                        if ~isempty(obj.Units)
                            s=[s ' ' obj.Units{ndata}{nchan}];
                         end
                     end
