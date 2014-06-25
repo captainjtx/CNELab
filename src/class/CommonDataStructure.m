@@ -81,11 +81,13 @@ classdef CommonDataStructure < handle
                 y=1;
             end
             
+            filename=fullfile(FilePath,FileName);
+            
             if FilterIndex==1
-                FilterIndex=CommonDataStructure.dataStructureCheck(FileName);
+                FilterIndex=CommonDataStructure.dataStructureCheck(filename);
             end
             
-            filename=fullfile(FilePath,FileName);
+            
             
             switch FilterIndex
                 case 0
@@ -444,7 +446,14 @@ classdef CommonDataStructure < handle
         
         function s=readFromMAT(filename)
             s=CommonDataStructure.initial();
-            data=load(filename,'-mat');
+            st=load(filename,'-mat');
+            field=fieldnames(st);
+            if length(field)>1
+                cprintf('Yellow','The file contain more than one field, try to import the first one...');
+            end
+            
+            data=st.(field{1});
+            
             if size(data,2)>size(data,1)
                 cprintf('Yellow','The data seems to be row-wise, automatic transpose applied...');
                 data=data';
@@ -519,7 +528,7 @@ classdef CommonDataStructure < handle
             
             if FilterIndex==1
                 for i=1:length(FileName)
-                    FilterIndex(i)=CommonDataStructure.dataStructureCheck(FileName{i});
+                    FilterIndex(i)=CommonDataStructure.dataStructureCheck(fullfile(FilePath,FileName{i}));
                 end
             else
                 FilterIndex=ones(1,length(FileName))*FilterIndex;

@@ -600,6 +600,10 @@ classdef BioSigPlot < hgsetget
             obj.VideoHandle=[];
             set(obj,g{:});
             
+            if ~isempty(obj.DispChans)
+                obj.DispChans=obj.DispChans/obj.DataNumber;
+            end
+            
             obj.IsEvtsSaved=true;
         end
         
@@ -1476,9 +1480,10 @@ classdef BioSigPlot < hgsetget
                 if obj.ChanLink
                     obj.Montage_(2:obj.DataNumber)=obj.Montage_(1);
                 else
-                    obj.Montage_(2:obj.DataNumber)={[]};
+                    obj.Montage_(2:obj.DataNumber)=[];
                 end
             end
+            
             for i=1:length(obj.Montage_)
                 if ischar(obj.Montage_{i})
                     try
@@ -1489,21 +1494,12 @@ classdef BioSigPlot < hgsetget
                     end
                 end
             end
+            
             if isempty(obj.ChanNames_)
-                obj.ChanNames_(1:obj.DataNumber)={{}};
+                obj.ChanNames_=cell(1,obj.DataNumber);
+                [obj.ChanNames_{:}]=deal([]);
             end
-            if ~iscell(obj.ChanNames_{1})
-                tmp=obj.ChanNames_;
-                obj.ChanNames_={{}};
-                obj.ChanNames_{1}=tmp;
-                for i=2:obj.DataNumber
-                    if obj.ChanLink_
-                        obj.ChanNames_{i}=tmp;
-                    else
-                        obj.ChanNames_(i)={{}};
-                    end
-                end
-            end
+
             for i=1:obj.DataNumber
                 if isempty(obj.ChanNames_{i})
                     obj.ChanNames_{i}=num2cell(1:size(obj.Data{i},1));
@@ -2126,7 +2122,7 @@ classdef BioSigPlot < hgsetget
                         v=obj.PreprocData(nchan,max(round((time-obj.Time)*obj.SRate),1));
                     end
                     s=['Data : ' num2str(ndata) ' - Chan : '  c{nchan} ' - Value : ' num2str(v)];
-                    if ~isempty(obj.Units)
+                    if ~isempty(obj.Units)&&~isempty(obj.Units{ndata})
                         s=[s,' ',obj.Units{ndata}{nchan}];
                     end
                     set(obj.TxtY,'String',s);
