@@ -24,4 +24,5 @@ TFMap GUI segmentation
 
 denoise test
 
+Add vertical gauge
 
