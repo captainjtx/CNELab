@@ -66,11 +66,13 @@ classdef CommonDataStructure < handle
         function y=import(obj)
             y=0;
             [FileName,FilePath,FilterIndex]=uigetfile({...
-                '*.mat;*.cds;*.cds.old;*.medf;*.fif','Supported formats (*.mat;*.cds;*.cds.old;*.medf;*.fif)';...
+                '*.mat;*.cds;*.cds.old;*.medf;*.fif;*.edf',...
+                'Supported formats (*.mat;*.cds;*.cds.old;*.medf;*.fif;*.edf)';...
                 '*.cds','common data structure (*.cds)';...
                 '*.ocds','old common data structure (*.ocds)';...
                 '*.medf','matlab edf format (*.medf)';...
-                '*.fif','NeuroMag MEG format (*.fif)'},...
+                '*.fif','NeuroMag MEG format (*.fif)';...
+                '*.edf','Europeon Data Format (*.edf)'},...
                 'Select your data file','data.mat');
             
             if ~FileName
@@ -86,6 +88,8 @@ classdef CommonDataStructure < handle
             filename=fullfile(FilePath,FileName);
             
             switch FilterIndex
+                case 0
+                    obj.assign(CommonDataStructure.readFromMAT(filename));
                 case 2
                     obj.assign(CommonDataStructure.readFromCDS(filename));
                     
@@ -95,8 +99,9 @@ classdef CommonDataStructure < handle
                 case 4
                     obj.assign(CommonDataStructure.readFromMEDF(filename));
                 case 5
-                    
                     obj.assign(CommonDataStructure.readFromFIF(filename));
+                case 6
+                    obj.assign(CommonDataStructure.readFromEDF(filename));
                     
             end
         end
@@ -107,7 +112,7 @@ classdef CommonDataStructure < handle
             [pathstr, name, ext] = fileparts(filename);
             if strcmpi(ext,'.cds')
                 FilterIndex=2;
-                return  
+                return
             elseif strcmpi(ext,'.ocds')
                 FilterIndex=3;
                 return
@@ -117,6 +122,8 @@ classdef CommonDataStructure < handle
             elseif strcmpi(ext,'.fif')
                 FilterIndex=5;
                 return
+            elseif strcmpi(ext,'.edf')
+                FilterIndex=6;
             elseif strcmpi(ext,'.mat')
                 
                 s=load(filename,'-mat');
@@ -130,6 +137,8 @@ classdef CommonDataStructure < handle
                     end
                 elseif isfield(s,'Data')&&isfield(s,'Montage')&&isfield(s,'PatientInfo')
                     FilterIndex=2;
+                elseif ismatrix(s)
+                    FilterIndex=0;
                 end
             end
         end
@@ -147,8 +156,7 @@ classdef CommonDataStructure < handle
             s.Data.Units=[];
             s.Data.Video.StartTime=[];
             s.Data.Video.TimeFrame=[];
-            s.Data.HighPass=[];
-            s.Data.LowPass=[];
+            s.Data.PreFilter=[];
             s.Data.DownSample=[];
             s.Data.SampleRate=[];
             
@@ -312,12 +320,12 @@ classdef CommonDataStructure < handle
                     s.PatientInfo.Index=oldcds.patientInfo.Index;
                 end
                 if isfield(oldcds.patientInfo,'Params')
-%                     if isfield(oldcds.patientInfo.Params,'tmExtend')
-%                         s.PatientInfo.Params.TmExtend=oldcds.patientInfo.Params.tmExtend;
-%                     end
-%                     if isfield(oldcds.patientInfo.Params,'tmMinimumData')
-%                         s.PatientInfo.Params.TmMinimumData=oldcds.patientInfo.Params.tmMinimumData;
-%                     end
+                    %                     if isfield(oldcds.patientInfo.Params,'tmExtend')
+                    %                         s.PatientInfo.Params.TmExtend=oldcds.patientInfo.Params.tmExtend;
+                    %                     end
+                    %                     if isfield(oldcds.patientInfo.Params,'tmMinimumData')
+                    %                         s.PatientInfo.Params.TmMinimumData=oldcds.patientInfo.Params.tmMinimumData;
+                    %                     end
                     if isfield(oldcds.patientInfo.Params,'nDownSample')
                         s.Data.DownSample=oldcds.patientInfo.Params.nDownSample;
                         n=s.PatientInfo.Params.NDownSample;
@@ -349,7 +357,7 @@ classdef CommonDataStructure < handle
         end
         
         function s=readFromFIF(filename)
-          
+            
             s=CommonDataStructure.initial();
             try
                 raw=fiff_setup_read_raw(filename);
@@ -367,10 +375,10 @@ classdef CommonDataStructure < handle
                         s.Data.SampleRate=raw.info.sfreq;
                     end
                     if isfield(raw.info,'lowpass')
-                        s.Data.LowPass=raw.info.lowpass;
+                        s.Data.PreFilter=strcat(s.Data.PreFilter,'LP: ',num2str(raw.info.lowpass),' Hz');
                     end
                     if isfield(raw.info,'highpass')
-                        s.Data.HighPass=raw.info.highpass;
+                        s.Data.PreFilter=strcat(s.Data.PreFilter,'HP: ',num2str(raw.info.highpass),' Hz');
                     end
                     
                     if isfield(raw.info,'ch_names')
@@ -405,7 +413,7 @@ classdef CommonDataStructure < handle
                     
                     want_mag1=1;
                     want_mag2=1;
-                    want_gra=0;   
+                    want_gra=0;
                     
                     if ~want_mag1
                         data(meg_picks(1:3:end),:)=[];
@@ -434,13 +442,69 @@ classdef CommonDataStructure < handle
             end
         end
         
+        function s=readFromMAT(filename)
+            s=CommonDataStructure.initial();
+            data=load(filename,'-mat');
+            if size(data,2)>size(data,1)
+                cprintf('Yellow','The data seems to be row-wise, automatic transpose applied...');
+                data=data';
+            end
+            
+            s.Data.Data=data;
+        end
+        
+        function s=readFromEDF(filename)
+            s=CommonDataStructure.initial();
+            [header,signalHeader,signalCell]=blockEdfLoad(filename);
+            
+            pChan=1;
+            count=0;
+            
+            for i=1:length(signalHeader)
+                if length(signalCell{i})~=length(signalCell{pChan})
+                    cprintf('Errors',['Channel ' num2str(i) ' has different length with channel ' num2str(pChan)...
+                        '\nChannel ' num2str(i) 'skipped']);
+                    continue;
+                elseif signalHeader(i).samples_in_record~=signalHeader(pChan).samples_in_record
+                    cprintf('Errors',['Channel ' num2str(i) ' has different samplin rate with channel ' num2str(pChan)...
+                        '\nChannel ' num2str(i) 'skipped']);
+                    continue;
+                else
+                    pChan=i;
+                    count=count+1;
+                end
+                
+                if isfield(signalHeader(count),'signal_labels')
+                    s.Montage.ChannelNames{count}=signalHeader(count).signal_labels;
+                end
+                
+                if isfield(header,'data_record_duration')&&isfield(signalHeader(count),'samples_in_record')
+                    if header.data_record_duration
+                        s.Data.SampleRate=signalHeader(count).samples_in_record/header.data_record_duration;
+                    end
+                end
+                
+                if isfield(signalHeader(count),'prefiltering')
+                    s.Data.PreFilter{i}=signalHeader(count).prefiltering;
+                end
+                
+                if isfield(signalHeader(count),'physical_dimension')
+                    s.Data.Units{count}=signalHeader(count).physical_dimension;
+                end
+                s.Data.Data(:,count)=signalCell{count};
+            end
+            
+        end
+        
         function cds=multiImport()
             [FileName,FilePath,FilterIndex]=uigetfile({...
-                '*.mat;*.cds;*.cds.old;*.medf;*.fif','Supported formats (*.mat;*.cds;*.cds.old;*.medf;*.fif)';...
+                '*.mat;*.cds;*.cds.old;*.medf;*.fif;*.edf',...
+                'Supported formats (*.mat;*.cds;*.cds.old;*.medf;*.fif;*.edf)';...
                 '*.cds','common data structure (*.cds)';...
                 '*.ocds','old common data structure (*.ocds)';...
                 '*.medf','matlab edf format (*.medf)';...
-                '*.fif','NeuroMag MEG format (*.fif)'},...
+                '*.fif','NeuroMag MEG format (*.fif)';...
+                '*.edf','Europeon Data Format (*.edf)'},...
                 'Select your data file','data.mat',...
                 'MultiSelect','on');
             
@@ -469,16 +533,18 @@ classdef CommonDataStructure < handle
             for i=1:length(FileName)
                 filename=fullfile(FilePath,FileName{i});
                 switch FilterIndex(i)
+                    case 0
+                        cds{i}.assign(CommonDataStructure.readFromMAT(filename));
                     case 2
                         cds{i}.assign(CommonDataStructure.readFromCDS(filename));
-                        
                     case 3
                         cds{i}.assign(CommonDataStructure.readFromOldCDS(filename));
-                        
                     case 4
                         cds{i}.assign(CommonDataStructure.readFromMEDF(filename));
                     case 5
-                        cds{i}.assign(CommonDataStructure.readFromFIF(filename));  
+                        cds{i}.assign(CommonDataStructure.readFromFIF(filename));
+                    case 6
+                        cds{i}.assign(CommonDataStructure.readFromEDF(filename));
                 end
             end
             
