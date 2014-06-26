@@ -72,7 +72,7 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
             ylim=[1-obj.YBorder_(1) Nchan(i)+obj.YBorder_(2)];
         else
             
-            ylim=[Nchan(i)+2-obj.YBorder_(1)-obj.FirstDispChans(i)-min(Nchan(i),obj.DispChans)      Nchan(i)+obj.YBorder_(2)-obj.FirstDispChans(i)+1];
+            ylim=[Nchan(i)+2-obj.YBorder_(1)-obj.FirstDispChans(i)-min(Nchan(i),obj.DispChans(i))      Nchan(i)+obj.YBorder_(2)-obj.FirstDispChans(i)+1];
         end
         cla(obj.Axes(i))
         set(obj.Axes(i),'Ylim',ylim,'Ytick',1:Nchan(i),'YTickLabel',{},'XtickLabel',{});
@@ -88,7 +88,7 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
                 obj.Gain(i)=1;
             end
         end
-        plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),obj.Gain(i),Nchan(i):-1:1,obj.ChanSelect{i});
+        plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),obj.Gain(i),Nchan(i):-1:1,obj.ChanSelect{i},obj.FirstDispChans(i),obj.DispChans(i));
         if ~obj.ChanLink || i==1  || strcmp(obj.DataView,'Vertical') , plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.InsideTicks); end
         [Elines,Etexts,Eindex]=DrawEvts(obj.Axes(i),obj.Evts,obj.Time,obj.WinLength,obj.SRate);
         if ~isempty(Elines)
@@ -114,9 +114,9 @@ else
         ylim=[0 Nchan+1];
     else
         %ylim=[obj.FirstDispChans(n)-1 obj.FirstDispChans(n)+obj.DispChans];
-        ylim=[obj.MontageChanNumber(n)+2-obj.YBorder_(1)-obj.FirstDispChans(n)-min(obj.DispChans,obj.MontageChanNumber(n))    obj.MontageChanNumber(n)+obj.YBorder_(2)-obj.FirstDispChans(n)+1];
+        ylim=[obj.MontageChanNumber(n)+2-obj.YBorder_(1)-obj.FirstDispChans(n)-min(obj.DispChans(n),obj.MontageChanNumber(n))    obj.MontageChanNumber(n)+obj.YBorder_(2)-obj.FirstDispChans(n)+1];
         if strcmp(obj.DataView,'Alternated')
-            ylim=[(obj.MontageChanNumber(n)+1-obj.FirstDispChans(n)-min(obj.DispChans,obj.MontageChanNumber(n)))*obj.DataNumber+1-obj.YBorder_(1)   obj.DataNumber*(obj.MontageChanNumber(n)+1-obj.FirstDispChans(n))+obj.YBorder_(2)];
+            ylim=[(obj.MontageChanNumber(n)+1-obj.FirstDispChans(n)-min(obj.DispChans(n),obj.MontageChanNumber(n)))*obj.DataNumber+1-obj.YBorder_(1)   obj.DataNumber*(obj.MontageChanNumber(n)+1-obj.FirstDispChans(n))+obj.YBorder_(2)];
             %ylim=[obj.DataNumber*(obj.FirstDispChans(n)-1) obj.DataNumber*(obj.FirstDispChans(n)-1+obj.DispChans)+1];
         end
     end
@@ -139,7 +139,7 @@ else
                     obj.Gain(i)=1;
                 end
             end
-            plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.AlternatedModeColors(rem(i-1,end)+1,:),obj.Gain(i),obj.DataNumber*obj.MontageChanNumber(1)+1-i:-obj.DataNumber:1,obj.ChanSelect{i});
+            plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.AlternatedModeColors(rem(i-1,end)+1,:),obj.Gain(i),obj.DataNumber*obj.MontageChanNumber(1)+1-i:-obj.DataNumber:1,obj.ChanSelect{i},obj.FirstDispChans(i),obj.DispChans(i));
         end
         tmp=obj.MontageChanNames{1}(:)';tmp(2:obj.DataNumber,:)={''};
         plotYTicks(obj.Axes,tmp(:),obj.InsideTicks)
@@ -157,7 +157,7 @@ else
                 end
                    
             end
-            plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.SuperimposedModeColors(rem(i-1,end)+1,:),obj.Gain(i),obj.MontageChanNumber(i):-1:1,obj.ChanSelect{i});
+            plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.SuperimposedModeColors(rem(i-1,end)+1,:),obj.Gain(i),obj.MontageChanNumber(i):-1:1,obj.ChanSelect{i},obj.FirstDispChans(i),obj.DispChans(i));
         end
         plotYTicks(obj.Axes,obj.MontageChanNames{1},obj.InsideTicks)
     else
@@ -171,7 +171,7 @@ else
                 obj.Gain(i)=1;
             end
         end
-        plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),obj.Gain(i),obj.MontageChanNumber(i):-1:1,obj.ChanSelect{i});
+        plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),obj.Gain(i),obj.MontageChanNumber(i):-1:1,obj.ChanSelect{i},obj.FirstDispChans(i),obj.DispChans(i));
         plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.InsideTicks)
     end
     plotXTicks(obj.Axes,obj.Time,obj.WinLength,obj.InsideTicks)
@@ -225,7 +225,7 @@ end
 end
 
 %**************************************************************************
-function plotData(axe,t,data,color,gain,posY,ChanSelect) %#ok<INUSD>
+function plotData(axe,t,data,color,gain,posY,ChanSelect,FirstDispChan,DispChans) %#ok<INUSD>
 % Plot data function
 % axe :axes to plot
 % t : the time values
@@ -234,11 +234,19 @@ function plotData(axe,t,data,color,gain,posY,ChanSelect) %#ok<INUSD>
 % Gain : Gain in µV between 2 channels
 % posY : the position of channel
 % ChanSelect : list of selected chans
+% FirstDispChan : the first channel to display
+% DispChans : the channel number of one page
+if ~isempty(FirstDispChan)&&~isempty(DispChans)
+    if ~isempty(ChanSelect)
+        ChanSelect=intersect(ChanSelect,round(FirstDispChan:FirstDispChan+DispChans-1));
+    else
+        ChanSelect=intersect(1:size(data,1),round(FirstDispChan:FirstDispChan+DispChans-1));
+    end
+end
 
-%data=-data./(Gain'*ones(1,size(data,2)));
 if ~isempty(ChanSelect)
     data=data(ChanSelect,:);
-    posY=data(ChanSelect);
+    posY=posY(ChanSelect);
 end
 data=-data*gain;
 data=data+(posY'*ones(1,size(data,2)));

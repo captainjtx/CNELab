@@ -63,23 +63,23 @@ if strcmp(obj.DataView,'Horizontal')
         else
             position=[(i-1)/n 0 1/n 1];
         end
-        if ~isempty(obj.DispChans) %Need elevator
+        if ~isempty(obj.DispChans(i)) %Need elevator
             if obj.ChanLink  % One elevator only
                 position([1 3])=position([1 3])*(1-ElevWide);
             else
                 position(3)=position(3)-ElevWide; % Multiple Elevator
-                m=max(0.00001,Nchan(i)-obj.DispChans);
+                m=max(0.00001,Nchan(i)-obj.DispChans(i));
                 obj.Sliders(i)=uicontrol(obj.MainPanel,'style','slider','units','normalized','position',[i/n-ElevWide 0 ElevWide 1],...
-                    'min',0,'max',m,'SliderStep',[1 obj.DispChans]/max(1,m),'Callback',@(src,evt) ChangeSliders(obj,src));
+                    'min',0,'max',m,'SliderStep',[1 obj.DispChans(i)]/max(1,m),'Callback',@(src,evt) ChangeSliders(obj,src));
             end
         end
         obj.Axes(i)=axes('parent',obj.MainPanel,'XLim',[0 obj.WinLength*obj.SRate],'XTick',0:obj.SRate:obj.WinLength*obj.SRate,...
             'TickLength',[.005 0],'position',position,'color',backgroundColor);
     end
-    if ~isempty(obj.DispChans) && obj.ChanLink
-        m=max(0.00001,Nchan(i)-obj.DispChans);
+    if ~isempty(obj.DispChans(i)) && obj.ChanLink
+        m=max(0.00001,Nchan(i)-obj.DispChans(i));
                 obj.Sliders=uicontrol(obj.MainPanel,'style','slider','units','normalized','position',[1-ElevWide 0 ElevWide 1],...
-                    'min',0,'max',m,'SliderStep',[1 obj.DispChans]/max(1,m),'Callback',@(src,evt) ChangeSliders(obj,src));
+                    'min',0,'max',m,'SliderStep',[1 obj.DispChans(i)]/max(1,m),'Callback',@(src,evt) ChangeSliders(obj,src));
     end
 elseif strcmp(obj.DataView,'Vertical')
     for i=1:n
@@ -94,21 +94,21 @@ elseif strcmp(obj.DataView,'Vertical')
             start=(n-i)*VerticalSpace+DrawingHeightSpace*sum(obj.AxesHeight(i+1:n))/sum(obj.AxesHeight(1:n));
             position=[0    start    1    Height];
         end
-        if ~isempty(obj.DispChans) %Need elevator
+        if ~isempty(obj.DispChans(i)) %Need elevator
             position(3)=position(3)-ElevWide; % Multiple Elevator
             if ~obj.ChanLink
-                m=max(0.00001,Nchan(i)-obj.DispChans);
+                m=max(0.00001,Nchan(i)-obj.DispChans(i));
                 obj.Sliders(i)=uicontrol(obj.MainPanel,'style','slider','units','normalized','position',[1-ElevWide (n-i)/n ElevWide 1/n],...
-                    'min',0,'max',m,'SliderStep',[1 obj.DispChans]/max(1,m),'Callback',@(src,evt) ChangeSliders(obj,src));
+                    'min',0,'max',m,'SliderStep',[1 obj.DispChans(i)]/max(1,m),'Callback',@(src,evt) ChangeSliders(obj,src));
             end
         end
         obj.Axes(i)=axes('parent',obj.MainPanel,'XLim',[0 obj.WinLength*obj.SRate],'XTick',0:obj.SRate:obj.WinLength*obj.SRate,...
             'TickLength',[.005 0],'position',position,'color',backgroundColor);
     end
-    if ~isempty(obj.DispChans) && obj.ChanLink
-        m=max(0.00001,Nchan(i)-obj.DispChans);
+    if ~isempty(obj.DispChans(i)) && obj.ChanLink
+        m=max(0.00001,Nchan(i)-obj.DispChans(i));
                 obj.Sliders=uicontrol(obj.MainPanel,'style','slider','units','normalized','position',[1-ElevWide 0 ElevWide 1],...
-                    'min',0,'max',m,'SliderStep',[1 obj.DispChans]/max(1,m),'Callback',@(src,evt) ChangeSliders(obj,src));
+                    'min',0,'max',m,'SliderStep',[1 obj.DispChans(i)]/max(1,m),'Callback',@(src,evt) ChangeSliders(obj,src));
     end
 else
     if ~obj.InsideTicks
@@ -123,11 +123,11 @@ else
         n=str2double(obj.DataView(4));
     end
     
-    if ~isempty(obj.DispChans)
+    if ~isempty(obj.DispChans(n))
         position(3)=position(3)-ElevWide; 
-        m=max(0.00001,Nchan(n)-obj.DispChans);
+        m=max(0.00001,Nchan(n)-obj.DispChans(n));
         obj.Sliders=uicontrol(obj.MainPanel,'style','slider','units','normalized','position',[1-ElevWide 0 ElevWide 1],...
-            'min',0,'max',m,'SliderStep',[1 obj.DispChans]/max(1,m),'Callback',@(src,evt) ChangeSliders(obj,src));
+            'min',0,'max',m,'SliderStep',[1 obj.DispChans(n)]/max(1,m),'Callback',@(src,evt) ChangeSliders(obj,src));
     end
     obj.Axes=axes('parent',obj.MainPanel,'XLim',[0 obj.WinLength*obj.SRate],'XTick',0:obj.SRate:obj.WinLength*obj.SRate,...
         'TickLength',[.005 0],'position',position,'color',backgroundColor);

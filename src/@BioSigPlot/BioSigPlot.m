@@ -407,6 +407,7 @@ classdef BioSigPlot < hgsetget
         Selection               %Time of Selected area
         
         BadChannels             %The bad channels
+        ChanSelect              %Selected Channels
         
     end
     properties (Access=protected,Hidden)%Storage of public properties
@@ -447,6 +448,7 @@ classdef BioSigPlot < hgsetget
         Selection_
         
         BadChannels_
+        ChanSelect_
         
         TaskFiles_
         VideoStartTime_
@@ -456,7 +458,6 @@ classdef BioSigPlot < hgsetget
     end
     properties (SetAccess=protected) %Readonly properties
         Data                        %(Read-Only)All the Signals
-        ChanSelect={}               %(Read-Only)Selected Channels
         PreprocData                 %(Read-Only)The currently preprocessed and drawed Data
         Commands                    %(Read-Only)List of all commands to be on this state
     end
@@ -583,8 +584,8 @@ classdef BioSigPlot < hgsetget
             obj.IsSelecting=0;
             obj.SelectionStart=[];
             obj.Selection_=zeros(2,0);
-            obj.ChanSelect(1:obj.DataNumber)={[]};
             obj.ChanSelectStart=[];
+            obj.ChanSelect_=cell(1,obj.DataNumber);
             
             % Beginning of setting and starting Redraw
             
@@ -605,6 +606,7 @@ classdef BioSigPlot < hgsetget
             end
             
             obj.IsEvtsSaved=true;
+            
         end
         
         %*****************************************************************
@@ -656,7 +658,7 @@ classdef BioSigPlot < hgsetget
                 'DispChans','ChanLink','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
                 'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','Units','XGrid','YGrid',...
                 'Position','Title','MouseMode','PlaySpeed','MainTimerPeriod','VideoTimerPeriod','AxesHeight','YBorder','YGridInterval','Selection',...
-                'TaskFiles','VideoStartTime','VideoFile','VideoTimeFrame','VideoLineTime','MainTimer','VideoTimer','BadChannels'};
+                'TaskFiles','VideoStartTime','VideoFile','VideoTimeFrame','VideoLineTime','MainTimer','VideoTimer','BadChannels','ChanSelect'};
             
             if isempty(obj.Commands)
                 command='a=BioSigPlot(data';
@@ -674,7 +676,7 @@ classdef BioSigPlot < hgsetget
                 if any(strcmpi(g{i},{'Config','SRate','WinLength','Gain','Montage','DataView','MontageRef','Evts','Time','FirstDispChans',...
                         'DispChans','ChanLink','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
                         'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','Units','XGrid','YGrid','MouseMode','AxesHeight','YBorder','YGridInterval','Selection',...
-                        'TaskFiles','VideoStartTime','VideoFile','MainTimerPeriod','VideoTimerPeriod','VideoTimeFrame','BadChannels'}))
+                        'TaskFiles','VideoStartTime','VideoFile','MainTimerPeriod','VideoTimerPeriod','VideoTimeFrame','BadChannels','ChanSelect'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage','DataView','MontageRef','DispChans','ChanLink','InsideTicks','MouseMode','AxesHeight'}))
@@ -821,6 +823,9 @@ classdef BioSigPlot < hgsetget
         function val = get.BadChannels(obj), val=obj.BadChannels_; end
         
         
+        function obj = set.ChanSelect(obj,val), set(obj,'ChanSelect',val); end
+        function val = get.ChanSelect(obj), val=obj.ChanSelect_; end
+        
         %*****************************************************************
         % ***************** User available methods  **********************
         %*****************************************************************
@@ -873,7 +878,7 @@ classdef BioSigPlot < hgsetget
         
         %******************************************************************
         function val = get.MontageChanNumber(obj)
-            val=zeros(1,obj.DataNumber);
+            val=zeros(obj.DataNumber,1);
             for i=1:obj.DataNumber
                 val(i)=size(obj.Montage{i}(obj.MontageRef(i)).mat,1);
             end
@@ -1219,6 +1224,118 @@ classdef BioSigPlot < hgsetget
         end
         %==================================================================
         %******************************************************************
+        function obj=set.FirstDispChans_(obj,val)
+            tmp=ones(1,obj.DataNumber);
+            
+            if length(val)==1
+                tmp=min(val*ones(obj.DataNumber,1),obj.ChanNumber);
+            elseif isempty(val)
+                tmp=ones(1,obj.DataNumber);
+            else 
+                for i=1:length(val)
+                    if ~val(i)||isnan(val(i))
+                        tmp(i)=1;
+                    else
+                        tmp(i)=val(i);
+                    end
+                end
+            end
+            
+            tmp=round(tmp);
+            for i=1:length(tmp)
+               tmp(i)=max(1,min(tmp(i),obj.ChanNumber(i)));
+            end
+            obj.FirstDispChans_=reshape(tmp,length(tmp),1);
+        end
+        %==================================================================
+        %******************************************************************
+        function obj=set.DispChans_(obj,val)
+            tmp=obj.ChanNumber;
+            
+            if length(val)==1
+                tmp=min(val*ones(obj.DataNumber,1),obj.ChanNumber);
+            elseif isempty(val)
+                tmp=obj.ChanNumber;
+            else
+                for i=1:length(val)
+                    if ~val(i)||isnan(val(i))
+                        tmp(i)=obj.ChanNumber(i);
+                    else
+                        tmp(i)=val(i);
+                    end
+                end
+            end
+            
+            tmp=round(tmp);
+            for i=1:length(tmp)
+                tmp(i)=max(1,min(tmp(i),obj.ChanNumber(i)));
+            end
+            obj.DispChans_=reshape(tmp,length(tmp),1);
+            
+        end
+        
+        %==================================================================
+        %******************************************************************
+        function obj=set.ChanSelect_(obj,val)
+            tmp=cell(1,obj.DataNumber);
+            if iscell(val)
+                if length(val)==1
+                    if ~isempty(val{1})
+                        if ~val{1}||isnan(val{1})                      
+                            for i=1:obj.DataNumber
+                                tmp{i}=1:obj.ChanNumber(i);
+                            end 
+                        else
+                            [tmp{:}]=deal(val{1});
+                        end
+                    else
+                        for i=1:obj.DataNumber
+                            tmp{i}=1:obj.ChanNumber(i);
+                        end
+                    end
+                else
+                    for i=1:obj.DataNumber
+                        if isempty(val{i})
+                            tmp{i}=1:obj.ChanNumber(i);
+                        else
+                            if ~val{i}||isnan(val{i})
+                                tmp{i}=1:obj.ChanNumber(i);
+                            else
+                                tmp{i}=val{i};
+                            end
+                        end
+                    end
+                end
+            else
+                if isempty(val)
+                   for i=1:obj.DataNumber
+                       tmp{i}=1:obj.ChanNumber(i);
+                   end
+                else
+                    if ~val||isnan(val)
+                        for i=1:obj.DataNumber
+                            tmp{i}=1:obj.ChanNumber(i);
+                        end
+                    else
+                        [tmp{:}]=deal(val);
+                    end
+                end
+            end      
+            
+            for i=1:length(tmp)
+                for j=1:length(tmp{i})
+                    if tmp{i}(j)<1
+                        tmp{i}(j)=1;
+                    elseif tmp{i}(j)>obj.ChanNumber(i)
+                        tmp{i}(j)=obj.ChanNumber(i);
+                    end
+                end
+            end
+            
+            obj.ChanSelect_=tmp;
+        end
+        %==================================================================
+        %******************************************************************
         function obj = set.VideoLineTime(obj,val)
             if ~isempty(obj.WinLength)
                 val=max(0,min(val,obj.WinLength));
@@ -1476,12 +1593,9 @@ classdef BioSigPlot < hgsetget
             if iscell(obj.Montage_)
                 if length(obj.Montage_)~=obj.DataNumber, error('If system is cell, it must be of same length than data');end
             else
-                obj.Montage_={obj.Montage_};
-                if obj.ChanLink
-                    obj.Montage_(2:obj.DataNumber)=obj.Montage_(1);
-                else
-                    obj.Montage_(2:obj.DataNumber)=[];
-                end
+                tmp=cell(1,obj.DataNumber);
+                [tmp{:}]=deal(obj.Montage_);
+                obj.Montage_=tmp;
             end
             
             for i=1:length(obj.Montage_)
@@ -1789,16 +1903,16 @@ classdef BioSigPlot < hgsetget
             if src==obj.Fig && ~isempty(obj.Sliders) && ~isa(src,'figure')
                 if length(obj.Sliders)==1
                     if obj.ChanLink || any(strcmpi(obj.DataView,{'Superimposed','Alternated','Vertical','Horizontal'}))
-                        obj.FirstDispChans(:)=obj.FirstDispChans(:)+evt.VerticalScrollCount;
+                        obj.FirstDispChans(:)=round(obj.FirstDispChans(:)+evt.VerticalScrollCount);
                     else
                         n=str2double(obj.DataView(4));
-                        obj.FirstDispChans(n)=obj.FirstDispChans(n)+evt.VerticalScrollCount;
+                        obj.FirstDispChans(n)=round(obj.FirstDispChans(n)+evt.VerticalScrollCount);
                     end
                 end
                 if length(obj.Sliders)>1
                     n=obj.MouseDataset;
                     if n~=0
-                        obj.FirstDispChans(n)=obj.FirstDispChans(n)+evt.VerticalScrollCount;
+                        obj.FirstDispChans(n)=round(obj.FirstDispChans(n)+evt.VerticalScrollCount);
                     end
                 end
             else
@@ -1817,14 +1931,14 @@ classdef BioSigPlot < hgsetget
                 end
                 if length(obj.Sliders)==1
                     if obj.ChanLink || any(strcmpi(obj.DataView,{'Superimposed','Alternated','Vertical','Horizontal'}))
-                        obj.FirstDispChans(:)=get(src,'max')-get(src,'value')+1;
+                        obj.FirstDispChans(:)=round(get(src,'max')-get(src,'value')+1);
                     else
                         n=str2double(obj.DataView(4));
-                        obj.FirstDispChans(n)=get(src,'max')-get(src,'value')+1;
+                        obj.FirstDispChans(n)=round(get(src,'max')-get(src,'value')+1);
                     end
                 end
                 if length(obj.Sliders)>1
-                    obj.FirstDispChans(obj.Sliders==src)=get(src,'max')-get(src,'value')+1;
+                    obj.FirstDispChans(obj.Sliders==src)=round(get(src,'max')-get(src,'value')+1);
                 end
             end
         end
@@ -2150,21 +2264,29 @@ classdef BioSigPlot < hgsetget
             %**************************************************************************
             % Dialog box to change number of channel to display
             %**************************************************************************
-            t=inputdlg('Number of channel to display (empty for all):');
-            if iscell(t) && isempty(t)
-                return;
+            prompt=cell(1,obj.DataNumber);
+            def=cell(1,obj.DataNumber);
+            
+            for i=1:obj.DataNumber
+                prompt{i}=['Data ' num2str(i) ' (empty for all):'];
+                def{i}=num2str(obj.DispChans(i));
             end
-            if iscell(t)
-                t=t{1};
-            end
-            if isempty(t) || strcmp(t,'[]')
-                obj.DispChans=[];
-            else
-                t=str2double(t);
-                if ~isnan(t)
-                    obj.DispChans=t;
+            
+            title='Channel number to display for one page';
+            
+           
+            answer=inputdlg(prompt,title,1,def);
+            
+            for i=1:length(answer)
+                tmp=str2double(answer{i});
+                if isempty(tmp)||isnan(tmp)
+                    tmp=obj.ChanNumber(i);
                 end
+                
+                obj.DispChans(i)=tmp;
+                
             end
+           
         end
         
         %******************************************************************
