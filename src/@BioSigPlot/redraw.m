@@ -88,7 +88,7 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
                 obj.Gain(i)=1;
             end
         end
-        plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),obj.Gain(i),Nchan(i):-1:1,obj.ChanSelect{i},obj.FirstDispChans(i),obj.DispChans(i));
+        plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),obj.Gain(i),Nchan(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),obj.DispChans(i));
         if ~obj.ChanLink || i==1  || strcmp(obj.DataView,'Vertical') , plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.InsideTicks); end
         [Elines,Etexts,Eindex]=DrawEvts(obj.Axes(i),obj.Evts,obj.Time,obj.WinLength,obj.SRate);
         if ~isempty(Elines)
@@ -139,7 +139,7 @@ else
                     obj.Gain(i)=1;
                 end
             end
-            plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.AlternatedModeColors(rem(i-1,end)+1,:),obj.Gain(i),obj.DataNumber*obj.MontageChanNumber(1)+1-i:-obj.DataNumber:1,obj.ChanSelect{i},obj.FirstDispChans(i),obj.DispChans(i));
+            plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.AlternatedModeColors(rem(i-1,end)+1,:),obj.Gain(i),obj.DataNumber*obj.MontageChanNumber(1)+1-i:-obj.DataNumber:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),obj.DispChans(i));
         end
         tmp=obj.MontageChanNames{1}(:)';tmp(2:obj.DataNumber,:)={''};
         plotYTicks(obj.Axes,tmp(:),obj.InsideTicks)
@@ -157,7 +157,7 @@ else
                 end
                    
             end
-            plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.SuperimposedModeColors(rem(i-1,end)+1,:),obj.Gain(i),obj.MontageChanNumber(i):-1:1,obj.ChanSelect{i},obj.FirstDispChans(i),obj.DispChans(i));
+            plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.SuperimposedModeColors(rem(i-1,end)+1,:),obj.Gain(i),obj.MontageChanNumber(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),obj.DispChans(i));
         end
         plotYTicks(obj.Axes,obj.MontageChanNames{1},obj.InsideTicks)
     else
@@ -171,7 +171,7 @@ else
                 obj.Gain(i)=1;
             end
         end
-        plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),obj.Gain(i),obj.MontageChanNumber(i):-1:1,obj.ChanSelect{i},obj.FirstDispChans(i),obj.DispChans(i));
+        plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),obj.Gain(i),obj.MontageChanNumber(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),obj.DispChans(i));
         plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.InsideTicks)
     end
     plotXTicks(obj.Axes,obj.Time,obj.WinLength,obj.InsideTicks)
@@ -225,7 +225,7 @@ end
 end
 
 %**************************************************************************
-function plotData(axe,t,data,color,gain,posY,ChanSelect,FirstDispChan,DispChans) %#ok<INUSD>
+function plotData(axe,t,data,color,gain,posY,ChanSelect2Display,FirstDispChan,DispChans) %#ok<INUSD>
 % Plot data function
 % axe :axes to plot
 % t : the time values
@@ -233,20 +233,20 @@ function plotData(axe,t,data,color,gain,posY,ChanSelect,FirstDispChan,DispChans)
 % color :  data line color
 % Gain : Gain in µV between 2 channels
 % posY : the position of channel
-% ChanSelect : list of selected chans
+% ChanSelect2Display : list of selected chans
 % FirstDispChan : the first channel to display
 % DispChans : the channel number of one page
 if ~isempty(FirstDispChan)&&~isempty(DispChans)
-    if ~isempty(ChanSelect)
-        ChanSelect=intersect(ChanSelect,round(FirstDispChan:FirstDispChan+DispChans-1));
+    if ~isempty(ChanSelect2Display)
+        ChanSelect2Display=intersect(ChanSelect2Display,round(FirstDispChan:FirstDispChan+DispChans-1));
     else
-        ChanSelect=intersect(1:size(data,1),round(FirstDispChan:FirstDispChan+DispChans-1));
+        ChanSelect2Display=intersect(1:size(data,1),round(FirstDispChan:FirstDispChan+DispChans-1));
     end
 end
 
-if ~isempty(ChanSelect)
-    data=data(ChanSelect,:);
-    posY=posY(ChanSelect);
+if ~isempty(ChanSelect2Display)
+    data=data(ChanSelect2Display,:);
+    posY=posY(ChanSelect2Display);
 end
 data=-data*gain;
 data=data+(posY'*ones(1,size(data,2)));
@@ -301,6 +301,27 @@ else
 end
 end
 
+%==========================================================================
+%**************************************************************************
+function plotYGauge(axe,units,gain,inside)
+% Plot the gauge of amplitude alog Y dimension for each channel
+% axe: axes to plot
+% units: a cell array of units for each channel
+% gain: a vector stored the display gain on each channel
+% inside : 1 (Gauge is inside) 0 (Gauge is outside)
+    y_lim=get(axe,'Ylim');
+    x_lim=get(axe,'Xlim');
+    
+    
+
+end
+%==========================================================================
+%**************************************************************************
+function plotDynamicGauge()
+
+end
+
+%==========================================================================
 %**************************************************************************
 function DrawSelect(axe,selection,t,dt)
 % Draw the rectangle of selected time periods

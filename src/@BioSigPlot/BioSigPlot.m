@@ -193,7 +193,7 @@ classdef BioSigPlot < hgsetget
     %   Data
     %     All the Signals
     %
-    %   ChanSelect
+    %   ChanSelect2Display
     %     Selected Channels
     %
     %   PreprocData
@@ -407,7 +407,8 @@ classdef BioSigPlot < hgsetget
         Selection               %Time of Selected area
         
         BadChannels             %The bad channels
-        ChanSelect              %Selected Channels
+        ChanSelect2Display      %Selected Channels to Display
+        ChanSelect2Edit         %Selected Channels to Edit (Filter,Gain adjust)
         
     end
     properties (Access=protected,Hidden)%Storage of public properties
@@ -448,7 +449,8 @@ classdef BioSigPlot < hgsetget
         Selection_
         
         BadChannels_
-        ChanSelect_
+        ChanSelect2Display_
+        ChanSelect2Edit_
         
         TaskFiles_
         VideoStartTime_
@@ -465,7 +467,7 @@ classdef BioSigPlot < hgsetget
         ChanOrderMat
         IsSelecting
         SelectionStart
-        ChanSelectStart
+        ChanSelect2DisplayStart
         SelRect
     end
     
@@ -584,8 +586,9 @@ classdef BioSigPlot < hgsetget
             obj.IsSelecting=0;
             obj.SelectionStart=[];
             obj.Selection_=zeros(2,0);
-            obj.ChanSelectStart=[];
-            obj.ChanSelect_=cell(1,obj.DataNumber);
+            obj.ChanSelect2DisplayStart=[];
+            obj.ChanSelect2Display_=cell(1,obj.DataNumber);
+            obj.ChanSelect2Edit_=cell(1,obj.DataNumber);
             
             % Beginning of setting and starting Redraw
             
@@ -658,7 +661,8 @@ classdef BioSigPlot < hgsetget
                 'DispChans','ChanLink','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
                 'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','Units','XGrid','YGrid',...
                 'Position','Title','MouseMode','PlaySpeed','MainTimerPeriod','VideoTimerPeriod','AxesHeight','YBorder','YGridInterval','Selection',...
-                'TaskFiles','VideoStartTime','VideoFile','VideoTimeFrame','VideoLineTime','MainTimer','VideoTimer','BadChannels','ChanSelect'};
+                'TaskFiles','VideoStartTime','VideoFile','VideoTimeFrame','VideoLineTime','MainTimer','VideoTimer','BadChannels','ChanSelect2Display',...
+                'ChanSelect2Edit'};
             
             if isempty(obj.Commands)
                 command='a=BioSigPlot(data';
@@ -676,7 +680,8 @@ classdef BioSigPlot < hgsetget
                 if any(strcmpi(g{i},{'Config','SRate','WinLength','Gain','Montage','DataView','MontageRef','Evts','Time','FirstDispChans',...
                         'DispChans','ChanLink','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
                         'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','Units','XGrid','YGrid','MouseMode','AxesHeight','YBorder','YGridInterval','Selection',...
-                        'TaskFiles','VideoStartTime','VideoFile','MainTimerPeriod','VideoTimerPeriod','VideoTimeFrame','BadChannels','ChanSelect'}))
+                        'TaskFiles','VideoStartTime','VideoFile','MainTimerPeriod','VideoTimerPeriod','VideoTimeFrame','BadChannels','ChanSelect2Display',...
+                        'ChanSelect2Edit'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage','DataView','MontageRef','DispChans','ChanLink','InsideTicks','MouseMode','AxesHeight'}))
@@ -823,8 +828,11 @@ classdef BioSigPlot < hgsetget
         function val = get.BadChannels(obj), val=obj.BadChannels_; end
         
         
-        function obj = set.ChanSelect(obj,val), set(obj,'ChanSelect',val); end
-        function val = get.ChanSelect(obj), val=obj.ChanSelect_; end
+        function obj = set.ChanSelect2Display(obj,val), set(obj,'ChanSelect2Display',val); end
+        function val = get.ChanSelect2Display(obj), val=obj.ChanSelect2Display_; end
+        
+        function obj = set.ChanSelect2Edit(obj,val), set(obj,'ChanSelect2Edit',val); end
+        function val = get.ChanSelect2Edit(obj), val=obj.ChanSelect2Edit_; end
         
         %*****************************************************************
         % ***************** User available methods  **********************
@@ -1276,7 +1284,7 @@ classdef BioSigPlot < hgsetget
         
         %==================================================================
         %******************************************************************
-        function obj=set.ChanSelect_(obj,val)
+        function obj=set.ChanSelect2Display_(obj,val)
             tmp=cell(1,obj.DataNumber);
             if iscell(val)
                 if length(val)==1
@@ -1332,7 +1340,7 @@ classdef BioSigPlot < hgsetget
                 end
             end
             
-            obj.ChanSelect_=tmp;
+            obj.ChanSelect2Display_=tmp;
         end
         %==================================================================
         %******************************************************************
@@ -1376,73 +1384,21 @@ classdef BioSigPlot < hgsetget
         
         
         %******************************************************************
-        function [nchan,ndata,yvalue]=getMouseInfo(obj)
-            xlim=obj.WinLength*obj.SRate;
-            ndata=0;nchan=0;
-            yvalue=zeros(1,length(obj.Axes));%for two axes
-            
-            for i=1:length(obj.Axes)
-                pos=get(obj.Axes(i),'CurrentPoint');
-                yvalue(i)=pos(1,2); %TODO adjust to the scale
-                ylim=get(obj.Axes(i),'Ylim');
-                if pos(1,1)>=0 && pos(1,1)<=xlim && pos(1,2)>=ylim(1) && pos(1,2)<=ylim(2)
-                    if strcmpi(obj.DataView,'Alternated')
-                        nchan=sum(obj.MontageChanNumber)-round(pos(1,2))+1;
-                        if nchan<=0, nchan=1; end
-                        if nchan>sum(obj.MontageChanNumber), nchan=sum(obj.MontageChanNumber); end
-                        ndata=rem(nchan-1,obj.DataNumber)+1;
-                        nchan=floor((nchan-1)/obj.DataNumber)+1;
-                    else
-                        if strcmpi(obj.DataView(1:3),'DAT')
-                            ndata=str2double(obj.DataView(4));
-                        else
-                            ndata=i;
-                        end
-                        nchan=obj.MontageChanNumber(ndata)-round(pos(1,2))+1;
-                        if nchan<=0, nchan=1; end
-                        if nchan>obj.MontageChanNumber(ndata), nchan=obj.MontageChanNumber(ndata); end
-                    end
-                end
-            end
-        end
-        
-        
-        
+        %Dynamic return the channel number,dataset number,amplitude in 
+        %sequence
+        getMouseInfo(obj)
+        %==================================================================
         %******************************************************************
         %**********General functions called when setting properties********
         %******************************************************************
-        
         %******************************************************************
-        function buildfig(obj)
-            % Designing of all figure controls
-            
-            obj.Fig=figure('MenuBar','none','ToolBar','none','DockControls','off','NumberTitle','off',...
-                'CloseRequestFcn',@(src,evts) delete(obj),'WindowScrollWheelFcn',@(src,evts) ChangeSliders(obj,src,evts),...
-                'WindowButtonMotionFcn',@(src,evt) MouseMovement(obj),'WindowButtonDownFcn',@(src,evt) MouseDown(obj),...
-                'WindowButtonUpFcn',@(src,evt) MouseUp(obj),'Renderer','painters','ResizeFcn',@(src,evt) resize(obj),...
-                'WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'WindowKeyReleaseFcn',@(src,evt) KeyRelease(obj,src,evt));
-            
-            obj.PanObj=pan(obj.Fig);
-            set(obj.PanObj,'Motion','vertical','ActionPostCallback',@(src,evts) ChangeSliders(obj,src,evts))
-            obj.MainTimer = timer('TimerFcn',@(src ,evts) PlayTime(obj),'ExecutionMode','fixedRate','BusyMode','queue');
-            obj.VideoTimer = timer('TimerFcn',@ (src,evts) UpdateVideo(obj),'ExecutionMode','fixedRate','BusyMode','queue');
-            
-            % Panel declaration
-            set(obj.Fig,'Units','pixels')
-            pos=get(obj.Fig,'position');
-            
-            set(obj.Fig,'position',[0,0 pos(3) pos(4)]);
-            ctrlsize=obj.ControlBarSize;
-            obj.MainPanel=uipanel(obj.Fig,'units','pixels','position',[0 ctrlsize(2) ctrlsize(1) pos(4)-ctrlsize(2)],'BorderType','none');
-            obj.ControlPanel=uipanel(obj.Fig,'units','pixels','position',[0 0 ctrlsize(1) ctrlsize(2)],'BorderType','none');
-            obj.Toolbar=uitoolbar(obj.Fig);
-            
-            obj.makeControls();
-            obj.makeToolbar();
-            obj.makeMenu();
-            
-        end
-        
+        %Main interface Initialization
+        buildfig(obj)
+        %==================================================================
+        %******************************************************************
+        %Main interface Menu Initialization
+        makeMenu(obj)
+        %==================================================================
         %******************************************************************
         function makeControls(obj)
             obj.timeControlPanel(obj.ControlPanel,[0 0 .17 1]);
@@ -1453,104 +1409,31 @@ classdef BioSigPlot < hgsetget
         end
         
         %******************************************************************
+        %Time Navigation Panel Initialization
+        timeControlPanel(obj,parent,position)
+        %==================================================================
+        %******************************************************************
+        %Realtime Info Panel Initialization
+        infoControlPanel(obj,parent,position)
+        %==================================================================
+        %******************************************************************  
+        %Filter Panel Initialization
+        filterControlPanel(obj,parent,position)
+        %==================================================================
+        %******************************************************************
+        %Gain Panel Initailization
+        scaleControlPanel(obj,parent,position)
+        %==================================================================
+        %******************************************************************
         function makeToolbar(obj)
             obj.montageToolbar();
             obj.viewToolbar();
             obj.toolToolbar();
         end
+        %==================================================================
         
         %******************************************************************
-        function makeMenu(obj)
-            obj.MenuFile=uimenu(obj.Fig,'Label','File');
-            obj.MenuExport=uimenu(obj.MenuFile,'Label','Export');
-            obj.MenuExportFigure=uimenu(obj.MenuExport,'Label','Figure');
-            obj.MenuExportFigureMirror=uimenu(obj.MenuExportFigure,'Label','Mirror','Callback',@(src,evt) obj.ExportToFigure);
-            obj.MenuExportFigureAdvanced=uimenu(obj.MenuExportFigure,'Label','Advanced','Callback',@(src,evt) obj.ExportToWindow);
-            obj.MenuExportEvents=uimenu(obj.MenuExport,'Label','Events','Callback',@(src,evt) obj.ExportEvents);
-            
-            
-            obj.MenuImport=uimenu(obj.MenuFile,'Label','Import');
-            obj.MenuImportDataSet=uimenu(obj.MenuImport,'Label','DataSet','Callback',@(src,evt) obj.ImportDataSet);
-            obj.MenuImportEvents=uimenu(obj.MenuImport,'Label','Events','Callback',@(src,evt) obj.ImportEvents);
-            obj.MenuImportVideo=uimenu(obj.MenuImport,'Label','Video','Callback',@(src,evt) obj.ImportVideo);
-            
-            obj.MenuCopy=uimenu(obj.MenuFile,'Label','Copy','Enable','off');
-            obj.MenuSettings=uimenu(obj.Fig,'Label','Settings');
-            obj.MenuCommands=uimenu(obj.MenuSettings,'Label','Command List',...
-                'Callback',@(src,evts) listdlg('ListString',obj.Commands,'ListSize',[700 500],'PromptString','List of commands'));
-            obj.MenuConfigurationState=uimenu(obj.MenuSettings,'Label','Configuration file','Callback',@(src,evt) ConfigWindow(obj));
-            obj.MenuPlaySpeed=uimenu(obj.MenuSettings,'Label','Set the speed for play','Callback',@(src,evt) MnuPlay(obj));
-            obj.MenuChan=uimenu(obj.MenuSettings,'Label','Number of channels to display','Callback',@(src,evt) MnuChan2Display(obj));
-            obj.MenuTime2disp=uimenu(obj.MenuSettings,'Label','Time range to display','Callback',@(src,evt) MnuTime2Display(obj));
-            obj.MenuChanLink=uimenu(obj.MenuSettings,'Label','All datasets have the same channels',...
-                'Callback',@(src,evt) set(obj,'ChanLink',~obj.ChanLink));
-            obj.MenuDisplay=uimenu(obj.Fig,'Label','Display');
-            obj.MenuInsideTicks=uimenu(obj.MenuDisplay,'Label','Put ticks inside the graph',...
-                'Callback',@(src,evt) set(obj,'InsideTicks',~obj.InsideTicks));
-            obj.MenuXGrid=uimenu(obj.MenuDisplay,'Label','Show XGrid',...
-                'Callback',@(src,evt) set(obj,'XGrid',~obj.XGrid));
-            obj.MenuYGrid=uimenu(obj.MenuDisplay,'Label','Show YGrid',...
-                'Callback',@(src,evt) set(obj,'YGrid',~obj.YGrid));
-        end
         
-        %******************************************************************
-        function infoControlPanel(obj,parent,position)
-            obj.InfoPanel=uipanel(parent,'units','normalized','position',position);
-            obj.TxtTime=uicontrol(obj.InfoPanel,'Style','text','units','normalized','position',[0 .5 1 .4],'HorizontalAlignment','Left','String','Time : 0:00:00.00 - sample 0');
-            obj.TxtY=uicontrol(obj.InfoPanel,'Style','text','units','normalized','position',[0 0 1 .4],'HorizontalAlignment','Left','String','Chan :  - value 0');
-        end
-        
-        %******************************************************************
-        function timeControlPanel(obj,parent,position)
-            obj.TimePanel=uipanel(parent,'units','normalized','position',position);
-            obj.BtnPrevPage=uicontrol(obj.TimePanel,'Style','pushbutton','String','<<','units','normalized','position',[.01 .1 .1 .8],'Callback',@(src,evt) ChangeTime(obj,src));
-            obj.BtnPrevSec=uicontrol(obj.TimePanel,'Style','pushbutton','String','<','units','normalized','position',[.11 .1 .1 .8],'Callback',@(src,evt) ChangeTime(obj,src));
-            obj.EdtTime=uicontrol(obj.TimePanel,'Style','edit','String',0,'units','normalized','position',[.22 0.1 .26 .8],'BackgroundColor',[1 1 1],'Callback',@(src,evt) ChangeTime(obj,src));
-            obj.BtnNextSec=uicontrol(obj.TimePanel,'Style','pushbutton','String','>','units','normalized','position',[.49 0.1 .1 .8],'Callback',@(src,evt) ChangeTime(obj,src));
-            obj.BtnNextPage=uicontrol(obj.TimePanel,'Style','pushbutton','String','>>','units','normalized','position',[.60 0.1 .1 .8],'Callback',@(src,evt) ChangeTime(obj,src));
-            obj.BtnPlay=uicontrol(obj.TimePanel,'Style','pushbutton','String','Play','units','normalized','position',[.71 0.1 .28 .8],'Callback',@(src,evt) StartPlay(obj));
-        end
-        
-        %******************************************************************
-        function filterControlPanel(obj,parent,position)
-            
-            obj.FilterPanel=uipanel('Parent',parent,'Position',position,'units','normalized');
-            
-            FilterPanelForEachData=uipanel('Parent',obj.FilterPanel,'Position',[0.2,0,0.8,1],'units','normalized');
-            
-            list=[{'All'} num2cell(1:obj.DataNumber)];
-            uicontrol(obj.FilterPanel,'Style','text','String','Filter ','units','normalized','position',[0 0.2 0.07 0.5],'HorizontalAlignment','right');
-            obj.PopFilterTarget=uicontrol(obj.FilterPanel,'Style','popupmenu','String',list,'units','normalized','position',[0.08 .2 .09 .6],'BackgroundColor',[1 1 1],...
-                'Callback',@(src,evt) ChangeFilterTarget(obj));
-            
-            
-            obj.ChkFilter=uicontrol(FilterPanelForEachData,'Style','checkbox','units','normalized','position',[0 .55 .2 .4],'String','Enable',...
-                'Callback',@(src,evt) set(obj,'Filtering',get(src,'Value')));
-            obj.ChkStrongFilter=uicontrol(FilterPanelForEachData,'Style','checkbox','units','normalized','position',[0 .05 .2 .4],'String','High Order',...
-                'Callback',@(src,evt) set(obj,'StrongFilter',get(src,'Value')));
-            uicontrol(FilterPanelForEachData,'Style','text','String','Low:','units','normalized','position',[.22 .2 .09 .6],'HorizontalAlignment','right');
-            obj.EdtFilterLow=uicontrol(FilterPanelForEachData,'Style','edit','units','normalized','position',[.33 .1 .08 .8],'BackgroundColor',[1 1 1],...
-                'Callback',@(src,evt) set(obj,'FilterLow',str2double(get(src,'String'))));
-            uicontrol(FilterPanelForEachData,'Style','text','String','High:','units','normalized','position',[.42 .2 .09 .6],'HorizontalAlignment','right');
-            obj.EdtFilterHigh=uicontrol(FilterPanelForEachData,'Style','edit','units','normalized','position',[.52 .1 .08 .8],'BackgroundColor',[1 1 1],...
-                'Callback',@(src,evt) set(obj,'FilterHigh',str2double(get(src,'String'))));
-            uicontrol(FilterPanelForEachData,'Style','text','String','Notch:','units','normalized','position',[.65 .2 .09 .6],'HorizontalAlignment','right');
-            obj.EdtFilterNotch1=uicontrol(FilterPanelForEachData,'Style','edit','units','normalized','position',[.8 .1 .08 .8],'BackgroundColor',[1 1 1],...
-                'Callback',@(src,evt) set(obj,'FilterNotch1',str2double(get(src,'String'))));
-            obj.EdtFilterNotch2=uicontrol(FilterPanelForEachData,'Style','edit','units','normalized','position',[.9 .1 .08 .8],'BackgroundColor',[1 1 1],...
-                'Callback',@(src,evt) set(obj,'FilterNotch2',str2double(get(src,'String'))));
-        end
-        
-        %******************************************************************
-        function scaleControlPanel(obj,parent,position)
-            obj.ScalePanel=uibuttongroup('Parent',parent,'units','normalized','position',position);
-            list=[{'All'} num2cell(1:obj.DataNumber)];
-            uicontrol(obj.ScalePanel,'Style','text','String','Gain ','units','normalized','position',[0 .2 0.24 .5],'HorizontalAlignment','right');
-            obj.PopGainTarget=uicontrol(obj.ScalePanel,'Style','popupmenu','String',list,'units','normalized','position',[0.25 0.2 .25 .6],'BackgroundColor',[1 1 1],'Callback',@(src,evt) ChangeGainTarget(obj));
-            obj.EdtGain=uicontrol(obj.ScalePanel,'Style','edit','units','normalized','position',[.6 .1 .28 .8],'BackgroundColor',[1 1 1],'Callback',@(src,evt) ChangeGain(obj,src));
-            obj.BtnAddGain=uicontrol(obj.ScalePanel,'Style','pushbutton','String','+','units','normalized','position',[.88 0.55 .1 .35],'Callback',@(src,evt) ChangeGain(obj,src));
-            obj.BtnRemGain=uicontrol(obj.ScalePanel,'Style','pushbutton','String','-','units','normalized','position',[.88 0.1 .1 .35],'Callback',@(src,evt) ChangeGain(obj,src));
-        end
         
         %******************************************************************
         function montageToolbar(obj)
@@ -1759,9 +1642,6 @@ classdef BioSigPlot < hgsetget
             
             obj.VideoLineTime=0;
             obj.Time=t;
-            
-            
-            
         end
         %******************************************************************
         function UpdateVideo(obj)
@@ -1780,6 +1660,7 @@ classdef BioSigPlot < hgsetget
             
         end
         %==================================================================
+        %******************************************************************
         function PlayTime(obj)
             t=obj.VideoTimeFrame(obj.VideoFrameInd,1)+obj.VideoStartTime;
             
@@ -1793,156 +1674,7 @@ classdef BioSigPlot < hgsetget
             
             
         end
-        
-        %******************************************************************
         %==================================================================
-        function ChangeFilterTarget(obj)
-            if get(obj.PopFilterTarget,'Value')==1
-                if all(obj.Filtering==obj.Filtering(1))
-                    set(obj.ChkFilter,'Value',obj.Filtering(1));
-                    if obj.Filtering(1)==1
-                        if all(obj.StrongFilter==obj.StrongFilter(1))
-                            set(obj.ChkStrongFilter,'Value',obj.StrongFilter(1));
-                        else
-                            set(obj.ChkStrongFilter,'Value','0');
-                        end
-                        
-                        if all(obj.FilterLow==obj.FilterLow(1))
-                            set(obj.EdtFilterLow,'String',num2str(obj.FilterLow(1)));
-                        else
-                            set(obj.EdtFilterLow,'String','0');
-                        end
-                        
-                        if all(obj.FilterHigh==obj.FilterHigh(1))
-                            set(obj.EdtFilterHigh,'String',num2str(obj.FilterHigh(1)));
-                        else
-                            set(obj.EdtFilterHigh,'String','0');
-                        end
-                        
-                        if all(obj.FilterNotch(:,1)==obj.FilterNotch(1,1))
-                            set(obj.EdtFilterNotch1,'String',num2str(obj.FilterNotch(1,1)));
-                        else
-                            set(obj.EdtFilterNotch1,'String','0');
-                        end
-                        
-                        if all(obj.FilterNotch(:,2)==obj.FilterNotch(1,2))
-                            set(obj.EdtFilterNotch2,'String',num2str(obj.FilterNotch(1,2)));
-                        else
-                            set(obj.EdtFilterNotch2,'String','0');
-                        end
-                    end
-                    
-                else
-                    obj.Filtering=zeros(1,obj.DataNumber);
-                end
-            else
-                
-                n=get(obj.PopFilterTarget,'Value')-1;
-                set(obj.ChkFilter,'Value',obj.Filtering(n));
-                
-                if  obj.Filtering(n)
-                    offon='on';
-                else
-                    offon='off';
-                end
-                
-                set(obj.ChkStrongFilter,'Enable',offon);
-                set(obj.ChkStrongFilter,'Value',obj.StrongFilter(n));
-                
-                set(obj.EdtFilterLow,'Enable',offon);
-                set(obj.EdtFilterLow,'String',num2str(obj.FilterLow(n)));
-                
-                set(obj.EdtFilterHigh,'Enable',offon);
-                set(obj.EdtFilterHigh,'String',num2str(obj.FilterHigh(n)));
-                
-                set(obj.EdtFilterNotch1,'Enable',offon);
-                set(obj.EdtFilterNotch1,'String',num2str(obj.FilterNotch(n,1)));
-                
-                set(obj.EdtFilterNotch2,'Enable',offon);
-                set(obj.EdtFilterNotch2,'String',num2str(obj.FilterNotch(n,2)));
-                
-            end
-        end
-        function ChangeGainTarget(obj)
-            if get(obj.PopGainTarget,'Value')==1
-                if all(obj.Gain==obj.Gain(1))
-                    set(obj.EdtGain,'String',obj.Gain(1))
-                else
-                    set(obj.EdtGain,'String','-')
-                end
-            else
-                n=get(obj.PopGainTarget,'Value')-1;
-                set(obj.EdtGain,'String',obj.Gain(n))
-            end
-        end
-        
-        %******************************************************************
-        function ChangeGain(obj,src)
-            if get(obj.PopGainTarget,'Value')==1
-                if src==obj.BtnAddGain
-                    obj.Gain=obj.Gain*2^.25;
-                elseif src==obj.BtnRemGain
-                    obj.Gain=obj.Gain*2^-.25;
-                else
-                    obj.Gain=str2double(get(src,'String'));
-                end
-            else
-                n=get(obj.PopGainTarget,'Value')-1;
-                if src==obj.BtnAddGain
-                    obj.Gain(n)=obj.Gain(n)*2^.25;
-                elseif src==obj.BtnRemGain
-                    obj.Gain(n)=obj.Gain(n)*2^-.25;
-                else
-                    obj.Gain(n)=str2double(get(src,'String'));
-                end
-            end
-        end
-        
-        %******************************************************************
-        function ChangeSliders(obj,src,evt)
-            if src==obj.Fig && ~isempty(obj.Sliders) && ~isa(src,'figure')
-                if length(obj.Sliders)==1
-                    if obj.ChanLink || any(strcmpi(obj.DataView,{'Superimposed','Alternated','Vertical','Horizontal'}))
-                        obj.FirstDispChans(:)=round(obj.FirstDispChans(:)+evt.VerticalScrollCount);
-                    else
-                        n=str2double(obj.DataView(4));
-                        obj.FirstDispChans(n)=round(obj.FirstDispChans(n)+evt.VerticalScrollCount);
-                    end
-                end
-                if length(obj.Sliders)>1
-                    n=obj.MouseDataset;
-                    if n~=0
-                        obj.FirstDispChans(n)=round(obj.FirstDispChans(n)+evt.VerticalScrollCount);
-                    end
-                end
-            else
-                if isa(src,'figure')
-                    if length(obj.Sliders)==1
-                        src=obj.Sliders;
-                    else
-                        src=obj.Sliders(obj.Axes==evt.Axes);
-                    end
-                    v=get(evt.Axes,'Ylim');
-                    if strcmpi(obj.DataView,'Alternated')
-                        set(src,'value',v(1)/obj.DataNumber);
-                    else
-                        set(src,'value',v(1));
-                    end
-                end
-                if length(obj.Sliders)==1
-                    if obj.ChanLink || any(strcmpi(obj.DataView,{'Superimposed','Alternated','Vertical','Horizontal'}))
-                        obj.FirstDispChans(:)=round(get(src,'max')-get(src,'value')+1);
-                    else
-                        n=str2double(obj.DataView(4));
-                        obj.FirstDispChans(n)=round(get(src,'max')-get(src,'value')+1);
-                    end
-                end
-                if length(obj.Sliders)>1
-                    obj.FirstDispChans(obj.Sliders==src)=round(get(src,'max')-get(src,'value')+1);
-                end
-            end
-        end
-        
         %******************************************************************
         function ChangeMouseMode(obj,src)
             s='';
@@ -1960,294 +1692,60 @@ classdef BioSigPlot < hgsetget
             end
             obj.MouseMode=s;
         end
-        
         %******************************************************************
-        function MouseDown(obj)
-            
-            
-            t=floor((obj.MouseTime-obj.Time)*obj.SRate);
-            
-            [nchan,ndata,yvalue]=getMouseInfo(obj); %#ok<ASGLU>
-            time=obj.MouseTime;
-            
-            obj.SelectedEvent=[];
-            obj.SelectedLines=[];
-            if ~isempty(obj.EventLines)
-                for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
-                    if ishandle(obj.EventLines(i))&&obj.EventLines(i)
-                        XData=get(obj.EventLines(i),'XData');
-                        eventIndex=XData(1);
-                        if abs(t-eventIndex)<50
-                            
-                            set(obj.EventLines(i),'Color',[159/255 0 197/255]);
-                            set(obj.EventTexts(i),'EdgeColor',[159/255 0 197/255],'BackgroundColor',[159/255 0 197/255]);
-                            obj.SelectedLines=[obj.SelectedLines i];
-                            obj.SelectedEvent=obj.EventDisplayIndex(i);
-                            obj.DragMode=1;
-                        else
-                            set(obj.EventLines(i),'Color',[0 0.7 0]);
-                            set(obj.EventTexts(i),'EdgeColor',[0 0.7 0],'BackgroundColor',[0.6 1 0.6]);
-                            
-                        end
-                    end
-                end
-            end
-            
-            
-            if strcmpi(obj.MouseMode,'Select')
-                
-                if(strcmp(get(obj.Fig,'SelectionType'),'open'))
-                    
-                    obj.SelectionStart=[];%Cancel first click
-                    i=1;
-                    while i<=size(obj.Selection,2)
-                        if time<=obj.Selection(2,i) && time>=obj.Selection(1,i)
-                            obj.Selection=obj.Selection(:,[1:i-1 i+1:end]);
-                        else
-                            i=i+1;
-                        end
-                    end
-                    redraw(obj);
-                    
-                else
-                    if isempty(obj.SelectionStart)
-                        obj.SelectionStart=time;
-                    else %Second click
-                        tempSelection=sort([obj.SelectionStart;time]);
-                        for i=1:size(obj.Selection,2)
-                            if tempSelection(1,1)<=obj.Selection(2,i) && tempSelection(2,1)>=obj.Selection(1,i)
-                                tempSelection(:,1)=[min([tempSelection(1,1) obj.Selection(1,i)]) max([tempSelection(2,1) obj.Selection(2,i)])];
-                            else
-                                tempSelection(:,end+1)=obj.Selection(:,i); %#ok<AGROW>
-                            end
-                        end
-                        obj.Selection=round(100*sortrows(tempSelection',1)')/100;
-                        
-                        
-                        obj.SelectionStart=[];
-                        redraw(obj);
-                    end
-                end
-            elseif strcmpi(obj.MouseMode,'Annotate')
-                
-                EventList=obj.Evts;
-                EventList=cat(1,EventList,{time,'NewText'});
-                obj.Evts=EventList;
-                
-            end
-        end
+        %Callback for Gain Target Popup Menu
+        ChangeGainTarget(obj)
         %==================================================================
-        function MouseUp(obj)
-            if obj.EditMode==1
-                obj.EditMode=0;
-                EventList=obj.Evts;
-                for i=1:size(obj.EventDisplayIndex,2)
-                    EventList{obj.EventDisplayIndex(1,i),2}=get(obj.EventTexts(1,i),'String');
-                end
-                obj.Evts=EventList;
-            end
-            
-            if ~isempty(obj.SelectedEvent)
-                if obj.DragMode==2
-                    EventList=obj.Evts;
-                    EventList{obj.SelectedEvent,1}=obj.MouseTime;
-                    obj.Evts=EventList;
-                    
-                end
-            end
-            
-            
-            obj.DragMode=0;
-            
-        end
+        %******************************************************************
+        %Callback for Gain Increase and Decrease
+        ChangeGain(obj,src)
         %==================================================================
+        %******************************************************************
+        %Callback for Filter Target Popup Menu
+        ChangeFilterTarget(obj)
+        %==================================================================
+        %******************************************************************
+        %Callback for slider operation
+        ChangeSliders(obj,src,evt)
+        %==================================================================
+        %******************************************************************
+        %Callback for click operation
+        MouseDown(obj)
+        MouseUp(obj)
+        %==================================================================
+        %******************************************************************
+        %Callback for Keyboard operation
         function KeyPress(obj,src,evt)
             if strcmpi(evt.Key,'escape')
                 obj.MouseMode=[];
             end
         end
-        
+        KeyRelease(obj,src,evt)
         %==================================================================
-        function KeyRelease(obj,src,evt)
-            
-            if ~isempty(evt.Modifier)
-                if (strcmpi(evt.Modifier{1},'command')&&strcmpi(evt.Key,'backspace'))...
-                        ||(strcmpi(evt.Modifier{1},'shift')&&strcmpi(evt.Key,'d'))
-                    
-                    %delete the drag selected event
-                    if ~isempty(obj.SelectedEvent)
-                        EventList=obj.Evts;
-                        EventList(obj.SelectedEvent,:)=[];
-                        
-                        obj.SelectedEvent=[];
-                        obj.SelectedLines=[];
-                        
-                        obj.Evts=EventList;
-                        return
-                    end
-                end
-                
-                if (strcmpi(evt.Modifier{1},'command')||...
-                        strcmpi(evt.Modifier{1},'control'))
-                    if ismember(evt.Key,{'1','2','3','4','5','6','7','8','9'})
-                        
-                        return
-                    end
-                end
-            end
-            
-            if strcmpi(evt.Key,'return')
-                if ~isempty(obj.SelectedEvent)
-                    for i=1:length(obj.Axes)
-                        if gca==obj.Axes(i)
-                            obj.EditMode=1;
-                            set(obj.EventTexts(obj.SelectedLines(i)),'Editing','on');
-                        end
-                    end
-                    return
-                end
-            end
-        end
         %******************************************************************
-        
-        function MouseMovementMeasurer(obj)
-            t=floor((obj.MouseTime-obj.Time)*obj.SRate);
-            
-            for i=1:length(obj.Axes)
-                set(obj.LineMeasurer(i),'XData',[t t])
-                for j=1:length(obj.TxtMeasurer{i})
-                    p=get(obj.TxtMeasurer{i}(j),'position');
-                    p(1)=t+0.01*obj.WinLength*obj.SRate;
-                    if strcmpi(obj.DataView,'Superimposed')
-                        nchan=obj.MontageChanNumber(1)-j+1;
-                        s=[obj.MontageChanNames{1}{nchan} ':'];
-                        for k=1:obj.DataNumber
-                            s=[s ' ' num2str(k) '-' num2str(obj.PreprocData{k}(nchan,t))]; %#ok<AGROW>
-                            if ~isempty(obj.Units{k})
-                                s=[s ' ' obj.Units{k}{nchan}];
-                            end
-                        end
-                    elseif strcmpi(obj.DataView,'Alternated')
-                        nchan=sum(obj.MontageChanNumber)-j;
-                        ndata=rem(nchan,obj.DataNumber)+1;
-                        nchan=floor(nchan/obj.DataNumber)+1;
-                        s=['(' num2str(ndata) ')' obj.MontageChanNames{1}{nchan} ':' num2str(obj.PreprocData{ndata}(nchan,t))];
-                        if ~isempty(obj.Units)
-                           s=[s ' ' obj.Units{ndata}{nchan}];
-                        end
-                    elseif any(strcmpi(obj.DataView,{'Horizontal','Vertical'}))
-                        nchan=obj.MontageChanNumber(i)-j+1;
-                        s=[obj.MontageChanNames{i}{nchan} ':' num2str(obj.PreprocData{i}(nchan,t))];
-                        
-                        if ~isempty(obj.Units)
-                           s=[s ' ' obj.Units{i}{nchan}];
-                        end
-                    else
-                        ndata=str2double(obj.DataView(4));
-                        nchan=obj.MontageChanNumber(ndata)-j+1;
-                        s=[obj.MontageChanNames{ndata}{nchan} ':' num2str(obj.PreprocData(nchan,t))];
-                        
-                        if ~isempty(obj.Units)
-                           s=[s ' ' obj.Units{ndata}{nchan}];
-                        end
-                    end
-                    set(obj.TxtMeasurer{i}(j),'Position',p,'String',s);
-                end
-            end
-        end
-        
+        %Callback for Dynamic Measuer
+        MouseMovementMeasurer(obj)
+        %==================================================================
         %******************************************************************
-        function MouseMovement(obj)
-            [nchan,ndata,yvalue]=getMouseInfo(obj);
-            time=obj.MouseTime;
-            mouseIndex=floor((obj.MouseTime-obj.Time)*obj.SRate);
-            
-            
-            if ndata==0
-                set(obj.Fig,'pointer','arrow')
-            else
-                if ~strcmpi(obj.MouseMode,'Pan')
-                    set(obj.Fig,'pointer','crosshair')
-                end
-                
-                if strcmpi(obj.MouseMode,'Measurer')
-                    obj.MouseMovementMeasurer();
-                elseif strcmpi(obj.MouseMode,'Select')
-                    if ~isempty(obj.SelectionStart)
-                        t=sort([obj.SelectionStart time]-obj.Time)*obj.SRate;
-                        epsilon=1.e-10;
-                        if strcmpi(obj.DataView,'Horizontal') || strcmpi(obj.DataView,'Vertical')
-                            for i=1:length(obj.Data);
-                                p=get(obj.Axes(i),'YLim');
-                                set(obj.SelRect(i),'position',[t(1),p(1),t(2)-t(1)+epsilon,p(2)]);
-                            end
-                        else
-                            p=get(obj.Axes,'YLim');
-                            set(obj.SelRect,'position',[t(1),p(1),t(2)-t(1)+epsilon,p(2)]);
-                        end
-                        
-                    end
-                elseif strcmpi(obj.MouseMode,'Annotate')
-                    set(obj.Fig,'pointer','cross')
-                    
-                    for i=1:length(obj.Axes)
-                        set(obj.LineMeasurer(i),'XData',[mouseIndex mouseIndex],'Color',[159/255 0 0],'LineStyle',':');
-                    end
-                end
-                
-                if ~isempty(obj.EventLines)
-                    for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
-                        if ishandle(obj.EventLines(i))&&obj.EventLines(i)
-                            XData=get(obj.EventLines(i),'XData');
-                            eventIndex=XData(1);
-                            if abs(mouseIndex-eventIndex)<50
-                                set(obj.Fig,'pointer','hand');
-                            end
-                        end
-                    end
-                end
-                
-                
-                if obj.DragMode
-                    obj.DragMode=2;
-                    for i=1:length(obj.Axes)
-                        set(obj.LineMeasurer(i),'XData',[mouseIndex mouseIndex],'Color',[0 0.7 0],'LineStyle','-.');
-                    end
-                end
-                
-                
-                if strcmp(obj.TimeUnit,'min')
-                    timestamp=time*60;
-                else
-                    timestamp=time;
-                end
-                
-                s=rem(timestamp,60);
-                m=rem(floor(timestamp/60),60);
-                h=floor(timestamp/3600);
-                
-                set(obj.TxtTime,'String',['Time : ' num2str(h,'%02d') ':' num2str(m,'%02d') ':' num2str(s,'%06.3f')  ' - Sample : ' num2str(round(timestamp*obj.SRate),'%10d')]);
-                c=obj.MontageChanNames{ndata};
-                
-                if round(time*obj.SRate)<=size(obj.Data{ndata},2)
-                    if iscell(obj.PreprocData)
-                        v=obj.PreprocData{ndata}(nchan,max(round((time-obj.Time)*obj.SRate),1));
-                    else
-                        v=obj.PreprocData(nchan,max(round((time-obj.Time)*obj.SRate),1));
-                    end
-                    s=['Data : ' num2str(ndata) ' - Chan : '  c{nchan} ' - Value : ' num2str(v)];
-                    if ~isempty(obj.Units)&&~isempty(obj.Units{ndata})
-                        s=[s,' ',obj.Units{ndata}{nchan}];
-                    end
-                    set(obj.TxtY,'String',s);
-                else
-                    set(obj.TxtY,'String',['Data : ' num2str(ndata) ' - Chan : '  c{nchan} ' - Value : OUT']);
-                end
-                
-            end
-        end
-        
+        %Callback for Dynamic Mouse Movement
+        MouseMovement(obj)
+        %==================================================================
         %******************************************************************
+        %Callback for Event File Import
+        ImportEvents(obj)
+        %==================================================================
+        %******************************************************************
+        %Callback for Event File Export
+        ExportEvents(obj)
+        %==================================================================
+        %******************************************************************
+        %Callback for number of channels per page limitaion
+        MnuChan2Display(obj)
+        %==================================================================
+        %******************************************************************
+        %Callback for Video Import
+        ImportVideo(obj)
+        %==================================================================
         function MnuTime2Display(obj)
             %**************************************************************************
             % Dialog box to change windows length
@@ -2258,37 +1756,6 @@ classdef BioSigPlot < hgsetget
                 obj.WinLength=t;
             end
         end
-        
-        %******************************************************************
-        function MnuChan2Display(obj)
-            %**************************************************************************
-            % Dialog box to change number of channel to display
-            %**************************************************************************
-            prompt=cell(1,obj.DataNumber);
-            def=cell(1,obj.DataNumber);
-            
-            for i=1:obj.DataNumber
-                prompt{i}=['Data ' num2str(i) ' (empty for all):'];
-                def{i}=num2str(obj.DispChans(i));
-            end
-            
-            title='Channel number to display for one page';
-            
-           
-            answer=inputdlg(prompt,title,1,def);
-            
-            for i=1:length(answer)
-                tmp=str2double(answer{i});
-                if isempty(tmp)||isnan(tmp)
-                    tmp=obj.ChanNumber(i);
-                end
-                
-                obj.DispChans(i)=tmp;
-                
-            end
-           
-        end
-        
         %******************************************************************
         function MnuPlay(obj)
             %**************************************************************************
@@ -2309,23 +1776,6 @@ classdef BioSigPlot < hgsetget
         function ExportToWindow(obj)
             ExportWindow(obj);
         end
-        function ExportEvents(obj)
-            %==================================================================
-            for i=1:size(obj.Evts,1)
-                Events.stamp(i)=obj.Evts{i,1};
-                Events.text{i}=obj.Evts{i,2};
-            end
-            if ~isempty(Events)
-                [FileName,FilePath]=uiputfile({'*.mat;*.evt','Event Files (*.mat;*.evt)';...
-                    '*.mat','Matlab Mat file (*.mat)';
-                    '*.evt','Event File (*.evt)'}...
-                    ,'save your Events','untitled');
-                if FileName~=0
-                    save(fullfile(FilePath,FileName),'-struct','Events','-mat');
-                    obj.IsEvtsSaved=true;
-                end
-            end
-        end
         %==================================================================
         %******************************************************************
         function ImportDataSet(obj)
@@ -2345,125 +1795,8 @@ classdef BioSigPlot < hgsetget
             redraw(obj);
             
             
-        end
-        %==================================================================
-        function ImportEvents(obj)
-            
-            if isempty(obj.Evts)
-                choice='overwrite';
-            else
-                default='overwrite';
-                choice=questdlg('Do you want to overwrite or overlap the existed events?','warning',...
-                    'overwrite','overlap','cancel',default);
-            end
-            
-            if strcmpi(choice,'cancel')
-                return
-            end
-            
-            [FileName,FilePath]=uigetfile({'*.mat*.evt','Event Files (*.mat;*.evt)';...
-                '*.mat','Matlab Mat File (*.mat)';
-                '*.evt','Event File (*.evt)'},...
-                'select your events file');
-            if FileName~=0
-                Events=load(fullfile(FilePath,FileName),'-mat');
-                
-                if isfield(Events,'stamp')&&isfield(Events,'text')
-                    for i=1:length(Events.stamp)
-                        NewEventList{i,1}=Events.stamp(i);
-                        NewEventList{i,2}=Events.text{i};
-                    end
-                end
-                if iscell(NewEventList)
-                    if size(NewEventList,2)==2
-                        switch choice
-                            case 'overwrite'
-                                obj.Evts=NewEventList;
-                                obj.IsEvtsSaved=true;
-                            case 'overlap'
-                                obj.Evts=cat(1,obj.Evts,NewEventList);
-                                obj.IsEvtsSaved=false;
-                            case 'cancel'
-                        end
-                    end
-                end
-            end
-        end
-        
-        %==================================================================
-        function ImportVideo(obj)
-            formats=VideoReader.getFileFormats();
-            filterSpec=getFilterSpec(formats);
-            [FileName,FilePath]=uigetfile(filterSpec,'select the video file','behv.avi');
-            
-            if FileName~=0
-                [video,audio]=mmread(fullfile(FilePath,FileName),1);
-                if ~isempty(video)
-                    videoTotalTime=video.totalDuration;
-                    obj.VideoFile=fullfile(FilePath,FileName);
-                    
-                    dataTime=floor((size(obj.Data{1},2)-1)/obj.SRate);
-                    
-                    cprintf('Yellow','\nVideo loading...\n');
-                    h = waitbar(0,'Video loading...');
-                    
-                    obj.VideoTotalTime=videoTotalTime;
-                    if isempty(obj.VideoTimeFrame)
-                        
-                        if obj.VideoStartTime>0
-                            videoEndTime=dataTime-obj.VideoStartTime;
-                            if videoEndTime>videoTotalTime
-                                videoEndTime=videoTotalTime;
-                            end
-                            [obj.VideoObj,obj.AudioObj]=mmread(fullfile(FilePath,FileName),[],[0,videoEndTime]);
-                        else
-                            videoEndTime=abs(obj.VideoStartTime)+dataTime;
-                            if videoEndTime>videoTotalTime
-                                videoEndTime=videoTotalTime;
-                            end
-                            [obj.VideoObj,obj.AudioObj]=mmread(fullfile(FilePath,FileName),[],[abs(obj.VideoStartTime),videoEndTime]);
-                        end
-                        timeframe(:,1)=reshape(obj.VideoObj.times,length(obj.VideoObj.times),1);
-                        timeframe(:,2)=(1:length(obj.VideoObj.times))';
-                        
-                        %make sure the first frame start at time 0
-                        timeframe(:,1)=timeframe(:,1)-timeframe(1,1);
-                        obj.VideoTimeFrame=timeframe;
-                    else
-                        [obj.VideoObj,obj.AudioObj]=mmread(fullfile(FilePath,FileName));
-                    end
-                    
-                    obj.VideoTimerPeriod=1/obj.VideoObj.rate;
-                    obj.TotalVideoFrame=length(obj.VideoObj.frames);
-                    obj.VideoFrame=1;
-                    ind=find(obj.VideoTimeFrame(:,2)==1);
-                    obj.VideoFrameInd=ind(1);
-                    obj.VideoLineTime=0;
-                    
-                    
-                    if ~isempty(obj.AudioObj.data)
-                        obj.MAudioPlayer=audioplayer(obj.AudioObj.data,length(obj.AudioObj.data)/...
-                            ((length(obj.VideoObj.frames)-1)*obj.VideoTimerPeriod));
-                    end
-                    
-                    
-                    steps = 100;
-                    for step = 1:steps
-                        % computations take place here
-                        waitbar(step / steps)
-                    end
-                    close(h)
-                    
-                    figure;
-                    obj.VideoHandle=imagesc(video.frames(1).cdata);
-                    drawnow
-                    cprintf('Green','\nVideo loaded!\n')
-                    
-                else
-                    error('Cannot import the selected video');
-                end
-            end
-        end
+        end      
+        %================================================================== 
         %******************************************************************
         function WinEvents(obj,src)
             if strcmpi(get(src,'State'),'on')
@@ -2477,31 +1810,7 @@ classdef BioSigPlot < hgsetget
         
         %******************************************************************
         function WinVideoFcn(obj,src)
-            %             if strcmpi(get(src,'State'),'on')
-            %                 if ~strcmp(computer,'PCWIN')
-            %                     set(src,'State','off')
-            %                     msgbox('Only works on Windows with Matlab 32bits version')
-            %                     return;
-            %                 end
-            %                 if isempty(obj.Video)
-            %                     [f,p]=uigetfile('*.*','Select a Video File');
-            %                     if f~=0,obj.Video=[p f];end
-            %                 end
-            %
-            %                 if ~isempty(obj.Video)
-            %                     obj.WinVideo=VideoWindow(obj.Video);
-            %                     obj.WinVideo.Time=obj.VideoTime;
-            %                     obj.VideoListener=addlistener(obj.WinVideo,'VideoChangeTime',@(src,evtdat) UpdateVideoTime(obj));
-            %                     addlistener(obj.WinVideo,'VideoClosed',@(src,evtdat) set(obj.TogVideo,'State','off'));
-            %                 else
-            %                     set(src,'State','off')
-            %                 end
-            %             else
-            %                 delete(obj.WinVideo);
-            %             end
         end
-        
-        
         %******************************************************************
         function resize(obj)
             set(obj.Fig,'Units','pixels')
@@ -2517,9 +1826,4 @@ classdef BioSigPlot < hgsetget
         end
     end
     
-    
-    
-    
-    %evts
-    %end
 end
