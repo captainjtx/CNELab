@@ -158,7 +158,7 @@ classdef CommonDataStructure < handle
             s.Data.Units=[];
             s.Data.Video.StartTime=[];
             s.Data.Video.TimeFrame=[];
-            s.Data.PreFilter=[];
+            s.Data.PreFilter='';
             s.Data.DownSample=[];
             s.Data.SampleRate=[];
             
@@ -303,9 +303,9 @@ classdef CommonDataStructure < handle
                 
                 if isfield(oldcds.montage,'SampleRate')
                     s.Data.SampleRate=oldcds.montage.SampleRate;
-                    s.Data.TimeStamps=s.Data.TimeStamps/s.Montage.SampleRate;
+                    s.Data.TimeStamps=s.Data.TimeStamps/s.Data.SampleRate;
                     evts=s.Data.Annotations;
-                    evts(:,1)=num2cell(cell2mat(evts(:,1))/s.Montage.SampleRate);
+                    evts(:,1)=num2cell(cell2mat(evts(:,1))/s.Data.SampleRate);
                     s.Data.Annotations=evts;
                 end
             end
@@ -330,7 +330,7 @@ classdef CommonDataStructure < handle
                     %                     end
                     if isfield(oldcds.patientInfo.Params,'nDownSample')
                         s.Data.DownSample=oldcds.patientInfo.Params.nDownSample;
-                        n=s.PatientInfo.Params.NDownSample;
+                        n=s.Data.DownSample;
                         if n~=0
                             s.Data.TimeStamps=s.Data.TimeStamps/n;
                             evts=s.Data.Annotations;
