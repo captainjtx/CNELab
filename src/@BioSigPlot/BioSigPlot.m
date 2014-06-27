@@ -410,6 +410,7 @@ classdef BioSigPlot < hgsetget
         ChanSelect2Display      %Selected Channels to Display
         ChanSelect2Edit         %Selected Channels to Edit (Filter,Gain adjust)
         
+        
     end
     properties (Access=protected,Hidden)%Storage of public properties
         Config_
@@ -589,7 +590,6 @@ classdef BioSigPlot < hgsetget
             obj.ChanSelect2DisplayStart=[];
             obj.ChanSelect2Display_=cell(1,obj.DataNumber);
             obj.ChanSelect2Edit_=cell(1,obj.DataNumber);
-            
             % Beginning of setting and starting Redraw
             
             obj.EventLines=[];
@@ -1203,6 +1203,9 @@ classdef BioSigPlot < hgsetget
         function obj = set.MouseMode_(obj,val)
             obj.MouseMode_=val;
             offon={'off','on'};
+            if isempty(val)
+                offon={'off','off'};
+            end
             set(obj.TogMeasurer,'State',offon{1+strcmpi(val,'Measurer')});
             set(obj.TogPan,'State',offon{1+strcmpi(val,'Pan')});
             set(obj.TogSelection,'State',offon{1+strcmpi(val,'Select')});
@@ -1239,7 +1242,7 @@ classdef BioSigPlot < hgsetget
                 tmp=min(val*ones(obj.DataNumber,1),obj.ChanNumber);
             elseif isempty(val)
                 tmp=ones(1,obj.DataNumber);
-            else 
+            else
                 for i=1:length(val)
                     if ~val(i)||isnan(val(i))
                         tmp(i)=1;
@@ -1251,7 +1254,7 @@ classdef BioSigPlot < hgsetget
             
             tmp=round(tmp);
             for i=1:length(tmp)
-               tmp(i)=max(1,min(tmp(i),obj.ChanNumber(i)));
+                tmp(i)=max(1,min(tmp(i),obj.ChanNumber(i)));
             end
             obj.FirstDispChans_=reshape(tmp,length(tmp),1);
         end
@@ -1289,10 +1292,10 @@ classdef BioSigPlot < hgsetget
             if iscell(val)
                 if length(val)==1
                     if ~isempty(val{1})
-                        if ~val{1}||isnan(val{1})                      
+                        if ~val{1}||isnan(val{1})
                             for i=1:obj.DataNumber
                                 tmp{i}=1:obj.ChanNumber(i);
-                            end 
+                            end
                         else
                             [tmp{:}]=deal(val{1});
                         end
@@ -1316,9 +1319,9 @@ classdef BioSigPlot < hgsetget
                 end
             else
                 if isempty(val)
-                   for i=1:obj.DataNumber
-                       tmp{i}=1:obj.ChanNumber(i);
-                   end
+                    for i=1:obj.DataNumber
+                        tmp{i}=1:obj.ChanNumber(i);
+                    end
                 else
                     if ~val||isnan(val)
                         for i=1:obj.DataNumber
@@ -1328,19 +1331,37 @@ classdef BioSigPlot < hgsetget
                         [tmp{:}]=deal(val);
                     end
                 end
-            end      
+            end
             
             for i=1:length(tmp)
-                for j=1:length(tmp{i})
-                    if tmp{i}(j)<1
-                        tmp{i}(j)=1;
-                    elseif tmp{i}(j)>obj.ChanNumber(i)
-                        tmp{i}(j)=obj.ChanNumber(i);
-                    end
-                end
+                tmp{i}=max(1,min(tmp{i},obj.ChanNumber(i)));
             end
             
             obj.ChanSelect2Display_=tmp;
+        end
+        %==================================================================
+        %******************************************************************
+        function obj = set.ChanSelect2Edit_(obj,val)
+            tmp=cell(1,obj.DataNumber);
+            [tmp{:}]=deal([]);
+            if iscell(val)
+                if length(val)==1
+                    [tmp{:}]=deal(val{1});
+                elseif length(val)==obj.DataNumber
+                    tmp=val;
+                end
+            else
+                [tmp{:}]=deal(val);
+            end
+            
+            for i=1:length(tmp)
+                if ~isempty(tmp{i})
+                    tmp{i}=max(1,min(tmp{i},obj.ChanNumber(i)));
+                end
+            end
+            
+            obj.ChanSelect2Edit_=tmp;
+            
         end
         %==================================================================
         %******************************************************************
@@ -1367,10 +1388,8 @@ classdef BioSigPlot < hgsetget
                 drawnow
             end
         end
-        
+        %==================================================================
     end
-    
-    %==================================================================
     
     methods (Access=protected)
         function a=DefaultConfigFile(obj) %#ok<MANU>
@@ -1384,9 +1403,9 @@ classdef BioSigPlot < hgsetget
         
         
         %******************************************************************
-        %Dynamic return the channel number,dataset number,amplitude in 
+        %Dynamic return the channel number,dataset number,amplitude in
         %sequence
-        getMouseInfo(obj)
+        [nchan,ndata,yvalue]=getMouseInfo(obj)
         %==================================================================
         %******************************************************************
         %**********General functions called when setting properties********
@@ -1416,7 +1435,7 @@ classdef BioSigPlot < hgsetget
         %Realtime Info Panel Initialization
         infoControlPanel(obj,parent,position)
         %==================================================================
-        %******************************************************************  
+        %******************************************************************
         %Filter Panel Initialization
         filterControlPanel(obj,parent,position)
         %==================================================================
@@ -1430,11 +1449,7 @@ classdef BioSigPlot < hgsetget
             obj.viewToolbar();
             obj.toolToolbar();
         end
-        %==================================================================
-        
-        %******************************************************************
-        
-        
+        %=================================================================
         %******************************************************************
         function montageToolbar(obj)
             obj.TogMontage(1)=uitoggletool(obj.Toolbar,'CData',imread('Raw.bmp'),'TooltipString','Raw montage','ClickedCallback',@(src,evt) set(obj,'MontageRef',1));
@@ -1443,32 +1458,12 @@ classdef BioSigPlot < hgsetget
         end
         
         %******************************************************************
-        function viewToolbar(obj)
-            obj.TogSuperimposed=uitoggletool(obj.Toolbar,'CData',imread('superimposed.bmp'),'TooltipString','Superimposed','separator','on','ClickedCallback',@(src,evt) set(obj,'DataView','Superimposed'));
-            obj.TogAlternated=uitoggletool(obj.Toolbar,'CData',imread('alternated.bmp'),'TooltipString','Alternated','ClickedCallback',@(src,evt) set(obj,'DataView','Alternated'));
-            obj.TogHorizontal=uitoggletool(obj.Toolbar,'CData',imread('horizontal.bmp'),'TooltipString','Horizontal','ClickedCallback',@(src,evt) set(obj,'DataView','Horizontal'));
-            obj.TogVertical=uitoggletool(obj.Toolbar,'CData',imread('vertical.bmp'),'TooltipString','Vertical','ClickedCallback',@(src,evt) set(obj,'DataView','Vertical'));
-            
-            for i=1:9
-                obj.TogData(i)=uitoggletool(obj.Toolbar,'CData',imread(['eeg' num2str(i) '.bmp']),'TooltipString',['DAT' num2str(i)],'ClickedCallback',@(src,evt) set(obj,'DataView',['DAT' num2str(i)]));
-            end
-            
-            for i=obj.DataNumber+1:9
-                set(obj.TogData(i),'Enable','off')
-            end
-        end
-        
+        %Data Set View Navigation Toolbar Initialization
+        viewToolbar(obj)
+        %==================================================================
         %******************************************************************
-        function toolToolbar(obj)
-            obj.TogMeasurer=uitoggletool(obj.Toolbar,'CData',imread('measurer.bmp'),'TooltipString','Measure of each channels','separator','on','ClickedCallback',@(src,evt) ChangeMouseMode(obj,src));
-            obj.TogPan=uitoggletool(obj.Toolbar,'CData',imread('pan.bmp'),'TooltipString','Vertical Pan','ClickedCallback',@(src,evt) ChangeMouseMode(obj,src));
-            obj.TogSelection=uitoggletool(obj.Toolbar,'CData',imread('select.bmp'),'TooltipString','Selection','ClickedCallback',@(src,evt) ChangeMouseMode(obj,src));
-            obj.TogEvts=uitoggletool(obj.Toolbar,'CData',imread('evts.bmp'),'TooltipString','Event Window','separator','on','Enable','off','ClickedCallback',@(src,evt) WinEvents(obj,src));
-            obj.TogVideo=uitoggletool(obj.Toolbar,'CData',imread('video.bmp'),'TooltipString','Video Window','ClickedCallback',@(src,evt) WinVideoFcn(obj,src));
-            
-            obj.TogAnnotate=uitoggletool(obj.Toolbar,'CData',imread('annotate.bmp'),'TooltipString','Annotate events','separator','on','ClickedCallback',@(src,evt) ChangeMouseMode(obj,src));
-        end
-        
+        %General Toolbar Initialization
+        toolToolbar(obj)
         %******************************************************************
         function remakeMontage(obj)
             %Assure Montage properties Coherence
@@ -1496,7 +1491,7 @@ classdef BioSigPlot < hgsetget
                 obj.ChanNames_=cell(1,obj.DataNumber);
                 [obj.ChanNames_{:}]=deal([]);
             end
-
+            
             for i=1:obj.DataNumber
                 if isempty(obj.ChanNames_{i})
                     obj.ChanNames_{i}=num2cell(1:size(obj.Data{i},1));
@@ -1715,11 +1710,7 @@ classdef BioSigPlot < hgsetget
         %==================================================================
         %******************************************************************
         %Callback for Keyboard operation
-        function KeyPress(obj,src,evt)
-            if strcmpi(evt.Key,'escape')
-                obj.MouseMode=[];
-            end
-        end
+        KeyPress(obj,src,evt)
         KeyRelease(obj,src,evt)
         %==================================================================
         %******************************************************************
@@ -1795,8 +1786,8 @@ classdef BioSigPlot < hgsetget
             redraw(obj);
             
             
-        end      
-        %================================================================== 
+        end
+        %==================================================================
         %******************************************************************
         function WinEvents(obj,src)
             if strcmpi(get(src,'State'),'on')
