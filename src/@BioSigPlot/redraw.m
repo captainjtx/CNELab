@@ -90,11 +90,13 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         end
         plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),obj.Gain(i),Nchan(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),obj.DispChans(i));
         if ~obj.ChanLink || i==1  || strcmp(obj.DataView,'Vertical') , plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.InsideTicks); end
-        [Elines,Etexts,Eindex]=DrawEvts(obj.Axes(i),obj.Evts,obj.Time,obj.WinLength,obj.SRate);
-        if ~isempty(Elines)
-            EventLines(i,:)=Elines;
-            EventTexts(i,:)=Etexts;
-            EventIndex(i,:)=Eindex;
+        if obj.EventsDisplay
+            [Elines,Etexts,Eindex]=DrawEvts(obj.Axes(i),obj.Evts,obj.Time,obj.WinLength,obj.SRate);
+            if ~isempty(Elines)
+                EventLines(i,:)=Elines;
+                EventTexts(i,:)=Etexts;
+                EventIndex(i,:)=Eindex;
+            end
         end
     end
 else
@@ -155,7 +157,7 @@ else
                 else
                     obj.Gain(i)=1;
                 end
-                   
+                
             end
             plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.SuperimposedModeColors(rem(i-1,end)+1,:),obj.Gain(i),obj.MontageChanNumber(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),obj.DispChans(i));
         end
@@ -175,11 +177,13 @@ else
         plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.InsideTicks)
     end
     plotXTicks(obj.Axes,obj.Time,obj.WinLength,obj.InsideTicks)
-    [Elines,Etexts,Eindex]=DrawEvts(obj.Axes,obj.Evts,obj.Time,obj.WinLength,obj.SRate);
-    if ~isempty(Elines)
-        EventLines(i,:)=Elines;
-        EventTexts(i,:)=Etexts;
-        EventIndex(i,:)=Eindex;
+    if obj.EventsDisplay
+        [Elines,Etexts,Eindex]=DrawEvts(obj.Axes,obj.Evts,obj.Time,obj.WinLength,obj.SRate);
+        if ~isempty(Elines)
+            EventLines(i,:)=Elines;
+            EventTexts(i,:)=Etexts;
+            EventIndex(i,:)=Eindex;
+        end
     end
 end
 
@@ -309,10 +313,10 @@ function plotYGauge(axe,units,gain,inside)
 % units: a cell array of units for each channel
 % gain: a vector stored the display gain on each channel
 % inside : 1 (Gauge is inside) 0 (Gauge is outside)
-    y_lim=get(axe,'Ylim');
-    x_lim=get(axe,'Xlim');
-    
-    
+y_lim=get(axe,'Ylim');
+x_lim=get(axe,'Xlim');
+
+
 
 end
 %==========================================================================
