@@ -357,6 +357,8 @@ classdef BioSigPlot < hgsetget
         MenuInsideTicks
         MenuXGrid
         MenuYGrid
+        MenuEventsDisplay
+        
         MenuSave
         PanObj
         LineVideo
@@ -397,6 +399,8 @@ classdef BioSigPlot < hgsetget
         XGrid                   %true : show Grid line on each sec
         YGrid                   %true : show Grid line on each channel
         YGridInterval           %Number of subdivision for the grid
+        EventsDisplay           %true : show Events
+        
         MouseMode               %the Mouse Mode :{'Pan'|'Measurer'}
         PlaySpeed               %Play speed
         MainTimerPeriod         %Period of the Main timer
@@ -440,6 +444,8 @@ classdef BioSigPlot < hgsetget
         YGridInterval_
         XGrid_
         YGrid_
+        EventsDisplay_
+        
         MouseMode_
         PlaySpeed_
         MainTimerPeriod_
@@ -448,6 +454,7 @@ classdef BioSigPlot < hgsetget
         AxesHeight_
         YBorder_
         Selection_
+        
         
         BadChannels_
         ChanSelect2Display_
@@ -662,7 +669,7 @@ classdef BioSigPlot < hgsetget
                 'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','Units','XGrid','YGrid',...
                 'Position','Title','MouseMode','PlaySpeed','MainTimerPeriod','VideoTimerPeriod','AxesHeight','YBorder','YGridInterval','Selection',...
                 'TaskFiles','VideoStartTime','VideoFile','VideoTimeFrame','VideoLineTime','MainTimer','VideoTimer','BadChannels','ChanSelect2Display',...
-                'ChanSelect2Edit'};
+                'ChanSelect2Edit','EventsDisplay'};
             
             if isempty(obj.Commands)
                 command='a=BioSigPlot(data';
@@ -681,7 +688,7 @@ classdef BioSigPlot < hgsetget
                         'DispChans','ChanLink','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
                         'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','Units','XGrid','YGrid','MouseMode','AxesHeight','YBorder','YGridInterval','Selection',...
                         'TaskFiles','VideoStartTime','VideoFile','MainTimerPeriod','VideoTimerPeriod','VideoTimeFrame','BadChannels','ChanSelect2Display',...
-                        'ChanSelect2Edit'}))
+                        'ChanSelect2Edit','EventsDisplay'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage','DataView','MontageRef','DispChans','ChanLink','InsideTicks','MouseMode','AxesHeight'}))
@@ -834,6 +841,9 @@ classdef BioSigPlot < hgsetget
         function obj = set.ChanSelect2Edit(obj,val), set(obj,'ChanSelect2Edit',val); end
         function val = get.ChanSelect2Edit(obj), val=obj.ChanSelect2Edit_; end
         
+        function obj = set.EventsDisplay(obj,val), set(obj,'EventsDisplay',val); end
+        function val = get.EventsDisplay(obj), val=obj.EventsDisplay_; end
+        
         %*****************************************************************
         % ***************** User available methods  **********************
         %*****************************************************************
@@ -976,13 +986,9 @@ classdef BioSigPlot < hgsetget
         
         %******************************************************************
         function obj = set.Evts_(obj,val)
-            if isempty(obj.Evts)
-                obj.IsEvtsSaved=true;
-            else
-                obj.IsEvtsSaved=false;
-            end
             obj.Evts_=val;
             if ~isempty(obj.Evts_)
+                obj.IsEvtsSaved=false;
                 if isstruct(obj.Evts_)
                     obj.Evts_=reshape(struct2cell(obj.Evts_),2,length(obj.Evts_));
                 end
@@ -993,9 +999,12 @@ classdef BioSigPlot < hgsetget
                     obj.Evts_=obj.Evts_(:,[2 1]);
                 end
                 obj.Evts_=sortrows(obj.Evts_);
-                set(obj.TogEvts,'Enable','on')
+                set(obj.TogEvts,'Enable','on');
+                set(obj.MenuEventsDisplay,'Enable','on');
             else
-                set(obj.TogEvts,'Enable','off')
+                obj.IsEvtsSaved=true;
+                set(obj.TogEvts,'Enable','off');
+                set(obj.MenuEventsDisplay,'Enable','off');
             end
         end
         
@@ -1193,7 +1202,22 @@ classdef BioSigPlot < hgsetget
                 set(obj.MenuYGrid,'Checked','off');
             end
         end
-        
+        %==================================================================
+        %******************************************************************
+        function obj = set.EventsDisplay_(obj,val)
+            if ischar(val)
+                obj.EventsDisplay_=strcmpi(val,'on');
+            else
+               obj.EventsDisplay_=val;
+            end 
+            
+            if obj.EventsDisplay_
+                set(obj.MenuEventsDisplay,'Checked','on');
+            else
+                set(obj.MenuEventsDisplay,'Checked','off');
+            end
+        end
+        %==================================================================
         %******************************************************************
         function obj = set.Selection_(obj,val)
             obj.Selection_=val;
