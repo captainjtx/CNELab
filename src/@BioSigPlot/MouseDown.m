@@ -35,8 +35,25 @@ if isempty(obj.MouseMode)
     Modifier=get(obj.Fig,'CurrentModifier');
     if isempty(Modifier)
         %Sigle Channel Selection
+        obj.ChanSelect2Edit=[];
+        obj.ChanSelect2Edit{ndata}=nchan;
+    elseif ismember('control',Modifier)||ismember('command',Modifier)
+        [flag,loc]=ismember(nchan,obj.ChanSelect2Edit{ndata});
+        if flag
+            obj.ChanSelect2Edit{ndata}(loc)=[];
+        else
+            obj.ChanSelect2Edit{ndata}=[obj.ChanSelect2Edit{ndata};nchan];
+        end
         
-    else
+    elseif ismember('shift',Modifier)
+        if isempty(obj.ChanSelect2Edit{ndata})
+            obj.ChanSelect2Edit{ndata}=linspace(nchan,1,abs(1-nchan)+1)';
+        else
+            start=obj.ChanSelect2Edit{ndata}(end);
+            [flag,loc]=ismember(linspace(start,nchan,abs(start-nchan)+1)',obj.ChanSelect2Edit{ndata});
+            obj.ChanSelect2Edit{ndata}(loc(loc~=0))=[];
+            obj.ChanSelect2Edit{ndata}=[obj.ChanSelect2Edit{ndata};linspace(nchan,start,abs(start-nchan)+1)'];
+        end
     end
 
 elseif strcmpi(obj.MouseMode,'Select')

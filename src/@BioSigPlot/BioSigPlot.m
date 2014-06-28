@@ -394,6 +394,7 @@ classdef BioSigPlot < hgsetget
         NormalModeColors        %Colors for view Horizontal, Vertical, or single (DAT*)
         AlternatedModeColors    %Colors when alternated view
         SuperimposedModeColors  %Colors when superimposed view
+        ChanSelectColor         %Colors when Channels are selected
         DataView                %View Mode {'Superimposed'|'Alternated'|'Vertical'|'Horizontal'|'DAT*'}
         MontageRef              %N° Montage
         XGrid                   %true : show Grid line on each sec
@@ -439,6 +440,7 @@ classdef BioSigPlot < hgsetget
         NormalModeColors_
         AlternatedModeColors_
         SuperimposedModeColors_
+        ChanSelectColor_
         DataView_
         MontageRef_
         YGridInterval_
@@ -669,7 +671,7 @@ classdef BioSigPlot < hgsetget
                 'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','Units','XGrid','YGrid',...
                 'Position','Title','MouseMode','PlaySpeed','MainTimerPeriod','VideoTimerPeriod','AxesHeight','YBorder','YGridInterval','Selection',...
                 'TaskFiles','VideoStartTime','VideoFile','VideoTimeFrame','VideoLineTime','MainTimer','VideoTimer','BadChannels','ChanSelect2Display',...
-                'ChanSelect2Edit','EventsDisplay'};
+                'ChanSelect2Edit','EventsDisplay','ChanSelectColor'};
             
             if isempty(obj.Commands)
                 command='a=BioSigPlot(data';
@@ -688,7 +690,7 @@ classdef BioSigPlot < hgsetget
                         'DispChans','ChanLink','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
                         'NormalModeColors','AlternatedModeColors','SuperimposedModeColors','ChanNames','Units','XGrid','YGrid','MouseMode','AxesHeight','YBorder','YGridInterval','Selection',...
                         'TaskFiles','VideoStartTime','VideoFile','MainTimerPeriod','VideoTimerPeriod','VideoTimeFrame','BadChannels','ChanSelect2Display',...
-                        'ChanSelect2Edit','EventsDisplay'}))
+                        'ChanSelect2Edit','EventsDisplay','ChanSelectColor'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage','DataView','MontageRef','DispChans','ChanLink','InsideTicks','MouseMode','AxesHeight'}))
@@ -785,6 +787,10 @@ classdef BioSigPlot < hgsetget
         function val = get.AlternatedModeColors(obj), val=obj.AlternatedModeColors_; end
         function obj = set.SuperimposedModeColors(obj,val), set(obj,'SuperimposedModeColors',val); end
         function val = get.SuperimposedModeColors(obj), val=obj.SuperimposedModeColors_; end
+        
+        function obj = set.ChanSelectColor(obj,val), set(obj,'ChanSelectColor', val); end
+        function val = get.ChanSelectColor(obj), val=obj.ChanSelectColor_; end
+        
         function obj = set.DataView(obj,val), set(obj,'DataView',val); end
         function val = get.DataView(obj), val=obj.DataView_; end
         function obj = set.MontageRef(obj,val), set(obj,'MontageRef',val); end
@@ -897,8 +903,16 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         function val = get.MontageChanNumber(obj)
             val=zeros(obj.DataNumber,1);
-            for i=1:obj.DataNumber
-                val(i)=size(obj.Montage{i}(obj.MontageRef(i)).mat,1);
+            if ~isempty(obj.MontageRef)&&~isempty(obj.Montage)
+                 for i=1:obj.DataNumber
+                     if ~isempty(obj.Montage{i})
+                         val(i)=size(obj.Montage{i}(obj.MontageRef(i)).mat,1);
+                     else
+                         val(i)=obj.ChanNumber(i);
+                     end
+                 end
+            else
+                val=obj.ChanNumber;
             end
             
         end
@@ -945,11 +959,13 @@ classdef BioSigPlot < hgsetget
             obj.Config_=val;
             def=load('-mat',val);
             names=fieldnames(def);
-            names=names(~strcmpi('Colors',names) & ~strcmpi('ChanLink',names) & ~strcmpi('DataView',names) &...%Remove those fields because they must be affected before others
+            names=names(~strcmpi('Colors',names) & ~strcmpi('ChanLink',names) &...
+                ~strcmpi('DataView',names) & ~strcmpi('MontageRef',names) &...%Remove those fields because they must be affected before others
                 ~strcmpi('Position',names) & ~strcmpi('Title',names)); % Remove this field because it's not the same properties working
             set(obj,'Colors_',def.Colors);
             set(obj,'ChanLink_',def.ChanLink);
             set(obj,'DataView_',def.DataView);
+            set(obj,'MontageRef_',def.MontageRef);
             for i=1:length(names)
                 set(obj,[names{i} '_'],def.(names{i}));
             end
@@ -1263,7 +1279,7 @@ classdef BioSigPlot < hgsetget
             tmp=ones(1,obj.DataNumber);
             
             if length(val)==1
-                tmp=min(val*ones(obj.DataNumber,1),obj.ChanNumber);
+                tmp=min(val*ones(obj.DataNumber,1),obj.MontageChanNumber);
             elseif isempty(val)
                 tmp=ones(1,obj.DataNumber);
             else
@@ -1278,7 +1294,7 @@ classdef BioSigPlot < hgsetget
             
             tmp=round(tmp);
             for i=1:length(tmp)
-                tmp(i)=max(1,min(tmp(i),obj.ChanNumber(i)));
+                tmp(i)=max(1,min(tmp(i),obj.MontageChanNumber(i)));
             end
             obj.FirstDispChans_=reshape(tmp,length(tmp),1);
         end
@@ -1288,13 +1304,13 @@ classdef BioSigPlot < hgsetget
             tmp=obj.ChanNumber;
             
             if length(val)==1
-                tmp=min(val*ones(obj.DataNumber,1),obj.ChanNumber);
+                tmp=min(val*ones(obj.DataNumber,1),obj.MontageChanNumber);
             elseif isempty(val)
-                tmp=obj.ChanNumber;
+                tmp=obj.MontageChanNumber;
             else
                 for i=1:length(val)
                     if ~val(i)||isnan(val(i))
-                        tmp(i)=obj.ChanNumber(i);
+                        tmp(i)=obj.MontageChanNumber(i);
                     else
                         tmp(i)=val(i);
                     end
@@ -1303,7 +1319,7 @@ classdef BioSigPlot < hgsetget
             
             tmp=round(tmp);
             for i=1:length(tmp)
-                tmp(i)=max(1,min(tmp(i),obj.ChanNumber(i)));
+                tmp(i)=max(1,min(tmp(i),obj.MontageChanNumber(i)));
             end
             obj.DispChans_=reshape(tmp,length(tmp),1);
             
@@ -1318,23 +1334,23 @@ classdef BioSigPlot < hgsetget
                     if ~isempty(val{1})
                         if ~val{1}||isnan(val{1})
                             for i=1:obj.DataNumber
-                                tmp{i}=1:obj.ChanNumber(i);
+                                tmp{i}=1:obj.MontageChanNumber(i);
                             end
                         else
                             [tmp{:}]=deal(val{1});
                         end
                     else
                         for i=1:obj.DataNumber
-                            tmp{i}=1:obj.ChanNumber(i);
+                            tmp{i}=1:obj.MontageChanNumber(i);
                         end
                     end
                 else
                     for i=1:obj.DataNumber
                         if isempty(val{i})
-                            tmp{i}=1:obj.ChanNumber(i);
+                            tmp{i}=1:obj.MontageChanNumber(i);
                         else
                             if ~val{i}||isnan(val{i})
-                                tmp{i}=1:obj.ChanNumber(i);
+                                tmp{i}=1:obj.MontageChanNumber(i);
                             else
                                 tmp{i}=val{i};
                             end
@@ -1344,12 +1360,12 @@ classdef BioSigPlot < hgsetget
             else
                 if isempty(val)
                     for i=1:obj.DataNumber
-                        tmp{i}=1:obj.ChanNumber(i);
+                        tmp{i}=1:obj.MontageChanNumber(i);
                     end
                 else
                     if ~val||isnan(val)
                         for i=1:obj.DataNumber
-                            tmp{i}=1:obj.ChanNumber(i);
+                            tmp{i}=1:obj.MontageChanNumber(i);
                         end
                     else
                         [tmp{:}]=deal(val);
@@ -1357,8 +1373,9 @@ classdef BioSigPlot < hgsetget
                 end
             end
             
+            
             for i=1:length(tmp)
-                tmp{i}=max(1,min(tmp{i},obj.ChanNumber(i)));
+                tmp{i}=reshape(max(1,min(round(tmp{i}),obj.MontageChanNumber(i))),length(tmp{i}),1);
             end
             
             obj.ChanSelect2Display_=tmp;
@@ -1377,10 +1394,10 @@ classdef BioSigPlot < hgsetget
             else
                 [tmp{:}]=deal(val);
             end
-            
+
             for i=1:length(tmp)
                 if ~isempty(tmp{i})
-                    tmp{i}=max(1,min(tmp{i},obj.ChanNumber(i)));
+                    tmp{i}=reshape(max(1,min(round(tmp{i}),obj.MontageChanNumber(i))),length(tmp{i}),1);
                 end
             end
             

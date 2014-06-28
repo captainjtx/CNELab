@@ -27,4 +27,7 @@ for i=1:length(obj.Axes)
         end
     end
 end
+
+nchan=round(nchan);
+ndata=round(ndata);
 end
