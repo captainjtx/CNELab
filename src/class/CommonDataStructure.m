@@ -129,18 +129,22 @@ classdef CommonDataStructure < handle
             elseif strcmpi(ext,'.mat')
                 
                 s=load(filename,'-mat');
-                if isfield(s,'data')
+                field=fieldnames(st);
+                
+                if length(field)>1
+                    cprintf('Magenta','The file contain more than one field, try to import the first one...\n');
+                end
+                
+                if ismatrix(s.field{1}) 
+                    FilterIndex=0;
+                elseif isfield(s,'data')
                     if isfield(s.data,'dataMat')&&isfield(s.data,'info')
                         FilterIndex=4;
-                        return
                     elseif isfield(s.data,'data')
                         FilterIndex=3;
-                        return
                     end
                 elseif isfield(s,'Data')&&isfield(s,'Montage')&&isfield(s,'PatientInfo')
                     FilterIndex=2;
-                elseif ismatrix(s)
-                    FilterIndex=0;
                 end
             end
         end
@@ -455,8 +459,12 @@ classdef CommonDataStructure < handle
             data=st.(field{1});
             
             if size(data,2)>size(data,1)
-                cprintf('Magenta','The data seems to be row-wise, automatic transpose applied...\n');
-                data=data';
+                
+                cprintf('Magenta','The data seems to be row-wise, do you want to transpose it?(Y/N)\n');
+                s=input('','s');
+                if strcmpi(s,'y')
+                    data=data';
+                end
             end
             
             s.Data.Data=data;
