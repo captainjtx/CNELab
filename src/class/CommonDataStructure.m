@@ -129,22 +129,34 @@ classdef CommonDataStructure < handle
             elseif strcmpi(ext,'.mat')
                 
                 s=load(filename,'-mat');
-                field=fieldnames(st);
+                field=fieldnames(s);
                 
-                if length(field)>1
-                    cprintf('Magenta','The file contain more than one field, try to import the first one...\n');
-                end
-                
-                if ismatrix(s.field{1}) 
-                    FilterIndex=0;
-                elseif isfield(s,'data')
+                if isfield(s,'data')
+                    %check if it is medf file
                     if isfield(s.data,'dataMat')&&isfield(s.data,'info')
                         FilterIndex=4;
+                        return
+                        
+                    %check if it is old cds file
                     elseif isfield(s.data,'data')
                         FilterIndex=3;
+                        return
                     end
-                elseif isfield(s,'Data')&&isfield(s,'Montage')&&isfield(s,'PatientInfo')
+                end
+                
+                %check if it is cds file
+                if isfield(s,'Data')&&isfield(s,'Montage')&&isfield(s,'PatientInfo')
                     FilterIndex=2;
+                    return
+                end
+                
+                %check if it is raw data file
+                if length(field)>1
+                        cprintf('Magenta','The file contain more than one field, try to import the first one...\n');
+                end
+                if ismatrix(s.(field{1}))
+                    FilterIndex=0;
+                    return
                 end
             end
         end

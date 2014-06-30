@@ -488,6 +488,7 @@ classdef BioSigPlot < hgsetget
         ChanSelect2DisplayStart
         SelRect
         NeedFilterWait
+        NeedRedrawWait
     end
     
     properties (Dependent) %'Public properties which does not requires redrawing
@@ -590,7 +591,9 @@ classdef BioSigPlot < hgsetget
             if isempty(n), g=[{'Config' obj.DefaultConfigFile} g]; end
             
             % Private Properties
-            obj.NeedFilterWait=false;
+            obj.NeedFilterWait=true;
+            obj.NeedRedrawWait=false;
+            
             obj.IsSelecting=0;
             obj.SelectionStart=[];
             obj.Selection_=zeros(2,0);
@@ -617,8 +620,11 @@ classdef BioSigPlot < hgsetget
             
             obj.IsEvtsSaved=true;
             
+            obj.NeedFilterWait=false;
             recalculate(obj);
             redraw(obj);
+            
+            
         end
         
         %*****************************************************************
@@ -1326,8 +1332,7 @@ classdef BioSigPlot < hgsetget
         function obj = set.DataView_(obj,val)
             obj.DataView_=val;
             if ~isempty(val)
-                if (obj.ChanLink && (isempty(obj.Gain) || all(obj.Gain{:}==obj.Gain{1}))) ||...
-                        any(strcmpi(obj.DataView_,{'Superimposed','Alternated','Vertical','Horizontal'}))
+                if  any(strcmpi(obj.DataView_,{'Superimposed','Alternated','Vertical','Horizontal'}))
                     set(obj.PopGainTarget,'Value',1);
                     set(obj.PopFilterTarget,'Value',1);
                 else
