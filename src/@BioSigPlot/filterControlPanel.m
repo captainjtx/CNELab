@@ -28,10 +28,16 @@ obj.EdtFilterNotch2=uicontrol(FilterPanelForEachData,'Style','edit','units','nor
 end
 
 function filterChange(obj)
+obj.NeedFilterWait=true;
 obj.Filtering=get(obj.ChkFilter,'Value');
+
 obj.StrongFilter=get(obj.ChkStrongFilter,'Value');
+
 obj.FilterLow=str2double(get(obj.EdtFilterLow,'String'));
+
 obj.FilterHigh=str2double(get(obj.EdtFilterHigh,'String'));
+
+obj.NeedFilterWait=false;
 obj.FilterNotch=[str2double(get(obj.EdtFilterNotch1,'String')),...
                  str2double(get(obj.EdtFilterNotch2,'String'))];
 

@@ -487,6 +487,7 @@ classdef BioSigPlot < hgsetget
         SelectionStart
         ChanSelect2DisplayStart
         SelRect
+        NeedFilterWait
     end
     
     properties (Dependent) %'Public properties which does not requires redrawing
@@ -542,6 +543,7 @@ classdef BioSigPlot < hgsetget
         IsEvtsSaved
         
         MAudioPlayer
+        
     end
     
     methods
@@ -588,7 +590,7 @@ classdef BioSigPlot < hgsetget
             if isempty(n), g=[{'Config' obj.DefaultConfigFile} g]; end
             
             % Private Properties
-            
+            obj.NeedFilterWait=false;
             obj.IsSelecting=0;
             obj.SelectionStart=[];
             obj.Selection_=zeros(2,0);
@@ -1090,7 +1092,9 @@ classdef BioSigPlot < hgsetget
                     if length(oldval{i})==1
                         oldval{i}=ones(obj.MontageChanNumber(i),1)*oldval{i};
                     end
-                    oldval{i}(obj.ChanSelect2Edit{i})=val;
+                    if ~isempty(obj.ChanSelect2Edit{i})
+                        oldval{i}(obj.ChanSelect2Edit{i})=val;
+                    end
                     tmp{i}=oldval{i};
                 end
             end
@@ -1144,7 +1148,9 @@ classdef BioSigPlot < hgsetget
                     if length(oldval{i})==1
                         oldval{i}=ones(obj.MontageChanNumber(i),1)*oldval{i};
                     end
-                    oldval{i}(obj.ChanSelect2Edit{i})=val;
+                    if ~isempty(obj.ChanSelect2Edit{i})
+                        oldval{i}(obj.ChanSelect2Edit{i})=val;
+                    end
                     tmp{i}=oldval{i};
                 end
             end
@@ -1185,7 +1191,9 @@ classdef BioSigPlot < hgsetget
                     if length(oldval{i})==1
                         oldval{i}=ones(obj.MontageChanNumber(i),1)*oldval{i};
                     end
-                    oldval{i}(obj.ChanSelect2Edit{i})=val;
+                    if ~isempty(obj.ChanSelect2Edit{i})
+                        oldval{i}(obj.ChanSelect2Edit{i})=val;
+                    end
                     tmp{i}=oldval{i};
                 end
             end
@@ -1225,7 +1233,9 @@ classdef BioSigPlot < hgsetget
                     if length(oldval{i})==1
                         oldval{i}=ones(obj.MontageChanNumber(i),1)*oldval{i};
                     end
-                    oldval{i}(obj.ChanSelect2Edit{i})=val;
+                    if ~isempty(obj.ChanSelect2Edit{i})
+                        oldval{i}(obj.ChanSelect2Edit{i})=val;
+                    end
                     tmp{i}=oldval{i};
                 end
             end
@@ -1263,7 +1273,9 @@ classdef BioSigPlot < hgsetget
                     if size(oldval{i},1)==1
                         oldval{i}=ones(obj.MontageChanNumber(i),1)*oldval{i};
                     end
-                    oldval{i}(obj.ChanSelect2Edit{i},:)=val;
+                    if ~isempty(obj.ChanSelect2Edit{i})
+                        oldval{i}(obj.ChanSelect2Edit{i},:)=val;
+                    end
                     tmp{i}=oldval{i};
                 end
             end
@@ -2049,9 +2061,12 @@ classdef BioSigPlot < hgsetget
         end
         
         function recalculate(obj)
+            
             obj.PreprocData={1:obj.DataNumber};
             for i=1:obj.DataNumber
-                obj.PreprocData{i}=preprocessedData(obj,i);
+                if ~obj.NeedFilterWait
+                    obj.PreprocData{i}=preprocessedData(obj,i);
+                end
             end
         end
     end
