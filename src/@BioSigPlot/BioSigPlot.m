@@ -1555,9 +1555,11 @@ classdef BioSigPlot < hgsetget
             if all(cellfun(@isempty,obj.ChanSelect2Edit))
                 %No Channel Selected
                 if n==1
-                    [tmp{:}]=deal(newval);
+                    for i=1:obj.DataNumber
+                        tmp{i}=newval*ones(obj.MontageChanNumber(i),1);
+                    end
                 else
-                    tmp{n-1}=newval;
+                    tmp{n-1}=newval*ones(obj.MontageChanNumber(n-1),1);
                 end
             else
                 %Channel Selected

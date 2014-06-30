@@ -226,11 +226,7 @@ if ~isempty(FirstDispChan)&&~isempty(DispChans)
     end
 end
 
-if all(gain==gain(1))
-    data=data*gain(1);
-else
-    data=data.*repmat(reshape(gain,1,length(gain)),size(data,1),1);
-end
+data=data.*repmat(reshape(gain,1,length(gain)),size(data,1),1);
 
 if ~isempty(ChanSelect2Display)
     data=data(:,ChanSelect2Display);
