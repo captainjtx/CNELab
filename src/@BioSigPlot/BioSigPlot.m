@@ -617,6 +617,8 @@ classdef BioSigPlot < hgsetget
             
             obj.IsEvtsSaved=true;
             
+            recalculate(obj);
+            redraw(obj);
         end
         
         %*****************************************************************

@@ -72,7 +72,9 @@ else
         if iscell(obj.PreprocData)
             v=obj.PreprocData{ndata}(max(round((time-obj.Time)*obj.SRate),1),nchan);
         else
-            v=obj.PreprocData(max(round((time-obj.Time)*obj.SRate),1),nchan);
+            if ~isempty(obj.PreprocData)
+                v=obj.PreprocData(max(round((time-obj.Time)*obj.SRate),1),nchan);
+            end
         end
         
     else
