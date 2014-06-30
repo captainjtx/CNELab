@@ -6,6 +6,7 @@ function KeyPress(obj,src,evt)
 if strcmpi(evt.Key,'escape')
     obj.MouseMode=[];
     obj.ChanSelect2Edit=[];
+    obj.Filtering=get(obj.ChkFilter,'value');
     return
 end
 %**************************************************************************

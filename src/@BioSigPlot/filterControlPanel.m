@@ -11,7 +11,7 @@ obj.PopFilterTarget=uicontrol(obj.FilterPanel,'Style','popupmenu','String',list,
 
 
 obj.ChkFilter=uicontrol(FilterPanelForEachData,'Style','checkbox','units','normalized','position',[0 .55 .2 .4],'String','Enable',...
-    'Callback',@(src,evt) set(obj,'Filtering',get(src,'Value')));
+    'Callback',@(src,evt) filterChange(obj));
 obj.ChkStrongFilter=uicontrol(FilterPanelForEachData,'Style','checkbox','units','normalized','position',[0 .05 .2 .4],'String','High Order',...
     'Callback',@(src,evt) set(obj,'StrongFilter',get(src,'Value')));
 uicontrol(FilterPanelForEachData,'Style','text','String','Low:','units','normalized','position',[.22 .2 .09 .6],'HorizontalAlignment','right');
@@ -22,7 +22,17 @@ obj.EdtFilterHigh=uicontrol(FilterPanelForEachData,'Style','edit','units','norma
     'Callback',@(src,evt) set(obj,'FilterHigh',str2double(get(src,'String'))));
 uicontrol(FilterPanelForEachData,'Style','text','String','Notch:','units','normalized','position',[.65 .2 .09 .6],'HorizontalAlignment','right');
 obj.EdtFilterNotch1=uicontrol(FilterPanelForEachData,'Style','edit','units','normalized','position',[.8 .1 .08 .8],'BackgroundColor',[1 1 1],...
-    'Callback',@(src,evt) set(obj,'FilterNotch1',str2double(get(src,'String'))));
+    'Callback',@(src,evt) set(obj,'FilterNotch',[str2double(get(src,'String')),str2double(get(obj.EdtFilterNotch2,'String'))]));
 obj.EdtFilterNotch2=uicontrol(FilterPanelForEachData,'Style','edit','units','normalized','position',[.9 .1 .08 .8],'BackgroundColor',[1 1 1],...
-    'Callback',@(src,evt) set(obj,'FilterNotch2',str2double(get(src,'String'))));
+    'Callback',@(src,evt) set(obj,'FilterNotch',[str2double(get(obj.EdtFilterNotch1,'String')),str2double(get(src,'String'))]));
+end
+
+function filterChange(obj)
+obj.Filtering=get(obj.ChkFilter,'Value');
+obj.StrongFilter=get(obj.ChkStrongFilter,'Value');
+obj.FilterLow=str2double(get(obj.EdtFilterLow,'String'));
+obj.FilterHigh=str2double(get(obj.EdtFilterHigh,'String'));
+obj.FilterNotch=[str2double(get(obj.EdtFilterNotch1,'String')),...
+                 str2double(get(obj.EdtFilterNotch2,'String'))];
+
 end

@@ -66,7 +66,7 @@ EventIndex=[];
 
 if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
     Nchan=obj.MontageChanNumber;
-    obj.PreprocData={1:obj.DataNumber};
+
     for i=1:obj.DataNumber
         if isempty(obj.DispChans) %No elevator
             ylim=[1-obj.YBorder_(1) Nchan(i)+obj.YBorder_(2)];
@@ -79,10 +79,11 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         DrawSelect(obj.Axes(i),obj.Selection,obj.Time,obj.WinLength);
         obj.SelRect(i)=rectangle('Parent',obj.Axes(i),'Position',[-1 0 .0001 .0001],'EdgeColor','none','FaceColor',[.85 1 .85]); % Current Selection Rectangle
         if strcmp(obj.DataView,'Horizontal') || i==obj.DataNumber, plotXTicks(obj.Axes(i),obj.Time,obj.WinLength,obj.InsideTicks); end
-        obj.PreprocData{i}=preprocessedData(obj,i);
-        plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.NormalModeColor(rem(i-1,end)+1,:),...
+        if ~isempty(obj.PreprocData)
+            plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.NormalModeColor(rem(i-1,end)+1,:),...
             obj.Gain{i},Nchan(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),obj.DispChans(i),...
             obj.ChanSelect2Edit{i},obj.ChanSelectColor);
+        end
         if ~obj.ChanLink || i==1  || strcmp(obj.DataView,'Vertical') 
             plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.InsideTicks,obj.ChanSelect2Edit{i},obj.ChanSelectColor); 
         end
@@ -128,10 +129,11 @@ else
     if strcmp(obj.DataView,'Alternated')
         obj.PreprocData={1:obj.DataNumber};
         for i=obj.DataNumber:-1:1
-            obj.PreprocData{i}=preprocessedData(obj,i);
-            plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.AlternatedModeColors(rem(i-1,end)+1,:),...
+            if ~isempty(obj.PreprocData)
+                plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.AlternatedModeColors(rem(i-1,end)+1,:),...
                 obj.Gain{i},obj.DataNumber*obj.MontageChanNumber(1)+1-i:-obj.DataNumber:1,obj.ChanSelect2Display{i},...
                 obj.FirstDispChans(i),obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
+            end
         end
         tmp=obj.MontageChanNames{1}(:)';tmp(2:obj.DataNumber,:)={''};
         plotYTicks(obj.Axes,tmp(:),obj.InsideTicks,obj.ChanSelect2Edit{1},obj.ChanSelectColor);
@@ -139,18 +141,20 @@ else
     elseif strcmp(obj.DataView,'Superimposed')
         obj.PreprocData={1:obj.DataNumber};
         for i=1:obj.DataNumber
-            obj.PreprocData{i}=preprocessedData(obj,i);
-            plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.SuperimposedModeColors(rem(i-1,end)+1,:),...
+            if ~isempty(obj.PreprocData)
+                plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.SuperimposedModeColors(rem(i-1,end)+1,:),...
                 obj.Gain{i},obj.MontageChanNumber(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),...
                 obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
+            end
         end
         plotYTicks(obj.Axes,obj.MontageChanNames{1},obj.InsideTicks,obj.ChanSelect2Edit{1},obj.ChanSelectColor);
     else
         i=str2double(obj.DataView(4));
-        obj.PreprocData{i}=preprocessedData(obj,i);
-        plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.NormalModeColor(rem(i-1,end)+1,:),...
+        if ~isempty(obj.PreprocData)
+            plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.NormalModeColor(rem(i-1,end)+1,:),...
             obj.Gain{i},obj.MontageChanNumber(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),...
             obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
+        end
         plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.InsideTicks,obj.ChanSelect2Edit{i},obj.ChanSelectColor);
     end
     plotXTicks(obj.Axes,obj.Time,obj.WinLength,obj.InsideTicks)

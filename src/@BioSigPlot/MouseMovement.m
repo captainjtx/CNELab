@@ -93,10 +93,21 @@ else
                            ' ; Gain: ' num2str(g)...
                            ' ; SR: ' num2str(obj.SRate) ' Hz']);
     
-    sf=['FL: ',num2str(obj.FilterLow{ndata}(nchan)),' Hz, '...
-        'FH: ',num2str(obj.FilterHigh{ndata}(nchan)),' Hz ; '...
-        'FN1: ',num2str(obj.FilterNotch{ndata}(nchan,1)),' Hz, '...
-        'FN2: ',num2str(obj.FilterNotch{ndata}(nchan,2)),' Hz'];
+    if obj.Filtering{ndata}(nchan)
+        fl=num2str(obj.FilterLow{ndata}(nchan));
+        fh=num2str(obj.FilterHigh{ndata}(nchan));
+        fn1=num2str(obj.FilterNotch{ndata}(nchan,1));
+        fn2=num2str(obj.FilterNotch{ndata}(nchan,2));
+    else
+        fl='-';
+        fh='-';
+        fn1='-';
+        fn2='-';
+    end
+    sf=['FL: ',fl,' Hz, '...
+        'FH: ',fh,' Hz ; '...
+        'FN1: ',fn1,' Hz, '...
+        'FN2: ',fn2,' Hz'];
     set(obj.TxtFilter,'String',sf);
     
 end

@@ -686,6 +686,8 @@ classdef BioSigPlot < hgsetget
             NeedRemakeAxes=false;
             NeedRedraw=false;
             NeedCommand=false;
+            NeedRecalculate=false;
+            
             g=varargin;
             %Rearrangement: make sure there is no conflict on the order of
             %properties. Constraint config must be before all and Colors
@@ -728,6 +730,11 @@ classdef BioSigPlot < hgsetget
                         end
                         NeedResetView=true;
                     end
+                    if any(strcmpi(g{i},{'SRate','WinLength','Montage','MontageRef',...
+                                         'Time','Filtering','FilterLow','FilterHigh',...
+                                         'FilterNotch','StrongFilter'}))
+                       NeedRecalculate=true;
+                    end
                     NeedRedraw=true;
                     
                 elseif any(strcmpi(g{i},{'PlaySpeed'}))
@@ -743,6 +750,7 @@ classdef BioSigPlot < hgsetget
                     NeedCommand=true;
                 end
             end
+            if NeedRecalculate,recalculate(obj); end
             if NeedRemakeMontage, remakeMontage(obj); end
             if NeedResetView, resetView(obj); end
             if NeedRemakeAxes, remakeAxes(obj); end
@@ -2038,6 +2046,13 @@ classdef BioSigPlot < hgsetget
             ctrlsize=obj.ControlBarSize;
             set(obj.MainPanel,'position',[0 ctrlsize(2) pos(3) pos(4)-ctrlsize(2)]);
             set(obj.ControlPanel,'position',[0 0 pos(3) ctrlsize(2)]);
+        end
+        
+        function recalculate(obj)
+            obj.PreprocData={1:obj.DataNumber};
+            for i=1:obj.DataNumber
+                obj.PreprocData{i}=preprocessedData(obj,i);
+            end
         end
     end
     
