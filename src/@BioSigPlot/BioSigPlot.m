@@ -1274,7 +1274,8 @@ classdef BioSigPlot < hgsetget
                         oldval{i}=ones(obj.MontageChanNumber(i),1)*oldval{i};
                     end
                     if ~isempty(obj.ChanSelect2Edit{i})
-                        oldval{i}(obj.ChanSelect2Edit{i},:)=val;
+                        oldval{i}(obj.ChanSelect2Edit{i},:)=...
+                            repmat(val,length(obj.ChanSelect2Edit{i}),1);
                     end
                     tmp{i}=oldval{i};
                 end
