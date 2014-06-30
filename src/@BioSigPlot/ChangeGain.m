@@ -1,7 +1,7 @@
 function ChangeGain(obj,src)
 gain=str2double(get(obj.EdtGain,'string'));
-if gain==0||isnan(gain)
-    gain=[];
+if gain==0
+    gain=NaN;
 end
 if src==obj.BtnAddGain
     obj.Gain=gain*2^.25;
