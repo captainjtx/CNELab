@@ -40,7 +40,7 @@ for i=1:length(obj.TxtMeasurer)
     end
 end
 obj.LineMeasurer=[];obj.TxtMeasurer={};obj.LineVideo=[];
-t=round(max(1,obj.Time*obj.SRate+1):min((obj.Time+obj.WinLength)*obj.SRate,size(obj.Data{1},2)));
+t=round(max(1,obj.Time*obj.SRate+1):min((obj.Time+obj.WinLength)*obj.SRate,size(obj.Data{1},1)));
 
 if isempty(obj.FirstDispChans_)
     obj.FirstDispChans_=ones(1,obj.DataNumber);
@@ -80,18 +80,12 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         obj.SelRect(i)=rectangle('Parent',obj.Axes(i),'Position',[-1 0 .0001 .0001],'EdgeColor','none','FaceColor',[.85 1 .85]); % Current Selection Rectangle
         if strcmp(obj.DataView,'Horizontal') || i==obj.DataNumber, plotXTicks(obj.Axes(i),obj.Time,obj.WinLength,obj.InsideTicks); end
         obj.PreprocData{i}=preprocessedData(obj,i);
-        if obj.Gain(i)==0
-            tmp=std(obj.PreprocData{i}(:));
-            if tmp
-                obj.Gain(i)=0.2/tmp;
-            else
-                obj.Gain(i)=1;
-            end
-        end
-        plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),...
-            obj.Gain(i),Nchan(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),obj.DispChans(i),...
+        plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.NormalModeColor(rem(i-1,end)+1,:),...
+            obj.Gain{i},Nchan(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),obj.DispChans(i),...
             obj.ChanSelect2Edit{i},obj.ChanSelectColor);
-        if ~obj.ChanLink || i==1  || strcmp(obj.DataView,'Vertical') , plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.InsideTicks); end
+        if ~obj.ChanLink || i==1  || strcmp(obj.DataView,'Vertical') 
+            plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.InsideTicks,obj.ChanSelect2Edit{i},obj.ChanSelectColor); 
+        end
         if obj.EventsDisplay
             [Elines,Etexts,Eindex]=DrawEvts(obj.Axes(i),obj.Evts,obj.Time,obj.WinLength,obj.SRate);
             if ~isempty(Elines)
@@ -135,54 +129,29 @@ else
         obj.PreprocData={1:obj.DataNumber};
         for i=obj.DataNumber:-1:1
             obj.PreprocData{i}=preprocessedData(obj,i);
-            if obj.Gain(i)==0
-                tmp=std(obj.PreprocData{i}(:));
-                if tmp
-                    obj.Gain(i)=0.2/tmp;
-                else
-                    obj.Gain(i)=1;
-                end
-            end
             plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.AlternatedModeColors(rem(i-1,end)+1,:),...
-                obj.Gain(i),obj.DataNumber*obj.MontageChanNumber(1)+1-i:-obj.DataNumber:1,obj.ChanSelect2Display{i},...
+                obj.Gain{i},obj.DataNumber*obj.MontageChanNumber(1)+1-i:-obj.DataNumber:1,obj.ChanSelect2Display{i},...
                 obj.FirstDispChans(i),obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
         end
         tmp=obj.MontageChanNames{1}(:)';tmp(2:obj.DataNumber,:)={''};
-        plotYTicks(obj.Axes,tmp(:),obj.InsideTicks)
+        plotYTicks(obj.Axes,tmp(:),obj.InsideTicks,obj.ChanSelect2Edit{1},obj.ChanSelectColor);
         
     elseif strcmp(obj.DataView,'Superimposed')
         obj.PreprocData={1:obj.DataNumber};
         for i=1:obj.DataNumber
             obj.PreprocData{i}=preprocessedData(obj,i);
-            if obj.Gain(i)==0
-                tmp=std(obj.PreprocData{i}(:));
-                if tmp
-                    obj.Gain(i)=0.2/tmp;
-                else
-                    obj.Gain(i)=1;
-                end
-                
-            end
             plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.SuperimposedModeColors(rem(i-1,end)+1,:),...
-                obj.Gain(i),obj.MontageChanNumber(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),...
+                obj.Gain{i},obj.MontageChanNumber(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),...
                 obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
         end
-        plotYTicks(obj.Axes,obj.MontageChanNames{1},obj.InsideTicks)
+        plotYTicks(obj.Axes,obj.MontageChanNames{1},obj.InsideTicks,obj.ChanSelect2Edit{1},obj.ChanSelectColor);
     else
         i=str2double(obj.DataView(4));
         obj.PreprocData{i}=preprocessedData(obj,i);
-        if obj.Gain(i)==0
-            tmp=std(obj.PreprocData{i}(:));
-            if tmp
-                obj.Gain(i)=0.2/tmp;
-            else
-                obj.Gain(i)=1;
-            end
-        end
-        plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.NormalModeColors(rem(i-1,end)+1,:),...
-            obj.Gain(i),obj.MontageChanNumber(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),...
+        plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.NormalModeColor(rem(i-1,end)+1,:),...
+            obj.Gain{i},obj.MontageChanNumber(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),...
             obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
-        plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.InsideTicks)
+        plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.InsideTicks,obj.ChanSelect2Edit{i},obj.ChanSelectColor);
     end
     plotXTicks(obj.Axes,obj.Time,obj.WinLength,obj.InsideTicks)
     if obj.EventsDisplay
@@ -201,7 +170,7 @@ obj.EventDisplayIndex=EventIndex;
 
 offon={'off','on'};
 for i=1:length(obj.Axes)
-    set(obj.Axes(i),'XGrid',offon{obj.XGrid+1},'YGrid',offon{obj.YGrid+1},'DrawMode','fast')
+    set(obj.Axes(i),'XGrid',offon{obj.XGrid+1},'YGrid',offon{obj.YGrid+1},'DrawMode','fast','GridLineStyle',':')
 end
 
 
@@ -253,31 +222,38 @@ if ~isempty(FirstDispChan)&&~isempty(DispChans)
     if ~isempty(ChanSelect2Display)
         ChanSelect2Display=intersect(ChanSelect2Display,round(FirstDispChan:FirstDispChan+DispChans-1));
     else
-        ChanSelect2Display=intersect(1:size(data,1),round(FirstDispChan:FirstDispChan+DispChans-1));
+        ChanSelect2Display=intersect(1:size(data,2),round(FirstDispChan:FirstDispChan+DispChans-1));
     end
 end
 
+if all(gain==gain(1))
+    data=data*gain(1);
+else
+    data=data.*repmat(reshape(gain,1,length(gain)),size(data,1),1);
+end
+
 if ~isempty(ChanSelect2Display)
-    data=data(ChanSelect2Display,:);
+    data=data(:,ChanSelect2Display);
     posY=posY(ChanSelect2Display);
     
     [f,ChanSelect2Edit]=ismember(ChanSelect2Edit,ChanSelect2Display);
 end
-data=-data*gain;
-data=data+(posY'*ones(1,size(data,2)));
 
-t=linspace(t(1),t(end),size(data,2));
 
-x=[t NaN]'*ones(1,size(data,1));
+data=data+(posY'*ones(1,size(data,1)))';
+
+t=linspace(t(1),t(end),size(data,1));
+
+x=[t NaN]'*ones(1,size(data,2));
 % x=t'*ones(1,size(data,1));
 
-y=[data NaN*ones(size(data,1),1)]';
+y=[data;NaN*ones(1,size(data,2))];
 % y=data';
 
 h=line(x,y,'parent',axe,'Color',color);
 
 if ~isempty(ChanSelect2Edit)
-    set(h(ChanSelect2Edit),'Color',ChanSelectColor);
+    set(h(ChanSelect2Edit(ChanSelect2Edit~=0)),'Color',ChanSelectColor);
 end
 
 end
@@ -293,15 +269,17 @@ function plotXTicks(axe,time,WinLength,insideticks)
 if insideticks
     for i=time:time+WinLength-1
         p=(i-time)/WinLength;
-        text(p+.002,.002,num2str(i),'Parent',axe,'HorizontalAlignment','left','VerticalAlignment','bottom','FontWeight','normal','units','normalized')
+        text(p+.002,.002,num2str(i),'Parent',axe,'HorizontalAlignment','left',...
+            'VerticalAlignment','bottom','FontWeight','normal','units','normalized',...
+            'color',[0 0 1]);
     end
 else
-    set(axe,'XTickLabel',time:time+WinLength);
+    set(axe,'XTickLabel',time:time+WinLength,'XColor',[0 0 0]);
 end
 end
 
 %**************************************************************************
-function plotYTicks(axe,ChanNames,insideticks)
+function plotYTicks(axe,ChanNames,insideticks,ChanSelect2Edit,ChanSelectColor)
 % Write channels names on Y Ticks
 %  axe :  axes to plot
 % ChanNames : cell of channel names that will be writted
@@ -313,11 +291,18 @@ if insideticks
     for i=1:n
         p=(n-i+1-lim(1))/(lim(2)-lim(1));
         if p<.99 && p>0
-            text(.002,p+.004,ChanNames{i},'Parent',axe,'HorizontalAlignment','left','VerticalAlignment','bottom','FontWeight','bold','units','normalized')
+            if ismember(i,ChanSelect2Edit)
+                YLabelColor=ChanSelectColor;
+            else
+                YLabelColor=[0 0 0];
+            end
+            text(.002,p+.004,ChanNames{i},'Parent',axe,'HorizontalAlignment','left',...
+                'VerticalAlignment','bottom','FontWeight','bold','units','normalized',...
+                'color',YLabelColor)
         end
     end
 else
-    set(axe,'YTickLabel',ChanNames(end:-1:1));
+    set(axe,'YTickLabel',ChanNames(end:-1:1),'YColor',[0 0 0]);
 end
 end
 

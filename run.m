@@ -37,7 +37,7 @@ end
 
 data=cell(1,length(cds));
 for i=1:length(cds)
-    data{i}=cds{i}.Data.Data';
+    data{i}=cds{i}.Data.Data;
 end
 bsp=BioSigPlot(data);
 

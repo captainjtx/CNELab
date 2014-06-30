@@ -12,12 +12,12 @@
 %     it under the terms of the GNU General Public License as published by
 %     the Free Software Foundation, either version 3 of the License, or
 %     (at your option) any later version.
-% 
+%
 %     BioSigPlot is distributed in the hope that it will be useful,
 %     but WITHOUT ANY WARRANTY; without even the implied warranty of
 %     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 %     GNU General Public License for more details.
-% 
+%
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 %
@@ -48,57 +48,54 @@ function d=preprocessedData(obj,n)
 %     end
 % end
 % d=d(:,1+leftborder:end-rightborder);
-t=ceil(obj.Time*obj.SRate+1):min(ceil((obj.Time+obj.WinLength)*obj.SRate),size(obj.Data{1},2));
-d=(obj.Montage{n}(obj.MontageRef(n)).mat*obj.ChanOrderMat{n})*double(obj.Data{n}(:,t));
+t=ceil(obj.Time*obj.SRate+1):min(ceil((obj.Time+obj.WinLength)*obj.SRate),size(obj.Data{1},1));
+d=double(obj.Data{n}(t,:))*(obj.Montage{n}(obj.MontageRef(n)).mat*obj.ChanOrderMat{n})';
 
 fs=obj.SRate;
-ext=round(size(d,2)/5);
+ext=round(size(d,1)/5);
 phs=0;
 ftyp='iir';
 
-if obj.StrongFilter(n)
-    order=2;
-else
-    order=1;
-end
-
-if obj.Filtering(n)
-    fl=obj.FilterLow(n);
-    fh=obj.FilterHigh(n);
-    
-    fn1=obj.FilterNotch(n,1);
-    fn2=obj.FilterNotch(n,2);
-    
-    if fl==0
-        if fh~=0
-            if fh<(fs/2)
-                [b,a]=butter(order,fh/(fs/2),'low');
+for i=1:size(d,2)
+    if obj.Filtering{n}(i)
+        if obj.StrongFilter{n}(i)
+            order=2;
+        else
+            order=1;
+        end
+        fl=obj.FilterLow{n}(i);
+        fh=obj.FilterHigh{n}(i);
+        
+        fn1=obj.FilterNotch{n}(i,1);
+        fn2=obj.FilterNotch{n}(i,2);
+        
+        if fl==0||isempty(fl)||isnan(fl)
+            if fh~=0
+                if fh<(fs/2)
+                    [b,a]=butter(order,fh/(fs/2),'low');
+                end
+            end
+        else
+            if fh==0||isempty(fh)||isnan(fh)
+                [b,a]=butter(order,fl/(fs/2),'high');
+            else
+                if fl<fh
+                    [b,a]=butter(order,[fl,fh]/(fs/2),'bandpass');
+                elseif fl>fh
+                    [b,a]=butter(order,[fl,fh]/(fs/2),'stop');
+                end
             end
         end
-    else
-        if fh==0
-            [b,a]=butter(order,fl/(fs/2),'high');
-        else
-            if fl<fh
-                [b,a]=butter(order,[fl,fh]/(fs/2),'bandpass');
-            elseif fl>fh
-                [b,a]=butter(order,[fl,fh]/(fs/2),'stop');
-            end
-        end         
+        
+        if exist('b','var')&&exist('a','var')
+            d(:,i)=filter_symmetric(b,a,d(:,i),ext,phs,ftyp);
+        end
+        
+        if fn1~=0&&fn2~=0&&fn1<fn2
+            [b,a]=butter(order,[fl,fh]/(fs/2),'stop');
+            d(:,i)=filter_symmetric(b,a,d(:,i),ext,phs,ftyp);
+        end
+        
     end
-    d=d';
-    
-    if exist('b','var')&&exist('a','var')
-        d=filter_symmetric(b,a,d,ext,phs,ftyp);
-    end
-    
-    if fn1~=0&&fn2~=0&&fn1<fn2
-        [b,a]=butter(order,[fl,fh]/(fs/2),'stop');
-        d=filter_symmetric(b,a,d,ext,phs,ftyp);
-    end
-    
-    d=d';
-    
 end
-
 end

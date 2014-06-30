@@ -33,29 +33,52 @@ if isempty(obj.MouseMode)
     %**********************************************************************
     %Multi Channel Selection
     Modifier=get(obj.Fig,'CurrentModifier');
-    if isempty(Modifier)
-        %Sigle Channel Selection
-        obj.ChanSelect2Edit=[];
-        obj.ChanSelect2Edit{ndata}=nchan;
-    elseif ismember('control',Modifier)||ismember('command',Modifier)
-        [flag,loc]=ismember(nchan,obj.ChanSelect2Edit{ndata});
-        if flag
-            obj.ChanSelect2Edit{ndata}(loc)=[];
-        else
-            obj.ChanSelect2Edit{ndata}=[obj.ChanSelect2Edit{ndata};nchan];
-        end
-        
-    elseif ismember('shift',Modifier)
-        if isempty(obj.ChanSelect2Edit{ndata})
-            obj.ChanSelect2Edit{ndata}=linspace(nchan,1,abs(1-nchan)+1)';
-        else
-            start=obj.ChanSelect2Edit{ndata}(end);
-            [flag,loc]=ismember(linspace(start,nchan,abs(start-nchan)+1)',obj.ChanSelect2Edit{ndata});
-            obj.ChanSelect2Edit{ndata}(loc(loc~=0))=[];
-            obj.ChanSelect2Edit{ndata}=[obj.ChanSelect2Edit{ndata};linspace(nchan,start,abs(start-nchan)+1)'];
+    if ndata
+        if isempty(Modifier)
+            %Sigle Channel Selection
+            obj.ChanSelect2Edit{ndata}=nchan;
+        elseif ismember('control',Modifier)||ismember('command',Modifier)
+            [flag,loc]=ismember(nchan,obj.ChanSelect2Edit{ndata});
+            if flag
+                obj.ChanSelect2Edit{ndata}(loc)=[];
+            else
+                obj.ChanSelect2Edit{ndata}=[obj.ChanSelect2Edit{ndata};nchan];
+            end
+            
+        elseif ismember('shift',Modifier)
+            if isempty(obj.ChanSelect2Edit{ndata})
+                obj.ChanSelect2Edit{ndata}=linspace(nchan,1,abs(1-nchan)+1)';
+            else
+                tmp=obj.ChanSelect2Edit{ndata};
+                start=tmp(end);
+                [flag,loc]=ismember(linspace(start,nchan,abs(start-nchan)+1)',tmp);
+                tmp(loc(loc~=0))=[];
+                tmp=[tmp;linspace(nchan,start,abs(start-nchan)+1)'];
+                pChan=nchan;
+                pChanLoc=[];
+                while(1)
+                    if start>nchan
+                        pChan=pChan-1;
+                    else
+                        pChan=pChan+1;
+                    end
+                    [flag,loc]=ismember(pChan,tmp);
+                    if flag
+                        pChanLoc=cat(1,pChanLoc,loc);
+                    else
+                        break;
+                    end
+                end
+                
+                if ~isempty(pChanLoc)
+                    tmp(pChanLoc)=[];
+                end
+                
+                obj.ChanSelect2Edit{ndata}=tmp;
+            end
         end
     end
-
+    
 elseif strcmpi(obj.MouseMode,'Select')
     
     if(strcmp(get(obj.Fig,'SelectionType'),'open'))

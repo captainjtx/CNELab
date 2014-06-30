@@ -1,89 +1,103 @@
 function MouseMovement(obj)
-            [nchan,ndata,yvalue]=getMouseInfo(obj);
-            time=obj.MouseTime;
-            mouseIndex=floor((obj.MouseTime-obj.Time)*obj.SRate);
-            
-            
-            if ndata==0
-                set(obj.Fig,'pointer','arrow')
+[nchan,ndata,yvalue]=getMouseInfo(obj);
+time=obj.MouseTime;
+mouseIndex=floor((obj.MouseTime-obj.Time)*obj.SRate);
+
+
+if ndata==0
+    set(obj.Fig,'pointer','arrow')
+else
+    if ~strcmpi(obj.MouseMode,'Pan')
+        set(obj.Fig,'pointer','crosshair')
+    end
+    
+    if strcmpi(obj.MouseMode,'Measurer')
+        obj.MouseMovementMeasurer();
+    elseif strcmpi(obj.MouseMode,'Select')
+        if ~isempty(obj.SelectionStart)
+            t=sort([obj.SelectionStart time]-obj.Time)*obj.SRate;
+            epsilon=1.e-10;
+            if strcmpi(obj.DataView,'Horizontal') || strcmpi(obj.DataView,'Vertical')
+                for i=1:length(obj.Data);
+                    p=get(obj.Axes(i),'YLim');
+                    set(obj.SelRect(i),'position',[t(1),p(1),t(2)-t(1)+epsilon,p(2)]);
+                end
             else
-                if ~strcmpi(obj.MouseMode,'Pan')
-                    set(obj.Fig,'pointer','crosshair')
+                p=get(obj.Axes,'YLim');
+                set(obj.SelRect,'position',[t(1),p(1),t(2)-t(1)+epsilon,p(2)]);
+            end
+            
+        end
+    elseif strcmpi(obj.MouseMode,'Annotate')
+        set(obj.Fig,'pointer','cross')
+        
+        for i=1:length(obj.Axes)
+            set(obj.LineMeasurer(i),'XData',[mouseIndex mouseIndex],'Color',[159/255 0 0],'LineStyle',':');
+        end
+    end
+    
+    if ~isempty(obj.EventLines)
+        for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
+            if ishandle(obj.EventLines(i))&&obj.EventLines(i)
+                XData=get(obj.EventLines(i),'XData');
+                eventIndex=XData(1);
+                if abs(mouseIndex-eventIndex)<50
+                    set(obj.Fig,'pointer','hand');
                 end
-                
-                if strcmpi(obj.MouseMode,'Measurer')
-                    obj.MouseMovementMeasurer();
-                elseif strcmpi(obj.MouseMode,'Select')
-                    if ~isempty(obj.SelectionStart)
-                        t=sort([obj.SelectionStart time]-obj.Time)*obj.SRate;
-                        epsilon=1.e-10;
-                        if strcmpi(obj.DataView,'Horizontal') || strcmpi(obj.DataView,'Vertical')
-                            for i=1:length(obj.Data);
-                                p=get(obj.Axes(i),'YLim');
-                                set(obj.SelRect(i),'position',[t(1),p(1),t(2)-t(1)+epsilon,p(2)]);
-                            end
-                        else
-                            p=get(obj.Axes,'YLim');
-                            set(obj.SelRect,'position',[t(1),p(1),t(2)-t(1)+epsilon,p(2)]);
-                        end
-                        
-                    end
-                elseif strcmpi(obj.MouseMode,'Annotate')
-                    set(obj.Fig,'pointer','cross')
-                    
-                    for i=1:length(obj.Axes)
-                        set(obj.LineMeasurer(i),'XData',[mouseIndex mouseIndex],'Color',[159/255 0 0],'LineStyle',':');
-                    end
-                end
-                
-                if ~isempty(obj.EventLines)
-                    for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
-                        if ishandle(obj.EventLines(i))&&obj.EventLines(i)
-                            XData=get(obj.EventLines(i),'XData');
-                            eventIndex=XData(1);
-                            if abs(mouseIndex-eventIndex)<50
-                                set(obj.Fig,'pointer','hand');
-                            end
-                        end
-                    end
-                end
-                
-                
-                if obj.DragMode
-                    obj.DragMode=2;
-                    for i=1:length(obj.Axes)
-                        set(obj.LineMeasurer(i),'XData',[mouseIndex mouseIndex],'Color',[0 0.7 0],'LineStyle','-.');
-                    end
-                end
-                
-                
-                if strcmp(obj.TimeUnit,'min')
-                    timestamp=time*60;
-                else
-                    timestamp=time;
-                end
-                
-                s=rem(timestamp,60);
-                m=rem(floor(timestamp/60),60);
-                h=floor(timestamp/3600);
-                
-                set(obj.TxtTime,'String',['Time : ' num2str(h,'%02d') ':' num2str(m,'%02d') ':' num2str(s,'%06.3f')  ' - Sample : ' num2str(round(timestamp*obj.SRate),'%10d')]);
-                c=obj.MontageChanNames{ndata};
-                
-                if round(time*obj.SRate)<=size(obj.Data{ndata},2)
-                    if iscell(obj.PreprocData)
-                        v=obj.PreprocData{ndata}(nchan,max(round((time-obj.Time)*obj.SRate),1));
-                    else
-                        v=obj.PreprocData(nchan,max(round((time-obj.Time)*obj.SRate),1));
-                    end
-                    s=['Data : ' num2str(ndata) ' - Chan : '  c{nchan} ' - Value : ' num2str(v)];
-                    if ~isempty(obj.Units)&&~isempty(obj.Units{ndata})
-                        s=[s,' ',obj.Units{ndata}{nchan}];
-                    end
-                    set(obj.TxtY,'String',s);
-                else
-                    set(obj.TxtY,'String',['Data : ' num2str(ndata) ' - Chan : '  c{nchan} ' - Value : OUT']);
-                end
-                
             end
         end
+    end
+    
+    
+    if obj.DragMode
+        obj.DragMode=2;
+        for i=1:length(obj.Axes)
+            set(obj.LineMeasurer(i),'XData',[mouseIndex mouseIndex],'Color',[0 0.7 0],'LineStyle','-.');
+        end
+    end
+    
+    
+    if strcmp(obj.TimeUnit,'min')
+        timestamp=time*60;
+    else
+        timestamp=time;
+    end
+    
+    s=rem(timestamp,60);
+    m=rem(floor(timestamp/60),60);
+    h=floor(timestamp/3600);
+    c=obj.MontageChanNames{ndata};
+    
+    if round(time*obj.SRate)<=size(obj.Data{ndata},1)
+        if iscell(obj.PreprocData)
+            v=obj.PreprocData{ndata}(max(round((time-obj.Time)*obj.SRate),1),nchan);
+        else
+            v=obj.PreprocData(max(round((time-obj.Time)*obj.SRate),1),nchan);
+        end
+        
+    else
+        v=nan;
+    end
+    st=['Time: ' num2str(h,'%02d') ':' num2str(m,'%02d') ':' num2str(s,'%06.3f')...
+        ' ; Value: ' num2str(v)];
+    
+    if ~isempty(obj.Units)&&~isempty(obj.Units{ndata})
+        st=[st,' ',obj.Units{ndata}{nchan}];
+    end
+
+    set(obj.TxtTime,'String',st);
+    
+    g=obj.Gain{ndata}(min(length(obj.Gain{ndata}),nchan));
+    set(obj.TxtY,'String',['Data: ' num2str(ndata) ...
+                           ' ; Chan: '  c{nchan} ...
+                           ' ; Gain: ' num2str(g)...
+                           ' ; SR: ' num2str(obj.SRate) ' Hz']);
+    
+    sf=['FL: ',num2str(obj.FilterLow{ndata}(nchan)),' Hz, '...
+        'FH: ',num2str(obj.FilterHigh{ndata}(nchan)),' Hz ; '...
+        'FN1: ',num2str(obj.FilterNotch{ndata}(nchan,1)),' Hz, '...
+        'FN2: ',num2str(obj.FilterNotch{ndata}(nchan,2)),' Hz'];
+    set(obj.TxtFilter,'String',sf);
+    
+end
+end

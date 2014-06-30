@@ -200,7 +200,7 @@ classdef CommonDataStructure < handle
                                 if length(medf.data.dataMat{i-1})~=...
                                         length(medf.data.dataMat{i})
                                     
-                                    cprintf('yellow','The length of data in medf file is not consistent !');
+                                    cprintf('yellow','The length of data in medf file is not consistent !\n');
                                     continue
                                 else
                                     rethrow(exception);
@@ -449,13 +449,13 @@ classdef CommonDataStructure < handle
             st=load(filename,'-mat');
             field=fieldnames(st);
             if length(field)>1
-                cprintf('Yellow','The file contain more than one field, try to import the first one...');
+                cprintf('Yellow','The file contain more than one field, try to import the first one...\n');
             end
             
             data=st.(field{1});
             
             if size(data,2)>size(data,1)
-                cprintf('Yellow','The data seems to be row-wise, automatic transpose applied...');
+                cprintf('Yellow','The data seems to be row-wise, automatic transpose applied...\n');
                 data=data';
             end
             
@@ -472,11 +472,11 @@ classdef CommonDataStructure < handle
             for i=1:length(signalHeader)
                 if length(signalCell{i})~=length(signalCell{pChan})
                     cprintf('Errors',['Channel ' num2str(i) ' has different length with channel ' num2str(pChan)...
-                        '\nChannel ' num2str(i) 'skipped']);
+                        '\nChannel ' num2str(i) 'skipped\n']);
                     continue;
                 elseif signalHeader(i).samples_in_record~=signalHeader(pChan).samples_in_record
                     cprintf('Errors',['Channel ' num2str(i) ' has different samplin rate with channel ' num2str(pChan)...
-                        '\nChannel ' num2str(i) 'skipped']);
+                        '\nChannel ' num2str(i) 'skipped\n']);
                     continue;
                 else
                     pChan=i;

@@ -25,7 +25,7 @@
 
 function remakeAxes(obj)
 %Lemon Chiffon
-backgroundColor=[255, 250, 205]/256;
+backgroundColor=obj.AxesBackgroundColor;
 
 for i=1:length(obj.LineVideo)
     delete(obj.LineVideo(i));
