@@ -576,19 +576,7 @@ classdef BioSigPlot < hgsetget
             %   load filterdemo;
             %   a=BioSigPlot(data,'Srate',250);
             
-            if iscell(data)
-                obj.Data=data;
-            elseif size(data,3)==1
-                obj.Data={data};
-            else
-                for i=1:size(data,3)
-                    obj.Data{i}=data(:,:,i);
-                end
-            end
-            l=cell2mat(cellfun(@size,obj.Data,'UniformOutput',false)');
-            if ~all(l(1,1)==l(:,1))
-                error('All data must have the same number of time samples');
-            end
+           obj.Data=obj.uniform(data);
             
             obj.VideoLineTime=0;
             
@@ -664,6 +652,34 @@ classdef BioSigPlot < hgsetget
         end % delete
         
         %*****************************************************************
+        function DATA=uniform(obj,data)
+            if iscell(data)
+                DATA=data;
+            elseif size(data,3)==1
+                DATA={data};
+            else
+                DATA=cell(1,size(data,3));
+                for i=1:size(data,3)
+                    DATA{i}=data(:,:,i);
+                end
+            end
+            l=cell2mat(cellfun(@size,DATA,'UniformOutput',false)');
+            if ~all(l(1,1)==l(:,1))
+                error('All data must have the same number of time samples');
+            end
+            
+            for i=1:length(DATA)
+                if size(DATA{i},1)<size(DATA{i},2)
+                    cprintf('Magenta',['The DATA ',num2str(i), ' appears to be row-wise, do you want to transpose it?(Y/N)\n']);
+                    s=input('','s');
+                    if strcmpi(s,'y')
+                        DATA{i}=DATA{i}';
+                    end
+                end
+            end
+            
+        end
+        
         function set(obj,varargin)
             NeedRemakeMontage=false;
             NeedResetView=false;

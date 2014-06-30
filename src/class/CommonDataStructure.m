@@ -200,7 +200,7 @@ classdef CommonDataStructure < handle
                                 if length(medf.data.dataMat{i-1})~=...
                                         length(medf.data.dataMat{i})
                                     
-                                    cprintf('yellow','The length of data in medf file is not consistent !\n');
+                                    cprintf('Magenta','The length of data in medf file is not consistent !\n');
                                     continue
                                 else
                                     rethrow(exception);
@@ -449,13 +449,13 @@ classdef CommonDataStructure < handle
             st=load(filename,'-mat');
             field=fieldnames(st);
             if length(field)>1
-                cprintf('Yellow','The file contain more than one field, try to import the first one...\n');
+                cprintf('Magenta','The file contain more than one field, try to import the first one...\n');
             end
             
             data=st.(field{1});
             
             if size(data,2)>size(data,1)
-                cprintf('Yellow','The data seems to be row-wise, automatic transpose applied...\n');
+                cprintf('Magenta','The data seems to be row-wise, automatic transpose applied...\n');
                 data=data';
             end
             
