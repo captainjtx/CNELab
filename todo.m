@@ -4,9 +4,9 @@
 
 % Exit save ask.
 Channel name Channel Color
-Channel gain change
+% Channel gain change
 
-Channel seperately filter
+% Channel seperately filter
 
 Predefined annotation labels
 
@@ -25,4 +25,10 @@ TFMap GUI segmentation
 denoise test
 
 Add vertical gauge
+Add dynamic gauge
 
+Make Date set axes size resizable
+
+Make Date set interchangeable
+
+Make channels interchangeable
