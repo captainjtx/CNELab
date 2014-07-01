@@ -361,6 +361,7 @@ classdef BioSigPlot < hgsetget
         MenuColor
         MenuColorCanvas
         MenuColorLines
+        MenuSampleRate
         
         MenuSave
         PanObj
@@ -1985,9 +1986,9 @@ classdef BioSigPlot < hgsetget
         ImportVideo(obj)
         %==================================================================
         function MnuTime2Display(obj)
-            %**************************************************************************
+            %**************************************************************
             % Dialog box to change windows length
-            %**************************************************************************
+            %**************************************************************
             t=inputdlg('Time range to display :');
             t=str2double(t);
             if ~isempty(t) && ~isnan(t)
@@ -1996,16 +1997,28 @@ classdef BioSigPlot < hgsetget
         end
         %******************************************************************
         function MnuPlay(obj)
-            %**************************************************************************
+            %**************************************************************
             % Dialog box to change the speed for play
-            %**************************************************************************
+            %**************************************************************
             t=inputdlg('Speed of play : X ');
             t=str2double(t);
             if ~isempty(t) && ~isnan(t)
                 obj.PlaySpeed=t;
             end
         end
-        
+        %==================================================================
+        %******************************************************************
+        function MnuSampleRate(obj)
+            %**************************************************************
+            % Dialog box to change the sampling frequency
+            %**************************************************************
+            t=inputdlg('Sampling Frequency (Hz) : ');
+            t=str2double(t);
+            if ~isnan(t)
+                obj.SRate=t;
+            end
+        end
+        %==================================================================
         %******************************************************************
         function ExportToFigure(obj)
             f=figure('Name','Mirror figure','Position',get(obj.Fig,'Position'));

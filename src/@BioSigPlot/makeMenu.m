@@ -19,13 +19,15 @@ obj.MenuConfigurationState=uimenu(obj.MenuSettings,'Label','Configuration file',
 obj.MenuPlaySpeed=uimenu(obj.MenuSettings,'Label','Speed for play','Callback',@(src,evt) MnuPlay(obj));
 obj.MenuChan=uimenu(obj.MenuSettings,'Label','Channels per page','Callback',@(src,evt) MnuChan2Display(obj));
 obj.MenuTime2disp=uimenu(obj.MenuSettings,'Label','Duration per page','Callback',@(src,evt) MnuTime2Display(obj));
-%Second Order Menu----------------------------------------------------Color
 obj.MenuColor=uimenu(obj.MenuSettings,'Label','Color');
+obj.MenuSampleRate=uimenu(obj.MenuSettings,'Label','Sample Rate','Callback',@(src,evt) MnuSampleRate(obj));
+%Second Order Menu of Color
 obj.MenuColorCanvas=uimenu(obj.MenuColor,'Label','Canvas',...
-    'Callback',{@CanvasColorChange,obj});
+    'Callback',@(src,evt) set(obj,'AxesBackgroundColor',uisetcolor(obj.AxesBackgroundColor,'AxesBackground Color')));
 obj.MenuColorLines=uimenu(obj.MenuColor,'Label','Lines',...
-    'Callback',{@LineColorChange,obj});
-
+    'Callback',@(src,evt) set(obj,'NormalModeColor',uisetcolor(obj.NormalModeColor,'Line Color')));
+%**************************************************************************
+%First Order Menu---------------------------------------------------Display 
 obj.MenuDisplay=uimenu(obj.Fig,'Label','Display');
 obj.MenuInsideTicks=uimenu(obj.MenuDisplay,'Label','Put ticks inside the graph',...
     'Callback',@(src,evt) set(obj,'InsideTicks',~obj.InsideTicks));
@@ -37,14 +39,3 @@ obj.MenuEventsDisplay=uimenu(obj.MenuDisplay,'Label','Show Events',...
     'Callback',@(src,evt) set(obj,'EventsDisplay',~obj.EventsDisplay));
 end
 
-function CanvasColorChange(src,evt,obj)
-
-obj.AxesBackgroundColor=uisetcolor(obj.AxesBackgroundColor,'Axes Background Color');
-
-end
-
-function LineColorChange(src,evt,obj)
-
-obj.NormalModeColor=uisetcolor(obj.NormalModeColor,'Line Color');
-
-end

@@ -35,5 +35,7 @@ Make channels interchangeable
 
 choose between sample and timestamp of annotation
 
+Import another data set
+
 
 !!Montage
