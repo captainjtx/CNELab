@@ -19,8 +19,6 @@ obj.MenuConfigurationState=uimenu(obj.MenuSettings,'Label','Configuration file',
 obj.MenuPlaySpeed=uimenu(obj.MenuSettings,'Label','Speed for play','Callback',@(src,evt) MnuPlay(obj));
 obj.MenuChan=uimenu(obj.MenuSettings,'Label','Channels per page','Callback',@(src,evt) MnuChan2Display(obj));
 obj.MenuTime2disp=uimenu(obj.MenuSettings,'Label','Duration per page','Callback',@(src,evt) MnuTime2Display(obj));
-obj.MenuChanLink=uimenu(obj.MenuSettings,'Label','Dataset link',...
-    'Callback',@(src,evt) set(obj,'ChanLink',~obj.ChanLink));
 %Second Order Menu----------------------------------------------------Color
 obj.MenuColor=uimenu(obj.MenuSettings,'Label','Color');
 obj.MenuColorCanvas=uimenu(obj.MenuColor,'Label','Canvas',...

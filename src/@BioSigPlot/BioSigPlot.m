@@ -353,7 +353,6 @@ classdef BioSigPlot < hgsetget
         MenuColors
         MenuChan
         MenuTime2disp
-        MenuChanLink
         MenuDisplay
         MenuInsideTicks
         MenuXGrid
@@ -386,7 +385,6 @@ classdef BioSigPlot < hgsetget
         Time                    %Current time (in TimeUnit) of the current
         DispChans               %Number of channels to display for each data set.
         FirstDispChans          %First chan to display for each data set
-        ChanLink                %true if all dataset have corresponding channels (Empty=auto).
         TimeUnit                %time unit (not active for now)
         InsideTicks             %true if channel names ticks and time ticks are inside the axis
         Filtering               %True if preprocessing filter are enbaled
@@ -421,6 +419,8 @@ classdef BioSigPlot < hgsetget
         ChanSelect2Display      %Selected Channels to Display
         ChanSelect2Edit         %Selected Channels to Edit (Filter,Gain adjust)
         
+        IsDataSameSize
+        
         
     end
     properties (Access=protected,Hidden)%Storage of public properties
@@ -434,7 +434,6 @@ classdef BioSigPlot < hgsetget
         Time_
         DispChans_
         FirstDispChans_
-        ChanLink_
         TimeUnit_
         Colors_
         InsideTicks_
@@ -703,7 +702,7 @@ classdef BioSigPlot < hgsetget
             %properties. Constraint config must be before all and Colors
             %must be before *ModeColors
             keylist={'Config','SRate','WinLength','Gain','DataView','Montage','MontageRef','Evts','Time','FirstDispChans',...
-                'DispChans','ChanLink','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
+                'DispChans','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
                 'NormalModeColor','AlternatedModeColors','SuperimposedModeColors','ChanNames','Units','XGrid','YGrid',...
                 'Position','Title','MouseMode','PlaySpeed','MainTimerPeriod','VideoTimerPeriod','AxesHeight','YBorder','YGridInterval','Selection',...
                 'TaskFiles','VideoStartTime','VideoFile','VideoTimeFrame','VideoLineTime','MainTimer','VideoTimer','BadChannels','ChanSelect2Display',...
@@ -723,19 +722,19 @@ classdef BioSigPlot < hgsetget
             
             for i=1:2:length(g)
                 if any(strcmpi(g{i},{'Config','SRate','WinLength','Gain','Montage','DataView','MontageRef','Evts','Time','FirstDispChans',...
-                        'DispChans','ChanLink','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
+                        'DispChans','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
                         'NormalModeColor','AlternatedModeColors','SuperimposedModeColors','ChanNames','Units','XGrid','YGrid','MouseMode','AxesHeight','YBorder','YGridInterval','Selection',...
                         'TaskFiles','VideoStartTime','VideoFile','MainTimerPeriod','VideoTimerPeriod','VideoTimeFrame','BadChannels','ChanSelect2Display',...
                         'ChanSelect2Edit','EventsDisplay','ChanSelectColor','AxesBackgroundColor'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage','DataView',...
-                            'MontageRef','DispChans','ChanLink','InsideTicks','MouseMode','AxesHeight'...
+                            'MontageRef','DispChans','InsideTicks','MouseMode','AxesHeight'...
                             'AxesBackgroundColor'}))
                         NeedRemakeAxes=true;
                     end
-                    if any(strcmpi(g{i},{'Config','Montage','ChanLink','ChanNames','DataView','MontageRef'}))
-                        if any(strcmpi(g{i},{'Config','Montage','ChanLink','ChanNames'}))
+                    if any(strcmpi(g{i},{'Config','Montage','ChanNames','DataView','MontageRef'}))
+                        if any(strcmpi(g{i},{'Config','Montage','ChanNames'}))
                             NeedRemakeMontage=true;
                         end
                         NeedResetView=true;
@@ -803,8 +802,6 @@ classdef BioSigPlot < hgsetget
         function val = get.DispChans(obj), val=obj.DispChans_; end
         function obj = set.FirstDispChans(obj,val), set(obj,'FirstDispChans',val); end
         function val = get.FirstDispChans(obj), val=obj.FirstDispChans_; end
-        function obj = set.ChanLink(obj,val), set(obj,'ChanLink',val); end
-        function val = get.ChanLink(obj), val=obj.ChanLink_; end
         function obj = set.TimeUnit(obj,val), set(obj,'TimeUnit',val); end
         function val = get.TimeUnit(obj), val=obj.TimeUnit_; end
         function obj = set.Colors(obj,val), set(obj,'Colors',val); end
@@ -1002,11 +999,12 @@ classdef BioSigPlot < hgsetget
             obj.Config_=val;
             def=load('-mat',val);
             names=fieldnames(def);
-            names=names(~strcmpi('Colors',names) & ~strcmpi('ChanLink',names) &...
-                ~strcmpi('DataView',names) & ~strcmpi('MontageRef',names) &...%Remove those fields because they must be affected before others
-                ~strcmpi('Position',names) & ~strcmpi('Title',names)); % Remove this field because it's not the same properties working
+            names=names(~strcmpi('Colors',names) &...
+                        ~strcmpi('DataView',names) & ...
+                        ~strcmpi('MontageRef',names) &...%Remove those fields because they must be affected before others
+                        ~strcmpi('Position',names) & ...
+                        ~strcmpi('Title',names)); % Remove this field because it's not the same properties working
             set(obj,'Colors_',def.Colors);
-            set(obj,'ChanLink_',def.ChanLink);
             set(obj,'DataView_',def.DataView);
             set(obj,'MontageRef_',def.MontageRef);
             for i=1:length(names)
@@ -1023,26 +1021,6 @@ classdef BioSigPlot < hgsetget
             obj.AlternatedModeColors_=val;
             obj.SuperimposedModeColors_=val;
         end
-        
-        %******************************************************************
-        function obj = set.ChanLink_(obj,val)
-            l=cell2mat(cellfun(@size,obj.Data,'UniformOutput',false)');
-            
-            if isempty(val)
-                obj.ChanLink_=all(l(1,2)==l(:,2));
-            elseif val==1 && ~all(l(1,2)==l(:,2))
-                error('The number of channel of each dataset is not equal')
-            else
-                obj.ChanLink_=val;
-            end
-            
-            if obj.ChanLink_
-                set(obj.MenuChanLink,'Checked','on');
-            else
-                set(obj.MenuChanLink,'Checked','off');
-            end
-        end
-        
         %******************************************************************
         function obj = set.Evts_(obj,val)
             obj.Evts_=val;
@@ -1645,6 +1623,19 @@ classdef BioSigPlot < hgsetget
             end
         end
         %==================================================================
+        
+        
+        function val=get.IsDataSameSize(obj)
+            tmp=cellfun(@size,obj.Data,'UniformOutput',false);
+            for i=1:length(tmp)
+                if ~all(tmp{i}==tmp{1})
+                    val=false;
+                    return
+                end
+            end
+            val=true;
+            
+        end
     end
     
     methods (Access=protected)
@@ -1708,8 +1699,11 @@ classdef BioSigPlot < hgsetget
         %=================================================================
         %******************************************************************
         function montageToolbar(obj)
-            obj.TogMontage(1)=uitoggletool(obj.Toolbar,'CData',imread('Raw.bmp'),'TooltipString','Raw montage','ClickedCallback',@(src,evt) set(obj,'MontageRef',1));
-            for i=2:5, obj.TogMontage(i)=uitoggletool(obj.Toolbar,'ClickedCallback',@(src,evt) set(obj,'MontageRef',i));end
+            obj.TogMontage(1)=uitoggletool(obj.Toolbar,'CData',imread('Raw.bmp'),...
+                'TooltipString','Raw montage','ClickedCallback',@(src,evt) set(obj,'MontageRef',ones(obj.DataNumber,1)));
+            for i=2:5
+                obj.TogMontage(i)=uitoggletool(obj.Toolbar,'ClickedCallback',@(src,evt) set(obj,'MontageRef',ones(obj.DataNumber,1)*i));
+            end
             
         end
         
@@ -1787,16 +1781,17 @@ classdef BioSigPlot < hgsetget
         function resetView(obj)
             % Reset the Tools when properties are changing
             
-            if ~obj.ChanLink || obj.DataNumber==1
+            if  obj.DataNumber==1
                 set(obj.TogAlternated,'Enable','off')
                 set(obj.TogSuperimposed,'Enable','off')
                 if any(strcmpi(obj.DataView_,{'Superimposed','Alternated'}))
                     obj.DataView_='DAT1';
                 end
-            else
+            elseif (obj.IsDataSameSize)
                 set(obj.TogAlternated,'Enable','on')
                 set(obj.TogSuperimposed,'Enable','on')
             end
+            
             if obj.DataNumber==1
                 set(obj.TogHorizontal,'Enable','off')
                 set(obj.TogVertical,'Enable','off')
@@ -1846,7 +1841,7 @@ classdef BioSigPlot < hgsetget
             for i=1:length(obj.TogMontage), set(obj.TogMontage(i),'State','off'); end
             
             n=NaN;
-            if obj.ChanLink && any(strcmpi(obj.DataView,{'Superimposed','Alternated','Vertical','Horizontal'}))
+            if  any(strcmpi(obj.DataView,{'Superimposed','Alternated','Vertical','Horizontal'}))
                 n=1;
             end
             if strcmpi(obj.DataView(1:3),'DAT')

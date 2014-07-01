@@ -48,9 +48,8 @@ if ~obj.NeedRedrawWait
     
     if ~isempty(obj.DispChans)
         obj.FirstDispChans_=max(min(obj.FirstDispChans_,obj.MontageChanNumber-min(obj.DispChans,obj.MontageChanNumber)+1),1);
-        if obj.ChanLink
-            set(obj.Sliders,'value',get(obj.Sliders,'max')-obj.FirstDispChans_(1)+1)
-        elseif any(strcmp(obj.DataView_,{'Vertical','Horizontal'}))
+
+        if any(strcmp(obj.DataView_,{'Vertical','Horizontal'}))
             for i=1:obj.DataNumber
                 set(obj.Sliders(i),'value',get(obj.Sliders(i),'max')-obj.FirstDispChans_(i)+1)
             end
@@ -84,7 +83,7 @@ if ~obj.NeedRedrawWait
                     obj.Gain{i},Nchan(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),obj.DispChans(i),...
                     obj.ChanSelect2Edit{i},obj.ChanSelectColor);
             end
-            if ~obj.ChanLink || i==1  || strcmp(obj.DataView,'Vertical')
+            if i==1  || strcmp(obj.DataView,'Vertical')
                 plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.InsideTicks,obj.ChanSelect2Edit{i},obj.ChanSelectColor);
             end
             if obj.EventsDisplay
