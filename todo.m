@@ -32,3 +32,8 @@ Make Date set axes size resizable
 Make Date set interchangeable
 
 Make channels interchangeable
+
+choose between sample and timestamp of annotation
+
+
+!!Montage

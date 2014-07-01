@@ -1,5 +1,9 @@
 function ChangeGain(obj,src)
-gain=str2double(get(obj.EdtGain,'string'));
+if isempty(get(obj.EdtGain,'String'))
+    gain=[];
+else  
+    gain=str2double(get(obj.EdtGain,'string'));
+end
 if gain==0
     gain=NaN;
 end
