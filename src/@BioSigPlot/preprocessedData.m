@@ -66,8 +66,8 @@ for i=1:size(d,2)
         fl=obj.FilterLow{n}(i);
         fh=obj.FilterHigh{n}(i);
         
-        fn1=obj.FilterNotch{n}(i,1);
-        fn2=obj.FilterNotch{n}(i,2);
+        fn1=obj.FilterNotch1{n}(i);
+        fn2=obj.FilterNotch2{n}(i);
         
         if fl==0||isempty(fl)||isnan(fl)
             if fh~=0
@@ -91,8 +91,8 @@ for i=1:size(d,2)
             d(:,i)=filter_symmetric(b,a,d(:,i),ext,phs,ftyp);
         end
         
-        if fn1~=0&&fn2~=0&&fn1<fn2
-            [b,a]=butter(order,[fl,fh]/(fs/2),'stop');
+        if ~isnan(fn1)&&~isnan(fn2)&&fn1~=0&&fn2~=0&&fn1<fn2
+            [b,a]=butter(order,[fn1,fn2]/(fs/2),'stop');
             d(:,i)=filter_symmetric(b,a,d(:,i),ext,phs,ftyp);
         end
         

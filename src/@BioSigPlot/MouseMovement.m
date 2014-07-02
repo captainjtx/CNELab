@@ -98,8 +98,8 @@ else
     if obj.Filtering{ndata}(nchan)
         fl=num2str(obj.FilterLow{ndata}(nchan));
         fh=num2str(obj.FilterHigh{ndata}(nchan));
-        fn1=num2str(obj.FilterNotch{ndata}(nchan,1));
-        fn2=num2str(obj.FilterNotch{ndata}(nchan,2));
+        fn1=num2str(obj.FilterNotch1{ndata}(nchan));
+        fn2=num2str(obj.FilterNotch2{ndata}(nchan));
     else
         fl='-';
         fh='-';

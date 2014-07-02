@@ -17,13 +17,6 @@ if ~isempty(evt.Modifier)
         end
     end
     
-    if (strcmpi(evt.Modifier{1},'command')||...
-            strcmpi(evt.Modifier{1},'control'))
-        if ismember(evt.Key,{'1','2','3','4','5','6','7','8','9'})
-            
-            return
-        end
-    end
 end
 
 if strcmpi(evt.Key,'return')

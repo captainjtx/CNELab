@@ -1,293 +1,4 @@
 classdef BioSigPlot < hgsetget
-    %General class to visualize any multichannel biomedical signals and scroll
-    %through the time.
-    %
-    % USAGE
-    %   >> BioSigPlot(DATA, 'key1', value1 ...);
-    %   OR
-    %   >> a=BioSigPlot(DATA, 'key1', value1 ...);
-    %     Then, to modify properties :
-    %           >> a.key1=value1
-    %        OR >> set(a,'key1',value1,'key2',value2,...) (Faster if there is more than 1 keys)
-    %
-    %     To get propertie values :
-    %           >> val=a.key1
-    %        OR >> val=get('key1',value1)
-    %     The Modification of key is allowed (eg a.key1(i)=val)
-    %     You can receive a notification when each key is modified
-    %
-    % INPUT
-    %   DATA     object containing all signals. 3 format are accepted :
-    %              -mat(n,m)  : there will be n signals with m time samples
-    %              -mat(n,m,k): there will be k dataset
-    %              -cell (data{k} is mat(nk,m)) there will be multiple dataset.
-    %              The first with n1 channels, the second with n2,...
-    %
-    %              DATA can be access after as a read only property (a.Data)
-    %
-    %
-    % READ/WRITE PROPERTIES
-    % The followibg properties are accessible by constructor, get/set methods or .(dot) syntax
-    %
-    %   ChanLink
-    %    <true|false> if true all datasets have the same channels
-    %      eg. data vs filtered data, various ERP realisation,
-    %      signal vs indice computed on signals)
-    %    <Empty = auto> : true if all the datasets have the same number of
-    %      channels, else false
-    %
-    %   ChanNames
-    %     Cell with channel Names of raw data.
-    %     (See Montage properties for the difference between Raw and Montage channel names)
-    %     Default Format : ChanNames{i}{j} corresponds to Dataset i,channel j
-    %     Other accepted format (for set) :
-    %      - Channels{j} if ChanLink all the dataset will have the same channel names.
-    %      - empty : Put number to channel names
-    %
-    %    Colors, NormalModeColor, AlternatedModeColor, SuperimposedModeColor
-    %      Tables containing the colors of all dataset. The 3 columns corresponds
-    %      to RGB with values between 0 and 1. Each line corresponds to
-    %      a dataset.
-    %      -NormalModeColors are the colors used when DataView is set to 'DAT*',
-    %      'Horizontal' or 'Vertical'
-    %      -AlternatedModeColors are the colors used when DataView is set to
-    %      'Alternated'
-    %      -SuperimposedModeColors are the colors used when DataView is set to
-    %      'Superimposed'
-    %      -Colors is never used but if you set it, NormalModeColor,
-    %      AlternatedModeColor and SuperimposedModeColor will take its value.
-    %
-    %   Config
-    %      Path to a CFG file corresponding to default values of properties.
-    %      The CFG file contains the value for all keys in this section.
-    %      You can use ConfigWindow to help you to modify the CFG file
-    %      The default value is given by DefaultConfigFile (See INHERENCE
-    %      Section)
-    %
-    %   DataView
-    %     Current Data View Mode
-    %     <'Superimposed'|'Alternated'|'Vertical'|'Horizontal'|'DAT1'|'DAT2'|...>
-    %     The modes 'Superimposed' and 'Alternated' are not allowed if ChanLink
-    %     is false.
-    %     If there is only one dataset, the only possible value is 'DAT1'
-    %
-    %   DispChans
-    %     Number of channels to display for each data set.
-    %     Empty:means all
-    %
-    %   Evts
-    %     List of Events. Each events have a latency and a String value
-    %     Default format : {time1 'evt1';time2 'evt2';...}.
-    %     Other accepted format (for set) :
-    %     - struct array with any fields
-    %     - Ok if transposed or if columns are inversed
-    %
-    %   Filtering
-    %     <true|false> true if the data must be filter
-    %
-    %   StrongFilter
-    %     <true|False> False: 1st order Butterworth filter (2nd for band stop)
-    %     [It's often this type of filter which are implemented on manufacturer Software]
-    %     True : 4th order Butterworth Filter with Forward-Backward process
-    %     [Better filters]
-    %     (Since the Forward-Backward process function has been re-programed,
-    %     depending of the system, the Strong Filter can be as fast as 1st
-    %     order Butterworth filter.)
-    %
-    %
-    %   FilterLow, FilterHigh, FilterNotch
-    %     FilterLow : The low value of filtering: Cut-off frequency of high pass filter
-    %     FilterHigh :The high value of filtering: Cut-off frequency of low pass filter
-    %     FilterNotch : The 2 notch filter values for 50 or 60Hz rejection. (eg. [58 62])
-    %
-    %   FirstDispChans
-    %     First channel to display for each dataset. It corresponds to the
-    %     scroll bar levels.
-    %     Used only if DispChans is not empty.
-    %
-    %   InsideTicks
-    %     <true|False>
-    %      True: The ticks are put inside the Graph, and the graph size is maximised
-    %      False:The ticks are put outside the Graph
-    %
-    %   Montage
-    %     Information on various montages
-    %     Default Format :
-    %      -Cell of struct array: 1 cell for each dataset and one struct for each Montage
-    %       Montage{i}(j).name     : Name of the Montage j for dataset i
-    %       Montage{i}(j).mat      : Matrix to transform Raw Data to 'Montaged' Data
-    %       Montage{i}(j).channames: Cell containing list of montage channanmes
-    %       for j=1, the montage have to correspond to RAW data
-    %     Other accepted format (for set) :
-    %      -File path string of system info (eg '1020system19')
-    %      -if no cells and ChanLink the Montage is set to all the DataSet
-    %      -if empty automatically generate Raw Montage
-    %     if ChanNames and Montage are set, the ChanNames must be in Raw data order
-    %     and Montage{i}(j).channames must be in View order
-    %
-    %   MontageRef
-    %     Montage number for each datasets
-    %     Default Format : array
-    %     Other accepted format (for set) : Montage name
-    %
-    %   MouseMode
-    %     <'pan'|'Measurer'>
-    %     Set the action on mouse movement or mouse click
-    %
-    %   Position
-    %     [x y w h]
-    %     poistion of the figure (in pixels)
-    %         x,y : low left corner coordinates
-    %         w width
-    %         h height
-    %
-    %   MainTimerPeriod
-    %     The period of the main timer of BioSigPlot
-    %
-    %   VideoTimerPeriod
-    %     The period of the video timer
-    %
-    %   Selection
-    %     Time of Selected Periods:
-    %     Format: array [start1 start2 start3 ... ; end1 end2 end2 ...]
-    %     start_n and end_n corresponding to the beggining and the end of the
-    %     selection periods
-    %
-    %   SRate
-    %     Sampling Rate
-    %
-    %   Gain
-    %     Space between 2 channels on Y units for each dataset
-    %     Default Format : array (S1, S2,...) Si=Gain for dataset i
-    %     Other accepted format (for set) :
-    %       number (if ChannLink) put all the dataset the same Gain
-    %
-    %   Time
-    %     The time of the beginning of the current page (from the recording begginning
-    %     (in TimeUnit))
-    %
-    %   TimeUnit
-    %     The Time unit (for now only 's'(second) are allowed)
-    %
-    %   Title
-    %     Title of the Graph
-    %
-    %   XGrid
-    %     <true|False>
-    %      true : show Grid line on each TimeUnit
-    %
-    %   YGrid
-    %     <true|False>
-    %      true : show Grid line on each channel
-    %
-    %   Video
-    %     File path for the video (Supported format : See http://www.videolan.org/vlc/features.html)
-    %
-    %   VideoLineTime
-    %     Time for video cursor (from the display begginning (in TimeUnit))
-    %
-    %   WinLength
-    %     Time of a Page during Viewing
-    %
-    % READ-ONLY PROPERTIES
-    %   Data
-    %     All the Signals
-    %
-    %   ChanSelect2Display
-    %     Selected Channels
-    %
-    %   PreprocData
-    %    The currently preprocessed and drawed Data
-    %
-    %   Commands
-    %     List of all commands to arrive on this state
-    %
-    %   DataNumber
-    %     Number of Dataset
-    %
-    %   ChanNumber
-    %     Channel number for the Raw data
-    %
-    %   MontageChanNumber
-    %     Channel number for the current Montages
-    %
-    %   MontageChanNames
-    %     Channel names for the current Montages
-    %
-    %   MouseTime
-    %     The Time on which the mouse is on.
-    %
-    %   MouseChan
-    %     The channel on which the mouse is on
-    %
-    %   MouseDataset
-    %     The dataset on which the mouse is on
-    %
-    %
-    % METHODS
-    %   StartPlay
-    %     Start Fast Reading
-    %
-    %   StopPlay
-    %     Stop Fast Reading
-    %
-    %   ExportPagesTo
-    %     Export some pages to separate files
-    %
-    %   ExportPagesToMultiPages
-    %     Export some pages to a single document
-    %
-    %
-    % EXAMPLES
-    %  Example 1 : Compared viewing of EEG and filtered EEG (with AFOP method)
-    % You can lauch <a href="matlab: biosigdemo">biosigdemo</a> to carry
-    % out this sample step by step.
-    %    %Plot Signals
-    %    load filterdemo
-    %    a=BioSigPlot({data fdata},'srate',250,'Montage','1020system19','video','videodemo.avi');
-    %    %Define Events
-    %    a.Evts={10 'Electrode';64 'Muscle';86 'Muscle';110,'End HVT';144 'Smile'};
-    %    %Change the Montage to Mean Reference Montage (Note that the filtered
-    %    %EEG is already Mean referenced)
-    %    a.MontageRef=2;
-    %    %Move through Time
-    %    a.Time=40;
-    %    %Change to Horizontal View
-    %    a.DataView='Horizontal';
-    %    %Change Scales of the 2 Datasets
-    %    a.Gain=100;
-    %    %Change Gain on the second dataset only
-    %    a.Gain(2)=200;
-    %    %Change the scale of the third electrod on dataset 1 (2nd Montage ie Mean Reference)
-    %    a.Montage{1}(2).mat(3,:)=a.Montage{1}(2).mat(3,:)/10;
-    %    %Start The Playing
-    %    a.StartPlay
-    %    %Stop it
-    %    a.StopPlay
-    %
-    
-    %123456789012345678901234567890123456789012345678901234567890123456789012
-    %
-    %     BioSigPlot Copyright (C) 2013 Samuel Boudet, Faculté Libre de Médecine,
-    %     samuel.boudet@gmail.com
-    %
-    %     This file is part of BioSigPlot
-    %
-    %     BioSigPlot is free software: you can redistribute it and/or modify
-    %     it under the terms of the GNU General Public License as published by
-    %     the Free Software Foundation, either version 3 of the License, or
-    %     (at your option) any later version.
-    %
-    %     BioSigPlot is distributed in the hope that it will be useful,
-    %     but WITHOUT ANY WARRANTY; without even the implied warranty of
-    %     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    %     GNU General Public License for more details.
-    %
-    %     You should have received a copy of the GNU General Public License
-    %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    %
-    % V0.1.2 Beta - 13/02/2013
-    
     
     properties (Access = protected,Hidden) %Graphics Object
         Sliders
@@ -307,7 +18,6 @@ classdef BioSigPlot < hgsetget
         TxtY
         TxtFilter
         
-        PopFilterTarget
         ChkFilter
         ChkStrongFilter
         EdtFilterLow
@@ -315,7 +25,6 @@ classdef BioSigPlot < hgsetget
         EdtFilterNotch1
         EdtFilterNotch2
         
-        PopGainTarget
         EdtGain
         BtnAddGain
         BtnRemGain
@@ -327,7 +36,6 @@ classdef BioSigPlot < hgsetget
         TogAlternated
         TogHorizontal
         TogVertical
-        TogData
         TogMeasurer
         TogSelection
         TogPan
@@ -391,7 +99,8 @@ classdef BioSigPlot < hgsetget
         Filtering               %True if preprocessing filter are enbaled
         FilterLow               %The low value of filtering: Cut-off frequency of high pass filter
         FilterHigh              %The high value of filtering: Cut-off frequency of low pass filter
-        FilterNotch             %The 2 notch filter values for 50 or 60Hz rejection. (eg. [58 62]
+        FilterNotch1             %The 2 notch filter values for 50 or 60Hz rejection. (eg. [58 62]
+        FilterNotch2
         StrongFilter            %false : 1st order filter; true : 4 order filter with forward-backward filter
         Colors                  %Colors of each Data set.
         NormalModeColor         %Colors for view Horizontal, Vertical, or single (DAT*)
@@ -399,6 +108,7 @@ classdef BioSigPlot < hgsetget
         SuperimposedModeColors  %Colors when superimposed view
         ChanSelectColor         %Colors when Channels are selected
         AxesBackgroundColor
+        ChanColors
         
         DataView                %View Mode {'Superimposed'|'Alternated'|'Vertical'|'Horizontal'|'DAT*'}
         MontageRef              %N° Montage
@@ -421,6 +131,8 @@ classdef BioSigPlot < hgsetget
         ChanSelect2Edit         %Selected Channels to Edit (Filter,Gain adjust)
         
         IsDataSameSize
+        DisplayedData           %Vector of displayed data
+        IsChannelSelected
         
         
     end
@@ -441,13 +153,15 @@ classdef BioSigPlot < hgsetget
         Filtering_
         FilterLow_
         FilterHigh_
-        FilterNotch_
+        FilterNotch1_
+        FilterNotch2_
         StrongFilter_
         NormalModeColor_
         AlternatedModeColors_
         SuperimposedModeColors_
         ChanSelectColor_
         AxesBackgroundColor_
+        ChanColors_
         
         DataView_
         MontageRef_
@@ -472,7 +186,6 @@ classdef BioSigPlot < hgsetget
         
         TaskFiles_
         VideoStartTime_
-        VideoFile_
         VideoTimeFrame_
         
     end
@@ -487,8 +200,8 @@ classdef BioSigPlot < hgsetget
         SelectionStart
         ChanSelect2DisplayStart
         SelRect
-        NeedFilterWait
-        NeedRedrawWait
+        IsInitialize
+        
     end
     
     properties (Dependent) %'Public properties which does not requires redrawing
@@ -578,29 +291,55 @@ classdef BioSigPlot < hgsetget
             % EXAMPLE
             %   load filterdemo;
             %   a=BioSigPlot(data,'Srate',250);
+            obj.IsInitialize=true;
             
-           obj.Data=obj.uniform(data);
-            
-            obj.VideoLineTime=0;
-            
-            obj.buildfig;
+            obj.Data=obj.uniform(data);
             
             g=varargin;
             
             n=find(strcmpi('Config',g(1:2:end)))*2;
             if isempty(n), g=[{'Config' obj.DefaultConfigFile} g]; end
+            obj.buildfig;
             
-            % Private Properties
-            obj.NeedFilterWait=true;
-            obj.NeedRedrawWait=false;
+            varInitial(obj);
+            set(obj,g{:});
             
+            resetView(obj);
+            remakeMontage(obj);
+            remakeAxes(obj);
+            
+            recalculate(obj);
+            redraw(obj);
+            
+            
+            
+            
+            
+            obj.IsInitialize=false;
+            
+        end
+        
+        %*****************************************************************
+        function varInitial(obj)
+            
+            obj.VideoLineTime=0;
             obj.IsSelecting=0;
             obj.SelectionStart=[];
             obj.Selection_=zeros(2,0);
             obj.ChanSelect2DisplayStart=[];
             obj.ChanSelect2Display_=cell(1,obj.DataNumber);
             obj.ChanSelect2Edit_=cell(1,obj.DataNumber);
-            % Beginning of setting and starting Redraw
+            
+            obj.Gain_=cell(1,obj.DataNumber);
+            ChangeGain(obj,[]);
+            obj.Filtering_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
+            
+            obj.StrongFilter_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
+            obj.FilterLow_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
+            obj.FilterHigh_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
+            obj.FilterNotch1_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
+            obj.FilterNotch2_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
+            resetFilterPanel(obj);
             
             obj.EventLines=[];
             obj.EventTexts=[];
@@ -612,7 +351,6 @@ classdef BioSigPlot < hgsetget
             obj.EditMode=0;
             
             obj.VideoHandle=[];
-            set(obj,g{:});
             
             if ~isempty(obj.DispChans)
                 obj.DispChans=obj.DispChans/obj.DataNumber;
@@ -620,14 +358,11 @@ classdef BioSigPlot < hgsetget
             
             obj.IsEvtsSaved=true;
             
-            obj.NeedFilterWait=false;
-            recalculate(obj);
-            redraw(obj);
-            
+            obj.ChanNames_=cell(1,obj.DataNumber);
+            obj.Evts_={};
+            obj.MontageRef_=1;
             
         end
-        
-        %*****************************************************************
         function delete(obj)
             % Delete the figure
             %             if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
@@ -703,11 +438,11 @@ classdef BioSigPlot < hgsetget
             %properties. Constraint config must be before all and Colors
             %must be before *ModeColors
             keylist={'Config','SRate','WinLength','Gain','DataView','Montage','MontageRef','Evts','Time','FirstDispChans',...
-                'DispChans','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
+                'DispChans','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch1','FilterNotch2','StrongFilter',...
                 'NormalModeColor','AlternatedModeColors','SuperimposedModeColors','ChanNames','Units','XGrid','YGrid',...
                 'Position','Title','MouseMode','PlaySpeed','MainTimerPeriod','VideoTimerPeriod','AxesHeight','YBorder','YGridInterval','Selection',...
                 'TaskFiles','VideoStartTime','VideoFile','VideoTimeFrame','VideoLineTime','MainTimer','VideoTimer','BadChannels','ChanSelect2Display',...
-                'ChanSelect2Edit','EventsDisplay','ChanSelectColor','AxesBackgroundColor'};
+                'ChanSelect2Edit','EventsDisplay','ChanSelectColor','AxesBackgroundColor','ChanColors'};
             
             if isempty(obj.Commands)
                 command='a=BioSigPlot(data';
@@ -723,10 +458,10 @@ classdef BioSigPlot < hgsetget
             
             for i=1:2:length(g)
                 if any(strcmpi(g{i},{'Config','SRate','WinLength','Gain','Montage','DataView','MontageRef','Evts','Time','FirstDispChans',...
-                        'DispChans','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch','StrongFilter',...
+                        'DispChans','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch1','FilterNotch2','StrongFilter',...
                         'NormalModeColor','AlternatedModeColors','SuperimposedModeColors','ChanNames','Units','XGrid','YGrid','MouseMode','AxesHeight','YBorder','YGridInterval','Selection',...
-                        'TaskFiles','VideoStartTime','VideoFile','MainTimerPeriod','VideoTimerPeriod','VideoTimeFrame','BadChannels','ChanSelect2Display',...
-                        'ChanSelect2Edit','EventsDisplay','ChanSelectColor','AxesBackgroundColor'}))
+                        'TaskFiles','VideoStartTime','MainTimerPeriod','VideoTimerPeriod','VideoTimeFrame','BadChannels','ChanSelect2Display',...
+                        'ChanSelect2Edit','EventsDisplay','ChanSelectColor','AxesBackgroundColor','ChanColors'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage','DataView',...
@@ -741,9 +476,9 @@ classdef BioSigPlot < hgsetget
                         NeedResetView=true;
                     end
                     if any(strcmpi(g{i},{'SRate','WinLength','Montage','MontageRef',...
-                                         'Time','Filtering','FilterLow','FilterHigh',...
-                                         'FilterNotch','StrongFilter'}))
-                       NeedRecalculate=true;
+                            'Time','Filtering','FilterLow','FilterHigh',...
+                            'FilterNotch1','FilterNotch2','StrongFilter'}))
+                        NeedRecalculate=true;
                     end
                     NeedRedraw=true;
                     
@@ -815,8 +550,12 @@ classdef BioSigPlot < hgsetget
         function val = get.FilterLow(obj), val=obj.FilterLow_; end
         function obj = set.FilterHigh(obj,val), set(obj,'FilterHigh',val); end
         function val = get.FilterHigh(obj), val=obj.FilterHigh_; end
-        function obj = set.FilterNotch(obj,val), set(obj,'FilterNotch',val); end
-        function val = get.FilterNotch(obj), val=obj.FilterNotch_; end
+        function obj = set.FilterNotch1(obj,val), set(obj,'FilterNotch1',val); end
+        function val = get.FilterNotch1(obj), val=obj.FilterNotch1_; end
+        
+        function obj = set.FilterNotch2(obj,val), set(obj,'FilterNotch2',val); end
+        function val = get.FilterNotch2(obj), val=obj.FilterNotch2_; end
+        
         function obj = set.StrongFilter(obj,val), set(obj,'StrongFilter',val); end
         function val = get.StrongFilter(obj), val=obj.StrongFilter_; end
         function obj = set.NormalModeColor(obj,val), set(obj,'NormalModeColor',val); end
@@ -875,9 +614,6 @@ classdef BioSigPlot < hgsetget
         function obj = set.VideoStartTime(obj,val), set(obj,'VideoStartTime',val);end
         function val = get.VideoStartTime(obj), val=obj.VideoStartTime_; end
         
-        function obj = set.VideoFile(obj,val), set(obj,'VideoFile',val);end
-        function val = get.VideoFile(obj), val=obj.VideoFile_; end
-        
         function obj = set.BadChannels(obj,val), set(obj,'BadChannels',val); end
         function val = get.BadChannels(obj), val=obj.BadChannels_; end
         
@@ -890,6 +626,9 @@ classdef BioSigPlot < hgsetget
         
         function obj = set.EventsDisplay(obj,val), set(obj,'EventsDisplay',val); end
         function val = get.EventsDisplay(obj), val=obj.EventsDisplay_; end
+        
+        function obj = set.ChanColors(obj,val), set(obj,'ChanColors',val); end
+        function val = get.ChanColors(obj), val=obj.ChanColors_; end
         
         %*****************************************************************
         % ***************** User available methods  **********************
@@ -1001,13 +740,9 @@ classdef BioSigPlot < hgsetget
             def=load('-mat',val);
             names=fieldnames(def);
             names=names(~strcmpi('Colors',names) &...
-                        ~strcmpi('DataView',names) & ...
-                        ~strcmpi('MontageRef',names) &...%Remove those fields because they must be affected before others
-                        ~strcmpi('Position',names) & ...
-                        ~strcmpi('Title',names)); % Remove this field because it's not the same properties working
+                ~strcmpi('Position',names) & ...
+                ~strcmpi('Title',names)); % Remove this field because it's not the same properties working
             set(obj,'Colors_',def.Colors);
-            set(obj,'DataView_',def.DataView);
-            set(obj,'MontageRef_',def.MontageRef);
             for i=1:length(names)
                 set(obj,[names{i} '_'],def.(names{i}));
             end
@@ -1047,236 +782,84 @@ classdef BioSigPlot < hgsetget
         end
         
         %==================================================================
-        %******************************************************************
-        function obj = set.Filtering_(obj,val)
-            if isempty(val)
-                val=0;
-            else
-                if val~=1
-                    val=0;
-                end
-            end
-            n=get(obj.PopFilterTarget,'Value');
-            tmp=cell(1,obj.DataNumber);
-            [tmp{:}]=deal(0);
+        %*****************************************************************
+        
+        function newcell=applyPanelVal(obj,oldcell,val)
+            %The input var is a single non-empty value
+            %The output var is a cell array contains configuration for
+            %every channel
+            dd=obj.DisplayedData;
             
-            oldval=obj.Filtering_;
-            if isempty(oldval)
-                oldval=cell(1,obj.DataNumber);
-                [oldval{:}]=deal(0);
-            end
+            %Create a vector of NaN for each cell
+            newcell=cell(1,obj.DataNumber);
             
-            if all(cellfun(@isempty,obj.ChanSelect2Edit))
-                %No Channel Selected
-                if n==1
-                    [tmp{:}]=deal(val);
-                else
-                    tmp{n-1}=val;
-                end
-            else
-                %Channel Selected
-                for i=1:obj.DataNumber
-                    if length(oldval{i})==1
-                        oldval{i}=ones(obj.MontageChanNumber(i),1)*oldval{i};
-                    end
-                    if ~isempty(obj.ChanSelect2Edit{i})
-                        oldval{i}(obj.ChanSelect2Edit{i})=val;
-                    end
-                    tmp{i}=oldval{i};
-                end
-            end
             for i=1:obj.DataNumber
-                if length(tmp{i})==1
-                    tmp{i}=ones(obj.MontageChanNumber(i),1)*tmp{i};
-                end
-            end
-            obj.Filtering_=tmp;
-            
-            set(obj.ChkFilter,'Value',val);
-            if val, offon='on'; else offon='off'; end
-            set(obj.ChkStrongFilter,'Enable',offon)
-            set(obj.EdtFilterLow,'Enable',offon)
-            set(obj.EdtFilterHigh,'Enable',offon)
-            set(obj.EdtFilterNotch1,'Enable',offon)
-            set(obj.EdtFilterNotch2,'Enable',offon)
-        end
-        
-        
-        %******************************************************************
-        function obj = set.StrongFilter_(obj,val)
-            
-            if isempty(val)
-                val=0;
-            else
-                if val~=1
-                    val=0;
-                end
-            end
-            n=get(obj.PopFilterTarget,'Value');
-            tmp=cell(1,obj.DataNumber);
-            [tmp{:}]=deal(0);
-            
-            oldval=obj.StrongFilter_;
-            if isempty(oldval)
-                oldval=cell(1,obj.DataNumber);
-                [oldval{:}]=deal(0);
+                newcell{i}=NaN*ones(obj.MontageChanNumber(i),1);
             end
             
-            if all(cellfun(@isempty,obj.ChanSelect2Edit))
-                %No Channel Selected
-                if n==1
-                    [tmp{:}]=deal(val);
-                else
-                    tmp{n-1}=val;
+            if ~obj.IsChannelSelected
+                %If there is no channel celected
+                %var will be applied to all channels of current data
+                for i=1:length(dd)
+                    newcell{dd(i)}=val*ones(obj.MontageChanNumber(dd(i)),1);
                 end
             else
-                %Channel Selected
+                %if there are channels selected
+                %var will be applied to the selected channels
                 for i=1:obj.DataNumber
-                    if length(oldval{i})==1
-                        oldval{i}=ones(obj.MontageChanNumber(i),1)*oldval{i};
-                    end
-                    if ~isempty(obj.ChanSelect2Edit{i})
-                        oldval{i}(obj.ChanSelect2Edit{i})=val;
-                    end
-                    tmp{i}=oldval{i};
+                    newcell{i}(obj.ChanSelect2Edit{i})=val;
                 end
             end
             
             for i=1:obj.DataNumber
-                if length(tmp{i})==1
-                    tmp{i}=ones(obj.MontageChanNumber(i),1)*tmp{i};
+                if ~isempty(oldcell{i})
+                    newcell{i}(isnan(newcell{i}))=oldcell{i}(isnan(newcell{i}));
                 end
             end
             
-            obj.StrongFilter_=tmp;
-            set(obj.ChkStrongFilter,'Value',val);
         end
-        
+        %==================================================================
         %******************************************************************
-        function obj = set.FilterLow_(obj,val)
-
-            n=get(obj.PopFilterTarget,'Value');
-            tmp=cell(1,obj.DataNumber);
-            [tmp{:}]=deal(0);
+        function obj = set.ChanColors_(obj,val)
             
-            oldval=obj.FilterLow;
-            if isempty(oldval)
-                oldval=cell(1,obj.DataNumber);
-                [oldval{:}]=deal(0);
-            end
-            
-            if all(cellfun(@isempty,obj.ChanSelect2Edit))
-                %No Channel Selected
-                if n==1
-                    [tmp{:}]=deal(val);
-                else
-                    tmp{n-1}=val;
-                end
-            else
-                %Channel Selected
-                for i=1:obj.DataNumber
-                    if length(oldval{i})==1
-                        oldval{i}=ones(obj.MontageChanNumber(i),1)*oldval{i};
-                    end
-                    if ~isempty(obj.ChanSelect2Edit{i})
-                        oldval{i}(obj.ChanSelect2Edit{i})=val;
-                    end
-                    tmp{i}=oldval{i};
-                end
-            end
-            
-            for i=1:obj.DataNumber
-                if length(tmp{i})==1
-                    tmp{i}=ones(obj.MontageChanNumber(i),1)*tmp{i};
-                end
-            end
-            obj.FilterLow_=tmp;
-            set(obj.EdtFilterLow,'String',val);
+            %             tmp=cell(1,obj.DataNumber);
+            %
+            %
+            %             [tmp{:}]=deal(0);
+            %
+            %             oldval=obj.ChanColors;
+            %             if isempty(oldval)
+            %                 oldval=cell(1,obj.DataNumber);
+            %                 [oldval{:}]=deal(0);
+            %             end
+            %
+            %             if all(cellfun(@isempty,obj.ChanSelect2Edit))
+            %                 %No Channel Selected
+            %                 if n==1
+            %                     [tmp{:}]=deal(val);
+            %                 else
+            %                     tmp{n-1}=val;
+            %                 end
+            %             else
+            %                 %Channel Selected
+            %                 for i=1:obj.DataNumber
+            %                     if length(oldval{i})==1
+            %                         oldval{i}=ones(obj.MontageChanNumber(i),1)*oldval{i};
+            %                     end
+            %                     if ~isempty(obj.ChanSelect2Edit{i})
+            %                         oldval{i}(obj.ChanSelect2Edit{i})=val;
+            %                     end
+            %                     tmp{i}=oldval{i};
+            %                 end
+            %             end
+            %             for i=1:obj.DataNumber
+            %                 if length(tmp{i})==1
+            %                     tmp{i}=ones(obj.MontageChanNumber(i),1)*tmp{i};
+            %                 end
+            %             end
+            %             obj.FilterHigh_=tmp;
+            %             set(obj.EdtFilterHigh,'String',val);
         end
-        
-        %******************************************************************
-        function obj = set.FilterHigh_(obj,val)
-            
-            n=get(obj.PopFilterTarget,'Value');
-            tmp=cell(1,obj.DataNumber);
-            [tmp{:}]=deal(0);
-            
-            oldval=obj.FilterHigh;
-            if isempty(oldval)
-                oldval=cell(1,obj.DataNumber);
-                [oldval{:}]=deal(0);
-            end
-            
-            if all(cellfun(@isempty,obj.ChanSelect2Edit))
-                %No Channel Selected
-                if n==1
-                    [tmp{:}]=deal(val);
-                else
-                    tmp{n-1}=val;
-                end
-            else
-                %Channel Selected
-                for i=1:obj.DataNumber
-                    if length(oldval{i})==1
-                        oldval{i}=ones(obj.MontageChanNumber(i),1)*oldval{i};
-                    end
-                    if ~isempty(obj.ChanSelect2Edit{i})
-                        oldval{i}(obj.ChanSelect2Edit{i})=val;
-                    end
-                    tmp{i}=oldval{i};
-                end
-            end
-            for i=1:obj.DataNumber
-                if length(tmp{i})==1
-                    tmp{i}=ones(obj.MontageChanNumber(i),1)*tmp{i};
-                end
-            end
-            obj.FilterHigh_=tmp;
-            set(obj.EdtFilterHigh,'String',val);
-        end
-        %******************************************************************
-        function obj = set.FilterNotch_(obj,val)
-            
-            n=get(obj.PopFilterTarget,'Value');
-            tmp=cell(1,obj.DataNumber);
-            [tmp{:}]=deal([0,0]);
-            
-            oldval=obj.FilterNotch;
-            if isempty(oldval)
-                oldval=cell(1,obj.DataNumber);
-                [oldval{:}]=deal([0,0]);
-            end
-            
-            if all(cellfun(@isempty,obj.ChanSelect2Edit))
-                %No Channel Selected
-                if n==1
-                    [tmp{:}]=deal(val);
-                else
-                    tmp{n-1}=val;
-                end
-            else
-                %Channel Selected
-                for i=1:obj.DataNumber
-                    if size(oldval{i},1)==1
-                        oldval{i}=ones(obj.MontageChanNumber(i),1)*oldval{i};
-                    end
-                    if ~isempty(obj.ChanSelect2Edit{i})
-                        oldval{i}(obj.ChanSelect2Edit{i},:)=...
-                            repmat(val,length(obj.ChanSelect2Edit{i}),1);
-                    end
-                    tmp{i}=oldval{i};
-                end
-            end
-            for i=1:obj.DataNumber
-                if size(tmp{i},1)==1
-                    tmp{i}=ones(obj.MontageChanNumber(i),1)*tmp{i};
-                end
-            end
-            obj.FilterNotch_=tmp;
-            set(obj.EdtFilterNotch1,'String',val(1));
-            set(obj.EdtFilterNotch2,'String',val(2));
-        end
-        
         %******************************************************************
         function obj = set.Time_(obj,val)
             if ~isempty(obj.SRate)
@@ -1310,14 +893,18 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         function obj = set.DataView_(obj,val)
             obj.DataView_=val;
-            if ~isempty(val)
-                if  any(strcmpi(obj.DataView_,{'Superimposed','Alternated','Vertical','Horizontal'}))
-                    set(obj.PopGainTarget,'Value',1);
-                    set(obj.PopFilterTarget,'Value',1);
-                else
-                    n=str2double(val(4));
-                    set(obj.PopGainTarget,'Value',n+1);
-                    set(obj.PopFilterTarget,'Value',n+1);
+            if ~obj.IsInitialize
+                dd=obj.DisplayedData;
+                if all(cellfun(@isempty,obj.ChanSelect2Edit(dd)))
+                    %If there is no channel selected on the current page
+                    
+                    if all(cellfun(@mode,obj.Gain(dd))==mode(obj.Gain{dd(1)}))
+                        set(obj.EdtGain,'String',mode(obj.Gain{dd(1)}));
+                    else
+                        set(obj.EdtGain,'String','-');
+                    end
+                    
+                    resetFilterPanel(obj);
                 end
             end
         end
@@ -1533,71 +1120,10 @@ classdef BioSigPlot < hgsetget
             end
             
             obj.ChanSelect2Edit_=tmp;
-            if ~all(cellfun(@isempty,tmp))
-                set(obj.PopGainTarget,'Enable','off');
-                set(obj.PopFilterTarget,'Enable','off');
-            else
-                set(obj.PopGainTarget,'Enable','on');
-                set(obj.PopFilterTarget,'Enable','on');
-            end
             
         end
-
-        function obj = set.Gain_(obj,val)
-            data=obj.PreprocData;
-            n=get(obj.PopGainTarget,'Value');
-            oldval=obj.Gain_;
-            
-            if isempty(data)
-                data=cell(1,obj.DataNumber);
-                [data{:}]=deal(1);
-            end
-            for i=1:obj.DataNumber
-                if isempty(val)
-                    tmp=mean(std(data{i},1,2));
-                    if isnan(tmp)
-                        oldval{i}=1;
-                    elseif tmp==0
-                        oldval{i}=1;
-                    else
-                        oldval{i}=0.2/tmp;
-                    end
-                    newval=oldval{i};
-                else
-                    newval=val;
-                end
-            end
-
-            if isempty(oldval)
-                oldval=cell(1,obj.DataNumber);
-                [oldval{:}]=deal(0);
-            end
-            
-            tmp=oldval;
-            
-            if all(cellfun(@isempty,obj.ChanSelect2Edit))
-                %No Channel Selected
-                if n==1
-                    for i=1:obj.DataNumber
-                        tmp{i}=newval*ones(obj.MontageChanNumber(i),1);
-                    end
-                else
-                    tmp{n-1}=newval*ones(obj.MontageChanNumber(n-1),1);
-                end
-            else
-                %Channel Selected
-                for i=1:obj.DataNumber
-                    if length(oldval{i})==1
-                        oldval{i}=ones(obj.MontageChanNumber(i),1)*oldval{i};
-                    end
-                    oldval{i}(obj.ChanSelect2Edit{i})=newval;
-                    tmp{i}=oldval{i};
-                end
-            end
-            
-            obj.Gain_=tmp;
-            set(obj.EdtGain,'String',newval);
-        end
+        
+        
         %==================================================================
         %******************************************************************
         function obj = set.VideoLineTime(obj,val)
@@ -1636,6 +1162,25 @@ classdef BioSigPlot < hgsetget
             end
             val=true;
             
+        end
+        
+        function val=get.DisplayedData(obj)
+            if isempty(obj.DataView)
+                val=1:obj.DataNumber;
+            elseif ismember(obj.DataView,...
+                    {'Superimposed','Alternated','Vertical','Horizontal'})
+                val=1:obj.DataNumber;
+            else
+                if strcmpi(obj.DataView(1:3),'DAT')
+                    val=round(str2double(obj.DataView(4)));
+                else
+                    val=1:obj.DataNumber;
+                end
+            end
+        end
+        
+        function val=get.IsChannelSelected(obj)
+            val=~all(cellfun(@isempty,obj.ChanSelect2Edit));
         end
     end
     
@@ -1700,11 +1245,8 @@ classdef BioSigPlot < hgsetget
         %=================================================================
         %******************************************************************
         function montageToolbar(obj)
-            obj.TogMontage(1)=uitoggletool(obj.Toolbar,'CData',imread('Raw.bmp'),...
+            obj.TogMontage=uitoggletool(obj.Toolbar,'CData',imread('Raw.bmp'),...
                 'TooltipString','Raw montage','ClickedCallback',@(src,evt) set(obj,'MontageRef',ones(obj.DataNumber,1)));
-            for i=2:5
-                obj.TogMontage(i)=uitoggletool(obj.Toolbar,'ClickedCallback',@(src,evt) set(obj,'MontageRef',ones(obj.DataNumber,1)*i));
-            end
             
         end
         
@@ -1761,7 +1303,7 @@ classdef BioSigPlot < hgsetget
                                 end
                             end
                         end
-                        obj.ChanOrderMat(1:size(obj.ChanOrderMat{i},1),:)=obj.ChanOrderMat{i}(p(1:size(obj.ChanOrderMat{i},1)),:);
+                        obj.ChanOrderMat{i}(1:size(obj.ChanOrderMat{i},1),:)=obj.ChanOrderMat{i}(p(1:size(obj.ChanOrderMat{i},1)),:);
                         for j=1:length(obj.Montage_{i})
                             obj.Montage_{i}(j).mat=obj.Montage_{i}(j).mat*obj.ChanOrderMat{i};
                         end
@@ -1785,18 +1327,15 @@ classdef BioSigPlot < hgsetget
             if  obj.DataNumber==1
                 set(obj.TogAlternated,'Enable','off')
                 set(obj.TogSuperimposed,'Enable','off')
-                if any(strcmpi(obj.DataView_,{'Superimposed','Alternated'}))
-                    obj.DataView_='DAT1';
-                end
+                
+                set(obj.TogHorizontal,'Enable','off')
+                set(obj.TogVertical,'Enable','off')
+                
             elseif (obj.IsDataSameSize)
                 set(obj.TogAlternated,'Enable','on')
                 set(obj.TogSuperimposed,'Enable','on')
             end
             
-            if obj.DataNumber==1
-                set(obj.TogHorizontal,'Enable','off')
-                set(obj.TogVertical,'Enable','off')
-            end
             if isempty(obj.DataView_)
                 if(obj.DataNumber>=2)
                     obj.DataView_='Vertical';
@@ -1832,34 +1371,8 @@ classdef BioSigPlot < hgsetget
             set(obj.TogSuperimposed,'State',offon{strcmpi(obj.DataView_,'Superimposed')+1});
             set(obj.TogAlternated,'State',offon{strcmpi(obj.DataView_,'Alternated')+1});
             set(obj.TogHorizontal,'State',offon{strcmpi(obj.DataView_,'Horizontal')+1});
-            set(obj.TogVertical,'State',offon{strcmpi(obj.DataView_,'Vertical')+1});
-            for i=1:length(obj.TogData)
-                set(obj.TogData(i),'State',offon{strcmpi(obj.DataView_,['DAT' num2str(i)])+1});
-            end
+            set(obj.TogVertical,'State',offon{strcmpi(obj.DataView_,'Vertical')+1})
             
-            
-            for i=2:length(obj.TogMontage), set(obj.TogMontage(i),'Enable','off','CData',imread(['montage' num2str(i-1) '.bmp']),'TooltipString',['Preset Montage' num2str(i-1)]); end
-            for i=1:length(obj.TogMontage), set(obj.TogMontage(i),'State','off'); end
-            
-            n=NaN;
-            if  any(strcmpi(obj.DataView,{'Superimposed','Alternated','Vertical','Horizontal'}))
-                n=1;
-            end
-            if strcmpi(obj.DataView(1:3),'DAT')
-                n=str2double(obj.DataView(4));
-            end
-            if ~isnan(n)
-                for i=1:length(obj.Montage{n})
-                    im=[obj.Montage{n}(i).name '.bmp'];
-                    if exist(im,'file')~=2, im=['montage' num2str(i-1) '.bmp']; end
-                    set(obj.TogMontage(i),'Enable','on','CData',imread(im),'TooltipString',obj.Montage{n}(i).name)
-                end
-                try set(obj.TogMontage(obj.MontageRef_(n)),'State','on');
-                catch,set(obj.TogMontage(obj.MontageRef_(1)),'State','on'); end %#ok<CTCH>
-            end
-            
-            ChangeGainTarget(obj);
-            ChangeFilterTarget(obj);
         end
         
         %******************************************************************
@@ -1935,17 +1448,6 @@ classdef BioSigPlot < hgsetget
             end
             obj.MouseMode=s;
         end
-        %******************************************************************
-        %Callback for Gain Target Popup Menu
-        ChangeGainTarget(obj)
-        %==================================================================
-        %******************************************************************
-        %Callback for Gain Increase and Decrease
-        ChangeGain(obj,src)
-        %==================================================================
-        %******************************************************************
-        %Callback for Filter Target Popup Menu
-        ChangeFilterTarget(obj)
         %==================================================================
         %******************************************************************
         %Callback for slider operation
@@ -2031,20 +1533,20 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         function ImportDataSet(obj)
             
-%             cds=CommonDataStructure();
-%             if ~cds.import();
-%                 return
-%             end
-%             newData=cds.Data.Data';
-%             obj.Data=[obj.Data;{newData}];
-%             
-%             l=cell2mat(cellfun(@size,obj.Data,'UniformOutput',false)');
-%             if ~all(l(1,1)==l(:,1))
-%                 error('All data must have the same number of time samples');
-%             end
-%             
-%             redraw(obj);
-%             
+            %             cds=CommonDataStructure();
+            %             if ~cds.import();
+            %                 return
+            %             end
+            %             newData=cds.Data.Data';
+            %             obj.Data=[obj.Data;{newData}];
+            %
+            %             l=cell2mat(cellfun(@size,obj.Data,'UniformOutput',false)');
+            %             if ~all(l(1,1)==l(:,1))
+            %                 error('All data must have the same number of time samples');
+            %             end
+            %
+            %             redraw(obj);
+            %
             
         end
         %==================================================================
@@ -2078,13 +1580,45 @@ classdef BioSigPlot < hgsetget
         
         function recalculate(obj)
             
-            obj.PreprocData={1:obj.DataNumber};
+            obj.PreprocData=cell(1,obj.DataNumber);
             for i=1:obj.DataNumber
-                if ~obj.NeedFilterWait
-                    obj.PreprocData{i}=preprocessedData(obj,i);
-                end
+                obj.PreprocData{i}=preprocessedData(obj,i);
             end
         end
+        function ChangeGain(obj,src)
+            val=str2double(get(obj.EdtGain,'String'));
+            
+            if isempty(get(obj.EdtGain,'String'))
+                %Automatic scaling
+                data=obj.PreprocData;
+                if isempty(data)
+                    data=cell(1,obj.DataNumber);
+                    [data{:}]=deal(1);
+                end
+                
+                for i=1:obj.DataNumber
+                    tmp=mean(std(data{i},1,2));
+                    if tmp==0
+                        val=1;
+                    else
+                        val=0.2/tmp;
+                    end
+                end
+            end
+            
+            if src==obj.BtnAddGain
+                val=val*2^.25;
+            elseif src==obj.BtnRemGain
+                val=val*2^-.25;
+            end
+            set(obj.EdtGain,'String',num2str(val));
+            if obj.IsInitialize
+                obj.Gain_=obj.applyPanelVal(obj.Gain_,val);
+            else
+                obj.Gain=obj.applyPanelVal(obj.Gain_,val);
+            end
+        end
+        
     end
     
 end

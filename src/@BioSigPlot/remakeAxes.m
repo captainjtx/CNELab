@@ -110,7 +110,7 @@ else
         n=str2double(obj.DataView(4));
     end
     
-    if ~isempty(obj.DispChans(n))
+    if ~isempty(obj.DispChans)
         position(3)=position(3)-ElevWide; 
         m=max(0.00001,Nchan(n)-obj.DispChans(n));
         obj.Sliders=uicontrol(obj.MainPanel,'style','slider','units','normalized','position',[1-ElevWide 0 ElevWide 1],...

@@ -2,47 +2,50 @@ function filterControlPanel(obj,parent,position)
 
 obj.FilterPanel=uipanel('Parent',parent,'Position',position,'units','normalized');
 
-FilterPanelForEachData=uipanel('Parent',obj.FilterPanel,'Position',[0.2,0,0.8,1],'units','normalized');
+obj.ChkFilter=uicontrol(obj.FilterPanel,'Style','checkbox','units','normalized','position',[0 .55 .2 .4],'String','Enable',...
+    'Callback',@(src,evt) filterCheck(obj));
 
-list=[{'All'} num2cell(1:obj.DataNumber)];
-uicontrol(obj.FilterPanel,'Style','text','String','Filter ','units','normalized','position',[0 0.2 0.07 0.5],'HorizontalAlignment','right');
-obj.PopFilterTarget=uicontrol(obj.FilterPanel,'Style','popupmenu','String',list,'units','normalized','position',[0.08 .2 .09 .6],'BackgroundColor',[1 1 1],...
-    'Callback',@(src,evt) ChangeFilterTarget(obj));
+obj.ChkStrongFilter=uicontrol(obj.FilterPanel,'Style','checkbox','units','normalized','position',[0 .05 .2 .4],'String','High Order',...
+    'Callback',@(src,evt) set(obj,'StrongFilter',obj.applyPanelVal(obj.StrongFilter_,get(src,'Value'))));
 
+uicontrol(obj.FilterPanel,'Style','text','String','Low:','units','normalized','position',[.22 .2 .09 .6],'HorizontalAlignment','right');
+obj.EdtFilterLow=uicontrol(obj.FilterPanel,'Style','edit','units','normalized','position',[.33 .1 .08 .8],'BackgroundColor',[1 1 1],...
+    'Callback',@(src,evt) set(obj,'FilterLow',obj.applyPanelVal(obj.FilterLow_,str2double(get(src,'String')))));
 
-obj.ChkFilter=uicontrol(FilterPanelForEachData,'Style','checkbox','units','normalized','position',[0 .55 .2 .4],'String','Enable',...
-    'Callback',@(src,evt) filterChange(obj));
-obj.ChkStrongFilter=uicontrol(FilterPanelForEachData,'Style','checkbox','units','normalized','position',[0 .05 .2 .4],'String','High Order',...
-    'Callback',@(src,evt) set(obj,'StrongFilter',get(src,'Value')));
-uicontrol(FilterPanelForEachData,'Style','text','String','Low:','units','normalized','position',[.22 .2 .09 .6],'HorizontalAlignment','right');
-obj.EdtFilterLow=uicontrol(FilterPanelForEachData,'Style','edit','units','normalized','position',[.33 .1 .08 .8],'BackgroundColor',[1 1 1],...
-    'Callback',@(src,evt) set(obj,'FilterLow',str2double(get(src,'String'))));
-uicontrol(FilterPanelForEachData,'Style','text','String','High:','units','normalized','position',[.42 .2 .09 .6],'HorizontalAlignment','right');
-obj.EdtFilterHigh=uicontrol(FilterPanelForEachData,'Style','edit','units','normalized','position',[.52 .1 .08 .8],'BackgroundColor',[1 1 1],...
-    'Callback',@(src,evt) set(obj,'FilterHigh',str2double(get(src,'String'))));
-uicontrol(FilterPanelForEachData,'Style','text','String','Notch:','units','normalized','position',[.65 .2 .09 .6],'HorizontalAlignment','right');
-obj.EdtFilterNotch1=uicontrol(FilterPanelForEachData,'Style','edit','units','normalized','position',[.8 .1 .08 .8],'BackgroundColor',[1 1 1],...
-    'Callback',@(src,evt) set(obj,'FilterNotch',[str2double(get(src,'String')),str2double(get(obj.EdtFilterNotch2,'String'))]));
-obj.EdtFilterNotch2=uicontrol(FilterPanelForEachData,'Style','edit','units','normalized','position',[.9 .1 .08 .8],'BackgroundColor',[1 1 1],...
-    'Callback',@(src,evt) set(obj,'FilterNotch',[str2double(get(obj.EdtFilterNotch1,'String')),str2double(get(src,'String'))]));
+uicontrol(obj.FilterPanel,'Style','text','String','High:','units','normalized','position',[.42 .2 .09 .6],'HorizontalAlignment','right');
+obj.EdtFilterHigh=uicontrol(obj.FilterPanel,'Style','edit','units','normalized','position',[.52 .1 .08 .8],'BackgroundColor',[1 1 1],...
+    'Callback',@(src,evt) set(obj,'FilterHigh',obj.applyPanelVal(obj.FilterHigh_,str2double(get(src,'String')))));
+
+uicontrol(obj.FilterPanel,'Style','text','String','Notch:','units','normalized','position',[.65 .2 .09 .6],'HorizontalAlignment','right');
+obj.EdtFilterNotch1=uicontrol(obj.FilterPanel,'Style','edit','units','normalized','position',[.8 .1 .08 .8],'BackgroundColor',[1 1 1],...
+    'Callback',@(src,evt) set(obj,'FilterNotch1',obj.applyPanelVal(obj.FilterNotch1_,str2double(get(src,'String')))));
+
+obj.EdtFilterNotch2=uicontrol(obj.FilterPanel,'Style','edit','units','normalized','position',[.9 .1 .08 .8],'BackgroundColor',[1 1 1],...
+    'Callback',@(src,evt) set(obj,'FilterNotch2',obj.applyPanelVal(obj.FilterNotch2_,str2double(get(src,'String')))));
 end
 
-function filterChange(obj)
-obj.NeedFilterWait=true;
-obj.NeedRedrawWait=true;
+function filterCheck(obj)
 
-obj.Filtering=get(obj.ChkFilter,'Value');
+%do not require recalculate and redraw
+obj.StrongFilter_=obj.applyPanelVal(obj.StrongFilter_,get(obj.ChkStrongFilter,'Value'));
 
-obj.StrongFilter=get(obj.ChkStrongFilter,'Value');
+obj.FilterLow_=obj.applyPanelVal(obj.FilterLow_,str2double(get(obj.EdtFilterLow,'String')));
 
-obj.FilterLow=str2double(get(obj.EdtFilterLow,'String'));
+obj.FilterHigh_=obj.applyPanelVal(obj.FilterHigh_,str2double(get(obj.EdtFilterHigh,'String')));
 
-obj.FilterHigh=str2double(get(obj.EdtFilterHigh,'String'));
+obj.FilterNotch1_=obj.applyPanelVal(obj.FilterNotch1_,str2double(get(obj.EdtFilterNotch1,'String')));
 
-obj.NeedFilterWait=false;
-obj.NeedRedrawWait=false;
+obj.FilterNotch2_=obj.applyPanelVal(obj.FilterNotch2_,str2double(get(obj.EdtFilterNotch2,'String')));
 
-obj.FilterNotch=[str2double(get(obj.EdtFilterNotch1,'String')),...
-                 str2double(get(obj.EdtFilterNotch2,'String'))];
+%require recalculate and redraw
+val=get(obj.ChkFilter,'Value');
+obj.Filtering=obj.applyPanelVal(obj.Filtering_,val);
+
+if val, offon='on'; else offon='off'; end
+set(obj.ChkStrongFilter,'Enable',offon)
+set(obj.EdtFilterLow,'Enable',offon)
+set(obj.EdtFilterHigh,'Enable',offon)
+set(obj.EdtFilterNotch1,'Enable',offon)
+set(obj.EdtFilterNotch2,'Enable',offon)
 
 end
