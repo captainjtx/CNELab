@@ -8,6 +8,7 @@ classdef BioSigPlot < hgsetget
         InfoPanel
         FilterPanel
         ScalePanel
+        DurationPanel
         BtnPrevPage
         BtnPrevSec
         EdtTime
@@ -28,6 +29,11 @@ classdef BioSigPlot < hgsetget
         EdtGain
         BtnAddGain
         BtnRemGain
+        
+        EdtDuration
+        BtnAddDuration
+        BtnRemDuration
+        
         TxtScale
         ArrScale
         Toolbar
@@ -60,7 +66,7 @@ classdef BioSigPlot < hgsetget
         MenuPlaySpeed
         MenuColors
         MenuChan
-        MenuTime2disp
+        
         MenuDisplay
         MenuInsideTicks
         MenuXGrid
@@ -295,14 +301,10 @@ classdef BioSigPlot < hgsetget
             
             obj.Data=obj.uniform(data);
             
-            g=varargin;
-            
-            n=find(strcmpi('Config',g(1:2:end)))*2;
-            if isempty(n), g=[{'Config' obj.DefaultConfigFile} g]; end
             obj.buildfig;
             
-            varInitial(obj);
-            set(obj,g{:});
+            g=varargin;
+            varInitial(obj,g);
             
             resetView(obj);
             remakeMontage(obj);
@@ -320,7 +322,7 @@ classdef BioSigPlot < hgsetget
         end
         
         %*****************************************************************
-        function varInitial(obj)
+        function varInitial(obj,g)
             
             obj.VideoLineTime=0;
             obj.IsSelecting=0;
@@ -332,6 +334,7 @@ classdef BioSigPlot < hgsetget
             
             obj.Gain_=cell(1,obj.DataNumber);
             ChangeGain(obj,[]);
+            
             obj.Filtering_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
             
             obj.StrongFilter_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
@@ -339,7 +342,10 @@ classdef BioSigPlot < hgsetget
             obj.FilterHigh_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
             obj.FilterNotch1_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
             obj.FilterNotch2_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
+            
             resetFilterPanel(obj);
+            
+            
             
             obj.EventLines=[];
             obj.EventTexts=[];
@@ -362,6 +368,10 @@ classdef BioSigPlot < hgsetget
             obj.Evts_={};
             obj.MontageRef_=1;
             
+            n=find(strcmpi('Config',g(1:2:end)))*2;
+            if isempty(n), g=[{'Config' obj.DefaultConfigFile} g]; end
+            set(obj,g{:});
+            obj.ChanColors_=obj.applyPanelVal(cell(1,obj.DataNumber),obj.NormalModeColor);
         end
         function delete(obj)
             % Delete the figure
@@ -785,81 +795,41 @@ classdef BioSigPlot < hgsetget
         %*****************************************************************
         
         function newcell=applyPanelVal(obj,oldcell,val)
-            %The input var is a single non-empty value
-            %The output var is a cell array contains configuration for
-            %every channel
-            dd=obj.DisplayedData;
+            %var : a single non-empty value
+            %oldcell : old configuration
+            %newcell : new configuration
             
+            dd=obj.DisplayedData;
+            val=reshape(val,1,length(val));
             %Create a vector of NaN for each cell
             newcell=cell(1,obj.DataNumber);
             
             for i=1:obj.DataNumber
-                newcell{i}=NaN*ones(obj.MontageChanNumber(i),1);
+                newcell{i}=NaN*ones(obj.MontageChanNumber(i),length(val));
             end
             
             if ~obj.IsChannelSelected
                 %If there is no channel celected
                 %var will be applied to all channels of current data
                 for i=1:length(dd)
-                    newcell{dd(i)}=val*ones(obj.MontageChanNumber(dd(i)),1);
+                    newcell{dd(i)}=ones(obj.MontageChanNumber(dd(i)),1)*val;
                 end
             else
                 %if there are channels selected
                 %var will be applied to the selected channels
                 for i=1:obj.DataNumber
-                    newcell{i}(obj.ChanSelect2Edit{i})=val;
+                    newcell{i}(obj.ChanSelect2Edit{i},:)=ones(length(obj.ChanSelect2Edit{i}),1)*val;
                 end
             end
             
             for i=1:obj.DataNumber
                 if ~isempty(oldcell{i})
-                    newcell{i}(isnan(newcell{i}))=oldcell{i}(isnan(newcell{i}));
+                    newcell{i}(isnan(newcell{i}(:,1)),:)=oldcell{i}(isnan(newcell{i}(:,1)),:);
                 end
             end
             
         end
         %==================================================================
-        %******************************************************************
-        function obj = set.ChanColors_(obj,val)
-            
-            %             tmp=cell(1,obj.DataNumber);
-            %
-            %
-            %             [tmp{:}]=deal(0);
-            %
-            %             oldval=obj.ChanColors;
-            %             if isempty(oldval)
-            %                 oldval=cell(1,obj.DataNumber);
-            %                 [oldval{:}]=deal(0);
-            %             end
-            %
-            %             if all(cellfun(@isempty,obj.ChanSelect2Edit))
-            %                 %No Channel Selected
-            %                 if n==1
-            %                     [tmp{:}]=deal(val);
-            %                 else
-            %                     tmp{n-1}=val;
-            %                 end
-            %             else
-            %                 %Channel Selected
-            %                 for i=1:obj.DataNumber
-            %                     if length(oldval{i})==1
-            %                         oldval{i}=ones(obj.MontageChanNumber(i),1)*oldval{i};
-            %                     end
-            %                     if ~isempty(obj.ChanSelect2Edit{i})
-            %                         oldval{i}(obj.ChanSelect2Edit{i})=val;
-            %                     end
-            %                     tmp{i}=oldval{i};
-            %                 end
-            %             end
-            %             for i=1:obj.DataNumber
-            %                 if length(tmp{i})==1
-            %                     tmp{i}=ones(obj.MontageChanNumber(i),1)*tmp{i};
-            %                 end
-            %             end
-            %             obj.FilterHigh_=tmp;
-            %             set(obj.EdtFilterHigh,'String',val);
-        end
         %******************************************************************
         function obj = set.Time_(obj,val)
             if ~isempty(obj.SRate)
@@ -1122,7 +1092,10 @@ classdef BioSigPlot < hgsetget
             obj.ChanSelect2Edit_=tmp;
             
         end
-        
+        function obj = set.WinLength_(obj,val)
+            obj.WinLength_=val;
+            set(obj.EdtDuration,'String',num2str(val));
+        end
         
         %==================================================================
         %******************************************************************
@@ -1215,8 +1188,9 @@ classdef BioSigPlot < hgsetget
         function makeControls(obj)
             obj.timeControlPanel(obj.ControlPanel,[0 0 .17 1]);
             obj.infoControlPanel(obj.ControlPanel,[0.17 0 .23 1]);
-            obj.filterControlPanel(obj.ControlPanel,[.4 0 .43 1]);
-            obj.scaleControlPanel(obj.ControlPanel,[0.83 0 .15 1]);
+            obj.filterControlPanel(obj.ControlPanel,[.4 0 .35 1]);
+            obj.scaleControlPanel(obj.ControlPanel,[0.75 0 .1 1]);
+            obj.durationControlPanel(obj.ControlPanel,[0.85,0,0.1,1]);
             
         end
         
@@ -1237,6 +1211,9 @@ classdef BioSigPlot < hgsetget
         scaleControlPanel(obj,parent,position)
         %==================================================================
         %******************************************************************
+        %Window length Panel Initialization
+        durationControlPanel(obj,parent,position)
+        %==================================================================
         function makeToolbar(obj)
             obj.montageToolbar();
             obj.viewToolbar();
@@ -1487,16 +1464,6 @@ classdef BioSigPlot < hgsetget
         %Callback for Video Import
         ImportVideo(obj)
         %==================================================================
-        function MnuTime2Display(obj)
-            %**************************************************************
-            % Dialog box to change windows length
-            %**************************************************************
-            t=inputdlg('Time range to display :');
-            t=str2double(t);
-            if ~isempty(t) && ~isnan(t)
-                obj.WinLength=t;
-            end
-        end
         %******************************************************************
         function MnuPlay(obj)
             %**************************************************************
@@ -1619,6 +1586,49 @@ classdef BioSigPlot < hgsetget
             end
         end
         
+        function ChangeDuration(obj,src)
+            val=str2double(get(obj.EdtDuration,'String'));
+            
+            if isnan(val)
+                val=10;
+            end
+            
+            if src==obj.BtnAddDuration
+                val=val+1;
+            elseif src==obj.BtnRemDuration
+                val=val-1;
+            end
+            
+            obj.WinLength=val;
+        end
+        
+        function ChangeFilter(obj,src)
+            switch src
+                case obj.ChkStrongFilter
+                    set(obj,'StrongFilter',obj.applyPanelVal(obj.StrongFilter_,get(src,'Value')));
+                case obj.EdtFilterLow
+                    set(obj,'FilterLow',obj.applyPanelVal(obj.FilterLow_,str2double(get(src,'String'))));
+                    if str2double(get(src,'String'))==0||isnan(str2double(get(src,'String')))
+                        set(src,'String','-');
+                    end
+                    
+                case obj.EdtFilterHigh
+                    set(obj,'FilterHigh',obj.applyPanelVal(obj.FilterHigh_,str2double(get(src,'String'))));
+                    if str2double(get(src,'String'))==0||isnan(str2double(get(src,'String')))
+                        set(src,'String','-');
+                    end
+                case obj.EdtFilterNotch1
+                    set(obj,'FilterNotch1',obj.applyPanelVal(obj.FilterNotch1_,str2double(get(src,'String'))));
+                    if str2double(get(src,'String'))==0||isnan(str2double(get(src,'String')))
+                        set(src,'String','-');
+                    end
+                case obj.EdtFilterNotch2
+                    set(obj,'FilterNotch2',obj.applyPanelVal(obj.FilterNotch2_,str2double(get(src,'String'))));
+                    if str2double(get(src,'String'))==0||isnan(str2double(get(src,'String')))
+                        set(src,'String','-');
+                    end
+            end
+        end
+        
     end
-    
 end

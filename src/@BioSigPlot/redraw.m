@@ -78,7 +78,7 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         obj.SelRect(i)=rectangle('Parent',obj.Axes(i),'Position',[-1 0 .0001 .0001],'EdgeColor','none','FaceColor',[.85 1 .85]); % Current Selection Rectangle
         if strcmp(obj.DataView,'Horizontal') || i==obj.DataNumber, plotXTicks(obj.Axes(i),obj.Time,obj.WinLength,obj.InsideTicks); end
         if ~isempty(obj.PreprocData)
-            plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.NormalModeColor(rem(i-1,end)+1,:),...
+            plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.ChanColors{i},...
                 obj.Gain{i},Nchan(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),obj.DispChans(i),...
                 obj.ChanSelect2Edit{i},obj.ChanSelectColor);
         end
@@ -147,7 +147,7 @@ else
     else
         i=str2double(obj.DataView(4));
         if ~isempty(obj.PreprocData)
-            plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.NormalModeColor(rem(i-1,end)+1,:),...
+            plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.ChanColors{i},...
                 obj.Gain{i},obj.MontageChanNumber(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),...
                 obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
         end
@@ -205,7 +205,7 @@ end
 
 end
 %**************************************************************************
-function plotData(axe,t,data,color,gain,posY,ChanSelect2Display,FirstDispChan,...
+function plotData(axe,t,data,colors,gain,posY,ChanSelect2Display,FirstDispChan,...
     DispChans,ChanSelect2Edit,ChanSelectColor) %#ok<INUSD>
 % Plot data function
 % axe :axes to plot
@@ -232,7 +232,7 @@ data=data.*repmat(reshape(gain,1,length(gain)),size(data,1),1);
 if ~isempty(ChanSelect2Display)
     data=data(:,ChanSelect2Display);
     posY=posY(ChanSelect2Display);
-    
+    colors=colors(ChanSelect2Display,:);
     [f,ChanSelect2Edit]=ismember(ChanSelect2Edit,ChanSelect2Display);
 end
 
@@ -247,7 +247,10 @@ x=[t NaN]'*ones(1,size(data,2));
 y=[data;NaN*ones(1,size(data,2))];
 % y=data';
 
-h=line(x,y,'parent',axe,'Color',color);
+h=line(x,y,'parent',axe,'Color',[0 0 0]);
+for i=1:length(h)
+    set(h(i),'Color',colors(i,:));
+end
 
 if ~isempty(ChanSelect2Edit)
     set(h(ChanSelect2Edit(ChanSelect2Edit~=0)),'Color',ChanSelectColor);

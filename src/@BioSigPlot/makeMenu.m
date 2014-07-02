@@ -18,14 +18,13 @@ obj.MenuCommands=uimenu(obj.MenuSettings,'Label','Command List',...
 obj.MenuConfigurationState=uimenu(obj.MenuSettings,'Label','Configuration file','Callback',@(src,evt) ConfigWindow(obj));
 obj.MenuPlaySpeed=uimenu(obj.MenuSettings,'Label','Speed for play','Callback',@(src,evt) MnuPlay(obj));
 obj.MenuChan=uimenu(obj.MenuSettings,'Label','Channels per page','Callback',@(src,evt) MnuChan2Display(obj));
-obj.MenuTime2disp=uimenu(obj.MenuSettings,'Label','Duration per page','Callback',@(src,evt) MnuTime2Display(obj));
 obj.MenuColor=uimenu(obj.MenuSettings,'Label','Color');
 obj.MenuSampleRate=uimenu(obj.MenuSettings,'Label','Sample Rate','Callback',@(src,evt) MnuSampleRate(obj));
 %Second Order Menu of Color
 obj.MenuColorCanvas=uimenu(obj.MenuColor,'Label','Canvas',...
     'Callback',@(src,evt) set(obj,'AxesBackgroundColor',uisetcolor(obj.AxesBackgroundColor,'AxesBackground Color')));
 obj.MenuColorLines=uimenu(obj.MenuColor,'Label','Lines',...
-    'Callback',@(src,evt) set(obj,'NormalModeColor',uisetcolor(obj.NormalModeColor,'Line Color')));
+    'Callback',@(src,evt) set(obj,'ChanColors',obj.applyPanelVal(obj.ChanColors_,uisetcolor(obj.NormalModeColor,'Line Color'))));
 %**************************************************************************
 %First Order Menu---------------------------------------------------Display 
 obj.MenuDisplay=uimenu(obj.Fig,'Label','Display');
