@@ -14,7 +14,7 @@ end
 if ~isempty(evt.Modifier)
     
     if ismember('command',evt.Modifier)||ismember('control',evt.Modifier)
-        %Ctl/Cmd+A: Select the current dataset
+        %Ctrl/Cmd+A: Select the current dataset
         if strcmpi(evt.Key,'A')
             if ~obj.IsChannelSelected
                 for i=1:length(dd)
@@ -34,11 +34,30 @@ if ~isempty(evt.Modifier)
         for i=1:obj.DataNumber
             if strcmpi(evt.Key,num2str(i))
                 obj.DataView=['DAT' num2str(i)];
+                return;
             end
         end
         
+        %Ctrl/Cmd+ i,k j,l: Change channel number and duration per page
+        %Ctrl/Cmd+ -,=: Change channel gain
+        if strcmpi(evt.Key,'hyphen')
+            ChangeGain(obj,obj.BtnAddGain);
+        elseif strcmpi(evt.Key,'equal')
+            ChangeGain(obj,obj.BtnRemGain);
+        elseif strcmpi(evt.Key,'i')
+           obj.DispChans=obj.DispChans+1;
+           return
+        elseif strcmpi(evt.Key,'k')
+           obj.DispChans=obj.DispChans-1;
+           return
+        elseif strcmpi(evt.Key,'l')
+            ChangeDuration(obj,obj.BtnAddDuration);
+            return
+        elseif strcmpi(evt.Key,'j')
+            ChangeDuration(obj,obj.BtnRemDuration);
+            return
+        end
     end
-    
-    
+
 end
 end

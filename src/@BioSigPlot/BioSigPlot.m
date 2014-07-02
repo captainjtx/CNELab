@@ -358,10 +358,6 @@ classdef BioSigPlot < hgsetget
             
             obj.VideoHandle=[];
             
-            if ~isempty(obj.DispChans)
-                obj.DispChans=obj.DispChans/obj.DataNumber;
-            end
-            
             obj.IsEvtsSaved=true;
             
             obj.ChanNames_=cell(1,obj.DataNumber);
@@ -371,7 +367,13 @@ classdef BioSigPlot < hgsetget
             n=find(strcmpi('Config',g(1:2:end)))*2;
             if isempty(n), g=[{'Config' obj.DefaultConfigFile} g]; end
             set(obj,g{:});
+            
             obj.ChanColors_=obj.applyPanelVal(cell(1,obj.DataNumber),obj.NormalModeColor);
+            
+            
+            if ~isempty(obj.DispChans)
+                obj.DispChans=obj.DispChans/obj.DataNumber;
+            end
         end
         function delete(obj)
             % Delete the figure
