@@ -1087,7 +1087,7 @@ classdef BioSigPlot < hgsetget
             
             for i=1:length(tmp)
                 if ~isempty(tmp{i})
-                    tmp{i}=reshape(max(1,min(round(tmp{i}),obj.MontageChanNumber(i))),length(tmp{i}),1);
+                    tmp{i}=unique(reshape(max(1,min(round(tmp{i}),obj.MontageChanNumber(i))),length(tmp{i}),1),'stable');
                 end
             end
             
