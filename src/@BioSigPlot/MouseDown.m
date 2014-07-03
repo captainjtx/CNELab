@@ -15,17 +15,10 @@ if isempty(obj.MouseMode)
                 XData=get(obj.EventLines(i),'XData');
                 eventIndex=XData(1);
                 if abs(t-eventIndex)<50
-                    
-                    set(obj.EventLines(i),'Color',[159/255 0 197/255]);
-                    set(obj.EventTexts(i),'EdgeColor',[159/255 0 197/255],'BackgroundColor',[159/255 0 197/255]);
                     obj.SelectedLines=[obj.SelectedLines i];
                     obj.SelectedEvent=obj.EventDisplayIndex(i);
                     obj.DragMode=1;
                     return
-                else
-                    set(obj.EventLines(i),'Color',[0 0.7 0]);
-                    set(obj.EventTexts(i),'EdgeColor',[0 0.7 0],'BackgroundColor',[0.6 1 0.6]);
-                    
                 end
             end
         end

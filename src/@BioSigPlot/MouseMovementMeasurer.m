@@ -12,7 +12,7 @@ for i=1:length(obj.Axes)
             nchan=obj.MontageChanNumber(1)-j+1;
             s=[obj.MontageChanNames{1}{nchan} ':'];
             for k=1:obj.DataNumber
-                s=[s ' ' num2str(k) '-' num2str(obj.PreprocData{k}(nchan,t))]; %#ok<AGROW>
+                s=[s ' ' num2str(k) '-' num2str(obj.PreprocData{k}(t,nchan))]; %#ok<AGROW>
                 if ~isempty(obj.Units{k})
                     s=[s ' ' obj.Units{k}{nchan}];
                 end
@@ -21,23 +21,23 @@ for i=1:length(obj.Axes)
             nchan=sum(obj.MontageChanNumber)-j;
             ndata=rem(nchan,obj.DataNumber)+1;
             nchan=floor(nchan/obj.DataNumber)+1;
-            s=['(' num2str(ndata) ')' obj.MontageChanNames{1}{nchan} ':' num2str(obj.PreprocData{ndata}(nchan,t))];
-            if ~isempty(obj.Units)
+            s=['(' num2str(ndata) ')' obj.MontageChanNames{1}{nchan} ':' num2str(obj.PreprocData{ndata}(t,nchan))];
+            if ~isempty(obj.Units{ndata})
                 s=[s ' ' obj.Units{ndata}{nchan}];
             end
         elseif any(strcmpi(obj.DataView,{'Horizontal','Vertical'}))
             nchan=obj.MontageChanNumber(i)-j+1;
-            s=[obj.MontageChanNames{i}{nchan} ':' num2str(obj.PreprocData{i}(nchan,t))];
+            s=[obj.MontageChanNames{i}{nchan} ':' num2str(obj.PreprocData{i}(t,nchan))];
             
-            if ~isempty(obj.Units)
+            if ~isempty(obj.Units{i})
                 s=[s ' ' obj.Units{i}{nchan}];
             end
         else
             ndata=str2double(obj.DataView(4));
             nchan=obj.MontageChanNumber(ndata)-j+1;
-            s=[obj.MontageChanNames{ndata}{nchan} ':' num2str(obj.PreprocData{ndata}(nchan,t))];
+            s=[obj.MontageChanNames{ndata}{nchan} ':' num2str(obj.PreprocData{ndata}(t,nchan))];
             
-            if ~isempty(obj.Units)
+            if ~isempty(obj.Units{ndata})
                 s=[s ' ' obj.Units{ndata}{nchan}];
             end
         end

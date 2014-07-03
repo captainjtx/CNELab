@@ -8,6 +8,8 @@ dd=obj.DisplayedData;
 if strcmpi(evt.Key,'escape')
     obj.MouseMode=[];
     obj.ChanSelect2Edit=[];
+    obj.SelectedEvent=[];
+    obj.SelectedLines=[];
     return
 end
 %**************************************************************************
@@ -41,9 +43,9 @@ if ~isempty(evt.Modifier)
         %Ctrl/Cmd+ i,k j,l: Change channel number and duration per page
         %Ctrl/Cmd+ -,=: Change channel gain
         if strcmpi(evt.Key,'hyphen')
-            ChangeGain(obj,obj.BtnAddGain);
-        elseif strcmpi(evt.Key,'equal')
             ChangeGain(obj,obj.BtnRemGain);
+        elseif strcmpi(evt.Key,'equal')
+            ChangeGain(obj,obj.BtnAddGain);
         elseif strcmpi(evt.Key,'uparrow')
             obj.DispChans=obj.DispChans+1;
             return
@@ -59,7 +61,7 @@ if ~isempty(evt.Modifier)
         end
     end
     if ismember('shift',evt.Modifier)
-        if strcmpi(evt.Key,'downarrow')
+        if strcmpi(evt.Key,'j')
             for i=1:length(dd)
                 if ~isempty(obj.ChanSelect2Edit{dd(i)})
                     newchan=obj.ChanSelect2Edit{dd(i)}(end)+1;
@@ -71,7 +73,7 @@ if ~isempty(evt.Modifier)
                     end
                 end
             end
-        elseif strcmpi(evt.Key,'uparrow')
+        elseif strcmpi(evt.Key,'k')
             for i=1:length(dd)
                 if ~isempty(obj.ChanSelect2Edit{dd(i)})
                     newchan=obj.ChanSelect2Edit{dd(i)}(end)-1;
@@ -83,10 +85,21 @@ if ~isempty(evt.Modifier)
                     end
                 end
             end
+            
+        %if no event line is selected, shift + left and right move the time of canvas
+        %else move the time of selected event by 10 sample point
         elseif strcmpi(evt.Key,'leftarrow')
-            ChangeTime(obj,obj.BtnPrevPage);
+            if isempty(obj.SelectedEvent)
+                ChangeTime(obj,obj.BtnPrevPage);
+            else
+                obj.Evts{obj.SelectedEvent,1}=obj.Evts{obj.SelectedEvent,1}-10/obj.SRate;
+            end
         elseif strcmpi(evt.Key,'rightarrow')
-            ChangeTime(obj,obj.BtnNextPage);
+            if isempty(obj.SelectedEvent)
+                ChangeTime(obj,obj.BtnNextPage);
+            else
+                obj.Evts{obj.SelectedEvent,1}=obj.Evts{obj.SelectedEvent,1}+10/obj.SRate;
+            end
         end
    
     end
@@ -126,10 +139,21 @@ else
                 obj.ChanSelect2Edit{dd(i)}=obj.ChanSelect2Edit{dd(i)}(end)-1;
             end
         end
+    %if no event line is selected, left and right move the time of canvas
+    %else move the time of selected event by 1 sample point
     elseif strcmpi(evt.Key,'leftarrow')
-        ChangeTime(obj,obj.BtnPrevSec)
+
+        if isempty(obj.SelectedEvent)
+            ChangeTime(obj,obj.BtnPrevSec)
+        else
+            obj.Evts{obj.SelectedEvent,1}=obj.Evts{obj.SelectedEvent,1}-1/obj.SRate;
+        end
     elseif strcmpi(evt.Key,'rightarrow')
-        ChangeTime(obj,obj.BtnNextSec)
+        if isempty(obj.SelectedEvent)
+            ChangeTime(obj,obj.BtnNextSec)
+        else
+            obj.Evts{obj.SelectedEvent,1}=obj.Evts{obj.SelectedEvent,1}+1/obj.SRate;
+        end
     elseif strcmpi(evt.Key,'uparrow')
     elseif strcmpi(evt.Key,'downarrow')
     end

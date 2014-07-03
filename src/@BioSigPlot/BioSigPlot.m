@@ -116,6 +116,10 @@ classdef BioSigPlot < hgsetget
         AxesBackgroundColor
         ChanColors
         
+        EventColors
+        EventSelectColor
+        EventDefaultColor
+        
         DataView                %View Mode {'Superimposed'|'Alternated'|'Vertical'|'Horizontal'|'DAT*'}
         MontageRef              %N° Montage
         XGrid                   %true : show Grid line on each sec
@@ -168,6 +172,9 @@ classdef BioSigPlot < hgsetget
         ChanSelectColor_
         AxesBackgroundColor_
         ChanColors_
+        EventColors_
+        EventSelectColor_
+        EventDefaultColor_
         
         DataView_
         MontageRef_
@@ -193,6 +200,8 @@ classdef BioSigPlot < hgsetget
         TaskFiles_
         VideoStartTime_
         VideoTimeFrame_
+        
+        SelectedEvent_
         
     end
     properties (SetAccess=protected) %Readonly properties
@@ -312,11 +321,6 @@ classdef BioSigPlot < hgsetget
             
             recalculate(obj);
             redraw(obj);
-            
-            
-            
-            
-            
             obj.IsInitialize=false;
             
         end
@@ -345,23 +349,20 @@ classdef BioSigPlot < hgsetget
             
             resetFilterPanel(obj);
             
-            
-            
+            obj.EventColors_=cell(1,obj.DataNumber);
             obj.EventLines=[];
             obj.EventTexts=[];
-            obj.EvtContextMenu=EventContextMenu(obj);
-            obj.SelectedEvent=[];
             obj.SelectedLines=[];
-            
+            obj.EvtContextMenu=EventContextMenu(obj);
             obj.DragMode=0;
             obj.EditMode=0;
+            obj.SelectedEvent_=[];
+            obj.Evts_={};
+            obj.IsEvtsSaved=true;
             
             obj.VideoHandle=[];
             
-            obj.IsEvtsSaved=true;
-            
             obj.ChanNames_=cell(1,obj.DataNumber);
-            obj.Evts_={};
             obj.MontageRef_=1;
             
             n=find(strcmpi('Config',g(1:2:end)))*2;
@@ -374,6 +375,8 @@ classdef BioSigPlot < hgsetget
             if ~isempty(obj.DispChans)
                 obj.DispChans=obj.DispChans/obj.DataNumber;
             end
+            
+            
         end
         function delete(obj)
             % Delete the figure
@@ -444,6 +447,7 @@ classdef BioSigPlot < hgsetget
             NeedRedraw=false;
             NeedCommand=false;
             NeedRecalculate=false;
+            NeedRedrawEvts=false;
             
             g=varargin;
             %Rearrangement: make sure there is no conflict on the order of
@@ -454,7 +458,8 @@ classdef BioSigPlot < hgsetget
                 'NormalModeColor','AlternatedModeColors','SuperimposedModeColors','ChanNames','Units','XGrid','YGrid',...
                 'Position','Title','MouseMode','PlaySpeed','MainTimerPeriod','VideoTimerPeriod','AxesHeight','YBorder','YGridInterval','Selection',...
                 'TaskFiles','VideoStartTime','VideoFile','VideoTimeFrame','VideoLineTime','MainTimer','VideoTimer','BadChannels','ChanSelect2Display',...
-                'ChanSelect2Edit','EventsDisplay','ChanSelectColor','AxesBackgroundColor','ChanColors'};
+                'ChanSelect2Edit','EventsDisplay','ChanSelectColor','AxesBackgroundColor','ChanColors','EventColors','EventSelectColor','EventDefaultColor',...
+                'SelectedEvent'};
             
             if isempty(obj.Commands)
                 command='a=BioSigPlot(data';
@@ -469,11 +474,11 @@ classdef BioSigPlot < hgsetget
             if ~isempty(n), g=g([n-1 n 1:n-2 n+1:end]); end
             
             for i=1:2:length(g)
-                if any(strcmpi(g{i},{'Config','SRate','WinLength','Gain','Montage','DataView','MontageRef','Evts','Time','FirstDispChans',...
+                if any(strcmpi(g{i},{'Config','SRate','WinLength','Gain','Montage','DataView','MontageRef','Time','FirstDispChans',...
                         'DispChans','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch1','FilterNotch2','StrongFilter',...
-                        'NormalModeColor','AlternatedModeColors','SuperimposedModeColors','ChanNames','Units','XGrid','YGrid','MouseMode','AxesHeight','YBorder','YGridInterval','Selection',...
-                        'TaskFiles','VideoStartTime','MainTimerPeriod','VideoTimerPeriod','VideoTimeFrame','BadChannels','ChanSelect2Display',...
-                        'ChanSelect2Edit','EventsDisplay','ChanSelectColor','AxesBackgroundColor','ChanColors'}))
+                        'NormalModeColor','AlternatedModeColors','SuperimposedModeColors','ChanNames','Units','XGrid','YGrid','MouseMode','AxesHeight',...
+                        'YBorder','YGridInterval','Selection','TaskFiles','VideoStartTime','MainTimerPeriod','VideoTimerPeriod','VideoTimeFrame',...
+                        'BadChannels','ChanSelect2Display','ChanSelect2Edit','ChanSelectColor','AxesBackgroundColor','ChanColors'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage','DataView',...
@@ -493,10 +498,16 @@ classdef BioSigPlot < hgsetget
                         NeedRecalculate=true;
                     end
                     NeedRedraw=true;
+                    NeedRedrawEvts=true;
                     
                 elseif any(strcmpi(g{i},{'PlaySpeed'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
+                elseif any(strcmpi(g{i},{'EventsDisplay','Evts','EventColors',...
+                        'EventSelectColor','EventDefaultColor','SelectedEvent'}))
+                    g{i}=keylist{strcmpi(g{i},keylist)};
+                    set@hgsetget(obj,[g{i} '_'],g{i+1})
+                    NeedRedrawEvts=true;
                 else
                     set@hgsetget(obj,varargin{i},varargin{i+1})
                 end
@@ -512,6 +523,7 @@ classdef BioSigPlot < hgsetget
             if NeedResetView, resetView(obj); end
             if NeedRemakeAxes, remakeAxes(obj); end
             if NeedRedraw, redraw(obj); end
+            if NeedRedrawEvts, redrawEvts(obj); end
             if NeedCommand
                 if strcmpi(command(1:12),'a=BioSigPlot')
                     n=1;
@@ -641,6 +653,18 @@ classdef BioSigPlot < hgsetget
         
         function obj = set.ChanColors(obj,val), set(obj,'ChanColors',val); end
         function val = get.ChanColors(obj), val=obj.ChanColors_; end
+        
+        function obj = set.SelectedEvent(obj,val), set(obj,'SelectedEvent',val); end
+        function val = get.SelectedEvent(obj), val=obj.SelectedEvent_; end
+        
+        function obj = set.EventColors(obj,val), set(obj,'EventColors',val); end
+        function val = get.EventColors(obj), val=obj.EventColors_; end
+        
+        function obj = set.EventSelectColor(obj,val), set(obj,'EventSelectColor',val); end
+        function val = get.EventSelectColor(obj), val=obj.EventSelectColor_; end
+        
+        function obj = set.EventDefaultColor(obj,val), set(obj,EventDefaultColor,val); end
+        function val = get.EventDefaultColor(obj), val=obj.EventDefaultColor_; end
         
         %*****************************************************************
         % ***************** User available methods  **********************
@@ -791,6 +815,11 @@ classdef BioSigPlot < hgsetget
                 set(obj.TogEvts,'Enable','off');
                 set(obj.MenuEventsDisplay,'Enable','off');
             end
+            
+            for i=1:length(obj.DataNumber)
+                obj.EventColors_{i}=ones(size(obj.Evts_,1),1)*...
+                    reshape(obj.EventDefaultColor,1,length(obj.EventDefaultColor));
+            end
         end
         
         %==================================================================
@@ -800,7 +829,9 @@ classdef BioSigPlot < hgsetget
             %var : a single non-empty value
             %oldcell : old configuration
             %newcell : new configuration
-            
+            if isempty(val)
+                val=nan;
+            end
             dd=obj.DisplayedData;
             val=reshape(val,1,length(val));
             %Create a vector of NaN for each cell
