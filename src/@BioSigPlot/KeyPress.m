@@ -44,22 +44,22 @@ if ~isempty(evt.Modifier)
             ChangeGain(obj,obj.BtnAddGain);
         elseif strcmpi(evt.Key,'equal')
             ChangeGain(obj,obj.BtnRemGain);
-        elseif strcmpi(evt.Key,'i')||strcmpi(evt.Key,'uparrow')
+        elseif strcmpi(evt.Key,'uparrow')
             obj.DispChans=obj.DispChans+1;
             return
-        elseif strcmpi(evt.Key,'k')||strcmpi(evt.Key,'downarrow')
+        elseif strcmpi(evt.Key,'downarrow')
             obj.DispChans=obj.DispChans-1;
             return
-        elseif strcmpi(evt.Key,'l')||strcmpi(evt.Key,'rightarrow')
+        elseif strcmpi(evt.Key,'rightarrow')
             ChangeDuration(obj,obj.BtnAddDuration);
             return
-        elseif strcmpi(evt.Key,'j')||strcmpi(evt.Key,'leftarrow')
+        elseif strcmpi(evt.Key,'leftarrow')
             ChangeDuration(obj,obj.BtnRemDuration);
             return
         end
     end
     if ismember('shift',evt.Modifier)
-        if strcmpi(evt.Key,'j')||strcmpi(evt.Key,'downarrow')
+        if strcmpi(evt.Key,'downarrow')
             for i=1:length(dd)
                 if ~isempty(obj.ChanSelect2Edit{dd(i)})
                     newchan=obj.ChanSelect2Edit{dd(i)}(end)+1;
@@ -71,7 +71,7 @@ if ~isempty(evt.Modifier)
                     end
                 end
             end
-        elseif strcmpi(evt.Key,'k')||strcmpi(evt.Key,'uparrow')
+        elseif strcmpi(evt.Key,'uparrow')
             for i=1:length(dd)
                 if ~isempty(obj.ChanSelect2Edit{dd(i)})
                     newchan=obj.ChanSelect2Edit{dd(i)}(end)-1;
