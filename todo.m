@@ -37,5 +37,8 @@ choose between sample and timestamp of annotation
 
 Import another data set
 
+Import multiple data set with different length and frequency
+
+ctrl+tab/ctrl+shift+tab and ICON to switch between datasets
 
 !!Montage

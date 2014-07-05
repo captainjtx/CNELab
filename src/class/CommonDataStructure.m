@@ -415,40 +415,56 @@ classdef CommonDataStructure < handle
                 want_stim=0;
                 eeg_picks=fiff_pick_types(raw.info,want_meg,want_eeg,want_stim,include,raw.info.bads);
                 
-                all_picks=[meg_picks,eeg_picks];
+                want_meg=0;
+                want_eeg=0;
+                want_stim=1;
+                
+                stim_picks=fiff_pick_types(raw.info,want_meg,want_eeg,want_stim,include,raw.info.bads);
+                
+                all_picks=[meg_picks,eeg_picks,stim_picks];
                 
                 if ~isempty(all_picks)
                     ChannelNames=s.Montage.ChannelNames(all_picks);
                     [data,times]=fiff_read_raw_segment(raw,raw.first_samp,raw.last_samp,all_picks);
-                    units=cell(1,length(all_picks));
+                    units=cell(1,size(data,1));
                     %transform the meg channel units to ft & ft/cm
                     
-                    [units{meg_picks}]=deal('ft');
-                    [units{meg_picks(3:3:end)}]=deal('ft/cm');
-                    [units{eeg_picks}]=deal('uV');
-                    data(meg_picks,:)=data(meg_picks,:)*10^12;
-                    data(eeg_picks,:)=data(eeg_picks,:)*10^6;
+                    [units{1:length(meg_picks)}]=deal('ft');
+                    [units{3:3:length(meg_picks)}]=deal('ft/cm');
+                    [units{length(meg_picks)+1:length(eeg_picks)+length(meg_picks)}]=deal('uV');
+                    data(1:length(meg_picks),:)=data(1:length(meg_picks),:)*10^12;
+                    data(length(meg_picks)+1:length(eeg_picks)+length(meg_picks),:)=...
+                        data(length(meg_picks)+1:length(eeg_picks)+length(meg_picks),:)*10^6;
                     
                     want_mag1=1;
-                    want_mag2=1;
+                    want_mag2=0;
                     want_gra=0;
+                    want_eeg=0;
+                    want_stim=0;
                     
+                    chan_ignore=[];
                     if ~want_mag1
-                        data(meg_picks(1:3:end),:)=[];
-                        units(meg_picks(1:3:end))=[];
-                        ChannelNames(meg_picks(1:3:end))=[];
+                        chan_ignore=[chan_ignore,1:3:length(meg_picks)];
                     end
                     if ~want_mag2
-                        data(meg_picks(2:3:end),:)=[];
-                        units(meg_picks(2:3:end))=[];
-                        ChannelNames(meg_picks(2:3:end))=[];
+                        chan_ignore=[chan_ignore,2:3:length(meg_picks)];
                     end
                     
                     if ~want_gra
-                        data(meg_picks(3:3:end),:)=[];
-                        units(meg_picks(3:3:end))=[];
-                        ChannelNames(meg_picks(3:3:end))=[];
+                        chan_ignore=[chan_ignore,3:3:length(meg_picks)];
                     end
+                    if ~want_eeg
+                        chan_ignore=[chan_ignore,length(meg_picks)+1:length(meg_picks)+length(eeg_picks)];
+                    end
+                    
+                    if ~want_stim
+                        chan_ignore=[chan_ignore,length(meg_picks)+length(eeg_picks)+1:length(meg_picks)+length(eeg_picks)+length(stim_picks)];
+                    end
+                    
+                    data(chan_ignore,:)=[];
+                    units(chan_ignore)=[];
+                    
+                    ChannelNames(chan_ignore)=[];
                     
                     s.Data.Data=data';
                     s.Data.TimeStamps=times;

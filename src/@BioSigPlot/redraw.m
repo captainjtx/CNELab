@@ -25,7 +25,6 @@
 
 function redraw(obj)
 
-
 for i=1:length(obj.LineVideo)
     delete(obj.LineVideo(i));
 end
@@ -181,6 +180,7 @@ end
 
 % obj.EvtContextMenu.update(obj);
 
+
 end
 %**************************************************************************
 function plotData(axe,t,data,colors,gain,posY,ChanSelect2Display,FirstDispChan,...
@@ -233,7 +233,6 @@ end
 if ~isempty(ChanSelect2Edit)
     set(h(ChanSelect2Edit(ChanSelect2Edit~=0)),'Color',ChanSelectColor);
 end
-
 end
 
 %**************************************************************************

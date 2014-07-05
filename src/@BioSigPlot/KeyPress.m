@@ -16,8 +16,8 @@ end
 if ~isempty(evt.Modifier)
     
     if ismember('command',evt.Modifier)||ismember('control',evt.Modifier)
-        %Ctrl/Cmd+A: Select the current dataset
-        if strcmpi(evt.Key,'A')
+        %Ctrl+A: Select the current dataset
+        if strcmpi(evt.Key,'A')&&~ismember('command',evt.Modifier)
             if ~obj.IsChannelSelected
                 for i=1:length(dd)
                     obj.ChanSelect2Edit{dd(i)}=1:obj.MontageChanNumber(dd(i));
