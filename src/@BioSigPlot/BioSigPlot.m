@@ -320,6 +320,7 @@ classdef BioSigPlot < hgsetget
             remakeAxes(obj);
             
             recalculate(obj);
+            ChangeGain(obj,[]);
             redraw(obj);
             obj.IsInitialize=false;
             
@@ -337,7 +338,7 @@ classdef BioSigPlot < hgsetget
             obj.ChanSelect2Edit_=cell(1,obj.DataNumber);
             
             obj.Gain_=cell(1,obj.DataNumber);
-            ChangeGain(obj,[]);
+            
             
             obj.Filtering_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
             
@@ -522,8 +523,8 @@ classdef BioSigPlot < hgsetget
             if NeedRemakeMontage, remakeMontage(obj); end
             if NeedResetView, resetView(obj); end
             if NeedRemakeAxes, remakeAxes(obj); end
-            if NeedRedraw, redraw(obj); end
-            if NeedRedrawEvts, redrawEvts(obj); end
+            if NeedRedraw&&~obj.IsInitialize, redraw(obj); end
+            if NeedRedrawEvts&&~obj.IsInitialize, redrawEvts(obj); end
             if NeedCommand
                 if strcmpi(command(1:12),'a=BioSigPlot')
                     n=1;
@@ -1222,8 +1223,8 @@ classdef BioSigPlot < hgsetget
             obj.timeControlPanel(obj.ControlPanel,[0 0 .17 1]);
             obj.infoControlPanel(obj.ControlPanel,[0.17 0 .23 1]);
             obj.filterControlPanel(obj.ControlPanel,[.4 0 .35 1]);
-            obj.scaleControlPanel(obj.ControlPanel,[0.75 0 .1 1]);
-            obj.durationControlPanel(obj.ControlPanel,[0.85,0,0.1,1]);
+            obj.durationControlPanel(obj.ControlPanel,[0.75 0 .1 1]);
+            obj.scaleControlPanel(obj.ControlPanel,[0.85,0,0.1,1]);
             
         end
         
@@ -1588,7 +1589,8 @@ classdef BioSigPlot < hgsetget
         function ChangeGain(obj,src)
             val=str2double(get(obj.EdtGain,'String'));
             
-            if isempty(get(obj.EdtGain,'String'))
+            if isempty(get(obj.EdtGain,'String'))||...
+                    (ismember(src,[obj.BtnAddGain,obj.BtnRemGain])&&val==0)
                 %Automatic scaling
                 data=obj.PreprocData;
                 if isempty(data)

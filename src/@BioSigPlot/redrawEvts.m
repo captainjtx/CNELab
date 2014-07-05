@@ -1,38 +1,37 @@
 function redrawEvts(obj)
-if ~obj.IsInitialize
-    EventLines=[];
-    EventTexts=[];
-    EventIndex=[];
-    %Clear all the events displayed
-    for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
-        if ishandle(obj.EventLines(i))
-            delete(obj.EventLines(i))
-        end
+EventLines=[];
+EventTexts=[];
+EventIndex=[];
+%Clear all the events displayed
+for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
+    if ishandle(obj.EventLines(i))
+        delete(obj.EventLines(i))
     end
-    
-    for i=1:size(obj.EventTexts,1)*size(obj.EventTexts,2)
-        if ishandle(obj.EventTexts(i))
-            delete(obj.EventTexts(i))
-        end
-    end
-    
-    for i=1:length(obj.Axes)
-        if obj.EventsDisplay
-            [Elines,Etexts,Eindex]=DrawEvts(obj.Axes(i),obj.Evts,obj.Time,obj.WinLength,...
-                obj.SRate,obj.EventColors{i},obj.SelectedEvent,obj.EventSelectColor);
-            if ~isempty(Elines)
-                EventLines(i,:)=Elines;
-                EventTexts(i,:)=Etexts;
-                EventIndex(i,:)=Eindex;
-            end
-        end
-    end
-    
-    obj.EventLines=EventLines;
-    obj.EventTexts=EventTexts;
-    obj.EventDisplayIndex=EventIndex;
-    
 end
+
+for i=1:size(obj.EventTexts,1)*size(obj.EventTexts,2)
+    if ishandle(obj.EventTexts(i))
+        delete(obj.EventTexts(i))
+    end
+end
+
+for i=1:length(obj.Axes)
+    if obj.EventsDisplay
+        [Elines,Etexts,Eindex]=DrawEvts(obj.Axes(i),obj.Evts,obj.Time,obj.WinLength,...
+            obj.SRate,obj.EventColors{i},obj.SelectedEvent,obj.EventSelectColor);
+        if ~isempty(Elines)
+            EventLines(i,:)=Elines;
+            EventTexts(i,:)=Etexts;
+            EventIndex(i,:)=Eindex;
+        end
+    end
+end
+
+obj.EventLines=EventLines;
+obj.EventTexts=EventTexts;
+obj.EventDisplayIndex=EventIndex;
+
+
 end
 
 function [EventLines,EventTexts,EventIndex]=DrawEvts(axe,evts,t,dt,SRate,colors,SelectedEvent,SelectedColor)
