@@ -819,6 +819,10 @@ classdef BioSigPlot < hgsetget
             end
         end
         function obj = set.Evts_(obj,val)
+            if ~isempty(val)
+                val=sortrows(val,1);
+            end
+            
             if size(val,2)==2
                 obj.Evts_(:,1:2)=val;
                 [obj.Evts_{:,3}]=deal(obj.EventDefaultColor);
