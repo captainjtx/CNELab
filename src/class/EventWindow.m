@@ -48,11 +48,12 @@ classdef EventWindow  < handle
         EventTime
         Fig
         uilist
+        Evts_
     end
-        
     properties (Dependent=true)
         Evts
     end
+    
     methods
             function obj=EventWindow(evts)
             obj.Fig=figure('MenuBar','none','position',[500 100 344 500],'NumberTitle','off','Name','Events','CloseRequestFcn',@(src,evts) delete(obj));
@@ -76,17 +77,17 @@ classdef EventWindow  < handle
             obj.EventTime=obj.Evts{get(src,'value'),1};
             notify(obj,'EvtSelected');
         end
-        
         function val=get.Evts(obj)
-            val=get(obj.uilist,'String');
+            val=obj.Evts_;
         end
-        
         function set.Evts(obj,evts)
             s=cell(size(evts,1),1);
             for i=1:size(evts,1)
                 s{i}=sprintf('%8.2f -%s',evts{i,1},evts{i,2}); %#ok<AGROW>
                 s{i}=obj.colorEvent(s{i},evts{i,3});
             end
+            obj.Evts_=evts;
+            
             set(obj.uilist,'String',s);
         end
         
