@@ -11,7 +11,6 @@ if FileName~=0
         
         dataTime=floor((size(obj.Data{1},2)-1)/obj.SRate);
         
-        cprintf('Yellow','\nVideo loading...\n');
         h = waitbar(0,'Video loading...');
         
         obj.VideoTotalTime=videoTotalTime;
@@ -64,7 +63,6 @@ if FileName~=0
         figure;
         obj.VideoHandle=imagesc(video.frames(1).cdata);
         drawnow
-        cprintf('Green','\nVideo loaded!\n')
         
     else
         error('Cannot import the selected video');

@@ -1,6 +1,7 @@
 
 function ExportEvents(obj)
-%==================================================================
+%==========================================================================
+obj.Time=obj.Time;
 for i=1:size(obj.Evts,1)
     Events.stamp(i)=obj.Evts{i,1};
     Events.text{i}=obj.Evts{i,2};

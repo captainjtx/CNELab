@@ -4,7 +4,27 @@ t=floor((obj.MouseTime-obj.Time)*obj.SRate);
 [nchan,ndata,yvalue]=getMouseInfo(obj); %#ok<ASGLU>
 time=obj.MouseTime;
 
+if obj.UponText
+    
+%     if strcmpi(get(obj.Fig,'SelectionType'),'open')
+%     
+%         return
+%     end
+    return
+end
 if isempty(obj.MouseMode)
+    %**********************************************************************
+    set(obj.Fig,'pointer','hand');
+    %Cancel text edit status
+    if obj.EditMode==1
+        obj.EditMode=0;
+        EventList=obj.Evts_;
+        for i=1:size(obj.EventDisplayIndex,2)
+            EventList{obj.EventDisplayIndex(1,i),2}=get(obj.EventTexts(1,i),'String');
+        end
+        obj.Evts=EventList;
+        return
+    end
     %**********************************************************************
     %Event Line selection
     obj.SelectedEvent=[];
@@ -23,14 +43,7 @@ if isempty(obj.MouseMode)
             end
         end
     end
-    if obj.EditMode==1
-        obj.EditMode=0;
-        EventList=obj.Evts;
-        for i=1:size(obj.EventDisplayIndex,2)
-            EventList{obj.EventDisplayIndex(1,i),2}=get(obj.EventTexts(1,i),'String');
-        end
-        obj.Evts=EventList;
-    end
+    
     %**********************************************************************
     %Multi Channel Selection
     Modifier=get(obj.Fig,'CurrentModifier');
@@ -116,9 +129,11 @@ elseif strcmpi(obj.MouseMode,'Select')
     end
 elseif strcmpi(obj.MouseMode,'Annotate')
     
-    EventList=obj.Evts;
-    EventList=cat(1,EventList,{time,'NewText'});
-    obj.Evts=EventList;
+    if isempty(obj.SelectedFastEvt)
+        obj.Evts=cat(1,obj.Evts_,{time,'New Event',obj.EventDefaultColor});
+    else
+        obj.Evts=cat(1,obj.Evts_,{time,obj.FastEvts{obj.SelectedFastEvt,1},obj.FastEvts{obj.SelectedFastEvt,2}});
+    end
     
 end
 

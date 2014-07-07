@@ -20,6 +20,7 @@ obj.MenuPlaySpeed=uimenu(obj.MenuSettings,'Label','Speed for play','Callback',@(
 obj.MenuChan=uimenu(obj.MenuSettings,'Label','Channels per page','Callback',@(src,evt) MnuChan2Display(obj),'Accelerator','n');
 obj.MenuColor=uimenu(obj.MenuSettings,'Label','Color');
 obj.MenuSampleRate=uimenu(obj.MenuSettings,'Label','Sample Rate','Callback',@(src,evt) MnuSampleRate(obj),'Accelerator','r');
+obj.MenuFastEvent=uimenu(obj.MenuSettings,'Label','Fast Event','Callback',@(src,evt) WinFastEvents(obj),'Accelerator','i');
 %Second Order Menu of Color
 obj.MenuColorCanvas=uimenu(obj.MenuColor,'Label','Canvas','Accelerator','b',...
     'Callback',@(src,evt) set(obj,'AxesBackgroundColor',uisetcolor(obj.AxesBackgroundColor,'AxesBackground Color')));

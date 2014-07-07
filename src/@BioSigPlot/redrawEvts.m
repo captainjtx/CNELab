@@ -1,4 +1,8 @@
 function redrawEvts(obj)
+if isempty(obj.Evts_)
+    return
+end
+
 EventLines=[];
 EventTexts=[];
 EventIndex=[];
@@ -17,8 +21,8 @@ end
 
 for i=1:length(obj.Axes)
     if obj.EventsDisplay
-        [Elines,Etexts,Eindex]=DrawEvts(obj.Axes(i),obj.Evts,obj.Time,obj.WinLength,...
-            obj.SRate,obj.EventColors{i},obj.SelectedEvent,obj.EventSelectColor);
+        [Elines,Etexts,Eindex]=DrawEvts(obj,obj.Axes(i),obj.Evts_(:,1:2),obj.Time,obj.WinLength,...
+            obj.SRate,obj.Evts_(:,3),obj.SelectedEvent,obj.EventSelectColor);
         if ~isempty(Elines)
             EventLines(i,:)=Elines;
             EventTexts(i,:)=Etexts;
@@ -34,7 +38,7 @@ obj.EventDisplayIndex=EventIndex;
 
 end
 
-function [EventLines,EventTexts,EventIndex]=DrawEvts(axe,evts,t,dt,SRate,colors,SelectedEvent,SelectedColor)
+function [EventLines,EventTexts,EventIndex]=DrawEvts(obj,axe,evts,t,dt,SRate,colors,SelectedEvent,SelectedColor)
 EventLines=[];
 EventTexts=[];
 EventIndex=[];
@@ -45,9 +49,10 @@ for i=1:size(evts,1)
     if evts{i,1}>=t && evts{i,1}<=t+dt
         count=count+1;
         x=SRate*(evts{i,1}-t);
-        EventLines(count)=line([x x],[0 1000],'parent',axe,'Color',colors(i,:));
-        EventTexts(count)=text('Parent',axe,'position',[x yl(2)],'BackgroundColor',colors(i,:),'EdgeColor',colors(i,:),...
-            'VerticalAlignment','Top','Margin',1,'FontSize',12,'String',evts{i,2},'Editing','off');
+        EventLines(count)=line([x x],[0 1000],'parent',axe,'Color',colors{i});
+        EventTexts(count)=text('Parent',axe,'position',[x yl(2)],'BackgroundColor',colors{i},'EdgeColor',colors{i},...
+            'VerticalAlignment','Top','Margin',1,'FontSize',12,'String',evts{i,2},'Editing','off',...
+            'ButtonDownFcn',@(src,evt)openText(obj,src));
         EventIndex(count)=i;
     end
     
@@ -59,4 +64,9 @@ for i=1:size(evts,1)
     end
 end
 
+end
+
+function openText(obj,src)
+set(src,'Editing','on');
+obj.EditMode=1;
 end

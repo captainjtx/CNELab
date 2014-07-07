@@ -1,7 +1,6 @@
 function run()
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
-cprintf('Magenta','Welcome to SuperViewer(CNEL Beta 0.1)!\n');
 
 cds=[];
 while(1)
@@ -12,9 +11,9 @@ while(1)
         cds=[cds,tmp];
     end
     
-    cprintf('Comments','Do you want to select more dataset?[Y/N]\n')
-    s=input('','s');
-    if strcmpi(s,'n')
+    choice=questdlg('Do you want to select more dataset?','run','Yes','No','No');
+    
+    if strcmpi(choice,'No')
         break;
     end
 end
@@ -28,7 +27,7 @@ for i=2:length(cds)
     
     if cds{i}.Data.SampleRate~=cds{i-1}.Data.SampleRate
         fs=1;
-        cprintf('Error',['Sampling frequency in data set ' num2str(i-1) ' and ' num2str(i) ' is not the same!']);
+        msgbox(['Sampling frequency in data set ' num2str(i-1) ' and ' num2str(i) ' is not the same!'],'run','error');
     else
         fs=cds{i}.Data.SampleRate;
     end
@@ -106,7 +105,7 @@ for i=1:length(cds)
         end
     elseif ischar(cds{i}.Data.Units)
         Units{i}=cell(1,size(cds{i}.Data.Data,2));
-        [Units{i}{:}]=deal(cds{i}.Data.Units);     
+        [Units{i}{:}]=deal(cds{i}.Data.Units);
     end
 end
 

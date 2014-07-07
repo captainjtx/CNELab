@@ -152,7 +152,7 @@ classdef CommonDataStructure < handle
                 
                 %check if it is raw data file
                 if length(field)>1
-                        cprintf('Magenta','The file contain more than one field, try to import the first one...\n');
+                        msgbox('The file contain more than one field, try to import the first one...','CommonDataStructure','warn');
                 end
                 if ismatrix(s.(field{1}))
                     FilterIndex=0;
@@ -216,7 +216,7 @@ classdef CommonDataStructure < handle
                                 if length(medf.data.dataMat{i-1})~=...
                                         length(medf.data.dataMat{i})
                                     
-                                    cprintf('Magenta','The length of data in medf file is not consistent !\n');
+                                    msgbox('The length of data in medf file is not consistent !','CommonDataStructure','warn');
                                     continue
                                 else
                                     rethrow(exception);
@@ -481,16 +481,15 @@ classdef CommonDataStructure < handle
             st=load(filename,'-mat');
             field=fieldnames(st);
             if length(field)>1
-                cprintf('Magenta','The file contain more than one field, try to import the first one...\n');
+                msgbox('The file contain more than one field, try to import the first one...','CommonDataStructure','warn');
             end
             
             data=st.(field{1});
             
             if size(data,2)>size(data,1)
                 
-                cprintf('Magenta','The data seems to be row-wise, do you want to transpose it?(Y/N)\n');
-                s=input('','s');
-                if strcmpi(s,'y')
+                choice=questdlg('The data seems to be row-wise, do you want to transpose it?','CommonDataStructure','Yes','No','Yes');
+                if strcmpi(choice,'y')
                     data=data';
                 end
             end
@@ -507,12 +506,12 @@ classdef CommonDataStructure < handle
             
             for i=1:length(signalHeader)
                 if length(signalCell{i})~=length(signalCell{pChan})
-                    cprintf('Errors',['Channel ' num2str(i) ' has different length with channel ' num2str(pChan)...
-                        '\nChannel ' num2str(i) 'skipped\n']);
+                    msgbox(['Channel ' num2str(i) ' has different length with channel ' num2str(pChan)...
+                        '\nChannel ' num2str(i) 'skipped'],'CommonDataStructure','warn');
                     continue;
                 elseif signalHeader(i).samples_in_record~=signalHeader(pChan).samples_in_record
-                    cprintf('Errors',['Channel ' num2str(i) ' has different samplin rate with channel ' num2str(pChan)...
-                        '\nChannel ' num2str(i) 'skipped\n']);
+                    msgbox(['Channel ' num2str(i) ' has different sampling rate with channel ' num2str(pChan)...
+                        '\nChannel ' num2str(i) 'skipped','CommonDataStructure','warn']);
                     continue;
                 else
                     pChan=i;

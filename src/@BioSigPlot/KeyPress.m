@@ -2,10 +2,12 @@
 function KeyPress(obj,src,evt)
 
 dd=obj.DisplayedData;
+time=obj.MouseTime;
 %**************************************************************************
 %Exit the special mouse mode except for "Pan" (which needs another click on the icon)
 %Exit the special channel selection mode
 if strcmpi(evt.Key,'escape')
+    
     obj.MouseMode=[];
     obj.ChanSelect2Edit=[];
     obj.SelectedEvent=[];
@@ -86,8 +88,8 @@ if ~isempty(evt.Modifier)
                 end
             end
             
-        %if no event line is selected, shift + left and right move the time of canvas
-        %else move the time of selected event by 10 sample point
+            %if no event line is selected, shift + left and right move the time of canvas
+            %else move the time of selected event by 10 sample point
         elseif strcmpi(evt.Key,'leftarrow')
             if isempty(obj.SelectedEvent)
                 ChangeTime(obj,obj.BtnPrevPage);
@@ -101,7 +103,7 @@ if ~isempty(evt.Modifier)
                 obj.Evts{obj.SelectedEvent,1}=obj.Evts{obj.SelectedEvent,1}+10/obj.SRate;
             end
         end
-   
+        
     end
 else
     %'i': Insert the annotation and open the text at the mouse position
@@ -110,7 +112,7 @@ else
     
     if strcmpi(evt.Key,'i')
         obj.MouseMode='annotate';
-        MouseDown(obj);
+        obj.Evts=cat(1,obj.Evts_,{time,'New Event',obj.EventDefaultColor});
         MouseUp(obj);
         obj.MouseMode=[];
         MouseDown(obj);
@@ -139,10 +141,10 @@ else
                 obj.ChanSelect2Edit{dd(i)}=obj.ChanSelect2Edit{dd(i)}(end)-1;
             end
         end
-    %if no event line is selected, left and right move the time of canvas
-    %else move the time of selected event by 1 sample point
+        %if no event line is selected, left and right move the time of canvas
+        %else move the time of selected event by 1 sample point
     elseif strcmpi(evt.Key,'leftarrow')
-
+        
         if isempty(obj.SelectedEvent)
             ChangeTime(obj,obj.BtnPrevSec)
         else

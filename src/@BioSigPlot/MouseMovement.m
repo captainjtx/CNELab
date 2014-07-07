@@ -10,8 +10,39 @@ else
     if ~strcmpi(obj.MouseMode,'Pan')
         set(obj.Fig,'pointer','crosshair')
     end
-    
-    if strcmpi(obj.MouseMode,'Measurer')
+    if isempty(obj.MouseMode)
+        if ~isempty(obj.EventLines)
+            for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
+                if ishandle(obj.EventLines(i))&&obj.EventLines(i)
+                    XData=get(obj.EventLines(i),'XData');
+                    eventIndex=XData(1);
+                    if abs(mouseIndex-eventIndex)<50
+                        set(obj.Fig,'pointer','hand');
+                    end
+                end
+            end
+        end
+        
+        
+        obj.UponText=0;
+        if ~isempty(obj.EventTexts)
+            for i=1:length(obj.Axes)
+                for j=1:size(obj.EventTexts,2)
+                if ishandle(obj.EventTexts(i,j))&&obj.EventTexts(i,j)
+                    extent=get(obj.EventTexts(i,j),'Extent');
+                    if mouseIndex>extent(1)&&mouseIndex<extent(1)+extent(3)&&yvalue>extent(2)&&yvalue<extent(2)+extent(4)
+                        obj.UponText=1;
+                        set(obj.Fig,'pointer','arrow');
+                        break
+                    end
+                end
+                end
+
+            end
+        end
+        
+        
+    elseif strcmpi(obj.MouseMode,'Measurer')
         obj.MouseMovementMeasurer();
     elseif strcmpi(obj.MouseMode,'Select')
         if ~isempty(obj.SelectionStart)
@@ -36,19 +67,7 @@ else
         end
     end
     
-    if ~isempty(obj.EventLines)
-        for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
-            if ishandle(obj.EventLines(i))&&obj.EventLines(i)
-                XData=get(obj.EventLines(i),'XData');
-                eventIndex=XData(1);
-                if abs(mouseIndex-eventIndex)<50
-                    set(obj.Fig,'pointer','hand');
-                end
-            end
-        end
-    end
-    
-    
+
     if obj.DragMode
         obj.DragMode=2;
         for i=1:length(obj.Axes)
@@ -86,13 +105,13 @@ else
     if ~isempty(obj.Units)&&~isempty(obj.Units{ndata})
         st=[st,' ',obj.Units{ndata}{nchan}];
     end
-
+    
     set(obj.TxtTime,'String',st);
     
     g=obj.Gain{ndata}(nchan);
     set(obj.TxtY,'String',['Data: ' num2str(ndata) ...
-                           ' ; Chan: '  c{nchan} ...
-                           ' ; Gain: ' num2str(g)]);
+        ' ; Chan: '  c{nchan} ...
+        ' ; Gain: ' num2str(g)]);
     
     if obj.Filtering{ndata}(nchan)
         fl=num2str(obj.FilterLow{ndata}(nchan));

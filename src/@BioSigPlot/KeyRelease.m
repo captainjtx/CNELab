@@ -6,7 +6,7 @@ if ~isempty(evt.Modifier)
         
         %delete the drag selected event
         if ~isempty(obj.SelectedEvent)
-            EventList=obj.Evts;
+            EventList=obj.Evts_;
             EventList(obj.SelectedEvent,:)=[];
             
             obj.SelectedEvent=[];

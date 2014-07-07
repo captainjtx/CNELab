@@ -20,9 +20,11 @@ if FileName~=0
     Events=load(fullfile(FilePath,FileName),'-mat');
     
     if isfield(Events,'stamp')&&isfield(Events,'text')
+        NewEventList=cell(length(Events.stamp),3);
         for i=1:length(Events.stamp)
             NewEventList{i,1}=Events.stamp(i);
             NewEventList{i,2}=Events.text{i};
+            NewEventList{i,3}=obj.EventDefaultColor;
         end
     end
     if iscell(NewEventList)
@@ -32,7 +34,7 @@ if FileName~=0
                     obj.Evts=NewEventList;
                     obj.IsEvtsSaved=true;
                 case 'overlap'
-                    obj.Evts=cat(1,obj.Evts,NewEventList);
+                    obj.Evts=cat(1,obj.Evts_,NewEventList);
                     obj.IsEvtsSaved=false;
                 case 'cancel'
             end
