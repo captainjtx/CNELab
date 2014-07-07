@@ -1,10 +1,10 @@
-
 function ExportEvents(obj)
 %==========================================================================
 obj.Time=obj.Time;
 for i=1:size(obj.Evts,1)
-    Events.stamp(i)=obj.Evts{i,1};
-    Events.text{i}=obj.Evts{i,2};
+    Events.stamp(i)=obj.Evts_{i,1};
+    Events.text{i}=obj.Evts_{i,2};
+    Events.color(i,:)=obj.Evts_{i,3};
 end
 if ~isempty(Events)
     [FileName,FilePath]=uiputfile({'*.mat;*.evt','Event Files (*.mat;*.evt)';...

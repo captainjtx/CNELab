@@ -31,7 +31,7 @@ else
                 for j=1:size(obj.EventTexts,2)
                     if ishandle(obj.EventTexts(i,j))&&obj.EventTexts(i,j)
                         extent=get(obj.EventTexts(i,j),'Extent');
-                        if mouseIndex>extent(1)&&mouseIndex<extent(1)+extent(3)&&yvalue>extent(2)&&yvalue<extent(2)+extent(4)
+                        if mouseIndex>extent(1)&&mouseIndex<extent(1)+extent(3)&&yvalue(i)>extent(2)&&yvalue(i)<extent(2)+extent(4)
                             obj.UponText=1;
                             set(obj.Fig,'pointer','hand');
                             break
