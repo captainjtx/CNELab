@@ -46,17 +46,18 @@
 classdef EventWindow  < handle
     properties
         EventTime
-        Evts
         Fig
+        uilist
     end
         
+    properties (Dependent=true)
+        Evts
+    end
     methods
             function obj=EventWindow(evts)
             obj.Fig=figure('MenuBar','none','position',[500 100 344 500],'NumberTitle','off','Name','Events','CloseRequestFcn',@(src,evts) delete(obj));
-            for i=1:size(evts,1)
-                s{i}=sprintf('%8.2f -%s',evts{i,1},evts{i,2}); %#ok<AGROW>
-            end
-            uicontrol(obj.Fig,'Style','listbox','units','normalized','position',[0 0 1 1],'FontName','FixedWidth','String',s,'Callback',@(src,evt) click(obj,src));
+
+            obj.uilist=uicontrol(obj.Fig,'Style','listbox','units','normalized','position',[0 0 1 1],'FontName','FixedWidth','Callback',@(src,evt) click(obj,src));
             obj.Evts=evts;
         end
         
@@ -76,6 +77,27 @@ classdef EventWindow  < handle
             notify(obj,'EvtSelected');
         end
         
+        function val=get.Evts(obj)
+            val=get(obj.uilist,'String');
+        end
+        
+        function set.Evts(obj,evts)
+            s=cell(size(evts,1),1);
+            for i=1:size(evts,1)
+                s{i}=sprintf('%8.2f -%s',evts{i,1},evts{i,2}); %#ok<AGROW>
+                s{i}=obj.colorEvent(s{i},evts{i,3});
+            end
+            set(obj.uilist,'String',s);
+        end
+        
+    end
+    methods (Static=true)
+        
+        function cs=colorEvent(text,color)
+            color=round(255*color);
+            colorstr=sprintf('rgb(%d,%d,%d)',color(1),color(2),color(3));
+            cs=sprintf('<HTML><FONT bgcolor="%s">%s</FONT></HTML>',colorstr,text);
+        end
     end
     events
         EvtSelected

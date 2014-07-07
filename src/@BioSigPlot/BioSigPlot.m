@@ -836,6 +836,11 @@ classdef BioSigPlot < hgsetget
                 set(obj.MenuEventsDisplay,'Enable','off');
             end
             
+            if isa(obj.WinEvts,'EventWindow') && isvalid(obj.WinEvts)
+                
+                obj.WinEvts.Evts=obj.Evts_;
+            end
+            
         end
         
         %==================================================================
@@ -1578,7 +1583,7 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         function WinEvents(obj,src)
             if strcmpi(get(src,'State'),'on')
-                obj.WinEvts=EventWindow(obj.Evts);
+                obj.WinEvts=EventWindow(obj.Evts_);
                 addlistener(obj.WinEvts,'EvtSelected',@(src,evtdat) set(obj,'Time',round(src.EventTime-obj.WinLength/2)));
                 addlistener(obj.WinEvts,'EvtClosed',@(src,evtdat) set(obj.TogEvts,'State','off'));
             else
