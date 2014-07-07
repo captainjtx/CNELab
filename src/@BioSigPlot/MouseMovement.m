@@ -10,8 +10,9 @@ else
     if ~strcmpi(obj.MouseMode,'Pan')
         set(obj.Fig,'pointer','crosshair')
     end
+    
     if isempty(obj.MouseMode)
-        if ~isempty(obj.EventLines)
+        if ~isempty(obj.EventLines)&&~obj.DragMode
             for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
                 if ishandle(obj.EventLines(i))&&obj.EventLines(i)
                     XData=get(obj.EventLines(i),'XData');
@@ -25,23 +26,28 @@ else
         
         
         obj.UponText=0;
-        if ~isempty(obj.EventTexts)
+        if ~isempty(obj.EventTexts)&&~obj.DragMode
             for i=1:length(obj.Axes)
                 for j=1:size(obj.EventTexts,2)
-                if ishandle(obj.EventTexts(i,j))&&obj.EventTexts(i,j)
-                    extent=get(obj.EventTexts(i,j),'Extent');
-                    if mouseIndex>extent(1)&&mouseIndex<extent(1)+extent(3)&&yvalue>extent(2)&&yvalue<extent(2)+extent(4)
-                        obj.UponText=1;
-                        set(obj.Fig,'pointer','arrow');
-                        break
+                    if ishandle(obj.EventTexts(i,j))&&obj.EventTexts(i,j)
+                        extent=get(obj.EventTexts(i,j),'Extent');
+                        if mouseIndex>extent(1)&&mouseIndex<extent(1)+extent(3)&&yvalue>extent(2)&&yvalue<extent(2)+extent(4)
+                            obj.UponText=1;
+                            set(obj.Fig,'pointer','hand');
+                            break
+                        end
                     end
                 end
-                end
-
+                
             end
         end
         
-        
+        if obj.DragMode
+            obj.DragMode=2;
+            for i=1:length(obj.Axes)
+                set(obj.LineMeasurer(i),'XData',[mouseIndex mouseIndex],'Color',[0 0.7 0],'LineStyle','-.');
+            end
+        end
     elseif strcmpi(obj.MouseMode,'Measurer')
         obj.MouseMovementMeasurer();
     elseif strcmpi(obj.MouseMode,'Select')
@@ -67,13 +73,6 @@ else
         end
     end
     
-
-    if obj.DragMode
-        obj.DragMode=2;
-        for i=1:length(obj.Axes)
-            set(obj.LineMeasurer(i),'XData',[mouseIndex mouseIndex],'Color',[0 0.7 0],'LineStyle','-.');
-        end
-    end
     
     
     if strcmp(obj.TimeUnit,'min')

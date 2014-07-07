@@ -22,7 +22,7 @@ end
 for i=1:length(obj.Axes)
     if obj.EventsDisplay
         [Elines,Etexts,Eindex]=DrawEvts(obj,obj.Axes(i),obj.Evts_(:,1:2),obj.Time,obj.WinLength,...
-            obj.SRate,obj.Evts_(:,3),obj.SelectedEvent,obj.EventSelectColor);
+            obj.SRate,obj.Evts_(:,3),obj.SelectedEvent,obj.EventSelectColor,i);
         if ~isempty(Elines)
             EventLines(i,:)=Elines;
             EventTexts(i,:)=Etexts;
@@ -38,7 +38,7 @@ obj.EventDisplayIndex=EventIndex;
 
 end
 
-function [EventLines,EventTexts,EventIndex]=DrawEvts(obj,axe,evts,t,dt,SRate,colors,SelectedEvent,SelectedColor)
+function [EventLines,EventTexts,EventIndex]=DrawEvts(obj,axe,evts,t,dt,SRate,colors,SelectedEvent,SelectedColor,axenum)
 EventLines=[];
 EventTexts=[];
 EventIndex=[];
@@ -52,7 +52,7 @@ for i=1:size(evts,1)
         EventLines(count)=line([x x],[0 1000],'parent',axe,'Color',colors{i});
         EventTexts(count)=text('Parent',axe,'position',[x yl(2)],'BackgroundColor',colors{i},'EdgeColor',colors{i},...
             'VerticalAlignment','Top','Margin',1,'FontSize',12,'String',evts{i,2},'Editing','off',...
-            'ButtonDownFcn',@(src,evt)openText(obj,src));
+            'ButtonDownFcn',@(src,evt)openText(obj,src,axenum,count));
         EventIndex(count)=i;
     end
     
@@ -66,7 +66,15 @@ end
 
 end
 
-function openText(obj,src)
-set(src,'Editing','on');
-obj.EditMode=1;
+function openText(obj,src,axenum,count)
+if strcmpi(get(obj.Fig,'SelectionType'),'open')
+    set(src,'Editing','on');
+    obj.EditMode=1;
+elseif strcmpi(get(obj.Fig,'SelectionType'),'normal')
+    obj.SelectedLines=[obj.SelectedLines length(obj.Axes)*(count-1)+axenum];
+    
+    obj.SelectedEvent=obj.EventDisplayIndex(length(obj.Axes)*(count-1)+axenum);
+    obj.DragMode=1;
+end
+
 end
