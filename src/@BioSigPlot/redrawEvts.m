@@ -51,7 +51,7 @@ for i=1:size(evts,1)
         x=SRate*(evts{i,1}-t);
         EventLines(count)=line([x x],[0 1000],'parent',axe,'Color',colors{i});
         EventTexts(count)=text('Parent',axe,'position',[x yl(2)],'BackgroundColor',colors{i},'EdgeColor',colors{i},...
-            'VerticalAlignment','Top','Margin',1,'FontSize',12,'String',evts{i,2},'Editing','off',...
+            'VerticalAlignment','Top','Margin',1,'FontSize',12,'String',evts{i,2},'Editing','off','SelectionHighlight','on',...
             'ButtonDownFcn',@(src,evt)openText(obj,src,axenum,count));
         EventIndex(count)=i;
     end
@@ -67,14 +67,19 @@ end
 end
 
 function openText(obj,src,axenum,count)
+% set(src,'Selected','on');
+
 if strcmpi(get(obj.Fig,'SelectionType'),'open')
     set(src,'Editing','on');
     obj.EditMode=1;
 elseif strcmpi(get(obj.Fig,'SelectionType'),'normal')
+    
     obj.SelectedLines=[obj.SelectedLines length(obj.Axes)*(count-1)+axenum];
     
     obj.SelectedEvent=obj.EventDisplayIndex(length(obj.Axes)*(count-1)+axenum);
     obj.DragMode=1;
 end
+
+uistack(obj.EventTexts(length(obj.Axes)*(count-1)+axenum),'top');
 
 end

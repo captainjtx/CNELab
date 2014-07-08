@@ -26,6 +26,11 @@ classdef EventWindow  < handle
             val=obj.Evts_;
         end
         function set.Evts(obj,evts)
+            
+            if ~isempty(evts)
+                evts=sortrows(evts,1);
+            end
+            
             s=cell(size(evts,1),1);
             for i=1:size(evts,1)
                 s{i}=sprintf('%8.2f -%s',evts{i,1},evts{i,2}); %#ok<AGROW>

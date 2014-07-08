@@ -55,10 +55,16 @@ if ~isempty(evt.Modifier)
             else
                 
                 m=min(9,size(obj.FastEvts,1));
-                for i=1:m
-                    if strcmpi(evt.Key,num2str(i))
-                        obj.SelectedFastEvt=i;
-                        notify(obj,'SelectedFastEvtChange');
+                if strcmpi(evt.Key,num2str(0))
+                    obj.SelectedFastEvt=[];
+                    notify(obj,'SelectedFastEvtChange');
+                else
+                    for i=1:m
+                        if strcmpi(evt.Key,num2str(i))
+                            obj.SelectedFastEvt=i;
+                            notify(obj,'SelectedFastEvtChange');
+                            return
+                        end
                     end
                 end
             end

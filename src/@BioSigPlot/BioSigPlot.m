@@ -824,13 +824,10 @@ classdef BioSigPlot < hgsetget
             if isempty(obj.Evts_)
                 val={};
             else
-                val=obj.Evts_(:,1:2);
+                val=sortrows(obj.Evts_(:,1:2),1);
             end
         end
         function obj = set.Evts_(obj,val)
-            if ~isempty(val)
-                val=sortrows(val,1);
-            end
             
             if size(val,2)==2
                 obj.Evts_(:,1:2)=val;

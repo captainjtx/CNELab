@@ -82,8 +82,11 @@ classdef FastEventWindow  < handle
         end
         
         function synchSelect(obj)
+            
             [obj.Data{:,1}]=deal(false);
-            obj.Data{obj.bsp.SelectedFastEvt,1}=true;
+            if ~isempty(obj.bsp.SelectedFastEvt)
+                obj.Data{obj.bsp.SelectedFastEvt,1}=true;
+            end
         end
         
         function cellClick(obj,src,evt)

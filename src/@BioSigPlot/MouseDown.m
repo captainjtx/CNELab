@@ -38,6 +38,7 @@ if isempty(obj.MouseMode)
                     obj.SelectedLines=[obj.SelectedLines i];
                     obj.SelectedEvent=obj.EventDisplayIndex(i);
                     obj.DragMode=1;
+                    uistack(obj.EventTexts(i),'top');
                     return
                 end
             end
