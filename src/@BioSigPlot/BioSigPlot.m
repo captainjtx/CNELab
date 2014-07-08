@@ -46,7 +46,6 @@ classdef BioSigPlot < hgsetget
         TogMeasurer
         TogSelection
         TogPan
-        TogEvts
         TogVideo
         TogAnnotate
         MenuFile
@@ -69,6 +68,9 @@ classdef BioSigPlot < hgsetget
         MenuChan
         MenuFastEvent
         
+        MenuWindow
+        MenuEventsWindow
+        
         MenuDisplay
         MenuInsideTicks
         MenuXGrid
@@ -78,6 +80,7 @@ classdef BioSigPlot < hgsetget
         MenuColorCanvas
         MenuColorLines
         MenuSampleRate
+        
         
         MenuSave
         PanObj
@@ -128,6 +131,7 @@ classdef BioSigPlot < hgsetget
         YGrid                   %true : show Grid line on each channel
         YGridInterval           %Number of subdivision for the grid
         EventsDisplay           %true : show Events
+        EventsWindowDisplay     %true : show Events Window
         
         MouseMode               %the Mouse Mode :{'Pan'|'Measurer'}
         PlaySpeed               %Play speed
@@ -185,6 +189,7 @@ classdef BioSigPlot < hgsetget
         XGrid_
         YGrid_
         EventsDisplay_
+        EventsWindowDisplay_
         
         MouseMode_
         PlaySpeed_
@@ -368,6 +373,7 @@ classdef BioSigPlot < hgsetget
             obj.SelectedEvent_=[];
             obj.Evts_={};
             obj.IsEvtsSaved=true;
+            obj.EventsWindowDisplay=true;
             
             obj.VideoHandle=[];
             
@@ -473,7 +479,7 @@ classdef BioSigPlot < hgsetget
                 'NormalModeColor','AlternatedModeColors','SuperimposedModeColors','ChanNames','Units','XGrid','YGrid',...
                 'Position','Title','MouseMode','PlaySpeed','MainTimerPeriod','VideoTimerPeriod','AxesHeight','YBorder','YGridInterval','Selection',...
                 'TaskFiles','VideoStartTime','VideoFile','VideoTimeFrame','VideoLineTime','MainTimer','VideoTimer','BadChannels','ChanSelect2Display',...
-                'ChanSelect2Edit','EventsDisplay','ChanSelectColor','AxesBackgroundColor','ChanColors','EventSelectColor','EventDefaultColor',...
+                'ChanSelect2Edit','EventsDisplay','EventsWindowDisplay','ChanSelectColor','AxesBackgroundColor','ChanColors','EventSelectColor','EventDefaultColor',...
                 'SelectedEvent','FastEvts','SelectedFastEvt'};
             
             if isempty(obj.Commands)
@@ -515,7 +521,7 @@ classdef BioSigPlot < hgsetget
                     NeedRedraw=true;
                     NeedRedrawEvts=true;
                     
-                elseif any(strcmpi(g{i},{'PlaySpeed','FastEvts','SelectedFastEvt','EventDefaultColor'}))
+                elseif any(strcmpi(g{i},{'PlaySpeed','FastEvts','SelectedFastEvt','EventDefaultColor','EventsWindowDisplay'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                 elseif any(strcmpi(g{i},{'EventsDisplay','Evts',...
@@ -664,6 +670,9 @@ classdef BioSigPlot < hgsetget
         
         function obj = set.EventsDisplay(obj,val), set(obj,'EventsDisplay',val); end
         function val = get.EventsDisplay(obj), val=obj.EventsDisplay_; end
+        function obj = set.EventsWindowDisplay(obj,val), set(obj,'EventsWindowDisplay',val); end
+        function val = get.EventsWindowDisplay(obj), val=obj.EventsWindowDisplay_; end
+        
         
         function obj = set.ChanColors(obj,val), set(obj,'ChanColors',val); end
         function val = get.ChanColors(obj), val=obj.ChanColors_; end
@@ -832,12 +841,16 @@ classdef BioSigPlot < hgsetget
             if ~isempty(obj.Evts_)
                 obj.IsEvtsSaved=false;
                 
-                set(obj.TogEvts,'Enable','on');
+                set(obj.MenuEventsWindow,'Enable','on');
                 set(obj.MenuEventsDisplay,'Enable','on');
+                obj.EventsWindowDisplay=true;
+                obj.EventsDisplay=true;
             else
                 obj.IsEvtsSaved=true;
-                set(obj.TogEvts,'Enable','off');
+                set(obj.MenuEventsWindow,'Enable','off');
                 set(obj.MenuEventsDisplay,'Enable','off');
+                obj.EventsWindowDisplay=false;
+                obj.EventsDisplay=false;
             end
             
             if isa(obj.WinEvts,'EventWindow') && isvalid(obj.WinEvts)
@@ -986,6 +999,33 @@ classdef BioSigPlot < hgsetget
                 set(obj.MenuEventsDisplay,'Checked','on');
             else
                 set(obj.MenuEventsDisplay,'Checked','off');
+            end
+        end
+        
+        
+        function obj = set.EventsWindowDisplay_(obj,val)
+            if ischar(val)
+                obj.EventsWindowDisplay_=strcmpi(val,'on');
+            else
+                obj.EventsWindowDisplay_=val;
+            end
+            
+            if obj.EventsWindowDisplay_
+                set(obj.MenuEventsWindow,'Checked','on');
+            else
+                set(obj.MenuEventsWindow,'Checked','off');
+            end
+            
+            pos=get(obj.Fig,'position');
+            ctrlsize=obj.ControlBarSize;
+            if  ~isempty(obj.Evts_)&&obj.EventsWindowDisplay
+                set(obj.EventPanel,'Visible','on');
+                set(obj.MainPanel,'position',[180 ctrlsize(2) pos(3)-180 pos(4)-ctrlsize(2)]);
+                
+            else
+                set(obj.EventPanel,'Visible','off');
+                set(obj.MainPanel,'position',[0 ctrlsize(2) pos(3) pos(4)-ctrlsize(2)]);
+                
             end
         end
         %==================================================================
@@ -1585,20 +1625,6 @@ classdef BioSigPlot < hgsetget
         end
         %==================================================================
         %******************************************************************
-        function WinEvents(obj,src)
-            if strcmpi(get(src,'State'),'on')
-                set(obj.EventPanel,'visible','on');
-                obj.WinEvts=EventWindow(obj,obj.Evts_);
-                addlistener(obj.WinEvts,'EvtSelected',@(src,evtdat) set(obj,'Time',round(src.EventTime-obj.WinLength/2)));
-            else
-                delete(obj.WinEvts);
-                set(obj.EventPanel,'visible','off');
-            end
-            resize(obj);
-%             remakeAxes(obj);
-%             redraw(obj);
-%             redrawEvts(obj);
-        end
         
         function WinFastEvents(obj)
             obj.WinFastEvts=FastEventWindow(obj,obj.FastEvts,obj.SelectedFastEvt);
@@ -1619,10 +1645,16 @@ classdef BioSigPlot < hgsetget
                 set(obj.Fig,'position',pos);
             end
             ctrlsize=obj.ControlBarSize;
-            if isa(obj.WinEvts,'EventWindow')&&isvalid(obj.WinEvts)
-                set(obj.EventPanel,'position',[0 ctrlsize(2) 180 pos(4)-ctrlsize(2)])
+            
+            set(obj.Fig,'position',pos);
+            
+            set(obj.EventPanel,'position',[0 ctrlsize(2) 180 pos(4)-ctrlsize(2)]);
+            
+            if  ~isempty(obj.Evts_)&&obj.EventsWindowDisplay
+                set(obj.EventPanel,'Visible','on');
                 set(obj.MainPanel,'position',[180 ctrlsize(2) pos(3)-180 pos(4)-ctrlsize(2)]);
             else
+                set(obj.EventPanel,'Visible','off');
                 set(obj.MainPanel,'position',[0 ctrlsize(2) pos(3) pos(4)-ctrlsize(2)]);
             end
             set(obj.ControlPanel,'position',[0 0 pos(3) ctrlsize(2)]);

@@ -19,8 +19,8 @@ pos=get(obj.Fig,'position');
 set(obj.Fig,'position',[0,0 pos(3) pos(4)]);
 ctrlsize=obj.ControlBarSize;
 
-obj.EventPanel=uipanel(obj.Fig,'units','pixels','position',[0 ctrlsize(2) 200 pos(4)-ctrlsize(2)],'BorderType','none');
-obj.MainPanel=uipanel(obj.Fig,'units','pixels','position',[180 ctrlsize(2) ctrlsize(1) pos(4)-ctrlsize(2)],'BorderType','none');
+obj.EventPanel=uipanel(obj.Fig,'units','pixels','position',[0 ctrlsize(2) 180 pos(4)-ctrlsize(2)],'BorderType','none');
+obj.MainPanel=uipanel(obj.Fig,'units','pixels','position',[180 ctrlsize(2) ctrlsize(1)-180 pos(4)-ctrlsize(2)],'BorderType','none');
 obj.ControlPanel=uipanel(obj.Fig,'units','pixels','position',[0 0 ctrlsize(1) ctrlsize(2)],'BorderType','none');
 obj.Toolbar=uitoolbar(obj.Fig);
 
@@ -28,5 +28,8 @@ obj.Toolbar=uitoolbar(obj.Fig);
 obj.makeControls();
 obj.makeToolbar();
 obj.makeMenu();
+
+obj.WinEvts=EventWindow(obj,obj.Evts_);
+addlistener(obj.WinEvts,'EvtSelected',@(src,evtdat) set(obj,'Time',round(src.EventTime-obj.WinLength/2)));
 
 end

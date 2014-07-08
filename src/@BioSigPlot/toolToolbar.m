@@ -9,10 +9,6 @@ obj.TogMeasurer=uitoggletool(obj.Toolbar,'CData',imread('measurer.bmp'),'Tooltip
 obj.TogSelection=uitoggletool(obj.Toolbar,'CData',imread('select.bmp'),'TooltipString','Selection',...
     'ClickedCallback',@(src,evt) ChangeMouseMode(obj,src));
 
-obj.TogEvts=uitoggletool(obj.Toolbar,'CData',imread('evts.bmp'),'TooltipString','Event Window','separator','on','Enable','off',...
-    'ClickedCallback',@(src,evt) WinEvents(obj,src));
-
-
 obj.TogAnnotate=uitoggletool(obj.Toolbar,'CData',imread('annotate.bmp'),'TooltipString','Insert events(i)','separator','on',...
     'ClickedCallback',@(src,evt) ChangeMouseMode(obj,src));
 

@@ -1,4 +1,10 @@
 function ChangeSliders(obj,src,evt)
+[nchan,ndata,yvalue]=getMouseInfo(obj);
+
+if ~nchan&&~ndata
+    return
+end
+
 if src==obj.Fig && ~isempty(obj.Sliders) && ~isa(src,'figure')
     if length(obj.Sliders)==1
         if  any(strcmpi(obj.DataView,{'Superimposed','Alternated','Vertical','Horizontal'}))
