@@ -2,6 +2,7 @@ classdef BioSigPlot < hgsetget
     
     properties (Access = protected,Hidden) %Graphics Object
         Sliders
+        
         MainPanel
         ControlPanel
         TimePanel
@@ -279,6 +280,8 @@ classdef BioSigPlot < hgsetget
         MAudioPlayer
         UponText
         
+        EventPanel
+        
     end
     
     methods
@@ -406,9 +409,6 @@ classdef BioSigPlot < hgsetget
                     case 'no'
                 end
                 
-            end
-            if isa(obj.WinEvts,'EventWindow') && isvalid(obj.WinEvts)
-                delete(obj.WinEvts);
             end
             
             if isa(obj.WinEvtEdit,'EventEditWindow') && isvalid(obj.WinEvtEdit)
@@ -1231,7 +1231,7 @@ classdef BioSigPlot < hgsetget
         
         %*****************************************************************
         function s=ControlBarSize(obj) %#ok<MANU>
-            s=[1100,40];
+            s=[1180,40];
         end
         
         
@@ -1587,12 +1587,17 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         function WinEvents(obj,src)
             if strcmpi(get(src,'State'),'on')
-                obj.WinEvts=EventWindow(obj.Evts_);
+                set(obj.EventPanel,'visible','on');
+                obj.WinEvts=EventWindow(obj,obj.Evts_);
                 addlistener(obj.WinEvts,'EvtSelected',@(src,evtdat) set(obj,'Time',round(src.EventTime-obj.WinLength/2)));
-                addlistener(obj.WinEvts,'EvtClosed',@(src,evtdat) set(obj.TogEvts,'State','off'));
             else
                 delete(obj.WinEvts);
+                set(obj.EventPanel,'visible','off');
             end
+            resize(obj);
+%             remakeAxes(obj);
+%             redraw(obj);
+%             redrawEvts(obj);
         end
         
         function WinFastEvents(obj)
@@ -1614,7 +1619,12 @@ classdef BioSigPlot < hgsetget
                 set(obj.Fig,'position',pos);
             end
             ctrlsize=obj.ControlBarSize;
-            set(obj.MainPanel,'position',[0 ctrlsize(2) pos(3) pos(4)-ctrlsize(2)]);
+            if isa(obj.WinEvts,'EventWindow')&&isvalid(obj.WinEvts)
+                set(obj.EventPanel,'position',[0 ctrlsize(2) 180 pos(4)-ctrlsize(2)])
+                set(obj.MainPanel,'position',[180 ctrlsize(2) pos(3)-180 pos(4)-ctrlsize(2)]);
+            else
+                set(obj.MainPanel,'position',[0 ctrlsize(2) pos(3) pos(4)-ctrlsize(2)]);
+            end
             set(obj.ControlPanel,'position',[0 0 pos(3) ctrlsize(2)]);
         end
         
