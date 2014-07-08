@@ -1596,7 +1596,7 @@ classdef BioSigPlot < hgsetget
         end
         
         function WinFastEvents(obj)
-            obj.WinFastEvts=FastEventWindow(obj.FastEvts,obj.SelectedFastEvt);
+            obj.WinFastEvts=FastEventWindow(obj,obj.FastEvts,obj.SelectedFastEvt);
             addlistener(obj.WinFastEvts,'FastEvtsChange',@(src,evt) set(obj,'FastEvts',obj.WinFastEvts.FastEvts));
             addlistener(obj.WinFastEvts,'SelectedFastEvtChange',@(src,evt) set(obj,'SelectedFastEvt',obj.WinFastEvts.SelectedFastEvt));
         end
@@ -1704,5 +1704,9 @@ classdef BioSigPlot < hgsetget
             end
         end
         
+    end
+    
+    events
+        SelectedFastEvtChange
     end
 end

@@ -33,19 +33,10 @@ if ~isempty(evt.Modifier)
                     end
                 end
                 return
-            end
-            
-            %Ctl/Cmd+Num Switch to dataset(Num)
-            for i=1:obj.DataNumber
-                if strcmpi(evt.Key,num2str(i))
-                    obj.DataView=['DAT' num2str(i)];
-                    return;
-                end
-            end
-            
-            %Ctrl/Cmd+ i,k j,l: Change channel number and duration per page
-            %Ctrl/Cmd+ -,=: Change channel gain
-            if strcmpi(evt.Key,'hyphen')
+                
+                %Ctrl/Cmd+ i,k j,l: Change channel number and duration per page
+                %Ctrl/Cmd+ -,=: Change channel gain
+            elseif strcmpi(evt.Key,'hyphen')
                 ChangeGain(obj,obj.BtnRemGain);
             elseif strcmpi(evt.Key,'equal')
                 ChangeGain(obj,obj.BtnAddGain);
@@ -61,9 +52,17 @@ if ~isempty(evt.Modifier)
             elseif strcmpi(evt.Key,'leftarrow')
                 ChangeDuration(obj,obj.BtnRemDuration);
                 return
+            else
+                
+                m=min(9,size(obj.FastEvts,1));
+                for i=1:m
+                    if strcmpi(evt.Key,num2str(i))
+                        obj.SelectedFastEvt=i;
+                        notify(obj,'SelectedFastEvtChange');
+                    end
+                end
             end
-        end
-        if ismember('shift',evt.Modifier)
+        elseif ismember('shift',evt.Modifier)
             if strcmpi(evt.Key,'j')
                 for i=1:length(dd)
                     if ~isempty(obj.ChanSelect2Edit{dd(i)})
@@ -76,6 +75,7 @@ if ~isempty(evt.Modifier)
                         end
                     end
                 end
+                return
             elseif strcmpi(evt.Key,'k')
                 for i=1:length(dd)
                     if ~isempty(obj.ChanSelect2Edit{dd(i)})
@@ -88,7 +88,7 @@ if ~isempty(evt.Modifier)
                         end
                     end
                 end
-                
+                return
                 %if no event line is selected, shift + left and right move the time of canvas
                 %else move the time of selected event by 10 sample point
             elseif strcmpi(evt.Key,'leftarrow')
@@ -97,14 +97,24 @@ if ~isempty(evt.Modifier)
                 else
                     obj.Evts{obj.SelectedEvent,1}=obj.Evts{obj.SelectedEvent,1}-10/obj.SRate;
                 end
+                return
             elseif strcmpi(evt.Key,'rightarrow')
                 if isempty(obj.SelectedEvent)
                     ChangeTime(obj,obj.BtnNextSec);
                 else
                     obj.Evts{obj.SelectedEvent,1}=obj.Evts{obj.SelectedEvent,1}+10/obj.SRate;
                 end
+                return
+            else
+                
+                %Ctl/Cmd+Num Switch to dataset(Num)
+                for i=1:obj.DataNumber
+                    if strcmpi(evt.Key,num2str(i))
+                        obj.DataView=['DAT' num2str(i)];
+                        return;
+                    end
+                end
             end
-            
         end
     elseif length(evt.Modifier)==2
         if (ismember('command',evt.Modifier)||ismember('control',evt.Modifier))&&ismember('shift',evt.Modifier)

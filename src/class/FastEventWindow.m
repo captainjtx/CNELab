@@ -11,6 +11,8 @@ classdef FastEventWindow  < handle
         
         BtnDelete
         BtnNew
+        
+        bsp
     end
     
     properties (Dependent=true)
@@ -19,7 +21,8 @@ classdef FastEventWindow  < handle
     end
     
     methods
-        function obj=FastEventWindow(FastEvts,SelectedEvt)
+        function obj=FastEventWindow(bsp,FastEvts,SelectedEvt)
+            obj.bsp=bsp;
             obj.FastEvts=FastEvts;
             
             obj.Fig=figure('MenuBar','none','position',[500 100 300 500],...
@@ -61,6 +64,8 @@ classdef FastEventWindow  < handle
                 'Units','normalized','Position',[0.01,0.01,0.2,0.05],...
                 'tooltipstring','create a new event','callback',@(src,evt) newFastEvent(obj));
             
+            addlistener(bsp,'SelectedFastEvtChange',@(src,evt) synchSelect(obj));
+            
             
             
         end
@@ -74,6 +79,11 @@ classdef FastEventWindow  < handle
             else
                 return
             end
+        end
+        
+        function synchSelect(obj)
+            [obj.Data{:,1}]=deal(false);
+            obj.Data{obj.bsp.SelectedFastEvt,1}=true;
         end
         
         function cellClick(obj,src,evt)
