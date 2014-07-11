@@ -294,6 +294,11 @@ classdef CommonDataStructure < handle
                     s.Data.TimeStamps=oldcds.data.timestamps;
                 end
                 
+                if isfield(oldcds.data,'triggerCodes')
+                    s.Data.TriggerCodes=oldcds.data.triggerCodes;
+                end
+               
+                
             end
             
             %obj.Montage construction
@@ -328,6 +333,10 @@ classdef CommonDataStructure < handle
             %obj.PatientInfo construction
             
             if isfield(oldcds,'patientInfo')
+                
+                if isfield(oldcds.patientInfo,'TriggerNames')
+                    s.Montage.TriggerNames=oldcds.patientInfo.TriggerNames;
+                end
                 if isfield(oldcds.patientInfo,'Case')
                     s.PatientInfo.Case=oldcds.patientInfo.Case;
                 end

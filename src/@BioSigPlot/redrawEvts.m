@@ -1,11 +1,7 @@
 function redrawEvts(obj)
-if isempty(obj.Evts_)
-    return
-end
 
-EventLines=[];
-EventTexts=[];
-EventIndex=[];
+evts=obj.Evts2Display;
+
 %Clear all the events displayed
 for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
     if ishandle(obj.EventLines(i))
@@ -19,15 +15,21 @@ for i=1:size(obj.EventTexts,1)*size(obj.EventTexts,2)
     end
 end
 
+if isempty(evts)
+    return
+end
+
+EventLines=[];
+EventTexts=[];
+EventIndex=[];
+
 for i=1:length(obj.Axes)
-    if obj.EventsDisplay
-        [Elines,Etexts,Eindex]=DrawEvts(obj,obj.Axes(i),obj.Evts_(:,1:2),obj.Time,obj.WinLength,...
-            obj.SRate,obj.Evts_(:,3),obj.SelectedEvent,obj.EventSelectColor,i);
-        if ~isempty(Elines)
-            EventLines(i,:)=Elines;
-            EventTexts(i,:)=Etexts;
-            EventIndex(i,:)=Eindex;
-        end
+    [Elines,Etexts,Eindex]=DrawEvts(obj,obj.Axes(i),evts(:,1:2),obj.Time,obj.WinLength,...
+        obj.SRate,evts(:,3),obj.SelectedEvent,obj.EventSelectColor,i);
+    if ~isempty(Elines)
+        EventLines(i,:)=Elines;
+        EventTexts(i,:)=Etexts;
+        EventIndex(i,:)=Eindex;
     end
 end
 

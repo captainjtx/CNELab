@@ -1,15 +1,22 @@
 function ExportEvents(obj)
+%code: 0-normal 1-fast events 2-trigger events
 %==========================================================================
 obj.Time=obj.Time;
-if ~isempty(obj.Evts_)
-    EventsList=sortrows(obj.Evts_,1);
+
+EventsList=obj.Evts2Display;
+
+if ~isempty(EventsList)
+    EventsList=sortrows(EventsList,1);
 else
-    EventsList=[];
+    return
 end
+
+
 for i=1:size(obj.Evts,1)
     Events.stamp(i)=EventsList{i,1};
     Events.text{i}=EventsList{i,2};
     Events.color(i,:)=EventsList{i,3};
+    Events.code(i)=EventsList{i,4};
 end
 if ~isempty(Events)
     [FileName,FilePath]=uiputfile({'*.mat;*.evt','Event Files (*.mat;*.evt)';...

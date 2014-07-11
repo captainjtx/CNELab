@@ -3,20 +3,14 @@
 % 3,Video Synchronization 
 
 % Exit save ask.
-Channel name Channel Color
+%Channel name Channel Color
 % Channel gain change
 
 % Channel seperately filter
 
-Predefined annotation labels
+%Predefined annotation labels
 
 % CDS construction
-
-GUI for simulink 
-
-extract segments with annotations in between
-
-getaligneddata
 
 TFMap GUI segmentation
 
@@ -33,12 +27,17 @@ Make Date set interchangeable
 
 Make channels interchangeable
 
-choose between sample and timestamp of annotation
+% choose between sample and timestamp of annotation
 
 Import another data set
 
 Import multiple data set with different length and frequency
 
 ctrl+tab/ctrl+shift+tab and ICON to switch between datasets
+
+replace redraw and redrawEvts with handles to accelerate selection
+
+redraw selection to seperate redraw
+
 
 !!Montage

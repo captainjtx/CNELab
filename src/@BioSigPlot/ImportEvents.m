@@ -30,6 +30,12 @@ if FileName~=0
             else
                 NewEventList{i,3}=Events.color(i,:);
             end
+            
+            if ~isfield(Events,'code')
+                NewEventList{i,4}=0;
+            else
+                NewEventList{i,4}=Events.code(i);
+            end
         end
     end
     if iscell(NewEventList)

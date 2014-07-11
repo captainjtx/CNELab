@@ -23,25 +23,7 @@ else
                 end
             end
         end
-        
-        
-        obj.UponText=0;
-        if ~isempty(obj.EventTexts)&&~obj.DragMode
-            for i=1:length(obj.Axes)
-                for j=1:size(obj.EventTexts,2)
-                    if ishandle(obj.EventTexts(i,j))&&obj.EventTexts(i,j)
-                        extent=get(obj.EventTexts(i,j),'Extent');
-                        if mouseIndex>extent(1)&&mouseIndex<extent(1)+extent(3)&&yvalue(i)>extent(2)&&yvalue(i)<extent(2)+extent(4)
-                            obj.UponText=1;
-                            set(obj.Fig,'pointer','hand');
-                            break
-                        end
-                    end
-                end
-                
-            end
-        end
-        
+        updateUponText(obj,mouseIndex,yvalue);
         if obj.DragMode
             obj.DragMode=2;
             for i=1:length(obj.Axes)
@@ -67,7 +49,7 @@ else
         end
     elseif strcmpi(obj.MouseMode,'Annotate')
         set(obj.Fig,'pointer','cross')
-        
+        updateUponText(obj,mouseIndex,yvalue);
         for i=1:length(obj.Axes)
             set(obj.LineMeasurer(i),'XData',[mouseIndex mouseIndex],'Color',[159/255 0 0],'LineStyle',':');
         end
@@ -130,5 +112,25 @@ else
         'FN2: ',fn2];
     set(obj.TxtFilter,'String',sf);
     
+end
+end
+
+function updateUponText(obj,mouseIndex,yvalue)
+
+obj.UponText=0;
+if ~isempty(obj.EventTexts)&&~obj.DragMode
+    for i=1:length(obj.Axes)
+        for j=1:size(obj.EventTexts,2)
+            if ishandle(obj.EventTexts(i,j))&&obj.EventTexts(i,j)
+                extent=get(obj.EventTexts(i,j),'Extent');
+                if mouseIndex>extent(1)&&mouseIndex<extent(1)+extent(3)&&yvalue(i)>extent(2)&&yvalue(i)<extent(2)+extent(4)
+                    obj.UponText=1;
+                    set(obj.Fig,'pointer','hand');
+                    break
+                end
+            end
+        end
+        
+    end
 end
 end

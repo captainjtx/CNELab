@@ -57,13 +57,18 @@ if ~isempty(evt.Modifier)
                 m=min(9,size(obj.FastEvts,1));
                 if strcmpi(evt.Key,num2str(0))
                     obj.SelectedFastEvt=[];
-                    notify(obj,'SelectedFastEvtChange');
+                    if isa(obj.WinFastEvts,'FastEventWindow')&&isvalid(obj.WinFastEvts)
+                        notify(obj,'SelectedFastEvtChange');
+                    end
                 else
                     for i=1:m
                         if strcmpi(evt.Key,num2str(i))
                             obj.SelectedFastEvt=i;
-                            notify(obj,'SelectedFastEvtChange');
-                            return
+                            
+                            
+                            if isa(obj.WinFastEvts,'FastEventWindow')&&isvalid(obj.WinFastEvts)
+                                notify(obj,'SelectedFastEvtChange');
+                            end
                         end
                     end
                 end
@@ -138,7 +143,7 @@ else
     
     if strcmpi(evt.Key,'i')
         obj.MouseMode='annotate';
-        obj.Evts=cat(1,obj.Evts_,{time,'New Event',obj.EventDefaultColor});
+        obj.Evts=cat(1,obj.Evts_,{time,'New Event',obj.EventDefaultColor,0});
         MouseUp(obj);
         obj.MouseMode=[];
         MouseDown(obj);

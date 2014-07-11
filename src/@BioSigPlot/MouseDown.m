@@ -131,9 +131,9 @@ elseif strcmpi(obj.MouseMode,'Select')
 elseif strcmpi(obj.MouseMode,'Annotate')
     
     if isempty(obj.SelectedFastEvt)
-        obj.Evts=cat(1,obj.Evts_,{time,'New Event',obj.EventDefaultColor});
+        obj.Evts=cat(1,obj.Evts_,{time,'New Event',obj.EventDefaultColor,0});
     else
-        obj.Evts=cat(1,obj.Evts_,{time,obj.FastEvts{obj.SelectedFastEvt,1},obj.FastEvts{obj.SelectedFastEvt,2}});
+        obj.Evts=cat(1,obj.Evts_,{time,obj.FastEvts{obj.SelectedFastEvt,1},obj.FastEvts{obj.SelectedFastEvt,2},1});
     end
     
 end

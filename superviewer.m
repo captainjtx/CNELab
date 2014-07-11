@@ -1,4 +1,4 @@
-function run()
+function superviewer()
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -72,8 +72,21 @@ for i=1:length(cds)
     if ~isempty(cds{i}.Data.Annotations)
         evts=cat(1,evts,cds{i}.Data.Annotations);
         evts(:,1)=num2cell(cell2mat(evts(:,1))-startTime);
+        color=cell(size(evts,1),1);
+        code=cell(size(evts,1),1);
+        [color{:}]=deal(bsp.EventDefaultColor);
+        [code{:}]=deal(0);
+        evts=cat(2,evts,color,code);
     else
         evts=[];
+    end
+    
+    if isfield(cds{i}.Data,'TriggerCodes')
+        for r=1:size(cds{i}.Data.TriggerCodes,1)
+            for c=1:6
+                evts=cat(1,evts,{cds{i}.Data.TriggerCodes(r,c)/fs,num2str(c),bsp.TriggerEventDefaultColor,2});
+            end
+        end
     end
 end
 

@@ -29,7 +29,7 @@ obj.makeControls();
 obj.makeToolbar();
 obj.makeMenu();
 
-obj.WinEvts=EventWindow(obj,obj.Evts_);
+obj.WinEvts=EventWindow(obj);
 addlistener(obj.WinEvts,'EvtSelected',@(src,evtdat) set(obj,'Time',round(src.EventTime-obj.WinLength/2)));
 
 end
