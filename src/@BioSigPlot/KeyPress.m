@@ -19,8 +19,13 @@ end
 if ~isempty(evt.Modifier)
     if length(evt.Modifier)==1
         if ismember('command',evt.Modifier)||ismember('control',evt.Modifier)
-            %Ctrl+A: Select the current dataset
-            if strcmpi(evt.Key,'A')&&~ismember('command',evt.Modifier)
+            
+            if strcmpi(evt.Key,'leftarrow')
+                ChangeTime(obj,obj.BtnPrevSec);
+            elseif strcmpi(evt.Key,'rightarrow')
+                ChangeTime(obj,obj.BtnNextSec);
+                %Ctrl+A: Select the current dataset
+            elseif strcmpi(evt.Key,'A')&&~ismember('command',evt.Modifier)
                 if ~obj.IsChannelSelected
                     for i=1:length(dd)
                         obj.ChanSelect2Edit{dd(i)}=1:obj.MontageChanNumber(dd(i));
@@ -33,25 +38,11 @@ if ~isempty(evt.Modifier)
                     end
                 end
                 return
-                
-                %Ctrl/Cmd+ i,k j,l: Change channel number and duration per page
                 %Ctrl/Cmd+ -,=: Change channel gain
             elseif strcmpi(evt.Key,'hyphen')
-                ChangeGain(obj,obj.BtnRemGain);
+                ChangeGain(obj,obj.GainDecrease);
             elseif strcmpi(evt.Key,'equal')
-                ChangeGain(obj,obj.BtnAddGain);
-            elseif strcmpi(evt.Key,'uparrow')
-                obj.DispChans=obj.DispChans+1;
-                return
-            elseif strcmpi(evt.Key,'downarrow')
-                obj.DispChans=obj.DispChans-1;
-                return
-            elseif strcmpi(evt.Key,'rightarrow')
-                ChangeDuration(obj,obj.BtnAddDuration);
-                return
-            elseif strcmpi(evt.Key,'leftarrow')
-                ChangeDuration(obj,obj.BtnRemDuration);
-                return
+                ChangeGain(obj,obj.GainIncrease);
             else
                 
                 m=min(9,size(obj.FastEvts,1));
@@ -104,14 +95,14 @@ if ~isempty(evt.Modifier)
                 %else move the time of selected event by 10 sample point
             elseif strcmpi(evt.Key,'leftarrow')
                 if isempty(obj.SelectedEvent)
-                    ChangeTime(obj,obj.BtnPrevSec);
+                    ChangeTime(obj,obj.BtnPrevPage);
                 else
                     obj.Evts{obj.SelectedEvent,1}=obj.Evts{obj.SelectedEvent,1}-10/obj.SRate;
                 end
                 return
             elseif strcmpi(evt.Key,'rightarrow')
                 if isempty(obj.SelectedEvent)
-                    ChangeTime(obj,obj.BtnNextSec);
+                    ChangeTime(obj,obj.BtnNextPage);
                 else
                     obj.Evts{obj.SelectedEvent,1}=obj.Evts{obj.SelectedEvent,1}+10/obj.SRate;
                 end
@@ -125,14 +116,6 @@ if ~isempty(evt.Modifier)
                         return;
                     end
                 end
-            end
-        end
-    elseif length(evt.Modifier)==2
-        if (ismember('command',evt.Modifier)||ismember('control',evt.Modifier))&&ismember('shift',evt.Modifier)
-            if strcmpi(evt.Key,'leftarrow')
-                ChangeTime(obj,obj.BtnPrevPage);
-            elseif strcmpi(evt.Key,'rightarrow')
-                ChangeTime(obj,obj.BtnNextPage);
             end
         end
     end

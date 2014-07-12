@@ -25,6 +25,8 @@
 
 function redraw(obj)
 
+channelLines=cell(obj.DataNumber,1);
+
 for i=1:length(obj.LineVideo)
     delete(obj.LineVideo(i));
 end
@@ -73,9 +75,11 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         obj.SelRect(i)=rectangle('Parent',obj.Axes(i),'Position',[-1 0 .0001 .0001],'EdgeColor','none','FaceColor',[.85 1 .85]); % Current Selection Rectangle
         if strcmp(obj.DataView,'Horizontal') || i==obj.DataNumber, plotXTicks(obj.Axes(i),obj.Time,obj.WinLength,obj.InsideTicks); end
         if ~isempty(obj.PreprocData)
-            plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.ChanColors{i},...
+            lhs=plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.ChanColors{i},...
                 obj.Gain{i},Nchan(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),obj.DispChans(i),...
                 obj.ChanSelect2Edit{i},obj.ChanSelectColor);
+            
+            channelLines{i}=lhs;
         end
         if i==1  || strcmp(obj.DataView,'Vertical')
             plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.InsideTicks,obj.ChanSelect2Edit{i},obj.ChanSelectColor);
@@ -83,16 +87,9 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
     end
 else
     
-    if strcmp(obj.DataView,'Superimposed')
-        Nchan=obj.MontageChanNumber(1);
-        n=1;
-    elseif strcmp(obj.DataView,'Alternated')
-        Nchan=sum(obj.MontageChanNumber);
-        n=1;
-    else
-        n=str2double(obj.DataView(4));
-        Nchan=obj.MontageChanNumber(n);
-    end
+    
+    n=str2double(obj.DataView(4));
+    Nchan=obj.MontageChanNumber(n);
     
     if isempty(obj.DispChans)
         ylim=[0 Nchan+1];
@@ -111,38 +108,19 @@ else
     obj.SelRect=rectangle('Parent',obj.Axes,'Position',[-1 0 .0001 .0001],'EdgeColor','none','FaceColor',[.85 1 .85]); % Current Selection Rectangle
     
     
-    if strcmp(obj.DataView,'Alternated')
-        for i=obj.DataNumber:-1:1
-            if ~isempty(obj.PreprocData)
-                plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.AlternatedModeColors(rem(i-1,end)+1,:),...
-                    obj.Gain{i},obj.DataNumber*obj.MontageChanNumber(1)+1-i:-obj.DataNumber:1,obj.ChanSelect2Display{i},...
-                    obj.FirstDispChans(i),obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
-            end
-        end
-        tmp=obj.MontageChanNames{1}(:)';tmp(2:obj.DataNumber,:)={''};
-        plotYTicks(obj.Axes,tmp(:),obj.InsideTicks,obj.ChanSelect2Edit{1},obj.ChanSelectColor);
-        
-    elseif strcmp(obj.DataView,'Superimposed')
-        for i=1:obj.DataNumber
-            if ~isempty(obj.PreprocData)
-                plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.SuperimposedModeColors(rem(i-1,end)+1,:),...
-                    obj.Gain{i},obj.MontageChanNumber(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),...
-                    obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
-            end
-        end
-        plotYTicks(obj.Axes,obj.MontageChanNames{1},obj.InsideTicks,obj.ChanSelect2Edit{1},obj.ChanSelectColor);
-    else
-        i=str2double(obj.DataView(4));
-        if ~isempty(obj.PreprocData)
-            plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.ChanColors{i},...
-                obj.Gain{i},obj.MontageChanNumber(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),...
-                obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
-        end
-        plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.InsideTicks,obj.ChanSelect2Edit{i},obj.ChanSelectColor);
+    i=str2double(obj.DataView(4));
+    if ~isempty(obj.PreprocData)
+        lhs=plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.ChanColors{i},...
+            obj.Gain{i},obj.MontageChanNumber(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),...
+            obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
+        channelLines{i}=lhs;
     end
+    plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.InsideTicks,obj.ChanSelect2Edit{i},obj.ChanSelectColor);
+    
     plotXTicks(obj.Axes,obj.Time,obj.WinLength,obj.InsideTicks)
 end
 
+obj.ChannelLines=channelLines;
 
 
 offon={'off','on'};
@@ -183,7 +161,7 @@ end
 
 end
 %**************************************************************************
-function plotData(axe,t,data,colors,gain,posY,ChanSelect2Display,FirstDispChan,...
+function h=plotData(axe,t,data,colors,gain,posY,ChanSelect2Display,FirstDispChan,...
     DispChans,ChanSelect2Edit,ChanSelectColor) %#ok<INUSD>
 % Plot data function
 % axe :axes to plot
@@ -205,13 +183,14 @@ end
 %make zero gain channel disappear
 gain(gain==0)=nan;
 
-data=data.*repmat(reshape(gain,1,length(gain)),size(data,1),1);
-
 if ~isempty(ChanSelect2Display)
-    data=data(:,ChanSelect2Display);
+    data=data(:,ChanSelect2Display).*...
+        repmat(reshape(gain(ChanSelect2Display),1,length(ChanSelect2Display)),size(data(:,ChanSelect2Display),1),1);
     posY=posY(ChanSelect2Display);
     colors=colors(ChanSelect2Display,:);
     [f,ChanSelect2Edit]=ismember(ChanSelect2Edit,ChanSelect2Display);
+else
+    data=data.*repmat(reshape(gain,1,length(gain)),size(data,1),1);
 end
 
 

@@ -1,5 +1,24 @@
 
 function toolToolbar(obj)
+
+obj.GainIncrease=uipushtool(obj.Toolbar,'CData',imread('plus.bmp'),'TooltipString','Increase gain (ctrl =)',...
+    'ClickedCallback',@(src,evt) ChangeGain(obj,src));
+
+obj.GainDecrease=uipushtool(obj.Toolbar,'CData',imread('minus.bmp'),'TooltipString','Decrease gain (ctrl -)',...
+    'ClickedCallback',@(src,evt) ChangeGain(obj,src));
+
+ obj.WidthIncrease=uipushtool(obj.Toolbar,'CData',imread('widthIncrease.bmp'),'TooltipString','Increase width',...
+     'ClickedCallback',@(src,evt) ChangeDuration(obj,src));
+ 
+ obj.WidthDecrease=uipushtool(obj.Toolbar,'CData',imread('widthDecrease.bmp'),'TooltipString','Decrease width',...
+     'ClickedCallback',@(src,evt) ChangeDuration(obj,src));
+ 
+ obj.HeightIncrease=uipushtool(obj.Toolbar,'CData',imread('heightIncrease.bmp'),'TooltipString','Increase height',...
+     'ClickedCallback',@(src,evt) ChangeChan(obj,src));
+ 
+  obj.HeightDecrease=uipushtool(obj.Toolbar,'CData',imread('heightDecrease.bmp'),'TooltipString','Decrease height',...
+     'ClickedCallback',@(src,evt) ChangeChan(obj,src));
+
 obj.TogPan=uitoggletool(obj.Toolbar,'CData',imread('pan.bmp'),'TooltipString','Vertical Pan',...
     'ClickedCallback',@(src,evt) ChangeMouseMode(obj,src));
 

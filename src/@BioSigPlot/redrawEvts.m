@@ -37,6 +37,7 @@ obj.EventLines=EventLines;
 obj.EventTexts=EventTexts;
 obj.EventDisplayIndex=EventIndex;
 
+highlightSelectedEvents(obj);
 
 end
 
@@ -56,13 +57,6 @@ for i=1:size(evts,1)
             'VerticalAlignment','Top','Margin',1,'FontSize',12,'String',evts{i,2},'Editing','off','SelectionHighlight','on',...
             'ButtonDownFcn',@(src,evt)openText(obj,src,axenum,count));
         EventIndex(count)=i;
-    end
-    
-    if count
-        if i==SelectedEvent
-            set(EventLines(count),'Color',SelectedColor);
-            set(EventTexts(count),'EdgeColor',SelectedColor,'BackgroundColor',SelectedColor);
-        end
     end
 end
 
