@@ -82,7 +82,6 @@ classdef FastEventWindow  < handle
         end
         
         function synchSelect(obj)
-            
             [obj.Data{:,1}]=deal(false);
             if ~isempty(obj.bsp.SelectedFastEvt)
                 obj.Data{obj.bsp.SelectedFastEvt,1}=true;
@@ -118,9 +117,13 @@ classdef FastEventWindow  < handle
         
         function newFastEvent(obj)
             
-            obj.FastEvts=cat(1,obj.FastEvts,{'',[1,1,0]});
-            obj.Data=cat(1,obj.Data,{false,'',FastEventWindow.colorgen([1,1,0],'')});
+            if ~isempty(obj.FastEvts)
+                obj.FastEvts=cat(1,obj.FastEvts,{'',[1,1,0]});
+            else
+                obj.FastEvts={'',[1,1,0]};
+            end
             
+            obj.Data=cat(1,obj.Data,{false,'',FastEventWindow.colorgen([1,1,0],'')});
         end
         
         function deleteFastEvent(obj)

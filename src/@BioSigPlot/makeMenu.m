@@ -11,6 +11,9 @@ obj.MenuImportEvents=uimenu(obj.MenuImport,'Label','Events','Callback',@(src,evt
 obj.MenuImportVideo=uimenu(obj.MenuImport,'Label','Video','Callback',@(src,evt) obj.ImportVideo);
 obj.MenuCopy=uimenu(obj.MenuFile,'Label','Copy','Enable','off');
 %**************************************************************************
+%First Order Menu------------------------------------------------------Edit
+obj.MenuEdit=uimenu(obj.Fig,'Label','Edit');
+obj.MenuDelete=uimenu(obj.MenuEdit,'Label','Delete','Callback',@(src,evt) deleteSelected(obj));
 %First Order Menu--------------------------------------------------Settings
 obj.MenuSettings=uimenu(obj.Fig,'Label','Settings');
 obj.MenuCommands=uimenu(obj.MenuSettings,'Label','Command List',...
@@ -23,7 +26,7 @@ obj.MenuChan=uimenu(obj.MenuSettings,'Label','Page channels','Callback',@(src,ev
 
 obj.MenuColor=uimenu(obj.MenuSettings,'Label','Color');
 obj.MenuSampleRate=uimenu(obj.MenuSettings,'Label','Sample Rate','Callback',@(src,evt) MnuSampleRate(obj),'Accelerator','r');
-obj.MenuFastEvent=uimenu(obj.MenuSettings,'Label','Fast Event','Callback',@(src,evt) WinFastEvents(obj),'Accelerator','i');
+obj.MenuFastEvent=uimenu(obj.MenuSettings,'Label','Fast Event','Callback',@(src,evt) WinFastEvents(obj));
 %Second Order Menu of Color
 obj.MenuColorCanvas=uimenu(obj.MenuColor,'Label','Canvas','Accelerator','b',...
     'Callback',@(src,evt) set(obj,'AxesBackgroundColor',uisetcolor(obj.AxesBackgroundColor,'AxesBackground Color')));
@@ -42,7 +45,7 @@ obj.MenuXGrid=uimenu(obj.MenuDisplay,'Label','XGrid',...
     'Callback',@(src,evt) set(obj,'XGrid',~obj.XGrid));
 obj.MenuYGrid=uimenu(obj.MenuDisplay,'Label','YGrid',...
     'Callback',@(src,evt) set(obj,'YGrid',~obj.YGrid));
-obj.MenuEventsDisplay=uimenu(obj.MenuDisplay,'Label','Events','Accelerator','e',...
+obj.MenuEventsDisplay=uimenu(obj.MenuDisplay,'Label','Events',...
     'Callback',@(src,evt) set(obj,'EventsDisplay',~obj.EventsDisplay));
 
 %First Order Menu-------------------------------------------------------App

@@ -9,7 +9,7 @@ classdef BioSigPlot < hgsetget
         InfoPanel
         FilterPanel
         ScalePanel
-
+        
         BtnPrevPage
         BtnPrevSec
         EdtTime
@@ -48,7 +48,6 @@ classdef BioSigPlot < hgsetget
         TogVertical
         TogMeasurer
         TogSelection
-        TogPan
         TogVideo
         TogAnnotate
         MenuFile
@@ -62,6 +61,9 @@ classdef BioSigPlot < hgsetget
         MenuImportEvents
         MenuImportVideo
         MenuCopy
+        
+        MenuEdit
+        MenuDelete
         
         MenuSettings
         MenuCommands
@@ -97,6 +99,7 @@ classdef BioSigPlot < hgsetget
         LineMeasurer
         
         TxtMeasurer
+        TxtFastEvent
         
         WinEvts
         WinFastEvts
@@ -175,6 +178,7 @@ classdef BioSigPlot < hgsetget
         Gain_
         ChanNames_
         Units_
+        
         Evts_
         Time_
         DispChans_
@@ -242,7 +246,7 @@ classdef BioSigPlot < hgsetget
         ChanSelect2DisplayStart
         SelRect
         IsInitialize
-        
+        RedrawEvtsSkip
     end
     
     properties (Dependent) %'Public properties which does not requires redrawing
@@ -301,6 +305,8 @@ classdef BioSigPlot < hgsetget
         UponText
         
         EventPanel
+        
+        
     end
     
     methods
@@ -378,6 +384,7 @@ classdef BioSigPlot < hgsetget
             
             resetFilterPanel(obj);
             
+            obj.RedrawEvtsSkip=false;
             obj.EventLines=[];
             obj.EventTexts=[];
             obj.SelectedLines=[];
@@ -515,13 +522,13 @@ classdef BioSigPlot < hgsetget
             for i=1:2:length(g)
                 if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage','DataView','MontageRef','Time','FirstDispChans',...
                         'DispChans','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch1','FilterNotch2','StrongFilter',...
-                        'NormalModeColor','ChanNames','Units','XGrid','YGrid','MouseMode','AxesHeight',...
+                        'NormalModeColor','ChanNames','Units','XGrid','YGrid','AxesHeight',...
                         'YBorder','YGridInterval','Selection','TaskFiles','VideoStartTime','MainTimerPeriod','VideoTimerPeriod','VideoTimeFrame',...
                         'BadChannels','ChanSelect2Display','ChanSelectColor','AxesBackgroundColor','ChanColors','TriggerEventsFcn'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage','DataView',...
-                            'MontageRef','DispChans','InsideTicks','MouseMode','AxesHeight'...
+                            'MontageRef','DispChans','InsideTicks','AxesHeight'...
                             'AxesBackgroundColor'}))
                         NeedRemakeAxes=true;
                     end
@@ -541,7 +548,7 @@ classdef BioSigPlot < hgsetget
                     NeedRedrawEvts=true;
                     
                 elseif any(strcmpi(g{i},{'PlaySpeed','FastEvts','SelectedFastEvt','EventDefaultColor','EventsWindowDisplay',...
-                        'TriggerEventsFcn','TriggerEventDefaultColor'}))
+                        'TriggerEventsFcn','TriggerEventDefaultColor','MouseMode'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                 elseif any(strcmpi(g{i},{'EventsDisplay','Evts',...
@@ -866,7 +873,7 @@ classdef BioSigPlot < hgsetget
             if isempty(obj.Evts_)
                 val={};
             else
-                val=sortrows(obj.Evts_(:,1:2),1);
+                val=obj.Evts_(:,1:2);
             end
         end
         function obj = set.Evts_(obj,val)
@@ -899,24 +906,32 @@ classdef BioSigPlot < hgsetget
             
         end
         
-        function evts=get.Evts2Display(obj)
+        function obj = set.SelectedFastEvt_(obj,val)
+            obj.SelectedFastEvt_=val;
+            if ~obj.IsInitialize
+                x=get(obj.LineMeasurer(1),'XData');
+                updateSelectedFastEvent(obj,x(1));
+            end
+        end
+        
+        function evtsInd=get.Evts2Display(obj)
             if isempty(obj.Evts_)
-                evts=[];
+                evtsInd=[];
                 return
             end
             
             if obj.EventsDisplay
                 if obj.TriggerEventsDisplay
-                    evts=obj.Evts_;
+                    evtsInd=1:size(obj.Evts_,1);
                 else
-                    evts=obj.Evts_([obj.Evts_{:,4}]~=2,:);
+                    evtsInd=find([obj.Evts_{:,4}]~=2);
                 end
             else
                 
                 if obj.TriggerEventsDisplay
-                    evts=obj.Evts_([obj.Evts_{:,4}]==2,:);
+                    evtsInd=find([obj.Evts_{:,4}]==2);
                 else
-                    evts=[];
+                    evtsInd=[];
                 end
             end
         end
@@ -988,6 +1003,7 @@ classdef BioSigPlot < hgsetget
                     obj.VideoFrame=obj.VideoTimeFrame(ind(1),2);
                 end
             end
+            
         end
         
         %******************************************************************
@@ -1063,7 +1079,16 @@ classdef BioSigPlot < hgsetget
             
             obj.synchEvts();
         end
-        
+        function obj = set.SelectedEvent_(obj,val)
+            obj.SelectedEvent_=val;
+            
+            if ~isempty(val)
+                [f,loc]=ismember(val,obj.WinEvts.EvtIndex);
+                
+                set(obj.WinEvts.uilist,'value',loc);
+            end
+            
+        end
         function obj = set.TriggerEventsDisplay_(obj,val)
             if ischar(val)
                 obj.TriggerEventsDisplay_=strcmpi(val,'on');
@@ -1117,11 +1142,22 @@ classdef BioSigPlot < hgsetget
             offon={'off','on'};
             if isempty(val)
                 offon={'off','off'};
+                for i=1:length(obj.Axes)
+                    set(obj.LineMeasurer(i),'XData',[inf inf]);
+                    pos=get(obj.TxtFastEvent(i),'position');
+                    set(obj.TxtFastEvent(i),'Position',[inf pos(2)]);
+                    
+                    Nchan=obj.MontageChanNumber(i);
+                    for j=1:Nchan(i)
+                        pos=get(obj.TxtMeasurer{i}(j),'position');
+                        set(obj.TxtMeasurer{i}(j),'position',[inf pos(2)]);
+                    end
+                end
             end
             set(obj.TogMeasurer,'State',offon{1+strcmpi(val,'Measurer')});
-            set(obj.TogPan,'State',offon{1+strcmpi(val,'Pan')});
             set(obj.TogSelection,'State',offon{1+strcmpi(val,'Select')});
             set(obj.TogAnnotate,'State',offon{1+strcmpi(val,'Annotate')});
+            
         end
         
         %******************************************************************
@@ -1409,7 +1445,10 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         %General Toolbar Initialization
         toolToolbar(obj)
+        %==================================================================
         %******************************************************************
+        
+        
         function remakeMontage(obj)
             %Assure Montage properties Coherence
             
@@ -1583,8 +1622,6 @@ classdef BioSigPlot < hgsetget
             if strcmpi(get(src,'State'),'on')
                 if src==obj.TogMeasurer
                     s='Measurer';
-                elseif src==obj.TogPan
-                    s='Pan';
                 elseif src==obj.TogSelection
                     s='Select';
                 elseif src==obj.TogAnnotate
@@ -1645,6 +1682,9 @@ classdef BioSigPlot < hgsetget
         %Callback for channel page change
         ChangeChan(obj,src)
         %==================================================================
+        moveSelectedEvents(obj,step)
+        %==================================================================
+        
         function MnuPlay(obj)
             %**************************************************************
             % Dialog box to change the speed for play
@@ -1794,15 +1834,16 @@ classdef BioSigPlot < hgsetget
                 return
             end
             
-            evts=obj.Evts2Display;
-            
-            if ~isempty(evts)
-                evts=sortrows(evts,1);
-            end
-            
-            obj.WinEvts.Evts=evts;
+            obj.WinEvts.Evts=obj.Evts_;
             
         end
+    end
+    
+    methods
+        deleteSelected(obj)
+        openText(obj,src,axenum,count)
+        addNewEvent(obj,newEvent)
+        updateSelectedFastEvent(obj,x)
     end
     
     events

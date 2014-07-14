@@ -3,7 +3,7 @@ function ExportEvents(obj)
 %==========================================================================
 obj.Time=obj.Time;
 
-EventsList=obj.Evts2Display;
+EventsList=obj.Evts_{obj.Evts2Display,:};
 
 if ~isempty(EventsList)
     EventsList=sortrows(EventsList,1);

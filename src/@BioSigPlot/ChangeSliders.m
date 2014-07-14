@@ -7,7 +7,7 @@ end
 
 if src==obj.Fig && ~isempty(obj.Sliders) && ~isa(src,'figure')
     if length(obj.Sliders)==1
-        if  any(strcmpi(obj.DataView,{'Superimposed','Alternated','Vertical','Horizontal'}))
+        if  any(strcmpi(obj.DataView,{'Vertical','Horizontal'}))
             obj.FirstDispChans(:)=round(obj.FirstDispChans(:)+evt.VerticalScrollCount);
         else
             n=str2double(obj.DataView(4));
@@ -28,14 +28,11 @@ else
             src=obj.Sliders(obj.Axes==evt.Axes);
         end
         v=get(evt.Axes,'Ylim');
-        if strcmpi(obj.DataView,'Alternated')
-            set(src,'value',v(1)/obj.DataNumber);
-        else
-            set(src,'value',v(1));
-        end
+        
+        set(src,'value',v(1));
     end
     if length(obj.Sliders)==1
-        if any(strcmpi(obj.DataView,{'Superimposed','Alternated','Vertical','Horizontal'}))
+        if any(strcmpi(obj.DataView,{'Vertical','Horizontal'}))
             obj.FirstDispChans(:)=round(get(src,'max')-get(src,'value')+1);
         else
             n=str2double(obj.DataView(4));

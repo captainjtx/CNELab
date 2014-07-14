@@ -43,6 +43,13 @@ if ~isempty(evt.Modifier)
                 ChangeGain(obj,obj.GainDecrease);
             elseif strcmpi(evt.Key,'equal')
                 ChangeGain(obj,obj.GainIncrease);
+            elseif strcmpi(evt.Key,'i')
+                if strcmpi(get(obj.TogAnnotate,'State'),'on')
+                    set(obj.TogAnnotate,'State','off');
+                else
+                    set(obj.TogAnnotate,'State','on');
+                end
+                ChangeMouseMode(obj,obj.TogAnnotate);
             else
                 
                 m=min(9,size(obj.FastEvts,1));
@@ -55,8 +62,6 @@ if ~isempty(evt.Modifier)
                     for i=1:m
                         if strcmpi(evt.Key,num2str(i))
                             obj.SelectedFastEvt=i;
-                            
-                            
                             if isa(obj.WinFastEvts,'FastEventWindow')&&isvalid(obj.WinFastEvts)
                                 notify(obj,'SelectedFastEvtChange');
                             end
@@ -97,14 +102,16 @@ if ~isempty(evt.Modifier)
                 if isempty(obj.SelectedEvent)
                     ChangeTime(obj,obj.BtnPrevPage);
                 else
-                    obj.Evts{obj.SelectedEvent,1}=obj.Evts{obj.SelectedEvent,1}-10/obj.SRate;
+                    step=-20/obj.SRate;
+                    moveSelectedEvents(obj,step);
                 end
                 return
             elseif strcmpi(evt.Key,'rightarrow')
                 if isempty(obj.SelectedEvent)
                     ChangeTime(obj,obj.BtnNextPage);
                 else
-                    obj.Evts{obj.SelectedEvent,1}=obj.Evts{obj.SelectedEvent,1}+10/obj.SRate;
+                    step=20/obj.SRate;
+                    moveSelectedEvents(obj,step);
                 end
                 return
             else
@@ -159,17 +166,15 @@ else
     elseif strcmpi(evt.Key,'leftarrow')
         
         if ~isempty(obj.SelectedEvent)
-            obj.Evts{obj.SelectedEvent,1}=obj.Evts{obj.SelectedEvent,1}-1/obj.SRate;
+            step=-5/obj.SRate;
+            moveSelectedEvents(obj,step);
         end
     elseif strcmpi(evt.Key,'rightarrow')
         
         if ~isempty(obj.SelectedEvent)
-            obj.Evts{obj.SelectedEvent,1}=obj.Evts{obj.SelectedEvent,1}+1/obj.SRate;
+            step=5/obj.SRate;
+            moveSelectedEvents(obj,step);
         end
-    elseif strcmpi(evt.Key,'p')
-        ChangeTime(obj,obj.BtnPrevPage);
-    elseif strcmpi(evt.Key,'n')
-        ChangeTime(obj,obj.BtnNextPage);
     end
 end
 end

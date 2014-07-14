@@ -50,9 +50,7 @@ else
     elseif strcmpi(obj.MouseMode,'Annotate')
         set(obj.Fig,'pointer','cross')
         updateUponText(obj,mouseIndex,yvalue);
-        for i=1:length(obj.Axes)
-            set(obj.LineMeasurer(i),'XData',[mouseIndex mouseIndex],'Color',[159/255 0 0],'LineStyle',':');
-        end
+        updateSelectedFastEvent(obj,mouseIndex);
     end
     
     

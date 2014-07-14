@@ -1,6 +1,9 @@
 function redrawEvts(obj)
+if obj.RedrawEvtsSkip
+    return
+end
 
-evts=obj.Evts2Display;
+evts=obj.Evts_(obj.Evts2Display,:);
 
 %Clear all the events displayed
 for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
@@ -59,23 +62,5 @@ for i=1:size(evts,1)
         EventIndex(count)=i;
     end
 end
-
-end
-
-function openText(obj,src,axenum,count)
-% set(src,'Selected','on');
-
-if strcmpi(get(obj.Fig,'SelectionType'),'open')
-    set(src,'Editing','on');
-    obj.EditMode=1;
-elseif strcmpi(get(obj.Fig,'SelectionType'),'normal')
-    
-    obj.SelectedLines=[obj.SelectedLines length(obj.Axes)*(count-1)+axenum];
-    
-    obj.SelectedEvent=obj.EventDisplayIndex(length(obj.Axes)*(count-1)+axenum);
-    obj.DragMode=1;
-end
-
-uistack(obj.EventTexts(length(obj.Axes)*(count-1)+axenum),'top');
 
 end

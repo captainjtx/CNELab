@@ -2,10 +2,8 @@ function MouseUp(obj)
 
 if ~isempty(obj.SelectedEvent)
     if obj.DragMode==2
-        EventList=obj.Evts_;
-        EventList{obj.SelectedEvent,1}=obj.MouseTime;
-        obj.Evts=EventList;
-        
+        step=obj.MouseTime-obj.Evts{obj.SelectedEvent,1};
+        moveSelectedEvents(obj,step);
     end
 end
 

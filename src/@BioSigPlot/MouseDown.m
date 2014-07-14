@@ -38,7 +38,6 @@ if isempty(obj.MouseMode)
                     obj.SelectedLines=[obj.SelectedLines i];
                     obj.SelectedEvent=obj.EventDisplayIndex(i);
                     obj.DragMode=1;
-                    uistack(obj.EventTexts(i),'top');
                     return
                 end
             end
@@ -131,9 +130,11 @@ elseif strcmpi(obj.MouseMode,'Select')
 elseif strcmpi(obj.MouseMode,'Annotate')
     
     if isempty(obj.SelectedFastEvt)
-        obj.Evts=cat(1,obj.Evts_,{time,'New Event',obj.EventDefaultColor,0});
+        newEvent={time,'New Event',obj.EventDefaultColor,0};
+        addNewEvent(obj,newEvent);
     else
-        obj.Evts=cat(1,obj.Evts_,{time,obj.FastEvts{obj.SelectedFastEvt,1},obj.FastEvts{obj.SelectedFastEvt,2},1});
+        newEvent={time,obj.FastEvts{obj.SelectedFastEvt,1},obj.FastEvts{obj.SelectedFastEvt,2},1};
+        addNewEvent(obj,newEvent);
     end
     
 end

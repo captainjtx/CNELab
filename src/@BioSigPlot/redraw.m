@@ -96,10 +96,6 @@ else
     else
         %ylim=[obj.FirstDispChans(n)-1 obj.FirstDispChans(n)+obj.DispChans];
         ylim=[obj.MontageChanNumber(n)+2-obj.YBorder_(1)-obj.FirstDispChans(n)-min(obj.DispChans(n),obj.MontageChanNumber(n))    obj.MontageChanNumber(n)+obj.YBorder_(2)-obj.FirstDispChans(n)+1];
-        if strcmp(obj.DataView,'Alternated')
-            ylim=[(obj.MontageChanNumber(n)+1-obj.FirstDispChans(n)-min(obj.DispChans(n),obj.MontageChanNumber(n)))*obj.DataNumber+1-obj.YBorder_(1)   obj.DataNumber*(obj.MontageChanNumber(n)+1-obj.FirstDispChans(n))+obj.YBorder_(2)];
-            %ylim=[obj.DataNumber*(obj.FirstDispChans(n)-1) obj.DataNumber*(obj.FirstDispChans(n)-1+obj.DispChans)+1];
-        end
     end
     cla(obj.Axes)
     set(obj.Axes,'Ylim',ylim,'Ytick',1:Nchan,'TickLength',[.005 0]);
@@ -131,10 +127,13 @@ end
 
 % if strcmp(obj.MouseMode,'Measurer')
 for i=1:length(obj.Axes)
-    obj.LineMeasurer(i)=line([-1 -1],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]);
+    yl=get(obj.Axes(i),'Ylim');
+    obj.LineMeasurer(i)=line([inf inf],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]);
+    obj.TxtFastEvent(i)=text('Parent',obj.Axes(i),'position',[inf yl(2)],'VerticalAlignment','Top','Margin',1,'FontSize',12,...
+        'Editing','off');
     
     for j=1:Nchan(i)
-        obj.TxtMeasurer{i}(j)=text('Parent',obj.Axes(i),'position',[-1,j],'EdgeColor',[0 0 0],'BackgroundColor',[0.7 0.7 0],...
+        obj.TxtMeasurer{i}(j)=text('Parent',obj.Axes(i),'position',[inf,j],'EdgeColor',[0 0 0],'BackgroundColor',[0.7 0.7 0],...
             'VerticalAlignment','Top','Margin',1,'FontSize',10,'FontName','FixedWidth');
     end
 end
