@@ -1,6 +1,3 @@
-% Redraw when time change or sliders
-
-
 %123456789012345678901234567890123456789012345678901234567890123456789012
 %
 %     BioSigPlot Copyright (C) 2013 Samuel Boudet, Faculté Libre de Médecine,
@@ -71,8 +68,7 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         end
         cla(obj.Axes(i))
         set(obj.Axes(i),'Ylim',ylim,'Ytick',1:Nchan(i),'YTickLabel',{},'XtickLabel',{});
-        DrawSelect(obj.Axes(i),obj.Selection,obj.Time,obj.WinLength);
-        obj.SelRect(i)=rectangle('Parent',obj.Axes(i),'Position',[-1 0 .0001 .0001],'EdgeColor','none','FaceColor',[.85 1 .85]); % Current Selection Rectangle
+        
         if strcmp(obj.DataView,'Horizontal') || i==obj.DataNumber, plotXTicks(obj.Axes(i),obj.Time,obj.WinLength,obj.InsideTicks); end
         if ~isempty(obj.PreprocData)
             lhs=plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.ChanColors{i},...
@@ -99,10 +95,6 @@ else
     end
     cla(obj.Axes)
     set(obj.Axes,'Ylim',ylim,'Ytick',1:Nchan,'TickLength',[.005 0]);
-    
-    DrawSelect(obj.Axes,obj.Selection,obj.Time,obj.WinLength);
-    obj.SelRect=rectangle('Parent',obj.Axes,'Position',[-1 0 .0001 .0001],'EdgeColor','none','FaceColor',[.85 1 .85]); % Current Selection Rectangle
-    
     
     i=str2double(obj.DataView(4));
     if ~isempty(obj.PreprocData)
@@ -141,7 +133,7 @@ end
 
 if strcmp(obj.MouseMode,'Annotate')
     for i=1:length(obj.Axes)
-        obj.LineMeasurer(i)=line([-1 -1],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]);
+        obj.LineMeasurer(i)=line([inf inf],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]);
     end
 end
 
@@ -283,23 +275,4 @@ end
 
 %==========================================================================
 %**************************************************************************
-function DrawSelect(axe,selection,t,dt)
-% Draw the rectangle of selected time periods
-% axe :axes to draw
-% selection :  periods of selection
-% t : start time to draw
-% dt : time interval within there is drawing
-
-
-xlim=get(axe,'XLim');
-ylim=get(axe,'YLim');
-
-for i=1:size(selection,2)
-    if selection(2,i)>=t && selection(1,i)<=t+dt
-        p=(selection(:,i)-t)*xlim(2)/dt;
-        p(1)=max(0,p(1));
-        rectangle('Parent',axe,'Position',[p(1) ylim(1) p(2)-p(1)+0.0000001 ylim(2)],'EdgeColor','none','FaceColor',[.85 1 .85]);
-    end
-end
-end
 

@@ -11,7 +11,7 @@ if strcmpi(evt.Key,'escape')
     obj.MouseMode=[];
     obj.ChanSelect2Edit=[];
     obj.SelectedEvent=[];
-    obj.SelectedLines=[];
+    obj.Selection=[];
     return
 end
 %**************************************************************************
@@ -50,17 +50,24 @@ if ~isempty(evt.Modifier)
                     set(obj.TogAnnotate,'State','on');
                 end
                 ChangeMouseMode(obj,obj.TogAnnotate);
+            elseif strcmpi(evt.Key,'e')
+                if strcmpi(get(obj.TogSelection,'State'),'on')
+                    set(obj.TogSelection,'State','off');
+                else
+                    set(obj.TogSelection,'State','on');
+                end
+                ChangeMouseMode(obj,obj.TogSelection);
             else
                 
                 m=min(9,size(obj.FastEvts,1));
-                if strcmpi(evt.Key,num2str(0))
+                if strcmpi(evt.Character,num2str(0))
                     obj.SelectedFastEvt=[];
                     if isa(obj.WinFastEvts,'FastEventWindow')&&isvalid(obj.WinFastEvts)
                         notify(obj,'SelectedFastEvtChange');
                     end
                 else
                     for i=1:m
-                        if strcmpi(evt.Key,num2str(i))
+                        if strcmpi(evt.Character,num2str(i))
                             obj.SelectedFastEvt=i;
                             if isa(obj.WinFastEvts,'FastEventWindow')&&isvalid(obj.WinFastEvts)
                                 notify(obj,'SelectedFastEvtChange');

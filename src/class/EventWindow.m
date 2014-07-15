@@ -64,9 +64,7 @@ classdef EventWindow  < handle
             if isempty(val)
                 val=[];
             else
-                if val>length(s)
-                    val=1;
-                end
+                val(val>length(s))=[];
             end
             
             set(obj.uilist,'Value',val);

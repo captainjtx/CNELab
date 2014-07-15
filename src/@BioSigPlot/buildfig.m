@@ -31,4 +31,6 @@ obj.makeMenu();
 
 obj.WinEvts=EventWindow(obj);
 
+obj.TFMapFig=figure('Name','TFMap','Visible','off');
+
 end

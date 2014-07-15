@@ -6,10 +6,10 @@ time=obj.MouseTime;
 
 if obj.UponText
     
-%     if strcmpi(get(obj.Fig,'SelectionType'),'open')
-%     
-%         return
-%     end
+    %     if strcmpi(get(obj.Fig,'SelectionType'),'open')
+    %
+    %         return
+    %     end
     return
 end
 if isempty(obj.MouseMode)
@@ -25,39 +25,77 @@ if isempty(obj.MouseMode)
         obj.Evts=EventList;
         return
     end
-    %**********************************************************************
-    %Event Line selection
-    obj.SelectedEvent=[];
-    obj.SelectedLines=[];
-    if ~isempty(obj.EventLines)
-        for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
-            if ishandle(obj.EventLines(i))&&obj.EventLines(i)
-                XData=get(obj.EventLines(i),'XData');
-                eventIndex=XData(1);
-                if abs(t-eventIndex)<50
-                    obj.SelectedLines=[obj.SelectedLines i];
-                    obj.SelectedEvent=obj.EventDisplayIndex(i);
-                    obj.DragMode=1;
-                    return
-                end
-            end
-        end
-    end
-    
-    %**********************************************************************
     %Multi Channel Selection
     Modifier=get(obj.Fig,'CurrentModifier');
     if ndata
         if isempty(Modifier)
+            %**********************************************************************
+            %Single Event Selection
+            if ~isempty(obj.EventLines)
+                for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
+                    if ishandle(obj.EventLines(i))&&obj.EventLines(i)
+                        XData=get(obj.EventLines(i),'XData');
+                        eventIndex=XData(1);
+                        if abs(t-eventIndex)<50
+                            newSelect=obj.EventDisplayIndex(i);
+                            obj.SelectedEvent=newSelect;
+                            obj.DragMode=1;
+                            return
+                        end
+                    end
+                end
+            end
+            %**********************************************************************
             %Sigle Channel Selection
             obj.ChanSelect2Edit{ndata}=nchan;
+            return
         elseif ismember('control',Modifier)||ismember('command',Modifier)
+            %**********************************************************************
+            %Cancel region selection
+            if ~isempty(obj.Selection)
+                for i=1:size(obj.Selection,2)
+                    if time>=obj.Selection(1,i)&&time<=obj.Selection(2,i)
+                        obj.Selection(:,i)=[];
+                        redrawSelection(obj);
+                        return
+                    end
+                end
+            end
+            
+            %Event Line selection
+            if ~isempty(obj.EventLines)
+                for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
+                    if ishandle(obj.EventLines(i))&&obj.EventLines(i)
+                        XData=get(obj.EventLines(i),'XData');
+                        eventIndex=XData(1);
+                        if abs(t-eventIndex)<50
+                            newSelect=obj.EventDisplayIndex(i);
+                            if ~isempty(obj.SelectedEvent)
+                                if any(newSelect==obj.SelectedEvent)
+                                    obj.SelectedEvent(newSelect==obj.SelectedEvent)=[];
+                                    
+                                else
+                                    obj.SelectedEvent=cat(1,obj.SelectedEvent,newSelect);
+                                end
+                            else
+                                obj.SelectedEvent=newSelect;
+                            end
+                            obj.DragMode=1;
+                            return
+                        end
+                    end
+                end
+            end
+            
+            
             [flag,loc]=ismember(nchan,obj.ChanSelect2Edit{ndata});
             if flag
                 obj.ChanSelect2Edit{ndata}(loc)=[];
             else
                 obj.ChanSelect2Edit{ndata}=[obj.ChanSelect2Edit{ndata};nchan];
             end
+            
+            %**********************************************************************
             
         elseif ismember('shift',Modifier)
             if isempty(obj.ChanSelect2Edit{ndata})
@@ -95,19 +133,18 @@ if isempty(obj.MouseMode)
     
 elseif strcmpi(obj.MouseMode,'Select')
     
-    if(strcmp(get(obj.Fig,'SelectionType'),'open'))
+    if(strcmpi(get(obj.Fig,'SelectionType'),'open'))
         
         obj.SelectionStart=[];%Cancel first click
         i=1;
         while i<=size(obj.Selection,2)
             if time<=obj.Selection(2,i) && time>=obj.Selection(1,i)
-                obj.Selection=obj.Selection(:,[1:i-1 i+1:end]);
+                obj.Selection(:,i)=[];
             else
                 i=i+1;
             end
         end
-        redraw(obj);
-        
+        redrawSelection(obj);
     else
         if isempty(obj.SelectionStart)
             obj.SelectionStart=time;
@@ -124,7 +161,7 @@ elseif strcmpi(obj.MouseMode,'Select')
             
             
             obj.SelectionStart=[];
-            redraw(obj);
+            redrawSelection(obj);
         end
     end
 elseif strcmpi(obj.MouseMode,'Annotate')

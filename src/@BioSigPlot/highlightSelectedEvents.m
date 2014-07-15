@@ -1,4 +1,7 @@
 function highlightSelectedEvents(obj)
+if isempty(obj.Evts_)
+    return
+end
 EventLines=obj.EventLines;
 EventTexts=obj.EventTexts;
 EventIndex=obj.EventDisplayIndex;

@@ -7,11 +7,9 @@ mouseIndex=floor((obj.MouseTime-obj.Time)*obj.SRate);
 if ndata==0
     set(obj.Fig,'pointer','arrow')
 else
-    if ~strcmpi(obj.MouseMode,'Pan')
-        set(obj.Fig,'pointer','crosshair')
-    end
-    
+
     if isempty(obj.MouseMode)
+        set(obj.Fig,'pointer','crosshair');
         if ~isempty(obj.EventLines)&&~obj.DragMode
             for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
                 if ishandle(obj.EventLines(i))&&obj.EventLines(i)
@@ -31,19 +29,18 @@ else
             end
         end
     elseif strcmpi(obj.MouseMode,'Measurer')
+        set(obj.Fig,'pointer','crosshair');
         obj.MouseMovementMeasurer();
     elseif strcmpi(obj.MouseMode,'Select')
+        set(obj.Fig,'pointer','ibeam');
         if ~isempty(obj.SelectionStart)
             t=sort([obj.SelectionStart time]-obj.Time)*obj.SRate;
             epsilon=1.e-10;
-            if strcmpi(obj.DataView,'Horizontal') || strcmpi(obj.DataView,'Vertical')
-                for i=1:length(obj.Data);
-                    p=get(obj.Axes(i),'YLim');
+            for i=1:length(obj.Axes)
+                p=get(obj.Axes(i),'YLim');
+                if ishandle(obj.SelRect(i))
                     set(obj.SelRect(i),'position',[t(1),p(1),t(2)-t(1)+epsilon,p(2)]);
                 end
-            else
-                p=get(obj.Axes,'YLim');
-                set(obj.SelRect,'position',[t(1),p(1),t(2)-t(1)+epsilon,p(2)]);
             end
             
         end
@@ -117,10 +114,10 @@ function updateUponText(obj,mouseIndex,yvalue)
 
 obj.UponText=0;
 if ~isempty(obj.EventTexts)&&~obj.DragMode
-    for i=1:length(obj.Axes)
-        for j=1:size(obj.EventTexts,2)
-            if ishandle(obj.EventTexts(i,j))&&obj.EventTexts(i,j)
-                extent=get(obj.EventTexts(i,j),'Extent');
+        for j=1:size(obj.EventTexts,1)*size(obj.EventTexts,2)
+            if ishandle(obj.EventTexts(j))
+                i=find(get(obj.EventTexts(j),'Parent')==obj.Axes);
+                extent=get(obj.EventTexts(j),'Extent');
                 if mouseIndex>extent(1)&&mouseIndex<extent(1)+extent(3)&&yvalue(i)>extent(2)&&yvalue(i)<extent(2)+extent(4)
                     obj.UponText=1;
                     set(obj.Fig,'pointer','hand');
@@ -128,7 +125,5 @@ if ~isempty(obj.EventTexts)&&~obj.DragMode
                 end
             end
         end
-        
-    end
 end
 end

@@ -21,8 +21,8 @@ obj.MenuCommands=uimenu(obj.MenuSettings,'Label','Command List',...
 obj.MenuConfigurationState=uimenu(obj.MenuSettings,'Label','Configuration file','Callback',@(src,evt) ConfigWindow(obj));
 obj.MenuPlaySpeed=uimenu(obj.MenuSettings,'Label','Speed for play','Callback',@(src,evt) MnuPlay(obj));
 
-obj.MenuWidth=uimenu(obj.MenuSettings,'Label','Page time','Callback',@(src,evt) MnuWidth2Display(obj),'Accelerator','t');
-obj.MenuChan=uimenu(obj.MenuSettings,'Label','Page channels','Callback',@(src,evt) MnuChan2Display(obj),'Accelerator','n');
+obj.MenuWidth=uimenu(obj.MenuSettings,'Label','Page time','Callback',@(src,evt) MnuWidth2Display(obj));
+obj.MenuChan=uimenu(obj.MenuSettings,'Label','Page channels','Callback',@(src,evt) MnuChan2Display(obj));
 
 obj.MenuColor=uimenu(obj.MenuSettings,'Label','Color');
 obj.MenuSampleRate=uimenu(obj.MenuSettings,'Label','Sample Rate','Callback',@(src,evt) MnuSampleRate(obj),'Accelerator','r');
@@ -58,6 +58,15 @@ obj.MenuTriggerEventsLoad=uimenu(obj.MenuTriggerEvents,'Label','Load Function',.
 
 obj.MenuTriggerEventsDisplay=uimenu(obj.MenuTriggerEvents,'Label','Display',...
     'CallBack',@(src,evt) set(obj,'TriggerEventsDisplay',~obj.TriggerEventsDisplay));
+
+obj.MenuTFMap=uimenu(obj.MenuApp,'Label','Time-Frequency map');
+obj.MenuTFMapAverage=uimenu(obj.MenuTFMap,'Label','Average',...
+    'Callback', @(src,evt) Time_Freq_Map(obj,src),'checked','on');
+obj.MenuTFMapChannel=uimenu(obj.MenuTFMap,'Label','Channel',...
+    'Callback', @(src,evt) Time_Freq_Map(obj,src),'checked','off');
+obj.MenuTFMapGrid=uimenu(obj.MenuTFMap,'Label','Grid',...
+    'Callback', @(src,evt) Time_Freq_Map(obj,src),'checked','off');
+
 end
 
 

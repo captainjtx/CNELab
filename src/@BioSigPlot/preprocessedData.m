@@ -26,28 +26,6 @@
 
 function d=preprocessedData(obj,n)
 
-% leftborder=round(min(5*obj.SRate,obj.Time*obj.SRate));
-% rightborder=round(min(5*obj.SRate,  max( size(obj.Data{1},2)-(obj.Time+obj.WinLength)*obj.SRate , 0 )  ));
-% t=(obj.Time*obj.SRate+1-leftborder):(min((obj.Time+obj.WinLength)*obj.SRate,size(obj.Data{1},2))+rightborder);
-
-
-% if obj.StrongFilter
-%     order=6;zeroPhase=1;
-% else
-%     order=1;zeroPhase=0;
-% end
-% if obj.Filtering
-%     if fl~=0
-%         d=butterfilt(d,obj.SRate,fl,0,order,zeroPhase);
-%     end
-%     if fh~=0
-%         d=butterfilt(d,obj.SRate,0,fh,order,zeroPhase);
-%     end
-%     if obj.FilterNotch(1)~=0 && obj.FilterNotch(2)~=0
-%         d=butterfilt(d,obj.SRate,obj.FilterNotch(2),obj.FilterNotch(1),order,zeroPhase);
-%     end
-% end
-% d=d(:,1+leftborder:end-rightborder);
 t=ceil(obj.Time*obj.SRate+1):min(ceil((obj.Time+obj.WinLength)*obj.SRate),size(obj.Data{1},1));
 d=double(obj.Data{n}(t,:))*(obj.Montage{n}(obj.MontageRef(n)).mat*obj.ChanOrderMat{n})';
 

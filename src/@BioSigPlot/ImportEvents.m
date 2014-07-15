@@ -39,7 +39,7 @@ if FileName~=0
         end
     end
     if iscell(NewEventList)
-        if size(NewEventList,2)==3
+        if size(NewEventList,2)==4
             switch choice
                 case 'overwrite'
                     obj.Evts=NewEventList;
