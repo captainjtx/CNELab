@@ -26,6 +26,9 @@ if ~isempty(FirstDispChan)&&~isempty(DispChans)
     end
 end
 
+%make zero gain channel disappear
+gain(gain==0)=nan;
+
 if ~isempty(ChanSelect2Display)
     data=data(:,ChanSelect2Display).*...
         repmat(reshape(gain(ChanSelect2Display),1,length(ChanSelect2Display)),size(data(:,ChanSelect2Display),1),1);

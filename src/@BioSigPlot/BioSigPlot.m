@@ -7,18 +7,22 @@ classdef BioSigPlot < hgsetget
         ControlPanel
         TimePanel
         InfoPanel
+        
         FilterPanel
         ScalePanel
         
+        BtnPrevEvent
         BtnPrevPage
         BtnPrevSec
         EdtTime
         BtnNextSec
         BtnNextPage
-        BtnPlay
-        TxtTime
-        TxtY
-        TxtFilter
+        BtnNextEvent
+        
+        TxtInfo1
+        TxtInfo2
+        TxtInfo3
+        TxtInfo4
         
         ChkFilter
         ChkStrongFilter
@@ -31,16 +35,19 @@ classdef BioSigPlot < hgsetget
         BtnAddGain
         BtnRemGain
         
-        TFMap
+        BtnTFMap
+        BtnPlayBackward
+        BtnPlayForward
+        TogPlay
         
-        GainIncrease
-        GainDecrease
+        BtnGainIncrease
+        BtnGainDecrease
         
-        WidthIncrease
-        WidthDecrease
+        BtnWidthIncrease
+        BtnWidthDecrease
         
-        HeightIncrease
-        HeightDecrease
+        BtnHeightIncrease
+        BtnHeightDecrease
         
         TxtScale
         ArrScale
@@ -58,6 +65,8 @@ classdef BioSigPlot < hgsetget
         MenuExportFigureMirror
         MenuExportFigureAdvanced
         MenuExportEvents
+        MenuExportData
+        
         MenuImport
         MenuImportDataSet
         MenuImportEvents
@@ -99,6 +108,7 @@ classdef BioSigPlot < hgsetget
         MenuTFMapAverage
         MenuTFMapChannel
         MenuTFMapGrid
+        MenuTFMapSettings
         
         MenuSave
         PanObj
@@ -177,6 +187,10 @@ classdef BioSigPlot < hgsetget
         
         Evts2Display
         
+        STFTWindowLength
+        STFTOverlap
+        STFTScaleLow
+        STFTScaleHigh
     end
     properties (Access=protected,Hidden)%Storage of public properties
         Config_
@@ -225,7 +239,6 @@ classdef BioSigPlot < hgsetget
         YBorder_
         Selection_
         
-        
         BadChannels_
         ChanSelect2Display_
         ChanSelect2Edit_
@@ -240,6 +253,10 @@ classdef BioSigPlot < hgsetget
         SelectedFastEvt_
         TriggerEventsFcn_
         
+        STFTWindowLength_
+        STFTOverlap_
+        STFTScaleLow_
+        STFTScaleHigh_
     end
     properties (SetAccess=protected) %Readonly properties
         Data                        %(Read-Only)All the Signals
@@ -273,6 +290,8 @@ classdef BioSigPlot < hgsetget
         Fig
         Axes
         TFMapFig
+        IconPlay
+        IconPause
     end
     
     properties
@@ -394,7 +413,7 @@ classdef BioSigPlot < hgsetget
             obj.RedrawEvtsSkip=false;
             obj.EventLines=[];
             obj.EventTexts=[];
-
+            
             obj.EvtContextMenu=EventContextMenu(obj);
             obj.DragMode=0;
             obj.EditMode=0;
@@ -512,13 +531,20 @@ classdef BioSigPlot < hgsetget
             %Rearrangement: make sure there is no conflict on the order of
             %properties. Constraint config must be before all and Colors
             %must be before *ModeColors
-            keylist={'Config','SRate','WinLength','Gain','DataView','Montage','MontageRef','Evts','Time','FirstDispChans',...
-                'DispChans','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch1','FilterNotch2','StrongFilter',...
-                'NormalModeColor','ChanNames','Units','XGrid','YGrid',...
-                'Position','Title','MouseMode','PlaySpeed','MainTimerPeriod','VideoTimerPeriod','AxesHeight','YBorder','YGridInterval','Selection',...
-                'TaskFiles','VideoStartTime','VideoFile','VideoTimeFrame','VideoLineTime','MainTimer','VideoTimer','BadChannels','ChanSelect2Display',...
-                'ChanSelect2Edit','EventsDisplay','TriggerEventsDisplay','EventsWindowDisplay','ChanSelectColor','AxesBackgroundColor','ChanColors','EventSelectColor','EventDefaultColor',...
-                'TriggerEventDefaultColor','FastEvts','SelectedFastEvt','TriggerEventsFcn','SelectedEvent'};
+            keylist={'Config','SRate','WinLength','Gain','DataView','Montage',...
+                'MontageRef','Evts','Time','FirstDispChans','DispChans','TimeUnit',...
+                'Colors','InsideTicks','Filtering','FilterLow','FilterHigh',...
+                'FilterNotch1','FilterNotch2','StrongFilter','NormalModeColor',...
+                'ChanNames','Units','XGrid','YGrid','Position','Title','MouseMode',...
+                'PlaySpeed','MainTimerPeriod','VideoTimerPeriod','AxesHeight',...
+                'YBorder','YGridInterval','Selection','TaskFiles','VideoStartTime',...
+                'VideoFile','VideoTimeFrame','VideoLineTime','MainTimer','VideoTimer',...
+                'BadChannels','ChanSelect2Display','ChanSelect2Edit','EventsDisplay',...
+                'TriggerEventsDisplay','EventsWindowDisplay','ChanSelectColor',...
+                'AxesBackgroundColor','ChanColors','EventSelectColor','EventDefaultColor',...
+                'TriggerEventDefaultColor','FastEvts','SelectedFastEvt','TriggerEventsFcn',...
+                'SelectedEvent','STFTWindowLength','STFTOverlap','STFTScaleLow',...
+                'STFTScaleHigh'};
             
             if isempty(obj.Commands)
                 command='a=BioSigPlot(data';
@@ -533,11 +559,16 @@ classdef BioSigPlot < hgsetget
             if ~isempty(n), g=g([n-1 n 1:n-2 n+1:end]); end
             
             for i=1:2:length(g)
-                if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage','DataView','MontageRef','Time','FirstDispChans',...
-                        'DispChans','TimeUnit','Colors','InsideTicks','Filtering','FilterLow','FilterHigh','FilterNotch1','FilterNotch2','StrongFilter',...
-                        'NormalModeColor','ChanNames','Units','XGrid','YGrid','AxesHeight'...
-                        'YBorder','YGridInterval','TaskFiles','VideoStartTime','MainTimerPeriod','VideoTimerPeriod','VideoTimeFrame',...
-                        'BadChannels','ChanSelect2Display','ChanSelectColor','AxesBackgroundColor','ChanColors','TriggerEventsFcn'}))
+                if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage',...
+                        'DataView','MontageRef','Time','FirstDispChans','DispChans',...
+                        'TimeUnit','Colors','InsideTicks','Filtering','FilterLow',...
+                        'FilterHigh','FilterNotch1','FilterNotch2','StrongFilter',...
+                        'NormalModeColor','ChanNames','Units','XGrid','YGrid',...
+                        'AxesHeight','YBorder','YGridInterval','TaskFiles',...
+                        'VideoStartTime','MainTimerPeriod','VideoTimerPeriod',...
+                        'VideoTimeFrame','BadChannels','ChanSelect2Display',...
+                        'ChanSelectColor','AxesBackgroundColor','ChanColors',...
+                        'TriggerEventsFcn'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage','DataView',...
@@ -561,10 +592,6 @@ classdef BioSigPlot < hgsetget
                     NeedRedrawEvts=true;
                     NeedDrawSelect=true;
                     
-                elseif any(strcmpi(g{i},{'PlaySpeed','FastEvts','SelectedFastEvt','EventDefaultColor','EventsWindowDisplay',...
-                        'TriggerEventsFcn','TriggerEventDefaultColor','MouseMode'}))
-                    g{i}=keylist{strcmpi(g{i},keylist)};
-                    set@hgsetget(obj,[g{i} '_'],g{i+1})
                 elseif any(strcmpi(g{i},{'EventsDisplay','Evts',...
                         'EventSelectColor','TriggerEventsDisplay'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
@@ -584,6 +611,12 @@ classdef BioSigPlot < hgsetget
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     NeedChangeGain=true;
+                elseif any(strcmpi(g{i},{'PlaySpeed','FastEvts','SelectedFastEvt',...
+                        'EventDefaultColor','EventsWindowDisplay','TriggerEventsFcn',...
+                        'TriggerEventDefaultColor','MouseMode','STFTWindowLength'...
+                        ,'STFTOverlap','STFTScaleLow','STFTScaleHigh'}))
+                    g{i}=keylist{strcmpi(g{i},keylist)};
+                    set@hgsetget(obj,[g{i} '_'],g{i+1})
                 elseif any(strcmpi(g{i},{'Selection'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
@@ -762,40 +795,24 @@ classdef BioSigPlot < hgsetget
         function obj = set.TriggerEventsFcn(obj,val), set(obj,'TriggerEventsFcn',val); end
         function val = get.TriggerEventsFcn(obj), val=obj.TriggerEventsFcn_; end
         
+        function obj = set.STFTWindowLength(obj,val), set(obj,'STFTWindowLength',val); end
+        function val = get.STFTWindowLength(obj), val=obj.STFTWindowLength_; end
+        
+        function obj = set.STFTOverlap(obj,val), set(obj,'STFTOverlap',val); end
+        function val = get.STFTOverlap(obj), val=obj.STFTOverlap_; end
+        
+        function obj = set.STFTScaleLow(obj,val), set(obj,'STFTScaleLow',val); end
+        function val = get.STFTScaleLow(obj), val=obj.STFTScaleLow_; end
+        
+        function obj = set.STFTScaleHigh(obj,val), set(obj,'STFTScaleHigh',val); end
+        function val = get.STFTScaleHigh(obj), val=obj.STFTScaleHigh_; end
         %*****************************************************************
         % ***************** User available methods  **********************
         %*****************************************************************
         
         %******************************************************************
-        function StartPlay(obj)
-            % Begin Autoscrolling
-            %
-            % USAGEEvent
-            % 	obj.StartPlay();
-            
-            set(obj.BtnPlay,'String','Stop','Callback',@(src,evt) StopPlay(obj));
-            obj.Commands{end+1}='a.StartPlay';
-            start(obj.MainTimer);
-            start(obj.VideoTimer);
-            
-            %             audioStart=(obj.VideoFrameInd-1)*obj.VideoTimerPeriod;
-            %             audioStart=round(audioStart*get(obj.MAudioPlayer,'SampleRate'));
-            %             play(obj.MAudioPlayer,audioStart);
-        end
         
         %******************************************************************
-        function StopPlay(obj)
-            % Stop Autoscrolling
-            %
-            % USAGE
-            % 	obj.StopPlay();
-            
-            set(obj.BtnPlay,'String','Play','Callback',@(src,evt) StartPlay(obj));
-            obj.Commands{end+1}='a.StopPlay';
-            stop(obj.MainTimer);
-            stop(obj.VideoTimer);
-            %             pause(obj.MAudioPlayer);
-        end
         
         %*****************************************************************
         % ***************** Public computed read-only properties*********
@@ -1009,12 +1026,13 @@ classdef BioSigPlot < hgsetget
             end
             if ~isempty(obj.SRate)
                 m=floor((size(obj.Data{1},1)-1)/obj.SRate);
-                if val>m && strcmpi(get(obj.BtnPlay,'String'),'Stop'), StopPlay(obj);end
             else
                 m=val;
             end
+            
             obj.Time_=min(max(val,0),m);
             set(obj.EdtTime,'String',obj.Time_);
+            
             if ~isempty(obj.VideoTimeFrame)
                 ind=dsearchn(obj.VideoTimeFrame(:,1),obj.Time_+obj.VideoLineTime-obj.VideoStartTime);
                 if ~isempty(obj.VideoHandle)
@@ -1142,7 +1160,7 @@ classdef BioSigPlot < hgsetget
             ctrlsize=obj.ControlBarSize;
             if  ~isempty(obj.Evts_)&&obj.EventsWindowDisplay
                 set(obj.EventPanel,'Visible','on');
-                set(obj.MainPanel,'position',[180 ctrlsize(2) pos(3)-180 pos(4)-ctrlsize(2)]);
+                set(obj.MainPanel,'position',[obj.EventPanelWidth ctrlsize(2) pos(3)-obj.EventPanelWidth pos(4)-ctrlsize(2)]);
                 
             else
                 set(obj.EventPanel,'Visible','off');
@@ -1158,27 +1176,12 @@ classdef BioSigPlot < hgsetget
             offon={'off','on'};
             if isempty(val)
                 offon={'off','off'};
-                for i=1:length(obj.Axes)
-                    set(obj.LineMeasurer(i),'XData',[inf inf]);
-                    pos=get(obj.TxtFastEvent(i),'position');
-                    set(obj.TxtFastEvent(i),'Position',[inf pos(2)]);
-                    
-                    Nchan=obj.MontageChanNumber(i);
-                    for j=1:Nchan
-                        pos=get(obj.TxtMeasurer{i}(j),'position');
-                        set(obj.TxtMeasurer{i}(j),'position',[inf pos(2)]);
-                    end
-                end
+                deleteMeasurer(obj);
+                deleteAnnotate(obj);
             end
             set(obj.TogMeasurer,'State',offon{1+strcmpi(val,'Measurer')});
             set(obj.TogSelection,'State',offon{1+strcmpi(val,'Select')});
             set(obj.TogAnnotate,'State',offon{1+strcmpi(val,'Annotate')});
-            
-        end
-        
-        %******************************************************************
-        function obj = set.PlaySpeed_(obj,val)
-            obj.PlaySpeed_=val;
             
         end
         %==================================================================
@@ -1345,15 +1348,13 @@ classdef BioSigPlot < hgsetget
         %==================================================================
         %******************************************************************
         function obj = set.VideoLineTime(obj,val)
-            if ~isempty(obj.WinLength)
-                val=max(0,min(val,obj.WinLength));
-            end
+            
             obj.VideoLineTime=val;
             %try
             
-            t=val*obj.SRate_;
+            t=(val-obj.Time)*obj.SRate_;
             for i=1:length(obj.LineVideo)
-                set(obj.LineVideo,'XData',[t t]);
+                set(obj.LineVideo(i),'XData',[t t]);
             end
         end
         %==================================================================
@@ -1407,12 +1408,6 @@ classdef BioSigPlot < hgsetget
             a='defaultconfig';
         end
         
-        %*****************************************************************
-        function s=ControlBarSize(obj) %#ok<MANU>
-            s=[1180,40];
-        end
-        
-        
         %******************************************************************
         %Dynamic return the channel number,dataset number,amplitude in
         %sequence
@@ -1430,13 +1425,6 @@ classdef BioSigPlot < hgsetget
         makeMenu(obj)
         %==================================================================
         %******************************************************************
-        function makeControls(obj)
-            obj.timeControlPanel(obj.ControlPanel,[0 0 .17 1]);
-            obj.infoControlPanel(obj.ControlPanel,[0.17 0 .23 1]);
-            obj.filterControlPanel(obj.ControlPanel,[.4 0 .35 1]);
-            obj.scaleControlPanel(obj.ControlPanel,[0.75,0,0.1,1]);
-            
-        end
         
         %******************************************************************
         %Time Navigation Panel Initialization
@@ -1591,57 +1579,93 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         %********************Interface Action Methods *********************
         %******************************************************************
-        
-        %******************************************************************
-        function ChangeTime(obj,src)
-            timemax=floor((size(obj.Data{1},1)-1)/obj.SRate);
-            if strcmpi(get(obj.BtnPlay,'String'),'Stop'), StopPlay(obj);end
-            if src==obj.BtnNextPage
-                t=obj.Time+obj.WinLength;
-            elseif src==obj.BtnPrevPage
-                t=obj.Time-obj.WinLength;
-            elseif src==obj.BtnNextSec
-                t=obj.Time+1;
-            elseif src==obj.BtnPrevSec
-                t=obj.Time-1;
-            else
-                t=str2double(get(obj.EdtTime,'String'));
-            end
-            t=max(0,min(timemax,t));
-            
-            obj.VideoLineTime=0;
-            obj.Time=t;
-        end
-        %******************************************************************
         function UpdateVideo(obj)
             
-            videoFrameInd=max(1,min(obj.VideoFrameInd+1,size(obj.VideoTimeFrame,1)));
-            videoTimeFrame=obj.VideoTimeFrame;
+            if ~isempty(obj.VideoTimeFrame)
+                videoFrameInd=max(1,min(obj.VideoFrameInd+1,size(obj.VideoTimeFrame,1)));
+                videoTimeFrame=obj.VideoTimeFrame;
+                
+                videoFrame=videoTimeFrame(videoFrameInd,2);
+                if videoFrame~=obj.VideoFrame
+                    obj.VideoFrame=videoFrame;
+                    %                 set(obj,'VideoFrame',videoFrame);
+                    obj.VideoFrameInd=videoFrameInd;
+                end
+            end
+        end
+        function StartPlay(obj)
             
-            videoFrame=videoTimeFrame(videoFrameInd,2);
+            set(obj.TogPlay,'CData',obj.IconPause,'ClickedCallback',@(src,evt) PausePlay(obj));
             
-            if videoFrame~=obj.VideoFrame
-                obj.VideoFrame=videoFrame;
-                %                 set(obj,'VideoFrame',videoFrame);
+            start(obj.MainTimer);
+            if ~isempty(obj.VideoTimeFrame)
+                start(obj.VideoTimer);
             end
             
-            obj.VideoFrameInd=videoFrameInd;
+            %             audioStart=(obj.VideoFrameInd-1)*obj.VideoTimerPeriod;
+            %             audioStart=round(audioStart*get(obj.MAudioPlayer,'SampleRate'));
+            %             play(obj.MAudioPlayer,audioStart);
+        end
+        
+        
+        function PausePlay(obj)
+            % Stop Autoscrolling
+            %
+            % USAGE
+            % 	obj.StopPlay();
             
+            set(obj.TogPlay,'CData',obj.IconPlay,'State','off','ClickedCallback',@(src,evt) StartPlay(obj));
+            
+            stop(obj.MainTimer);
+            
+            if ~isempty(obj.VideoTimeFrame)
+                stop(obj.VideoTimer);
+            end
+            %             pause(obj.MAudioPlayer);
+        end
+        
+        function PlayForward(obj)
+            obj.PlaySpeed=obj.PlaySpeed+1;
+            if obj.PlaySpeed==0
+                obj.PlaySpeed=1;
+            end
+        end
+        
+        function PlayBackward(obj)
+            obj.PlaySpeed=obj.PlaySpeed-1;
+            if obj.PlaySpeed==0
+                obj.PlaySpeed=-1;
+            end
         end
         %==================================================================
         %******************************************************************
         function PlayTime(obj)
-            t=obj.VideoTimeFrame(obj.VideoFrameInd,1)+obj.VideoStartTime;
-            
-            obj.VideoLineTime=t-obj.Time;
-            
-            if (t-obj.Time)>obj.WinLength
-                obj.VideoLineTime=0;
-                set(obj,'Time',obj.Time+obj.WinLength);
+            if ~isempty(obj.VideoTimeFrame)
+                t=obj.VideoTimeFrame(obj.VideoFrameInd,1)+obj.VideoStartTime;
+                obj.VideoLineTime=t;
+            else
+                t=obj.VideoLineTime+obj.MainTimerPeriod*obj.PlaySpeed;
+                obj.VideoLineTime=t;
             end
             
+            m=(size(obj.Data{1},1)-1)/obj.SRate;
+            if strcmpi(get(obj.TogPlay,'State'),'on')
+                if t<0
+                    obj.PlaySpeed=1;
+                    obj.VideoLineTime=0;
+                    PausePlay(obj);
+                elseif t>m
+                    obj.PlaySpeed=-1;
+                    obj.VideoLineTime=m;
+                    PausePlay(obj);
+                end
+            end
             
-            
+            if (t-obj.Time)>obj.WinLength
+                set(obj,'Time',obj.Time+obj.WinLength);
+            elseif t<obj.Time
+                set(obj,'Time',obj.Time-obj.WinLength);
+            end
         end
         %==================================================================
         %******************************************************************
@@ -1650,24 +1674,15 @@ classdef BioSigPlot < hgsetget
             obj.SelectionStart=[];
             if strcmpi(get(src,'State'),'on')
                 if src==obj.TogMeasurer
+                    remakeMeasurer(obj);
                     s='Measurer';
-                    for i=1:length(obj.Axes)
-                        uistack(obj.LineMeasurer(i),'top')
-                        for j=1:length(obj.TxtMeasurer{i})
-                            uistack(obj.TxtMeasurer{i}(j),'top')
-                        end
-                    end
                 elseif src==obj.TogSelection
                     s='Select';
                 elseif src==obj.TogAnnotate
+                    remakeAnnotate(obj);
                     s='Annotate';
-                    for i=1:length(obj.Axes)
-                        uistack(obj.LineMeasurer(i),'top')
-                        uistack(obj.TxtFastEvent(i),'top')
-                    end
                 end
             end
-            obj.MouseMode=[];
             obj.MouseMode=s;
         end
         %==================================================================
@@ -1729,9 +1744,9 @@ classdef BioSigPlot < hgsetget
             %**************************************************************
             % Dialog box to change the speed for play
             %**************************************************************
-            t=inputdlg('Speed of play : X ');
-            t=str2double(t);
-            if ~isempty(t) && ~isnan(t)
+            t=inputdlg('Speed of play : X ','Play Speed',1,{num2str(obj.PlaySpeed)});
+            t=str2double(t{1});
+            if ~isnan(t)
                 obj.PlaySpeed=t;
             end
         end
@@ -1741,8 +1756,8 @@ classdef BioSigPlot < hgsetget
             %**************************************************************
             % Dialog box to change the sampling frequency
             %**************************************************************
-            t=inputdlg('Sampling Frequency (Hz) : ');
-            t=str2double(t);
+            t=inputdlg('Sampling Frequency (Hz) : ','Sample rate',1,{num2str(obj.SRate)});
+            t=str2double(t{1});
             if ~isnan(t)
                 obj.SRate=t;
             end
@@ -1789,6 +1804,13 @@ classdef BioSigPlot < hgsetget
         function WinVideoFcn(obj,src)
         end
         %******************************************************************
+        function s=ControlBarSize(obj) %#ok<MANU>
+            s=[1100,35];
+        end
+        
+        function w=EventPanelWidth(obj)
+            w=150;
+        end
         function resize(obj)
             set(obj.Fig,'Units','pixels')
             pos=get(obj.Fig,'position');
@@ -1798,14 +1820,15 @@ classdef BioSigPlot < hgsetget
                 set(obj.Fig,'position',pos);
             end
             ctrlsize=obj.ControlBarSize;
+            eventwidth=obj.EventPanelWidth;
             
             set(obj.Fig,'position',pos);
             
-            set(obj.EventPanel,'position',[0 ctrlsize(2) 180 pos(4)-ctrlsize(2)]);
+            set(obj.EventPanel,'position',[0 ctrlsize(2) eventwidth pos(4)-ctrlsize(2)]);
             
             if  ~isempty(obj.Evts_)&&obj.EventsWindowDisplay
                 set(obj.EventPanel,'Visible','on');
-                set(obj.MainPanel,'position',[180 ctrlsize(2) pos(3)-180 pos(4)-ctrlsize(2)]);
+                set(obj.MainPanel,'position',[eventwidth ctrlsize(2) pos(3)-eventwidth pos(4)-ctrlsize(2)]);
             else
                 set(obj.EventPanel,'Visible','off');
                 set(obj.MainPanel,'position',[0 ctrlsize(2) pos(3) pos(4)-ctrlsize(2)]);
@@ -1814,7 +1837,6 @@ classdef BioSigPlot < hgsetget
         end
         
         function recalculate(obj)
-            
             obj.PreprocData=cell(1,obj.DataNumber);
             for i=1:obj.DataNumber
                 obj.PreprocData{i}=preprocessedData(obj,i);
@@ -1830,9 +1852,9 @@ classdef BioSigPlot < hgsetget
                 val=10;
             end
             
-            if src==obj.WidthIncrease
+            if src==obj.BtnWidthIncrease
                 val=val+1;
-            elseif src==obj.WidthDecrease
+            elseif src==obj.BtnWidthDecrease
                 val=val-1;
             end
             
@@ -1841,30 +1863,26 @@ classdef BioSigPlot < hgsetget
         
         function ChangeFilter(obj,src)
             switch src
-                case obj.ChkStrongFilter
-                    set(obj,'StrongFilter',obj.applyPanelVal(obj.StrongFilter_,get(src,'Value')));
                 case obj.EdtFilterLow
-                    set(obj,'FilterLow',obj.applyPanelVal(obj.FilterLow_,str2double(get(src,'String'))));
                     if str2double(get(src,'String'))==0||isnan(str2double(get(src,'String')))
                         set(src,'String','-');
                     end
                     
                 case obj.EdtFilterHigh
-                    set(obj,'FilterHigh',obj.applyPanelVal(obj.FilterHigh_,str2double(get(src,'String'))));
                     if str2double(get(src,'String'))==0||isnan(str2double(get(src,'String')))
                         set(src,'String','-');
                     end
                 case obj.EdtFilterNotch1
-                    set(obj,'FilterNotch1',obj.applyPanelVal(obj.FilterNotch1_,str2double(get(src,'String'))));
                     if str2double(get(src,'String'))==0||isnan(str2double(get(src,'String')))
                         set(src,'String','-');
                     end
                 case obj.EdtFilterNotch2
-                    set(obj,'FilterNotch2',obj.applyPanelVal(obj.FilterNotch2_,str2double(get(src,'String'))));
                     if str2double(get(src,'String'))==0||isnan(str2double(get(src,'String')))
                         set(src,'String','-');
                     end
             end
+            
+            filterCheck(obj);
         end
         
         
@@ -1877,6 +1895,58 @@ classdef BioSigPlot < hgsetget
             obj.WinEvts.Evts=obj.Evts_;
             
         end
+        
+        function remakeMeasurer(obj)
+            Nchan=obj.MontageChanNumber;
+            deleteMeasurer(obj);
+            for i=1:length(obj.Axes)
+                obj.LineMeasurer(i)=line([inf inf],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]);
+                uistack(obj.LineMeasurer(i),'top');
+                
+                for j=1:Nchan(i)
+                    obj.TxtMeasurer{i}(j)=text('Parent',obj.Axes(i),'position',[inf,j],'EdgeColor',[0 0 0],'BackgroundColor',[0.7 0.7 0],...
+                        'VerticalAlignment','Top','Margin',1,'FontSize',10,'FontName','FixedWidth');
+                    uistack(obj.TxtMeasurer{i}(j),'top');
+                end
+            end
+        end
+        
+        function deleteMeasurer(obj)
+            if ~isempty(obj.LineMeasurer)
+                delete(obj.LineMeasurer(ishandle(obj.LineMeasurer)));
+            end
+            if ~isempty(obj.TxtMeasurer)
+                for i=1:length(obj.Axes)
+                    delete(obj.TxtMeasurer{i}(ishandle(obj.TxtMeasurer{i})))
+                end
+            end
+        end
+        
+        function remakeAnnotate(obj)
+            deleteAnnotate(obj);
+            for i=1:length(obj.Axes)
+                yl=get(obj.Axes(i),'Ylim');
+                
+                obj.LineMeasurer(i)=line([inf inf],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]);
+                
+                obj.TxtFastEvent(i)=text('Parent',obj.Axes(i),'position',[inf yl(2)],'VerticalAlignment','Top','Margin',1,'FontSize',12,...
+                    'Editing','off');
+                
+                uistack(obj.LineMeasurer(i),'top')
+                uistack(obj.TxtFastEvent(i),'top')
+            end
+        end
+        
+        function deleteAnnotate(obj)
+            if ~isempty(obj.LineMeasurer)
+                delete(obj.LineMeasurer(ishandle(obj.LineMeasurer)));
+            end
+            
+            if ~isempty(obj.TxtFastEvent)
+                delete(obj.TxtFastEvent(ishandle(obj.TxtFastEvent)));
+            end
+        end
+        
     end
     
     methods
@@ -1885,6 +1955,11 @@ classdef BioSigPlot < hgsetget
         addNewEvent(obj,newEvent)
         updateSelectedFastEvent(obj,x)
         Time_Freq_Map(obj,src)
+        filterCheck(obj)
+        MnuTFMapSettings(obj)
+        ExportData(obj)
+        d=preprocessedAllData(obj,n,chan,selection)
+        ChangeTime(obj,src);
     end
     
     events

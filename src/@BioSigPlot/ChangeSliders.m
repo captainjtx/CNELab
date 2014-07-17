@@ -1,11 +1,7 @@
 function ChangeSliders(obj,src,evt)
 [nchan,ndata,yvalue]=getMouseInfo(obj);
 
-if ~nchan&&~ndata
-    return
-end
-
-if src==obj.Fig && ~isempty(obj.Sliders) && ~isa(src,'figure')
+if src==obj.Fig && ~isempty(obj.Sliders) && ~isa(src,'figure')&&nchan&&ndata
     if length(obj.Sliders)==1
         if  any(strcmpi(obj.DataView,{'Vertical','Horizontal'}))
             obj.FirstDispChans(:)=round(obj.FirstDispChans(:)+evt.VerticalScrollCount);
@@ -20,7 +16,7 @@ if src==obj.Fig && ~isempty(obj.Sliders) && ~isa(src,'figure')
             obj.FirstDispChans(n)=round(obj.FirstDispChans(n)+evt.VerticalScrollCount);
         end
     end
-else
+elseif ~isempty(obj.Sliders)&&any(src==obj.Sliders)
     if isa(src,'figure')
         if length(obj.Sliders)==1
             src=obj.Sliders;

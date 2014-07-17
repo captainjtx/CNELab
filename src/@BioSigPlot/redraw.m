@@ -24,18 +24,6 @@ function redraw(obj)
 
 channelLines=cell(obj.DataNumber,1);
 
-for i=1:length(obj.LineVideo)
-    delete(obj.LineVideo(i));
-end
-for i=1:length(obj.LineMeasurer)
-    delete(obj.LineMeasurer(i));
-end
-for i=1:length(obj.TxtMeasurer)
-    for j=1:length(obj.TxtMeasurer{i})
-        delete(obj.TxtMeasurer{i}(j));
-    end
-end
-obj.LineMeasurer=[];obj.TxtMeasurer={};obj.LineVideo=[];
 t=round(max(1,obj.Time*obj.SRate+1):min((obj.Time+obj.WinLength)*obj.SRate,size(obj.Data{1},1)));
 
 if isempty(obj.FirstDispChans_)
@@ -116,35 +104,12 @@ for i=1:length(obj.Axes)
     set(obj.Axes(i),'XGrid',offon{obj.XGrid+1},'YGrid',offon{obj.YGrid+1},'DrawMode','fast','GridLineStyle',':')
 end
 
-
-% if strcmp(obj.MouseMode,'Measurer')
-for i=1:length(obj.Axes)
-    yl=get(obj.Axes(i),'Ylim');
-    obj.LineMeasurer(i)=line([inf inf],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]);
-    obj.TxtFastEvent(i)=text('Parent',obj.Axes(i),'position',[inf yl(2)],'VerticalAlignment','Top','Margin',1,'FontSize',12,...
-        'Editing','off');
-    
-    for j=1:Nchan(i)
-        obj.TxtMeasurer{i}(j)=text('Parent',obj.Axes(i),'position',[inf,j],'EdgeColor',[0 0 0],'BackgroundColor',[0.7 0.7 0],...
-            'VerticalAlignment','Top','Margin',1,'FontSize',10,'FontName','FixedWidth');
-    end
+if ~isempty(obj.LineVideo)
+    delete(obj.LineVideo(ishandle(obj.LineVideo)));
 end
-% end
-
-if strcmp(obj.MouseMode,'Annotate')
-    for i=1:length(obj.Axes)
-        obj.LineMeasurer(i)=line([inf inf],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]);
-    end
-end
-
-
 for i=1:length(obj.Axes)
-    if obj.VideoLineTime>0 && obj.VideoLineTime<obj.WinLength
-        t=obj.VideoLineTime*obj.SRate;
-    else
-        t=-1;
-    end
-    obj.LineVideo(i)=line([t t],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]);
+    obj.LineVideo(i)=line([inf inf],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0],'LineStyle','-.');
+    uistack(obj.LineVideo(i));
 end
 
 % obj.EvtContextMenu.update(obj);

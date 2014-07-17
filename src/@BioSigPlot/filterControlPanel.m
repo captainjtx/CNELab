@@ -3,7 +3,7 @@ function filterControlPanel(obj,parent,position)
 obj.FilterPanel=uipanel('Parent',parent,'Position',position,'units','normalized');
 
 obj.ChkFilter=uicontrol(obj.FilterPanel,'Style','checkbox','units','normalized','position',[0 .55 .2 .4],'String','Enable',...
-    'Callback',@(src,evt) filterCheck(obj));
+    'Callback',@(src,evt) ChangeFilter(obj,src));
 
 obj.ChkStrongFilter=uicontrol(obj.FilterPanel,'Style','checkbox','units','normalized','position',[0 .05 .2 .4],'String','High Order',...
     'Callback',@(src,evt) ChangeFilter(obj,src));
@@ -24,28 +24,4 @@ obj.EdtFilterNotch2=uicontrol(obj.FilterPanel,'Style','edit','units','normalized
     'Callback',@(src,evt) ChangeFilter(obj,src),'String','-');
 end
 
-function filterCheck(obj)
 
-%do not require recalculate and redraw
-obj.StrongFilter_=obj.applyPanelVal(obj.StrongFilter_,get(obj.ChkStrongFilter,'Value'));
-
-obj.FilterLow_=obj.applyPanelVal(obj.FilterLow_,str2double(get(obj.EdtFilterLow,'String')));
-
-obj.FilterHigh_=obj.applyPanelVal(obj.FilterHigh_,str2double(get(obj.EdtFilterHigh,'String')));
-
-obj.FilterNotch1_=obj.applyPanelVal(obj.FilterNotch1_,str2double(get(obj.EdtFilterNotch1,'String')));
-
-obj.FilterNotch2_=obj.applyPanelVal(obj.FilterNotch2_,str2double(get(obj.EdtFilterNotch2,'String')));
-
-%require recalculate and redraw
-val=get(obj.ChkFilter,'Value');
-obj.Filtering=obj.applyPanelVal(obj.Filtering_,val);
-
-if val, offon='on'; else offon='off'; end
-set(obj.ChkStrongFilter,'Enable',offon)
-set(obj.EdtFilterLow,'Enable',offon)
-set(obj.EdtFilterHigh,'Enable',offon)
-set(obj.EdtFilterNotch1,'Enable',offon)
-set(obj.EdtFilterNotch2,'Enable',offon)
-
-end

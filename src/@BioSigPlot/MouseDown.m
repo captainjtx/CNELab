@@ -3,6 +3,7 @@ t=floor((obj.MouseTime-obj.Time)*obj.SRate);
 
 [nchan,ndata,yvalue]=getMouseInfo(obj); %#ok<ASGLU>
 time=obj.MouseTime;
+Modifier=get(obj.Fig,'CurrentModifier');
 
 if obj.UponText
     
@@ -26,7 +27,6 @@ if isempty(obj.MouseMode)
         return
     end
     %Multi Channel Selection
-    Modifier=get(obj.Fig,'CurrentModifier');
     if ndata
         if isempty(Modifier)
             %**********************************************************************
@@ -132,7 +132,21 @@ if isempty(obj.MouseMode)
     end
     
 elseif strcmpi(obj.MouseMode,'Select')
-    
+    if length(Modifier)==1
+        if strcmpi('control',Modifier{1})||strcmpi('command',Modifier{1})
+            %**********************************************************************
+            %Cancel region selection
+            if ~isempty(obj.Selection)
+                for i=1:size(obj.Selection,2)
+                    if time>=obj.Selection(1,i)&&time<=obj.Selection(2,i)
+                        obj.Selection(:,i)=[];
+                        redrawSelection(obj);
+                        return
+                    end
+                end
+            end
+        end
+    end
     if(strcmpi(get(obj.Fig,'SelectionType'),'open'))
         
         obj.SelectionStart=[];%Cancel first click

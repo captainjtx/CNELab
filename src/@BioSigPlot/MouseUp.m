@@ -9,8 +9,5 @@ end
 
 
 obj.DragMode=0;
-for i=1:length(obj.Axes)
-    set(obj.LineMeasurer(i),'XData',[-1 -1],'Color',[0 0.7 0],'LineStyle','-.');
-end
 
 end

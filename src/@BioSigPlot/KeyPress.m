@@ -7,11 +7,14 @@ time=obj.MouseTime;
 %Exit the special mouse mode except for "Pan" (which needs another click on the icon)
 %Exit the special channel selection mode
 if strcmpi(evt.Key,'escape')
-    
-    obj.MouseMode=[];
-    obj.ChanSelect2Edit=[];
-    obj.SelectedEvent=[];
-    obj.Selection=[];
+    if ~isempty(obj.MouseMode)
+        obj.MouseMode=[];
+    else
+        obj.MouseMode=[];
+        obj.ChanSelect2Edit=[];
+        obj.SelectedEvent=[];
+        obj.Selection=[];
+    end
     return
 end
 %**************************************************************************
@@ -40,9 +43,9 @@ if ~isempty(evt.Modifier)
                 return
                 %Ctrl/Cmd+ -,=: Change channel gain
             elseif strcmpi(evt.Key,'hyphen')
-                ChangeGain(obj,obj.GainDecrease);
+                ChangeGain(obj,obj.BtnGainDecrease);
             elseif strcmpi(evt.Key,'equal')
-                ChangeGain(obj,obj.GainIncrease);
+                ChangeGain(obj,obj.BtnGainIncrease);
             elseif strcmpi(evt.Key,'i')
                 if strcmpi(get(obj.TogAnnotate,'State'),'on')
                     set(obj.TogAnnotate,'State','off');

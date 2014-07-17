@@ -50,62 +50,7 @@ else
         updateSelectedFastEvent(obj,mouseIndex);
     end
     
-    
-    
-    if strcmp(obj.TimeUnit,'min')
-        timestamp=time*60;
-    else
-        timestamp=time;
-    end
-    
-    s=rem(timestamp,60);
-    m=rem(floor(timestamp/60),60);
-    h=floor(timestamp/3600);
-    c=obj.MontageChanNames{ndata};
-    
-    if round(time*obj.SRate)<=size(obj.Data{ndata},1)
-        if iscell(obj.PreprocData)
-            v=obj.PreprocData{ndata}(max(round((time-obj.Time)*obj.SRate),1),nchan);
-        else
-            if ~isempty(obj.PreprocData)
-                v=obj.PreprocData(max(round((time-obj.Time)*obj.SRate),1),nchan);
-            end
-        end
-        
-    else
-        v=nan;
-    end
-    st=['Time: ' num2str(h,'%02d') ':' num2str(m,'%02d') ':' num2str(s,'%06.3f')...
-        ' ; Value: ' num2str(v)];
-    
-    if ~isempty(obj.Units)&&~isempty(obj.Units{ndata})
-        st=[st,' ',obj.Units{ndata}{nchan}];
-    end
-    
-    set(obj.TxtTime,'String',st);
-    
-    g=obj.Gain{ndata}(nchan);
-    set(obj.TxtY,'String',['Data: ' num2str(ndata) ...
-        ' ; Chan: '  c{nchan} ...
-        ' ; Gain: ' num2str(g)]);
-    
-    if obj.Filtering{ndata}(nchan)
-        fl=num2str(obj.FilterLow{ndata}(nchan));
-        fh=num2str(obj.FilterHigh{ndata}(nchan));
-        fn1=num2str(obj.FilterNotch1{ndata}(nchan));
-        fn2=num2str(obj.FilterNotch2{ndata}(nchan));
-    else
-        fl='-';
-        fh='-';
-        fn1='-';
-        fn2='-';
-    end
-    sf=['SR: ',num2str(obj.SRate),' ; ',...
-        'FL: ',fl,' , ',...
-        'FH: ',fh,' ; ',...
-        'FN1: ',fn1,' , ',...
-        'FN2: ',fn2];
-    set(obj.TxtFilter,'String',sf);
+    updateInfoPanel(obj,time,ndata,nchan);
     
 end
 end
@@ -126,4 +71,68 @@ if ~isempty(obj.EventTexts)&&~obj.DragMode
             end
         end
 end
+end
+function updateInfoPanel(obj,time,ndata,nchan)
+    
+    if strcmp(obj.TimeUnit,'min')
+        timestamp=time*60;
+    else
+        timestamp=time;
+    end
+    
+    s=rem(timestamp,60);
+    m=rem(floor(timestamp/60),60);
+    h=floor(timestamp/3600);
+    c=obj.MontageChanNames{ndata}{nchan};
+    
+    if round(time*obj.SRate)<=size(obj.Data{ndata},1)
+        if iscell(obj.PreprocData)
+            v=obj.PreprocData{ndata}(max(round((time-obj.Time)*obj.SRate),1),nchan);
+        else
+            if ~isempty(obj.PreprocData)
+                v=obj.PreprocData(max(round((time-obj.Time)*obj.SRate),1),nchan);
+            end
+        end
+    else
+        v=nan;
+    end
+    total=size(obj.Data{ndata},1)/obj.SRate;
+    percent=time/total*100;
+    
+    if obj.Filtering{ndata}(nchan)
+        fl=num2str(obj.FilterLow{ndata}(nchan));
+        fh=num2str(obj.FilterHigh{ndata}(nchan));
+        fn1=num2str(obj.FilterNotch1{ndata}(nchan));
+        fn2=num2str(obj.FilterNotch2{ndata}(nchan));
+    else
+        fl='-';
+        fh='-';
+        fn1='-';
+        fn2='-';
+    end
+    
+    s1=['Data: ',num2str(ndata),' ; ',...
+        'SR: ',num2str(obj.SRate,'%0.5g'),' ; ',...
+        'Chan: ',c];
+    
+    s2=['Gain: ',num2str(obj.Gain{ndata}(nchan),'%0.5g'),' ; ',...
+        'Value: ',num2str(v,'%0.5g')];
+    
+    if ~isempty(obj.Units)&&~isempty(obj.Units{ndata})
+        s2=[s2,' ',obj.Units{ndata}{nchan}];
+    end
+    
+    s3=['Time: ',num2str(h,'%02d'),':',num2str(m,'%02d'),':',num2str(s,'%0.3f'),...
+        ' -- ',num2str(percent,'%0.2f'),'%'];
+    
+    s4=['FL: ',fl,' , ',...
+        'FH: ',fh,'  ;  ',...
+        'FN1: ',fn1,' , ',...
+        'FN2: ',fn2];
+    
+    set(obj.TxtInfo1,'String',s1);
+    set(obj.TxtInfo2,'String',s2);
+    set(obj.TxtInfo3,'String',s3);
+    set(obj.TxtInfo4,'String',s4);
+
 end

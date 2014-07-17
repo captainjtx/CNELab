@@ -1,14 +1,20 @@
 function makeMenu(obj)
+%**************************************************************************
+%First Order Menu------------------------------------------------------File
 obj.MenuFile=uimenu(obj.Fig,'Label','File');
+
+obj.MenuImport=uimenu(obj.MenuFile,'Label','Import');
+obj.MenuImportDataSet=uimenu(obj.MenuImport,'Label','DataSet','Callback',@(src,evt) obj.ImportDataSet);
+obj.MenuImportEvents=uimenu(obj.MenuImport,'Label','Events','Callback',@(src,evt) obj.ImportEvents);
+obj.MenuImportVideo=uimenu(obj.MenuImport,'Label','Video','Callback',@(src,evt) obj.ImportVideo);
+
 obj.MenuExport=uimenu(obj.MenuFile,'Label','Export');
 obj.MenuExportFigure=uimenu(obj.MenuExport,'Label','Figure');
 obj.MenuExportFigureMirror=uimenu(obj.MenuExportFigure,'Label','Mirror','Callback',@(src,evt) obj.ExportToFigure,'Accelerator','p');
 obj.MenuExportFigureAdvanced=uimenu(obj.MenuExportFigure,'Label','Advanced','Callback',@(src,evt) obj.ExportToWindow);
 obj.MenuExportEvents=uimenu(obj.MenuExport,'Label','Events','Callback',@(src,evt) obj.ExportEvents);
-obj.MenuImport=uimenu(obj.MenuFile,'Label','Import');
-obj.MenuImportDataSet=uimenu(obj.MenuImport,'Label','DataSet','Callback',@(src,evt) obj.ImportDataSet);
-obj.MenuImportEvents=uimenu(obj.MenuImport,'Label','Events','Callback',@(src,evt) obj.ImportEvents);
-obj.MenuImportVideo=uimenu(obj.MenuImport,'Label','Video','Callback',@(src,evt) obj.ImportVideo);
+obj.MenuExportData=uimenu(obj.MenuExport,'Label','Data','Callback',@(src,evt) obj.ExportData);
+
 obj.MenuCopy=uimenu(obj.MenuFile,'Label','Copy','Enable','off');
 %**************************************************************************
 %First Order Menu------------------------------------------------------Edit
@@ -19,7 +25,7 @@ obj.MenuSettings=uimenu(obj.Fig,'Label','Settings');
 obj.MenuCommands=uimenu(obj.MenuSettings,'Label','Command List',...
     'Callback',@(src,evts) listdlg('ListString',obj.Commands,'ListSize',[700 500],'PromptString','List of commands'));
 obj.MenuConfigurationState=uimenu(obj.MenuSettings,'Label','Configuration file','Callback',@(src,evt) ConfigWindow(obj));
-obj.MenuPlaySpeed=uimenu(obj.MenuSettings,'Label','Speed for play','Callback',@(src,evt) MnuPlay(obj));
+obj.MenuPlaySpeed=uimenu(obj.MenuSettings,'Label','Play speed','Callback',@(src,evt) MnuPlay(obj));
 
 obj.MenuWidth=uimenu(obj.MenuSettings,'Label','Page time','Callback',@(src,evt) MnuWidth2Display(obj));
 obj.MenuChan=uimenu(obj.MenuSettings,'Label','Page channels','Callback',@(src,evt) MnuChan2Display(obj));
@@ -66,6 +72,9 @@ obj.MenuTFMapChannel=uimenu(obj.MenuTFMap,'Label','Channel',...
     'Callback', @(src,evt) Time_Freq_Map(obj,src),'checked','off');
 obj.MenuTFMapGrid=uimenu(obj.MenuTFMap,'Label','Grid',...
     'Callback', @(src,evt) Time_Freq_Map(obj,src),'checked','off');
+
+obj.MenuTFMapSettings=uimenu(obj.MenuTFMap,'Label','Settings','Separator','on',...
+    'Callback', @(src,evt) MnuTFMapSettings(obj));
 
 end
 

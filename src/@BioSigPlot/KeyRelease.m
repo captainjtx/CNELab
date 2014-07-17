@@ -13,16 +13,6 @@ if ~isempty(evt.Modifier)
         end
     end
 else
-    if strcmpi(evt.Key,'return')
-        if ~isempty(obj.SelectedEvent)
-            for i=1:length(obj.Axes)
-                if gca==obj.Axes(i)
-                    obj.EditMode=1;
-                    set(obj.EventTexts(obj.SelectedLines(i)),'Editing','on');
-                end
-            end
-            return
-        end
-    end
+    
 end
 

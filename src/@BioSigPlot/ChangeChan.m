@@ -2,12 +2,12 @@ function ChangeChan(obj,src)
 
 dd=obj.DisplayedData;
 switch src
-    case obj.HeightIncrease
+    case obj.BtnHeightIncrease
         for i=1:length(dd)
             obj.DispChans(i)=obj.DispChans(i)+1;
         end
         
-    case obj.HeightDecrease
+    case obj.BtnHeightDecrease
         for i=1:length(dd)
             obj.DispChans(i)=obj.DispChans(i)-1;
         end    

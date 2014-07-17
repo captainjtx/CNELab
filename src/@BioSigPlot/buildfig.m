@@ -18,19 +18,33 @@ pos=get(obj.Fig,'position');
 
 set(obj.Fig,'position',[0,0 pos(3) pos(4)]);
 ctrlsize=obj.ControlBarSize;
+eventwidth=obj.EventPanelWidth;
 
-obj.EventPanel=uipanel(obj.Fig,'units','pixels','position',[0 ctrlsize(2) 180 pos(4)-ctrlsize(2)],'BorderType','none');
-obj.MainPanel=uipanel(obj.Fig,'units','pixels','position',[180 ctrlsize(2) ctrlsize(1)-180 pos(4)-ctrlsize(2)],'BorderType','none');
+obj.EventPanel=uipanel(obj.Fig,'units','pixels','position',[0 ctrlsize(2) eventwidth pos(4)-ctrlsize(2)],'BorderType','none');
+obj.MainPanel=uipanel(obj.Fig,'units','pixels','position',[eventwidth ctrlsize(2) ctrlsize(1)-eventwidth pos(4)-ctrlsize(2)],'BorderType','none');
 obj.ControlPanel=uipanel(obj.Fig,'units','pixels','position',[0 0 ctrlsize(1) ctrlsize(2)],'BorderType','none');
 obj.Toolbar=uitoolbar(obj.Fig);
 
 
-obj.makeControls();
+makeControls(obj);
 obj.makeToolbar();
 obj.makeMenu();
 
 obj.WinEvts=EventWindow(obj);
 
-obj.TFMapFig=figure('Name','TFMap','Visible','off');
+obj.TFMapFig=figure('Name','TFMap','Visible','off','NumberTitle','off');
+
+end
+
+function makeControls(obj)
+
+obj.filterControlPanel(obj.ControlPanel,[0 0 .42 1]);
+
+obj.timeControlPanel(obj.ControlPanel,[0.42 0 .16 1]);
+
+obj.infoControlPanel(obj.ControlPanel,[0.58 0 .32 1]);
+
+obj.scaleControlPanel(obj.ControlPanel,[0.9,0,0.09,1]);
+
 
 end

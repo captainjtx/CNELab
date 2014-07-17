@@ -1,6 +1,4 @@
 function superviewer()
-%UNTITLED Summary of this function goes here
-%   Detailed explanation goes here
 
 cds=[];
 while(1)
@@ -126,6 +124,5 @@ bsp.Units=Units;
 
 %==========================================================================
 assignin('base','bsp',bsp);
-
 end
 

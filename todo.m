@@ -12,7 +12,7 @@
 
 % CDS construction
 
-TFMap GUI segmentation
+% TFMap GUI segmentation
 
 % background color green
 
@@ -39,14 +39,16 @@ ctrl+tab/ctrl+shift+tab and ICON to switch between datasets
 
 % redraw selection to seperate redraw
 
-sychronize event selection highlight
+% sychronize event selection highlight
 
-delete from left
+% delete from left
 
-TF map
+% TF map
 
-delete events from selected region
+% delete events from selected region
 
-time percentage on info panel
+% time percentage on info panel
+
+add position info to montage to help TFMap grid plot
 
 !!Montage

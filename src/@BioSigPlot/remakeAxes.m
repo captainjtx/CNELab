@@ -27,17 +27,8 @@ function remakeAxes(obj)
 %Lemon Chiffon
 backgroundColor=obj.AxesBackgroundColor;
 
-for i=1:length(obj.LineVideo)
-    delete(obj.LineVideo(i));
-end
-for i=1:length(obj.LineMeasurer)
-    delete(obj.LineMeasurer(i));
-end
-for i=1:length(obj.TxtMeasurer)
-    for j=1:length(obj.TxtMeasurer{i})
-        delete(obj.TxtMeasurer{i}(j));
-    end
-end
+
+
 for i=1:length(obj.Sliders)
     delete(obj.Sliders(i));
 end
@@ -46,7 +37,7 @@ for i=1:length(obj.Axes)
 end
 
 
-obj.Sliders=[];obj.Axes=[];obj.LineMeasurer=[];obj.TxtMeasurer={};obj.LineVideo=[];
+obj.Sliders=[];obj.Axes=[];
 
 ElevWide=.013;ChanNameWidth=.045;TimeHeight=.03;
 VerticalSpace=.01;
@@ -122,7 +113,6 @@ if ~isempty(obj.DispChans) && strcmp(obj.MouseMode,'Pan')
 else
     set(obj.PanObj,'Enable','off')
 end
-
 
 
 end

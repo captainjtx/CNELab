@@ -39,6 +39,7 @@ else
     selection=1:size(obj.Data{1},1);
 end
 
+chanNames=[];
 for i=1:length(dd)
     if ~obj.IsChannelSelected
         chan=1:obj.MontageChanNumber(dd(i));
@@ -48,14 +49,16 @@ for i=1:length(dd)
     d=preprocessedAllData(obj,dd(i),chan,selection);
     
     data=cat(2,data,d);
+    chanNames=cat(2,chanNames,reshape(obj.MontageChanNames{dd(i)}(chan),length(chan),1));
 end
 
-wd=200;
-ov=180;
-% refNum=20;
+wd=obj.STFTWindowLength;
+ov=obj.STFTOverlap;
+
+s=[obj.STFTScaleLow obj.STFTScaleHigh];
 
 if ~ishandle(obj.TFMapFig)
-    obj.TFMapFig=figure('Name','TFMap','Visible','off');
+    obj.TFMapFig=figure('Name','TFMap','Visible','off','NumberTitle','off');
 end
 figure(obj.TFMapFig)
 set(gcf,'visible','on')
@@ -63,8 +66,13 @@ clf
 
 switch option
     case 1
-        [tf,f,t]=bmi_tfmap(obj.TFMapFig,data(:,i),fs,wd,ov);  
+        [tf,f,t]=bmi_tfmap(obj.TFMapFig,data(:,i),fs,wd,ov,s,chanNames);
         imagesc(t,f,tf/size(data,2));
+        
+        if ~isempty(s)
+            set(gca,'CLim',s);
+        end
+        set(gca,'Tag','TFMapAxes');
         title('Time Frequency Map')
         colormap(jet);
         xlabel('time (s)');
@@ -73,63 +81,10 @@ switch option
         colorbar
         
     case 2
-        bmi_tfmap(obj.TFMapFig,data,fs,wd,ov);
+        bmi_tfmap(obj.TFMapFig,data,fs,wd,ov,s,chanNames);
     case 3
         
 end
 
 end
 
-function d=preprocessedAllData(obj,n,chan,selection)
-%chan: Vector of channels selected
-%selection: Vector of index of samples selected
-d=double(obj.Data{n}(selection,:))*(obj.Montage{n}(obj.MontageRef(n)).mat*obj.ChanOrderMat{n})';
-d=d(:,chan);
-fs=obj.SRate;
-ext=round(size(d,1)/10);
-phs=0;
-ftyp='iir';
-
-for i=1:size(d,2)
-    if obj.Filtering{n}(i)
-        if obj.StrongFilter{n}(i)
-            order=2;
-        else
-            order=1;
-        end
-        fl=obj.FilterLow{n}(i);
-        fh=obj.FilterHigh{n}(i);
-        
-        fn1=obj.FilterNotch1{n}(i);
-        fn2=obj.FilterNotch2{n}(i);
-        
-        if fl==0||isempty(fl)||isnan(fl)
-            if fh~=0
-                if fh<(fs/2)
-                    [b,a]=butter(order,fh/(fs/2),'low');
-                end
-            end
-        else
-            if fh==0||isempty(fh)||isnan(fh)
-                [b,a]=butter(order,fl/(fs/2),'high');
-            else
-                if fl<fh
-                    [b,a]=butter(order,[fl,fh]/(fs/2),'bandpass');
-                elseif fl>fh
-                    [b,a]=butter(order,[fl,fh]/(fs/2),'stop');
-                end
-            end
-        end
-        
-        if exist('b','var')&&exist('a','var')
-            d(:,i)=filter_symmetric(b,a,d(:,i),ext,phs,ftyp);
-        end
-        
-        if ~isnan(fn1)&&~isnan(fn2)&&fn1~=0&&fn2~=0&&fn1<fn2
-            [b,a]=butter(order,[fn1,fn2]/(fs/2),'stop');
-            d(:,i)=filter_symmetric(b,a,d(:,i),ext,phs,ftyp);
-        end
-    end
-end
-
-end
