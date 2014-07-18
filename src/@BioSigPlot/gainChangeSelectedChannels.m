@@ -29,6 +29,8 @@ else
         plotYTicks(axes,obj.Gain{dd(i)});
     end
 end
+
+showGauge(obj);
 end
 
 function gainChangeChannels(dataNum,data,gain,posY,ChannelLines,ChanSelect2Display,FirstDispChan,...
@@ -90,6 +92,7 @@ for i=1:n
         
     end
 end
+
 end
 
 

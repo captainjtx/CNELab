@@ -91,6 +91,7 @@ classdef BioSigPlot < hgsetget
         MenuDisplay
         MenuXGrid
         MenuYGrid
+        MenuGauge
         
         MenuColor
         MenuColorCanvas
@@ -1905,6 +1906,7 @@ classdef BioSigPlot < hgsetget
         d=preprocessedAllData(obj,n,chan,selection)
         ChangeTime(obj,src)
         redrawChangeTime(obj)
+        showGauge(obj,src)
     end
     
     events
