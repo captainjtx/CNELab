@@ -47,13 +47,8 @@ n=obj.DataNumber;
 
 if strcmp(obj.DataView,'Horizontal')
     for i=1:n
-        if ~obj.InsideTicks
-            position=[ChanNameWidth+(i-1)/n    TimeHeight    1/n-ChanNameWidth    1-TimeHeight];
-        elseif ~obj.InsideTicks
-            position=[ChanNameWidth+(i-1)*(1-ChanNameWidth)/n    TimeHeight    (1-ChanNameWidth)/n    1-TimeHeight];
-        else
-            position=[(i-1)/n 0 1/n 1];
-        end
+        
+        position=[(i-1)/n 0 1/n 1];
         if ~isempty(obj.DispChans(i)) %Need elevator
             
             position(3)=position(3)-ElevWide; % Multiple Elevator
@@ -63,21 +58,15 @@ if strcmp(obj.DataView,'Horizontal')
             
         end
         obj.Axes(i)=axes('parent',obj.MainPanel,'XLim',[0 obj.WinLength*obj.SRate],'XTick',0:obj.SRate:obj.WinLength*obj.SRate,...
-            'TickLength',[.005 0],'position',position,'color',backgroundColor);
+            'TickLength',[.005 0],'position',position,'color',backgroundColor,'YAxisLocation','right');
     end
 elseif strcmp(obj.DataView,'Vertical')
     for i=1:n
-        if ~obj.InsideTicks
-            DrawingHeightSpace=(1-TimeHeight-(n-1)*VerticalSpace);
-            Height=DrawingHeightSpace*obj.AxesHeight(i)/sum(obj.AxesHeight(1:n));
-            start=TimeHeight+(n-i)*VerticalSpace+DrawingHeightSpace*sum(obj.AxesHeight(i+1:n))/sum(obj.AxesHeight(1:n));
-            position=[ChanNameWidth    start    1-ChanNameWidth    Height];
-        else
-            DrawingHeightSpace=(1-(n-1)*VerticalSpace);
-            Height=DrawingHeightSpace*obj.AxesHeight(i)/sum(obj.AxesHeight(1:n));
-            start=(n-i)*VerticalSpace+DrawingHeightSpace*sum(obj.AxesHeight(i+1:n))/sum(obj.AxesHeight(1:n));
-            position=[0    start    1    Height];
-        end
+        
+        DrawingHeightSpace=(1-(n-1)*VerticalSpace);
+        Height=DrawingHeightSpace*obj.AxesHeight(i)/sum(obj.AxesHeight(1:n));
+        start=(n-i)*VerticalSpace+DrawingHeightSpace*sum(obj.AxesHeight(i+1:n))/sum(obj.AxesHeight(1:n));
+        position=[0    start    1    Height];
         if ~isempty(obj.DispChans(i)) %Need elevator
             position(3)=position(3)-ElevWide; % Multiple Elevator
             
@@ -86,15 +75,11 @@ elseif strcmp(obj.DataView,'Vertical')
                 'min',0,'max',m,'SliderStep',[1 obj.DispChans(i)]/max(1,m),'Callback',@(src,evt) ChangeSliders(obj,src));
         end
         obj.Axes(i)=axes('parent',obj.MainPanel,'XLim',[0 obj.WinLength*obj.SRate],'XTick',0:obj.SRate:obj.WinLength*obj.SRate,...
-            'TickLength',[.005 0],'position',position,'color',backgroundColor);
+            'TickLength',[.005 0],'position',position,'color',backgroundColor,'YAxisLocation','right');
     end
 else
-    if ~obj.InsideTicks
-        position=[ChanNameWidth TimeHeight 1-ChanNameWidth 1-TimeHeight];
-    else
-        position=[0 0 1 1];
-    end
     
+    position=[0 0 1 1];
     
     n=str2double(obj.DataView(4));
     
@@ -105,7 +90,7 @@ else
             'min',0,'max',m,'SliderStep',[1 obj.DispChans(n)]/max(1,m),'Callback',@(src,evt) ChangeSliders(obj,src));
     end
     obj.Axes=axes('parent',obj.MainPanel,'XLim',[0 obj.WinLength*obj.SRate],'XTick',0:obj.SRate:obj.WinLength*obj.SRate,...
-        'TickLength',[.005 0],'position',position,'color',backgroundColor);
+        'TickLength',[.005 0],'position',position,'color',backgroundColor,'YAxisLocation','right');
 end
 
 if ~isempty(obj.DispChans) && strcmp(obj.MouseMode,'Pan')

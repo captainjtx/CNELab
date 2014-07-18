@@ -89,7 +89,6 @@ classdef BioSigPlot < hgsetget
         MenuEventsDisplay
         
         MenuDisplay
-        MenuInsideTicks
         MenuXGrid
         MenuYGrid
         
@@ -138,7 +137,6 @@ classdef BioSigPlot < hgsetget
         DispChans               %Number of channels to display for each data set.
         FirstDispChans          %First chan to display for each data set
         TimeUnit                %time unit (not active for now)
-        InsideTicks             %true if channel names ticks and time ticks are inside the axis
         Filtering               %True if preprocessing filter are enbaled
         FilterLow               %The low value of filtering: Cut-off frequency of high pass filter
         FilterHigh              %The high value of filtering: Cut-off frequency of low pass filter
@@ -206,7 +204,6 @@ classdef BioSigPlot < hgsetget
         FirstDispChans_
         TimeUnit_
         Colors_
-        InsideTicks_
         Filtering_
         FilterLow_
         FilterHigh_
@@ -278,6 +275,7 @@ classdef BioSigPlot < hgsetget
         Title                       %Title of the figure
     end
     properties (Dependent) %'Public computed read-only properties
+        DataTime
         DataNumber                  %(Read-Only) Number of Dataset
         ChanNumber                  %(Read-Only) Channel number for the Raw data
         MontageChanNumber           %(Read-Only) Channel number for the current Montages
@@ -533,7 +531,7 @@ classdef BioSigPlot < hgsetget
             %must be before *ModeColors
             keylist={'Config','SRate','WinLength','Gain','DataView','Montage',...
                 'MontageRef','Evts','Time','FirstDispChans','DispChans','TimeUnit',...
-                'Colors','InsideTicks','Filtering','FilterLow','FilterHigh',...
+                'Colors','Filtering','FilterLow','FilterHigh',...
                 'FilterNotch1','FilterNotch2','StrongFilter','NormalModeColor',...
                 'ChanNames','Units','XGrid','YGrid','Position','Title','MouseMode',...
                 'PlaySpeed','MainTimerPeriod','VideoTimerPeriod','AxesHeight',...
@@ -561,7 +559,7 @@ classdef BioSigPlot < hgsetget
             for i=1:2:length(g)
                 if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage',...
                         'DataView','MontageRef','FirstDispChans','DispChans',...
-                        'TimeUnit','Colors','InsideTicks','Filtering','FilterLow',...
+                        'TimeUnit','Colors','Filtering','FilterLow',...
                         'FilterHigh','FilterNotch1','FilterNotch2','StrongFilter',...
                         'NormalModeColor','ChanNames','Units','XGrid','YGrid',...
                         'AxesHeight','YBorder','YGridInterval','TaskFiles',...
@@ -572,7 +570,7 @@ classdef BioSigPlot < hgsetget
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage','DataView',...
-                            'MontageRef','DispChans','InsideTicks','AxesHeight'...
+                            'MontageRef','DispChans','AxesHeight'...
                             'AxesBackgroundColor'}))
                         NeedRemakeAxes=true;
                     end
@@ -689,8 +687,6 @@ classdef BioSigPlot < hgsetget
         function val = get.TimeUnit(obj), val=obj.TimeUnit_; end
         function obj = set.Colors(obj,val), set(obj,'Colors',val); end
         function val = get.Colors(obj), val=obj.Colors_; end
-        function obj = set.InsideTicks(obj,val), set(obj,'InsideTicks',val); end
-        function val = get.InsideTicks(obj), val=obj.InsideTicks_; end
         function obj = set.Filtering(obj,val), set(obj,'Filtering',val); end
         function val = get.Filtering(obj), val=obj.Filtering_; end
         function obj = set.FilterLow(obj,val), set(obj,'FilterLow',val); end
@@ -826,6 +822,9 @@ classdef BioSigPlot < hgsetget
         %*****************************************************************
         
         %******************************************************************
+        function val = get.DataTime(obj)
+            val=size(obj.Data{1},1)/obj.SRate;
+        end
         function val = get.DataNumber(obj)
             val=length(obj.Data);
         end
@@ -1051,15 +1050,6 @@ classdef BioSigPlot < hgsetget
             
         end
         
-        %******************************************************************
-        function obj = set.InsideTicks_(obj,val)
-            obj.InsideTicks_=val;
-            if val
-                set(obj.MenuInsideTicks,'Checked','on');
-            else
-                set(obj.MenuInsideTicks,'Checked','off');
-            end
-        end
         
         %******************************************************************
         function obj = set.DataView_(obj,val)
@@ -1807,6 +1797,11 @@ classdef BioSigPlot < hgsetget
                 val=val-1;
             end
             
+            if val<=0
+                val=1;
+            elseif val>obj.DataTime
+                val=obj.DataTime;
+            end
             obj.WinLength=val;
         end
         

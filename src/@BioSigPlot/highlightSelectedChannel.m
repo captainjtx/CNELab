@@ -4,13 +4,13 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
     for i=1:length(obj.Axes)
         highlightChannels(i,obj.ChannelLines{i},obj.ChanColors{i},obj.ChanSelect2Display{i},obj.FirstDispChans(i),...
             obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
-        highlightYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.InsideTicks,obj.ChanSelect2Edit{i},obj.ChanSelectColor);
+        highlightYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.ChanSelect2Edit{i},obj.ChanSelectColor);
     end
 else
     i=str2double(obj.DataView(4));
     highlightChannels(i,obj.ChannelLines{i},obj.ChanColors{i},obj.ChanSelect2Display{i},obj.FirstDispChans(i),...
         obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
-    highlightYTicks(obj.Axes,obj.MontageChanNames{i},obj.InsideTicks,obj.ChanSelect2Edit{i},obj.ChanSelectColor);
+    highlightYTicks(obj.Axes,obj.MontageChanNames{i},obj.ChanSelect2Edit{i},obj.ChanSelectColor);
     
 end
 
@@ -43,30 +43,25 @@ end
 
 end
 
-function highlightYTicks(axe,ChanNames,insideticks,ChanSelect2Edit,ChanSelectColor)
+function highlightYTicks(axe,ChanNames,ChanSelect2Edit,ChanSelectColor)
 % Write channels names on Y Ticks
 %  axe :  axes to plot
 % ChanNames : cell of channel names that will be writted
 % insideticks :1 (Ticks are inside) 0 (Ticks are outside)                                                                  *
-
-if insideticks
-    lim=get(axe,'Ylim');
-    n=length(ChanNames);
-    for i=1:n
-        p=(n-i+1-lim(1))/(lim(2)-lim(1));
-        if p<.99 && p>0
-            if ismember(i,ChanSelect2Edit)
-                YLabelColor=ChanSelectColor;
-            else
-                YLabelColor=[0 0 0];
-            end
-            text(.002,p+.004,ChanNames{i},'Parent',axe,'HorizontalAlignment','left',...
-                'VerticalAlignment','bottom','FontWeight','bold','units','normalized',...
-                'color',YLabelColor)
+lim=get(axe,'Ylim');
+n=length(ChanNames);
+for i=1:n
+    p=(n-i+1-lim(1))/(lim(2)-lim(1));
+    if p<.99 && p>0
+        if ismember(i,ChanSelect2Edit)
+            YLabelColor=ChanSelectColor;
+        else
+            YLabelColor=[0 0 0];
         end
+        text(.002,p+.004,ChanNames{i},'Parent',axe,'HorizontalAlignment','left',...
+            'VerticalAlignment','bottom','FontWeight','bold','units','normalized',...
+            'color',YLabelColor)
     end
-else
-    set(axe,'YTickLabel',ChanNames(end:-1:1),'YColor',[0 0 0]);
 end
 end
 

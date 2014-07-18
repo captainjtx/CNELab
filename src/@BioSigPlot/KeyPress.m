@@ -137,6 +137,17 @@ if ~isempty(evt.Modifier)
                 end
             end
         end
+    elseif length(evt.Modifier)==2
+        if ismember('command',evt.Modifier)||ismember('control',evt.Modifier)
+            if ismember('shift',evt.Modifier)
+               if strcmpi(evt.Key,'leftarrow')
+                   ChangeTime(obj,obj.BtnPrevEvent);
+               elseif  strcmpi(evt.Key,'rightarrow')
+                   ChangeTime(obj,obj.BtnNextEvent);
+               end
+            end
+        end
+        
     end
 else
     %'i': Insert the annotation and open the text at the mouse position

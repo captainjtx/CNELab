@@ -55,9 +55,9 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
             ylim=[Nchan(i)+2-obj.YBorder_(1)-obj.FirstDispChans(i)-min(Nchan(i),obj.DispChans(i))      Nchan(i)+obj.YBorder_(2)-obj.FirstDispChans(i)+1];
         end
         cla(obj.Axes(i))
-        set(obj.Axes(i),'Ylim',ylim,'Ytick',1:Nchan(i),'YTickLabel',{},'XtickLabel',{});
+        set(obj.Axes(i),'Ylim',ylim,'Ytick',0.5:1:Nchan(i)+0.5,'YTickLabel',{},'XtickLabel',{});
         
-        plotXTicks(obj.Axes(i),obj.Time,obj.WinLength,obj.InsideTicks);
+        plotXTicks(obj.Axes(i),obj.Time,obj.WinLength);
         if ~isempty(obj.PreprocData)
             
             lhs=plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i}(t,:),obj.ChanColors{i},...
@@ -66,7 +66,7 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
             
             channelLines{i}=lhs;
         end
-        plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.InsideTicks,obj.ChanSelect2Edit{i},obj.ChanSelectColor);
+        plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.ChanSelect2Edit{i},obj.ChanSelectColor,obj.Gain{i});
     end
 else
     
@@ -81,7 +81,7 @@ else
         ylim=[obj.MontageChanNumber(n)+2-obj.YBorder_(1)-obj.FirstDispChans(n)-min(obj.DispChans(n),obj.MontageChanNumber(n))    obj.MontageChanNumber(n)+obj.YBorder_(2)-obj.FirstDispChans(n)+1];
     end
     cla(obj.Axes)
-    set(obj.Axes,'Ylim',ylim,'Ytick',1:Nchan,'TickLength',[.005 0]);
+    set(obj.Axes,'Ylim',ylim,'Ytick',0.5:1:Nchan+0.5,'TickLength',[.005 0]);
     
     i=str2double(obj.DataView(4));
     if ~isempty(obj.PreprocData)
@@ -90,9 +90,9 @@ else
             obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
         channelLines{i}=lhs;
     end
-    plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.InsideTicks,obj.ChanSelect2Edit{i},obj.ChanSelectColor);
+    plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.ChanSelect2Edit{i},obj.ChanSelectColor,obj.Gain{i});
     
-    plotXTicks(obj.Axes,obj.Time,obj.WinLength,obj.InsideTicks)
+    plotXTicks(obj.Axes,obj.Time,obj.WinLength)
 end
 
 obj.ChannelLines=channelLines;
@@ -170,67 +170,51 @@ end
 end
 
 %**************************************************************************
-function plotXTicks(axe,time,WinLength,insideticks)
+function plotXTicks(axe,time,WinLength)
 % Plot X ticks
 % axe :  axes to plot
 % time : starting time
 % WinLength :  window time lentgth
-% insideticks :1 (Ticks are inside) 0 (Ticks are outside)
 
-if insideticks
-    for i=time:time+WinLength-1
-        p=(i-time)/WinLength;
-        text(p+.002,.002,num2str(i),'Parent',axe,'HorizontalAlignment','left',...
-            'VerticalAlignment','bottom','FontWeight','normal','units','normalized',...
-            'color',[0 0 1],'DisplayName',['XTick',num2str(i)]);
-    end
-else
-    set(axe,'XTickLabel',time:time+WinLength,'XColor',[0 0 0]);
+for i=time:time+WinLength-1
+    p=(i-time)/WinLength;
+    text(p+.002,.002,num2str(i),'Parent',axe,'HorizontalAlignment','left',...
+        'VerticalAlignment','bottom','FontWeight','normal','units','normalized',...
+        'color',[0 0 1],'DisplayName',['XTick',num2str(i)]);
 end
+
 end
 
 %**************************************************************************
-function plotYTicks(axe,ChanNames,insideticks,ChanSelect2Edit,ChanSelectColor)
+function plotYTicks(axe,ChanNames,ChanSelect2Edit,ChanSelectColor,gain)
 % Write channels names on Y Ticks
 %  axe :  axes to plot
 % ChanNames : cell of channel names that will be writted
-% insideticks :1 (Ticks are inside) 0 (Ticks are outside)                                                                  *
 
-if insideticks
-    lim=get(axe,'Ylim');
-    n=length(ChanNames);
-    for i=1:n
-        p=(n-i+1-lim(1))/(lim(2)-lim(1));
-        if p<.99 && p>0
-            if ismember(i,ChanSelect2Edit)
-                YLabelColor=ChanSelectColor;
-            else
-                YLabelColor=[0 0 0];
-            end
-            text(.002,p+.004,ChanNames{i},'Parent',axe,'HorizontalAlignment','left',...
-                'VerticalAlignment','bottom','FontWeight','bold','units','normalized',...
-                'color',YLabelColor)
+lim=get(axe,'Ylim');
+
+n=length(ChanNames);
+for i=1:n
+    p=(n-i+1-lim(1))/(lim(2)-lim(1));
+    if p<.99 && p>0
+        if ismember(i,ChanSelect2Edit)
+            YLabelColor=ChanSelectColor;
+        else
+            YLabelColor=[0 0 0];
         end
+        h=text(.002,p+.004,ChanNames{i},'Parent',axe,'HorizontalAlignment','left',...
+            'VerticalAlignment','bottom','FontWeight','bold','units','normalized',...
+            'color',YLabelColor);
+        uistack(h,'top');
+        
+        h=text(0.965,p,num2str(1/gain(i),'%0.3g'),'Parent',axe,'HorizontalAlignment','left',...
+            'VerticalAlignment','middle','FontWeight','bold','units','normalized',...
+            'DisplayName',['YGauge' num2str(i)],'Color',[1 0 1]);
+        uistack(h,'top');
     end
-else
-    set(axe,'YTickLabel',ChanNames(end:-1:1),'YColor',[0 0 0]);
 end
 end
 
-%==========================================================================
-%**************************************************************************
-function plotYGauge(axe,units,gain,inside)
-% Plot the gauge of amplitude alog Y dimension for each channel
-% axe: axes to plot
-% units: a cell array of units for each channel
-% gain: a vector stored the display gain on each channel
-% inside : 1 (Gauge is inside) 0 (Gauge is outside)
-y_lim=get(axe,'Ylim');
-x_lim=get(axe,'Xlim');
-
-
-
-end
 %==========================================================================
 %**************************************************************************
 function plotDynamicGauge()

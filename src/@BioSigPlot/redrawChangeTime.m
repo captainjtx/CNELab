@@ -8,7 +8,7 @@ for i=1:length(dd)
         updateChannelLines(obj.ChannelLines{dd(i)},t-t(1)+1,obj.PreprocData{dd(i)}(t,:),...
             obj.Gain{dd(i)},Nchan:-1:1,obj.ChanSelect2Display{dd(i)},...
             obj.FirstDispChans(dd(i)),obj.DispChans(dd(i)));
-        plotXTicks(obj.Axes(dd(i)),obj.Time,obj.WinLength,obj.InsideTicks)
+        plotXTicks(obj.Axes(dd(i)),obj.Time,obj.WinLength)
     end
 end
 
@@ -49,23 +49,21 @@ for i=1:length(channellines)
 end
 
 end
-function plotXTicks(axe,time,WinLength,insideticks)
+function plotXTicks(axe,time,WinLength)
 % Plot X ticks
 % axe :  axes to plot
 % time : starting time
 % WinLength :  window time lentgth
-% insideticks :1 (Ticks are inside) 0 (Ticks are outside)
 
-if insideticks
-    h=findobj(axe,'-regexp','DisplayName','XTick*');
+h=findobj(axe,'-regexp','DisplayName','XTick*');
+if ~isempty(h)
     delete(h);
-    for i=time:time+WinLength-1
-        p=(i-time)/WinLength;
-        text(p+.002,.002,num2str(i),'Parent',axe,'HorizontalAlignment','left',...
-            'VerticalAlignment','bottom','FontWeight','normal','units','normalized',...
-            'color',[0 0 1],'DisplayName',['XTick',num2str(i)]);
-    end
-else
-    set(axe,'XTickLabel',time:time+WinLength,'XColor',[0 0 0]);
 end
+for i=time:time+WinLength-1
+    p=(i-time)/WinLength;
+    text(p+.002,.002,num2str(i),'Parent',axe,'HorizontalAlignment','left',...
+        'VerticalAlignment','bottom','FontWeight','normal','units','normalized',...
+        'color',[0 0 1],'DisplayName',['XTick',num2str(i)]);
+end
+
 end
