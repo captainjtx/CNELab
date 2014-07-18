@@ -137,6 +137,7 @@ if ~isempty(FirstDispChan)&&~isempty(DispChans)
     end
 end
 %make zero gain channel disappear
+gain(isnan(gain))=1;
 gain(gain==0)=nan;
 
 if ~isempty(ChanSelect2Display)

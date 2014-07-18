@@ -43,6 +43,7 @@ if ~isempty(FirstDispChan)&&~isempty(DispChans)
     end
 end
 
+gain(isnan(gain))=1;
 %make zero gain channel disappear
 gain(gain==0)=nan;
 

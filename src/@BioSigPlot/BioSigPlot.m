@@ -291,14 +291,13 @@ classdef BioSigPlot < hgsetget
         TFMapFig
         IconPlay
         IconPause
+        VideoFig
     end
     
     properties
         EventDisplayIndex       %Indx of displayed events
-        WinEvtEdit              %Annotation Edit window
         EventLines              %Event lines displayed
         EventTexts              %Event texts displayed
-        EvtContextMenu          %Event Contex Menu
         
         SelectedEvent
         
@@ -412,7 +411,6 @@ classdef BioSigPlot < hgsetget
             obj.EventLines=[];
             obj.EventTexts=[];
             
-            obj.EvtContextMenu=EventContextMenu(obj);
             obj.DragMode=0;
             obj.EditMode=0;
             obj.SelectedEvent_=[];
@@ -463,12 +461,13 @@ classdef BioSigPlot < hgsetget
                 
             end
             
-            if isa(obj.WinEvtEdit,'EventEditWindow') && isvalid(obj.WinEvtEdit)
-                delete(obj.WinEvtEdit);
-            end
-            
             if isa(obj.WinFastEvts,'FastEventWindow') && isvalid(obj.WinFastEvts)
                 delete(obj.WinFastEvts);
+            end
+            
+            h=obj.VideoFig;
+            if ishandle(h)
+                delete(h)
             end
             
             h = obj.Fig;
@@ -1042,7 +1041,7 @@ classdef BioSigPlot < hgsetget
             
             obj.VideoLineTime=obj.Time;
             if ~isempty(obj.VideoTimeFrame)
-                ind=dsearchn(obj.VideoTimeFrame(:,1),obj.Time_+obj.VideoLineTime-obj.VideoStartTime);
+                ind=dsearchn(obj.VideoTimeFrame(:,1),obj.VideoLineTime-obj.VideoStartTime);
                 if ~isempty(obj.VideoHandle)
                     obj.VideoFrameInd=ind(1);
                     obj.VideoFrame=obj.VideoTimeFrame(ind(1),2);
@@ -1352,8 +1351,11 @@ classdef BioSigPlot < hgsetget
             %try
             
             t=(val-obj.Time)*obj.SRate_;
+            
             for i=1:length(obj.LineVideo)
-                set(obj.LineVideo(i),'XData',[t t]);
+                if ishandle(obj.LineVideo(i))
+                    set(obj.LineVideo(i),'XData',[t t]);
+                end
             end
         end
         %==================================================================
@@ -1361,9 +1363,8 @@ classdef BioSigPlot < hgsetget
         function obj=set.VideoFrame(obj,val)
             
             obj.VideoFrame=min(max(1,val),obj.TotalVideoFrame);
-            
-            if ishandle(obj.VideoHandle)
-                set(obj.VideoHandle,'CData',obj.VideoObj.frames(val).cdata);
+            if ~isempty(obj.VideoHandle)&&ishandle(obj.VideoHandle)&&strcmpi(get(obj.VideoFig,'Visible'),'on')
+                set(obj.VideoHandle,'CData',obj.VideoObj.frames(obj.VideoFrame).cdata);
                 drawnow
             end
         end
@@ -1518,7 +1519,7 @@ classdef BioSigPlot < hgsetget
         function UpdateVideo(obj)
             
             if ~isempty(obj.VideoFile)
-                videoFrameInd=max(1,min(obj.VideoFrameInd+1,size(obj.VideoTimeFrame,1)));
+                videoFrameInd=max(1,min(round(obj.VideoFrameInd+obj.PlaySpeed),size(obj.VideoTimeFrame,1)));
                 videoTimeFrame=obj.VideoTimeFrame;
                 
                 videoFrame=videoTimeFrame(videoFrameInd,2);
@@ -1531,8 +1532,7 @@ classdef BioSigPlot < hgsetget
         end
         function StartPlay(obj)
             
-            set(obj.TogPlay,'CData',obj.IconPause,'State','on','ClickedCallback',@(src,evt) PausePlay(obj));
-            
+            set(obj.TogPlay,'CData',obj.IconPause,'ClickedCallback',@(src,evt) PausePlay(obj),'State','on');
             start(obj.MainTimer);
             if ~isempty(obj.VideoFile)
                 start(obj.VideoTimer);
@@ -1550,7 +1550,7 @@ classdef BioSigPlot < hgsetget
             % USAGE
             % 	obj.StopPlay();
             
-            set(obj.TogPlay,'CData',obj.IconPlay,'State','off','ClickedCallback',@(src,evt) StartPlay(obj));
+            set(obj.TogPlay,'CData',obj.IconPlay,'ClickedCallback',@(src,evt) StartPlay(obj),'State','off');
             
             stop(obj.MainTimer);
             
@@ -1742,6 +1742,14 @@ classdef BioSigPlot < hgsetget
         
         %******************************************************************
         function WinVideoFcn(obj,src)
+            
+            if ~ishandle(obj.VideoFig)
+                obj.VideoFig=figure('Name','Video','NumberTitle','off');
+                if ~isempty(obj.VideoObj)
+                    obj.VideoHandle=imagesc(obj.VideoObj.frames(obj.VideoFrame).cdata);
+                end
+            end
+            set(obj.VideoFig,'Visible',get(src,'state'));
         end
         %******************************************************************
         function s=ControlBarSize(obj) %#ok<MANU>

@@ -3,6 +3,10 @@ function ExportEvents(obj)
 %==========================================================================
 obj.Time=obj.Time;
 
+if isempty(obj.Evts_)
+    return
+end
+
 EventsList=obj.Evts_{obj.Evts2Display,:};
 
 if ~isempty(EventsList)

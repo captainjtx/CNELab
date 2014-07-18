@@ -28,6 +28,10 @@ if isempty(src)||ismember(src,[obj.BtnAddGain,obj.BtnRemGain,obj.EdtGain])
     elseif src==obj.BtnRemGain
         val=val*2^-.25;
     end
+    if isnan(val)
+        val=1;
+    end
+        
     set(obj.EdtGain,'String',num2str(val));
     if obj.IsInitialize
         obj.Gain_=obj.applyPanelVal(obj.Gain_,val);

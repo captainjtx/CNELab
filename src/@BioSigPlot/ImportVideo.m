@@ -39,7 +39,7 @@ if FileName~=0
             [obj.VideoObj,obj.AudioObj]=mmread(fullfile(FilePath,FileName));
         end
         
-        obj.VideoTimerPeriod=1/obj.VideoObj.rate;
+        obj.VideoTimerPeriod=round(1/obj.VideoObj.rate*1000)/1000;
         obj.TotalVideoFrame=length(obj.VideoObj.frames);
         obj.VideoFrame=1;
         ind=find(obj.VideoTimeFrame(:,2)==1);
@@ -47,10 +47,10 @@ if FileName~=0
         obj.VideoLineTime=0;
         
         
-        if ~isempty(obj.AudioObj.data)
-            obj.MAudioPlayer=audioplayer(obj.AudioObj.data,length(obj.AudioObj.data)/...
-                ((length(obj.VideoObj.frames)-1)*obj.VideoTimerPeriod));
-        end
+%         if ~isempty(obj.AudioObj.data)
+%             obj.MAudioPlayer=audioplayer(obj.AudioObj.data,length(obj.AudioObj.data)/...
+%                 ((length(obj.VideoObj.frames)-1)*obj.VideoTimerPeriod));
+%         end
         
         
         steps = 100;
@@ -60,8 +60,10 @@ if FileName~=0
         end
         close(h)
         
-        figure;
+        figure(obj.VideoFig);
         obj.VideoHandle=imagesc(video.frames(1).cdata);
+        
+        obj.Time=obj.VideoStartTime;
         drawnow
         
     else

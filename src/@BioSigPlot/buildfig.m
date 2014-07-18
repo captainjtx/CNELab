@@ -34,6 +34,8 @@ obj.WinEvts=EventWindow(obj);
 
 obj.TFMapFig=figure('Name','TFMap','Visible','off','NumberTitle','off');
 
+obj.VideoFig=figure('Name','Video','Visible','off','NumberTitle','off');
+
 end
 
 function makeControls(obj)
