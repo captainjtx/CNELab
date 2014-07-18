@@ -1,16 +1,17 @@
 function gainChangeSelectedChannels(obj)
 %hightlight the selection on channels
 dd=obj.DisplayedData;
+t=ceil(obj.Time*obj.SRate+1):min(ceil((obj.Time+obj.WinLength)*obj.SRate),size(obj.Data{1},1));
 
 if obj.IsChannelSelected
     for i=1:length(dd)
-        gainChangeChannels(dd(i),obj.PreprocData{dd(i)},obj.Gain{dd(i)},obj.MontageChanNumber(dd(i)):-1:1,obj.ChannelLines{dd(i)},...
+        gainChangeChannels(dd(i),obj.PreprocData{dd(i)}(t,:),obj.Gain{dd(i)},obj.MontageChanNumber(dd(i)):-1:1,obj.ChannelLines{dd(i)},...
             obj.ChanSelect2Display{dd(i)},obj.FirstDispChans(dd(i)),obj.DispChans(dd(i)),obj.ChanSelect2Edit{dd(i)});
     end
 else
     
     for i=1:length(dd)
-        gainChangeChannels(dd(i),obj.PreprocData{dd(i)},obj.Gain{dd(i)},obj.MontageChanNumber(dd(i)):-1:1,obj.ChannelLines{dd(i)},...
+        gainChangeChannels(dd(i),obj.PreprocData{dd(i)}(t,:),obj.Gain{dd(i)},obj.MontageChanNumber(dd(i)):-1:1,obj.ChannelLines{dd(i)},...
             obj.ChanSelect2Display{dd(i)},obj.FirstDispChans(dd(i)),obj.DispChans(dd(i)),obj.ChanSelect2Display{dd(i)});
     end
 end

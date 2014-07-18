@@ -3,6 +3,8 @@ function KeyPress(obj,src,evt)
 
 dd=obj.DisplayedData;
 time=obj.MouseTime;
+[nchan,ndata,yvalue]=getMouseInfo(obj);
+
 %**************************************************************************
 %Exit the special mouse mode except for "Pan" (which needs another click on the icon)
 %Exit the special channel selection mode
@@ -184,6 +186,14 @@ else
         if ~isempty(obj.SelectedEvent)
             step=5/obj.SRate;
             moveSelectedEvents(obj,step);
+        end
+    elseif strcmpi(evt.Key,'space')
+        if ndata&&nchan
+            if strcmpi(get(obj.TogPlay,'State'),'on')
+                PausePlay(obj);
+            else
+                StartPlay(obj);
+            end
         end
     end
 end

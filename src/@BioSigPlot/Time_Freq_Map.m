@@ -46,7 +46,7 @@ for i=1:length(dd)
     else
         chan=obj.ChanSelect2Edit{dd(i)};
     end
-    d=preprocessedAllData(obj,dd(i),chan,selection);
+    d=obj.PreprocData{dd(i)}(selection,chan);
     
     data=cat(2,data,d);
     chanNames=cat(2,chanNames,reshape(obj.MontageChanNames{dd(i)}(chan),length(chan),1));

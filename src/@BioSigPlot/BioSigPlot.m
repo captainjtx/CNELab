@@ -73,9 +73,6 @@ classdef BioSigPlot < hgsetget
         MenuImportVideo
         MenuCopy
         
-        MenuEdit
-        MenuDelete
-        
         MenuSettings
         MenuCommands
         MenuConfigurationState
@@ -83,17 +80,19 @@ classdef BioSigPlot < hgsetget
         MenuColors
         MenuChan
         MenuWidth
-        MenuFastEvent
         MenuSampleRate
         
-        MenuWindow
+        MenuEvent
+        MenuEventDelete
         MenuEventsWindow
+        MenuFastEvent
+        MenuEventsDisplay
         
         MenuDisplay
         MenuInsideTicks
         MenuXGrid
         MenuYGrid
-        MenuEventsDisplay
+        
         MenuColor
         MenuColorCanvas
         MenuColorLines
@@ -121,6 +120,7 @@ classdef BioSigPlot < hgsetget
         WinEvts
         WinFastEvts
         WinVideo
+        
         VideoListener
         
         ChannelLines
@@ -332,7 +332,6 @@ classdef BioSigPlot < hgsetget
         
         EventPanel
         
-        
     end
     
     methods
@@ -526,6 +525,7 @@ classdef BioSigPlot < hgsetget
             NeedHighlightEvents=false;
             NeedChangeGain=false;
             NeedDrawSelect=false;
+            NeedRedrawTimeChange=false;
             
             g=varargin;
             %Rearrangement: make sure there is no conflict on the order of
@@ -544,7 +544,7 @@ classdef BioSigPlot < hgsetget
                 'AxesBackgroundColor','ChanColors','EventSelectColor','EventDefaultColor',...
                 'TriggerEventDefaultColor','FastEvts','SelectedFastEvt','TriggerEventsFcn',...
                 'SelectedEvent','STFTWindowLength','STFTOverlap','STFTScaleLow',...
-                'STFTScaleHigh'};
+                'STFTScaleHigh','NaviEvts'};
             
             if isempty(obj.Commands)
                 command='a=BioSigPlot(data';
@@ -560,7 +560,7 @@ classdef BioSigPlot < hgsetget
             
             for i=1:2:length(g)
                 if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage',...
-                        'DataView','MontageRef','Time','FirstDispChans','DispChans',...
+                        'DataView','MontageRef','FirstDispChans','DispChans',...
                         'TimeUnit','Colors','InsideTicks','Filtering','FilterLow',...
                         'FilterHigh','FilterNotch1','FilterNotch2','StrongFilter',...
                         'NormalModeColor','ChanNames','Units','XGrid','YGrid',...
@@ -582,8 +582,8 @@ classdef BioSigPlot < hgsetget
                         end
                         NeedResetView=true;
                     end
-                    if any(strcmpi(g{i},{'SRate','WinLength','Montage','MontageRef',...
-                            'Time','Filtering','FilterLow','FilterHigh',...
+                    if any(strcmpi(g{i},{'SRate','Montage','MontageRef',...
+                            'Filtering','FilterLow','FilterHigh',...
                             'FilterNotch1','FilterNotch2','StrongFilter'}))
                         NeedRecalculate=true;
                     end
@@ -611,6 +611,12 @@ classdef BioSigPlot < hgsetget
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     NeedChangeGain=true;
+                elseif any(strcmpi(g{i},{'Time'}))
+                    g{i}=keylist{strcmpi(g{i},keylist)};
+                    set@hgsetget(obj,[g{i} '_'],g{i+1})
+                    NeedRedrawEvts=true;
+                    NeedDrawSelect=true;
+                    NeedRedrawTimeChange=true;
                 elseif any(strcmpi(g{i},{'PlaySpeed','FastEvts','SelectedFastEvt',...
                         'EventDefaultColor','EventsWindowDisplay','TriggerEventsFcn',...
                         'TriggerEventDefaultColor','MouseMode','STFTWindowLength'...
@@ -641,6 +647,7 @@ classdef BioSigPlot < hgsetget
             if NeedHighlightEvents, highlightSelectedEvents(obj); end
             if NeedChangeGain, gainChangeSelectedChannels(obj); end
             if NeedDrawSelect, redrawSelection(obj); end
+            if NeedRedrawTimeChange, redrawChangeTime(obj); end
             if NeedCommand
                 if strcmpi(command(1:12),'a=BioSigPlot')
                     n=1;
@@ -1033,6 +1040,7 @@ classdef BioSigPlot < hgsetget
             obj.Time_=min(max(val,0),m);
             set(obj.EdtTime,'String',obj.Time_);
             
+            obj.VideoLineTime=obj.Time;
             if ~isempty(obj.VideoTimeFrame)
                 ind=dsearchn(obj.VideoTimeFrame(:,1),obj.Time_+obj.VideoLineTime-obj.VideoStartTime);
                 if ~isempty(obj.VideoHandle)
@@ -1464,70 +1472,7 @@ classdef BioSigPlot < hgsetget
         toolToolbar(obj)
         %==================================================================
         %******************************************************************
-        
-        
-        function remakeMontage(obj)
-            %Assure Montage properties Coherence
-            
-            if iscell(obj.Montage_)
-                if length(obj.Montage_)~=obj.DataNumber, error('If system is cell, it must be of same length than data');end
-            else
-                tmp=cell(1,obj.DataNumber);
-                [tmp{:}]=deal(obj.Montage_);
-                obj.Montage_=tmp;
-            end
-            
-            for i=1:length(obj.Montage_)
-                if ischar(obj.Montage_{i})
-                    try
-                        s=load(obj.Montage_{i});
-                        obj.Montage_{i}=s.Montage;
-                    catch  %#ok<CTCH>
-                        obj.Montage_{i}=[];
-                    end
-                end
-            end
-            
-            if isempty(obj.ChanNames_)
-                obj.ChanNames_=cell(1,obj.DataNumber);
-                [obj.ChanNames_{:}]=deal([]);
-            end
-            
-            for i=1:obj.DataNumber
-                if isempty(obj.ChanNames_{i})
-                    obj.ChanNames_{i}=num2cell(1:size(obj.Data{i},2));
-                    obj.ChanNames_{i}=cellfun(@num2str,obj.ChanNames_{i},'UniformOutput',false);
-                    obj.ChanOrderMat{i}=eye(obj.ChanNumber(i));
-                elseif ~isempty(obj.Montage{i})
-                    
-                    if all(ismember(obj.ChanNames_{i},obj.Montage_{i}(1).channames))
-                        
-                        obj.ChanOrderMat{i}=eye(obj.ChanNumber(i));
-                        p=zeros(1,size(obj.ChanOrderMat{i},1));
-                        for j=1:size(obj.ChanOrderMat{i},1)
-                            for k=1:length(obj.ChanNames_{i})
-                                if strcmpi(obj.Montage_{i}(1).channames{j},obj.ChanNames_{i}{k})
-                                    p(j)=k;
-                                end
-                            end
-                        end
-                        obj.ChanOrderMat{i}(1:size(obj.ChanOrderMat{i},1),:)=obj.ChanOrderMat{i}(p(1:size(obj.ChanOrderMat{i},1)),:);
-                        for j=1:length(obj.Montage_{i})
-                            obj.Montage_{i}(j).mat=obj.Montage_{i}(j).mat*obj.ChanOrderMat{i};
-                        end
-                    elseif length(obj.ChanNames_{i})==length(obj.Montage_{i}(1).channames)
-                        obj.ChanOrderMat{i}=eye(obj.ChanNumber(i));
-                        obj.Montage_{i}=struct('name','Raw','mat',obj.ChanOrderMat{i},'channames',obj.ChanNames_(i));
-                    end
-                end
-                if isempty(obj.Montage{i})
-                    obj.ChanOrderMat{i}=eye(obj.ChanNumber(i));
-                    obj.Montage_{i}=struct('name','Raw','mat',obj.ChanOrderMat{i},'channames',obj.ChanNames_(i));
-                end
-            end
-            
-        end
-        
+        remakeMontage(obj)
         %******************************************************************
         function resetView(obj)
             % Reset the Tools when properties are changing
@@ -1581,7 +1526,7 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         function UpdateVideo(obj)
             
-            if ~isempty(obj.VideoTimeFrame)
+            if ~isempty(obj.VideoFile)
                 videoFrameInd=max(1,min(obj.VideoFrameInd+1,size(obj.VideoTimeFrame,1)));
                 videoTimeFrame=obj.VideoTimeFrame;
                 
@@ -1595,10 +1540,10 @@ classdef BioSigPlot < hgsetget
         end
         function StartPlay(obj)
             
-            set(obj.TogPlay,'CData',obj.IconPause,'ClickedCallback',@(src,evt) PausePlay(obj));
+            set(obj.TogPlay,'CData',obj.IconPause,'State','on','ClickedCallback',@(src,evt) PausePlay(obj));
             
             start(obj.MainTimer);
-            if ~isempty(obj.VideoTimeFrame)
+            if ~isempty(obj.VideoFile)
                 start(obj.VideoTimer);
             end
             
@@ -1618,7 +1563,7 @@ classdef BioSigPlot < hgsetget
             
             stop(obj.MainTimer);
             
-            if ~isempty(obj.VideoTimeFrame)
+            if ~isempty(obj.VideoFile)
                 stop(obj.VideoTimer);
             end
             %             pause(obj.MAudioPlayer);
@@ -1640,7 +1585,7 @@ classdef BioSigPlot < hgsetget
         %==================================================================
         %******************************************************************
         function PlayTime(obj)
-            if ~isempty(obj.VideoTimeFrame)
+            if ~isempty(obj.VideoFile)
                 t=obj.VideoTimeFrame(obj.VideoFrameInd,1)+obj.VideoStartTime;
                 obj.VideoLineTime=t;
             else
@@ -1745,9 +1690,11 @@ classdef BioSigPlot < hgsetget
             % Dialog box to change the speed for play
             %**************************************************************
             t=inputdlg('Speed of play : X ','Play Speed',1,{num2str(obj.PlaySpeed)});
-            t=str2double(t{1});
-            if ~isnan(t)
-                obj.PlaySpeed=t;
+            if ~isempty(t)
+                t=str2double(t{1});
+                if ~isnan(t)
+                    obj.PlaySpeed=t;
+                end
             end
         end
         %==================================================================
@@ -1757,9 +1704,11 @@ classdef BioSigPlot < hgsetget
             % Dialog box to change the sampling frequency
             %**************************************************************
             t=inputdlg('Sampling Frequency (Hz) : ','Sample rate',1,{num2str(obj.SRate)});
-            t=str2double(t{1});
-            if ~isnan(t)
-                obj.SRate=t;
+            if ~isempty(t)
+                t=str2double(t{1});
+                if ~isnan(t)
+                    obj.SRate=t;
+                end
             end
         end
         %==================================================================
@@ -1959,7 +1908,8 @@ classdef BioSigPlot < hgsetget
         MnuTFMapSettings(obj)
         ExportData(obj)
         d=preprocessedAllData(obj,n,chan,selection)
-        ChangeTime(obj,src);
+        ChangeTime(obj,src)
+        redrawChangeTime(obj)
     end
     
     events

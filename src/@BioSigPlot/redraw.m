@@ -25,6 +25,7 @@ function redraw(obj)
 channelLines=cell(obj.DataNumber,1);
 
 t=round(max(1,obj.Time*obj.SRate+1):min((obj.Time+obj.WinLength)*obj.SRate,size(obj.Data{1},1)));
+% XIndex=ceil(obj.Time*obj.SRate+1):min(ceil((obj.Time+obj.WinLength)*obj.SRate),size(obj.Data{1},1));
 
 if isempty(obj.FirstDispChans_)
     obj.FirstDispChans_=ones(1,obj.DataNumber);
@@ -51,23 +52,21 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         if isempty(obj.DispChans) %No elevator
             ylim=[1-obj.YBorder_(1) Nchan(i)+obj.YBorder_(2)];
         else
-            
             ylim=[Nchan(i)+2-obj.YBorder_(1)-obj.FirstDispChans(i)-min(Nchan(i),obj.DispChans(i))      Nchan(i)+obj.YBorder_(2)-obj.FirstDispChans(i)+1];
         end
         cla(obj.Axes(i))
         set(obj.Axes(i),'Ylim',ylim,'Ytick',1:Nchan(i),'YTickLabel',{},'XtickLabel',{});
         
-        if strcmp(obj.DataView,'Horizontal') || i==obj.DataNumber, plotXTicks(obj.Axes(i),obj.Time,obj.WinLength,obj.InsideTicks); end
+        plotXTicks(obj.Axes(i),obj.Time,obj.WinLength,obj.InsideTicks);
         if ~isempty(obj.PreprocData)
-            lhs=plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i},obj.ChanColors{i},...
+            
+            lhs=plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i}(t,:),obj.ChanColors{i},...
                 obj.Gain{i},Nchan(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),obj.DispChans(i),...
                 obj.ChanSelect2Edit{i},obj.ChanSelectColor);
             
             channelLines{i}=lhs;
         end
-        if i==1  || strcmp(obj.DataView,'Vertical')
-            plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.InsideTicks,obj.ChanSelect2Edit{i},obj.ChanSelectColor);
-        end
+        plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.InsideTicks,obj.ChanSelect2Edit{i},obj.ChanSelectColor);
     end
 else
     
@@ -86,7 +85,7 @@ else
     
     i=str2double(obj.DataView(4));
     if ~isempty(obj.PreprocData)
-        lhs=plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i},obj.ChanColors{i},...
+        lhs=plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i}(t,:),obj.ChanColors{i},...
             obj.Gain{i},obj.MontageChanNumber(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),...
             obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
         channelLines{i}=lhs;
@@ -183,7 +182,7 @@ if insideticks
         p=(i-time)/WinLength;
         text(p+.002,.002,num2str(i),'Parent',axe,'HorizontalAlignment','left',...
             'VerticalAlignment','bottom','FontWeight','normal','units','normalized',...
-            'color',[0 0 1]);
+            'color',[0 0 1],'DisplayName',['XTick',num2str(i)]);
     end
 else
     set(axe,'XTickLabel',time:time+WinLength,'XColor',[0 0 0]);

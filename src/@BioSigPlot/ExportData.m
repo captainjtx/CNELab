@@ -28,7 +28,7 @@ for i=1:length(dd)
     else
         chan=obj.ChanSelect2Edit{dd(i)};
     end
-    d=preprocessedAllData(obj,dd(i),chan,selection);
+    d=obj.PreprocData{dd(i)}(selection,chan);
 %     chanNames=catreshape(obj.MontageChanNames{dd(i)}(chan),length(chan),1);
     cds.(['data' num2str(dd(i))])=d;
 end

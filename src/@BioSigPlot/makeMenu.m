@@ -17,9 +17,6 @@ obj.MenuExportData=uimenu(obj.MenuExport,'Label','Data','Callback',@(src,evt) ob
 
 obj.MenuCopy=uimenu(obj.MenuFile,'Label','Copy','Enable','off');
 %**************************************************************************
-%First Order Menu------------------------------------------------------Edit
-obj.MenuEdit=uimenu(obj.Fig,'Label','Edit');
-obj.MenuDelete=uimenu(obj.MenuEdit,'Label','Delete','Callback',@(src,evt) deleteSelected(obj));
 %First Order Menu--------------------------------------------------Settings
 obj.MenuSettings=uimenu(obj.Fig,'Label','Settings');
 obj.MenuCommands=uimenu(obj.MenuSettings,'Label','Command List',...
@@ -32,17 +29,21 @@ obj.MenuChan=uimenu(obj.MenuSettings,'Label','Page channels','Callback',@(src,ev
 
 obj.MenuColor=uimenu(obj.MenuSettings,'Label','Color');
 obj.MenuSampleRate=uimenu(obj.MenuSettings,'Label','Sample Rate','Callback',@(src,evt) MnuSampleRate(obj),'Accelerator','r');
-obj.MenuFastEvent=uimenu(obj.MenuSettings,'Label','Fast Event','Callback',@(src,evt) WinFastEvents(obj));
 %Second Order Menu of Color
 obj.MenuColorCanvas=uimenu(obj.MenuColor,'Label','Canvas','Accelerator','b',...
     'Callback',@(src,evt) set(obj,'AxesBackgroundColor',uisetcolor(obj.AxesBackgroundColor,'AxesBackground Color')));
 obj.MenuColorLines=uimenu(obj.MenuColor,'Label','Lines','Accelerator','l',...
     'Callback',@(src,evt) set(obj,'ChanColors',obj.applyPanelVal(obj.ChanColors_,uisetcolor(obj.NormalModeColor,'Line Color'))));
 %**************************************************************************
-%First Order Menu---------------------------------------------------_Window
-obj.MenuWindow=uimenu(obj.Fig,'Label','Window');
-obj.MenuEventsWindow=uimenu(obj.MenuWindow,'Label','Events window','Accelerator','o',...
+%First Order Menu-----------------------------------------------------Event
+obj.MenuEvent=uimenu(obj.Fig,'Label','Event');
+obj.MenuFastEvent=uimenu(obj.MenuEvent,'Label','Fast Event','Callback',@(src,evt) WinFastEvents(obj));
+obj.MenuEventsWindow=uimenu(obj.MenuEvent,'Label','Window','Accelerator','o',...
     'Callback',@(src,evt) set(obj,'EventsWindowDisplay',~obj.EventsWindowDisplay));
+obj.MenuEventsDisplay=uimenu(obj.MenuEvent,'Label','Display',...
+    'Callback',@(src,evt) set(obj,'EventsDisplay',~obj.EventsDisplay));
+obj.MenuEventDelete=uimenu(obj.MenuEvent,'Label','Delete','Callback',@(src,evt) deleteSelected(obj));
+
 %First Order Menu---------------------------------------------------Display
 obj.MenuDisplay=uimenu(obj.Fig,'Label','Display');
 obj.MenuInsideTicks=uimenu(obj.MenuDisplay,'Label','Ticks inside',...
@@ -51,8 +52,7 @@ obj.MenuXGrid=uimenu(obj.MenuDisplay,'Label','XGrid',...
     'Callback',@(src,evt) set(obj,'XGrid',~obj.XGrid));
 obj.MenuYGrid=uimenu(obj.MenuDisplay,'Label','YGrid',...
     'Callback',@(src,evt) set(obj,'YGrid',~obj.YGrid));
-obj.MenuEventsDisplay=uimenu(obj.MenuDisplay,'Label','Events',...
-    'Callback',@(src,evt) set(obj,'EventsDisplay',~obj.EventsDisplay));
+
 
 %First Order Menu-------------------------------------------------------App
 obj.MenuApp=uimenu(obj.Fig,'Label','Apps');
