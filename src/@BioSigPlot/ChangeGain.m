@@ -53,11 +53,11 @@ else
     else
         %if there are channels selected
         %var will be applied to the selected channels
-        for i=1:obj.DataNumber
+        for i=1:length(dd)
             if src==obj.BtnGainIncrease
-                obj.Gain{i}(obj.ChanSelect2Edit{i},:)=obj.Gain{i}(obj.ChanSelect2Edit{i},:)*2^0.25;
+                obj.Gain{dd(i)}(obj.ChanSelect2Edit{dd(i)},:)=obj.Gain{dd(i)}(obj.ChanSelect2Edit{dd(i)},:)*2^0.25;
             elseif src==obj.BtnGainDecrease
-                obj.Gain{i}(obj.ChanSelect2Edit{i},:)=obj.Gain{i}(obj.ChanSelect2Edit{i},:)*2^-0.25;
+                obj.Gain{dd(i)}(obj.ChanSelect2Edit{dd(i)},:)=obj.Gain{dd(i)}(obj.ChanSelect2Edit{dd(i)},:)*2^-0.25;
             end
         end
     end

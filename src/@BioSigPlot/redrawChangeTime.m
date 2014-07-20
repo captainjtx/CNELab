@@ -8,7 +8,12 @@ for i=1:length(dd)
         updateChannelLines(obj.ChannelLines{dd(i)},t-t(1)+1,obj.PreprocData{dd(i)}(t,:),...
             obj.Gain{dd(i)},Nchan:-1:1,obj.ChanSelect2Display{dd(i)},...
             obj.FirstDispChans(dd(i)),obj.DispChans(dd(i)));
-        plotXTicks(obj.Axes(dd(i)),obj.Time,obj.WinLength)
+        if length(obj.Axes)==1
+            axe=obj.Axes;
+        else
+            axe=obj.Axes(dd(i));
+        end
+        plotXTicks(axe,obj.Time,obj.WinLength)
     end
 end
 

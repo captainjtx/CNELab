@@ -23,12 +23,17 @@ classdef FastEventWindow  < handle
     methods
         function obj=FastEventWindow(bsp,FastEvts,SelectedEvt)
             obj.bsp=bsp;
+            
+            if isempty(FastEvts)
+                FastEvts={'New Event',bsp.EventDefaultColor};
+            end
+            
             obj.FastEvts=FastEvts;
             
             obj.Fig=figure('MenuBar','none','position',[500 100 300 500],...
                 'NumberTitle','off','Name','FastEvents',...
                 'CloseRequestFcn',@(src,evts) delete(obj));
-            tmp=cell(size(FastEvts,3));
+            tmp=cell(size(FastEvts,1),3);
             
             for i=1:size(FastEvts,1)
                 tmp{i,1}=false;

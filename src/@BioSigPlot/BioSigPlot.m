@@ -951,8 +951,10 @@ classdef BioSigPlot < hgsetget
         function obj = set.SelectedFastEvt_(obj,val)
             obj.SelectedFastEvt_=val;
             if ~obj.IsInitialize
-                x=get(obj.LineMeasurer(1),'XData');
-                updateSelectedFastEvent(obj,x(1));
+                if all(ishandle(obj.LineMeasurer))
+                    x=get(obj.LineMeasurer(1),'XData');
+                    updateSelectedFastEvent(obj,x(1));
+                end
             end
         end
         

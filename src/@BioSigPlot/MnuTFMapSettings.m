@@ -11,6 +11,10 @@ title='Time Frequency Settings';
 
 answer=inputdlg(prompt,title,1,def);
 
+if isempty(answer)
+    return
+end
+
 wo=str2double(answer{1});
 
 needredraw=false;
