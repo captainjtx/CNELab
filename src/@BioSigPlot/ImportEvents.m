@@ -1,14 +1,14 @@
 function ImportEvents(obj)
 
 if isempty(obj.Evts)
-    choice='overwrite';
+    choice='Replace';
 else
-    default='overwrite';
+    default='Replace';
     choice=questdlg('Do you want to overwrite or overlap the existed events?','warning',...
-        'overwrite','overlap','cancel',default);
+        'Replace','Append','Cancel',default);
 end
 
-if strcmpi(choice,'cancel')
+if strcmpi(choice,'Cancel')
     return
 end
 
@@ -41,13 +41,13 @@ if FileName~=0
     if iscell(NewEventList)
         if size(NewEventList,2)==4
             switch choice
-                case 'overwrite'
+                case 'Replace'
                     obj.Evts=NewEventList;
                     obj.IsEvtsSaved=true;
-                case 'overlap'
+                case 'Append'
                     obj.Evts=cat(1,obj.Evts_,NewEventList);
                     obj.IsEvtsSaved=false;
-                case 'cancel'
+                case 'Cancel'
             end
         end
     end

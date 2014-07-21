@@ -55,8 +55,11 @@ classdef EventWindow  < handle
                 obj.EvtIndex=[];
             end
             s=cell(size(evts,1),1);
+            
+            [ind,num]=obj.findIndexOfEvent(evts(:,2),[evts{:,1}]);
+            
             for i=1:size(evts,1)
-                s{i}=sprintf('%8.2f -%s',evts{i,1},evts{i,2}); %#ok<AGROW>
+                s{i}=sprintf('%8.2f - %s ---- #%d|%d',evts{i,1},evts{i,2},ind(i),num(i)); %#ok<AGROW>
                 s{i}=obj.colorEvent(s{i},evts{i,3});
             end
             obj.Evts_=evts;
@@ -78,6 +81,22 @@ classdef EventWindow  < handle
             color=round(255*color);
             colorstr=sprintf('rgb(%d,%d,%d)',color(1),color(2),color(3));
             cs=sprintf('<HTML><FONT bgcolor="%s">%s</FONT></HTML>',colorstr,text);
+        end
+        
+        function [ind,num]=findIndexOfEvent(txt,time)
+            %assume the time is already increasing sorted
+            ind=zeros(length(txt),1);
+            num=zeros(length(txt),1);
+            
+            for i=1:length(txt)
+                
+                tmp=strcmpi(txt,txt{i});
+                subtime=time(tmp);
+                
+                ind(i)=sum(time(i)>=subtime);
+                num(i)=sum(tmp);
+            end
+            
         end
     end
     

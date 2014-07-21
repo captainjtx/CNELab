@@ -99,7 +99,6 @@ else
     set(obj.PanObj,'Enable','off')
 end
 
-
 end
 
 

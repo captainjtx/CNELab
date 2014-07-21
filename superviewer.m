@@ -9,7 +9,7 @@ while(1)
         cds=[cds,tmp];
     end
     
-    choice=questdlg('Do you want to select more dataset?','run','Yes','No','No');
+    choice=questdlg('Do you want to select more dataset?','SuperViewer','Yes','No','No');
     
     if strcmpi(choice,'No')
         break;
@@ -81,8 +81,23 @@ for i=1:length(cds)
     
     if isfield(cds{i}.Data,'TriggerCodes')
         for r=1:size(cds{i}.Data.TriggerCodes,1)
-            for c=1:6
-                evts=cat(1,evts,{cds{i}.Data.TriggerCodes(r,c)/fs,num2str(c),bsp.TriggerEventDefaultColor,2});
+            center_hold_time=cds{i}.Data.TriggerCodes(r,1)/fs;
+            show_cue_time=cds{i}.Data.TriggerCodes(r,2)/fs;
+            errorCode=cds{i}.Data.TriggerCodes(r,end);
+            
+            if show_cue_time-center_hold_time<2.8
+                evts=cat(1,evts,{center_hold_time,'0',[1 0 0],2});
+            else
+                if ~errorCode
+                    color=bsp.TriggerEventDefaultColor;
+                else
+                    color=[0 1 0];
+                end
+                
+                for c=1:6
+                    
+                    evts=cat(1,evts,{cds{i}.Data.TriggerCodes(r,c)/fs,num2str(c),color,2});
+                end
             end
         end
     end

@@ -379,6 +379,7 @@ classdef BioSigPlot < hgsetget
             recalculate(obj);
             ChangeGain(obj,[]);
             redraw(obj);
+            
             obj.IsInitialize=false;
             
         end
@@ -1025,12 +1026,19 @@ classdef BioSigPlot < hgsetget
             %Save the current page's event
             if ~isempty(obj.EventDisplayIndex)&&~isempty(obj.EventTexts)
                 EventList=obj.Evts_;
+                flag=false;
                 for i=1:size(obj.EventDisplayIndex,2)
                     if ishandle(obj.EventTexts(1,i))
-                        EventList{obj.EventDisplayIndex(1,i),2}=get(obj.EventTexts(1,i),'String');
+                        newText=get(obj.EventTexts(1,i),'String');
+                        if ~strcmpi(newText,obj.Evts_{obj.EventDisplayIndex(1,i),2})
+                            EventList{obj.EventDisplayIndex(1,i),2}=newText;
+                            flag=true;
+                        end
                     end
                 end
-                obj.Evts_=EventList;
+                if flag
+                    obj.Evts_=EventList;
+                end
             end
             if ~isempty(obj.SRate)
                 m=floor((size(obj.Data{1},1)-1)/obj.SRate);
@@ -1176,8 +1184,8 @@ classdef BioSigPlot < hgsetget
             offon={'off','on'};
             if isempty(val)
                 offon={'off','off'};
-                deleteMeasurer(obj);
-                deleteAnnotate(obj);
+                maskMeasurer(obj);
+                maskAnnotate(obj);
             end
             set(obj.TogMeasurer,'State',offon{1+strcmpi(val,'Measurer')});
             set(obj.TogSelection,'State',offon{1+strcmpi(val,'Select')});
@@ -1715,24 +1723,7 @@ classdef BioSigPlot < hgsetget
         end
         %==================================================================
         %******************************************************************
-        function ImportDataSet(obj)
-            
-            %             cds=CommonDataStructure();
-            %             if ~cds.import();
-            %                 return
-            %             end
-            %             newData=cds.Data.Data';
-            %             obj.Data=[obj.Data;{newData}];
-            %
-            %             l=cell2mat(cellfun(@size,obj.Data,'UniformOutput',false)');
-            %             if ~all(l(1,1)==l(:,1))
-            %                 error('All data must have the same number of time samples');
-            %             end
-            %
-            %             redraw(obj);
-            %
-            
-        end
+        ImportDataSet(obj)
         %==================================================================
         %******************************************************************
         
@@ -1865,6 +1856,21 @@ classdef BioSigPlot < hgsetget
                 end
             end
         end
+        function maskMeasurer(obj)
+            Nchan=obj.MontageChanNumber;
+            if ~isempty(obj.LineMeasurer)&&~isempty(obj.TxtMeasurer)
+                for i=1:length(obj.Axes)
+                    set(obj.LineMeasurer(i),'XData',[inf inf]);
+                    if all(ishandle(obj.TxtMeasurer{i}))
+                        for j=1:Nchan(i)
+                            
+                            set(obj.TxtMeasurer{i}(j),'position',[inf j]);
+                            
+                        end
+                    end
+                end
+            end
+        end
         
         function deleteMeasurer(obj)
             if ~isempty(obj.LineMeasurer)
@@ -1891,7 +1897,17 @@ classdef BioSigPlot < hgsetget
                 uistack(obj.TxtFastEvent(i),'top')
             end
         end
-        
+        function maskAnnotate(obj)
+            if ~isempty(obj.TxtFastEvent)&&~isempty(obj.LineMeasurer)
+                for i=1:length(obj.Axes)
+                    
+                    yl=get(obj.Axes(i),'ylim');
+                    set(obj.LineMeasurer(i),'XData',[inf inf]);
+                    
+                    set(obj.TxtFastEvent(i),'position',[inf yl(2)]);
+                end
+            end
+        end
         function deleteAnnotate(obj)
             if ~isempty(obj.LineMeasurer)
                 delete(obj.LineMeasurer(ishandle(obj.LineMeasurer)));
