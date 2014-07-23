@@ -188,6 +188,8 @@ classdef BioSigPlot < hgsetget
         
         STFTWindowLength
         STFTOverlap
+        STFTFreqLow
+        STFTFreqHigh
         STFTScaleLow
         STFTScaleHigh
     end
@@ -255,6 +257,8 @@ classdef BioSigPlot < hgsetget
         STFTOverlap_
         STFTScaleLow_
         STFTScaleHigh_
+        STFTFreqLow_
+        STFTFreqHigh_
     end
     properties (SetAccess=protected) %Readonly properties
         Data                        %(Read-Only)All the Signals
@@ -543,7 +547,7 @@ classdef BioSigPlot < hgsetget
                 'AxesBackgroundColor','ChanColors','EventSelectColor','EventDefaultColor',...
                 'TriggerEventDefaultColor','FastEvts','SelectedFastEvt','TriggerEventsFcn',...
                 'SelectedEvent','STFTWindowLength','STFTOverlap','STFTScaleLow',...
-                'STFTScaleHigh','NaviEvts'};
+                'STFTScaleHigh','STFTFreqLow','STFTFreqHigh'};
             
             if isempty(obj.Commands)
                 command='a=BioSigPlot(data';
@@ -618,8 +622,9 @@ classdef BioSigPlot < hgsetget
                     NeedRedrawTimeChange=true;
                 elseif any(strcmpi(g{i},{'PlaySpeed','FastEvts','SelectedFastEvt',...
                         'EventDefaultColor','EventsWindowDisplay','TriggerEventsFcn',...
-                        'TriggerEventDefaultColor','MouseMode','STFTWindowLength'...
-                        ,'STFTOverlap','STFTScaleLow','STFTScaleHigh'}))
+                        'TriggerEventDefaultColor','MouseMode','STFTWindowLength',...
+                        'STFTOverlap','STFTScaleLow','STFTScaleHigh','STFTFreqLow',...
+                        'STFTFreqHigh'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                 elseif any(strcmpi(g{i},{'Selection'}))
@@ -810,6 +815,12 @@ classdef BioSigPlot < hgsetget
         
         function obj = set.STFTScaleHigh(obj,val), set(obj,'STFTScaleHigh',val); end
         function val = get.STFTScaleHigh(obj), val=obj.STFTScaleHigh_; end
+        
+        function obj = set.STFTFreqLow(obj,val), set(obj,'STFTFreqLow',val); end
+        function val = get.STFTFreqLow(obj), val=obj.STFTFreqLow_; end
+        
+        function obj = set.STFTFreqHigh(obj,val), set(obj,'STFTFreqHigh',val); end
+        function val = get.STFTFreqHigh(obj), val=obj.STFTFreqHigh_; end
         %*****************************************************************
         % ***************** User available methods  **********************
         %*****************************************************************
@@ -910,6 +921,12 @@ classdef BioSigPlot < hgsetget
         function obj = set.Colors_(obj,val)
             obj.Colors_=val;
             obj.NormalModeColor_=val;
+        end
+        
+        function obj = set.SRate_(obj,val)
+            obj.SRate_=val;
+            obj.STFTFreqLow=0;
+            obj.STFTFreqHigh=val/2;
         end
         %******************************************************************
         function val = get.Evts(obj)
