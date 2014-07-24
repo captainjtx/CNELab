@@ -56,6 +56,7 @@ wd=obj.STFTWindowLength;
 ov=obj.STFTOverlap;
 
 s=[obj.STFTScaleLow obj.STFTScaleHigh];
+freq=[obj.STFTFreqLow obj.STFTFreqHigh];
 
 if ~ishandle(obj.TFMapFig)
     obj.TFMapFig=figure('Name','TFMap','Visible','off','NumberTitle','off');
@@ -66,12 +67,13 @@ clf
 
 switch option
     case 1
-        [tf,f,t]=bmi_tfmap(obj.TFMapFig,data(:,i),fs,wd,ov,s,chanNames);
-        imagesc(t,f,tf/size(data,2));
+        [tf,f,t]=bsp_tfmap(obj.TFMapFig,data,fs,wd,ov,s,chanNames,freq);
+        imagesc(t,f,20*log10(tf));
         
         if ~isempty(s)
             set(gca,'CLim',s);
         end
+        set(gca,'YLim',freq);
         set(gca,'Tag','TFMapAxes');
         title('Time Frequency Map')
         colormap(jet);
@@ -81,7 +83,7 @@ switch option
         colorbar
         
     case 2
-        bmi_tfmap(obj.TFMapFig,data,fs,wd,ov,s,chanNames);
+        bsp_tfmap(obj.TFMapFig,data,fs,wd,ov,s,chanNames,freq);
     case 3
         
 end
