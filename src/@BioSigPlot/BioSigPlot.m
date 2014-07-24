@@ -334,6 +334,8 @@ classdef BioSigPlot < hgsetget
         
         EventPanel
         
+        PrevMouseTime
+        
     end
     
     methods

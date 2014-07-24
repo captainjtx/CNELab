@@ -29,8 +29,10 @@ if isempty(obj.MouseMode)
     %Multi Channel Selection
     if ndata
         if isempty(Modifier)
+            obj.PrevMouseTime=time;
             %**********************************************************************
             %Single Event Selection
+            obj.DragMode=1;
             if ~isempty(obj.EventLines)
                 for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
                     if ishandle(obj.EventLines(i))&&obj.EventLines(i)
@@ -39,15 +41,12 @@ if isempty(obj.MouseMode)
                         if abs(t-eventIndex)<50
                             newSelect=obj.EventDisplayIndex(i);
                             obj.SelectedEvent=newSelect;
-                            obj.DragMode=1;
+                            obj.DragMode=2;
                             return
                         end
                     end
                 end
             end
-            %**********************************************************************
-            %Sigle Channel Selection
-            obj.ChanSelect2Edit{ndata}=nchan;
             return
         elseif ismember('control',Modifier)||ismember('command',Modifier)
             %**********************************************************************

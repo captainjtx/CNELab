@@ -83,19 +83,23 @@ for i=1:length(cds)
         for r=1:size(cds{i}.Data.TriggerCodes,1)
             center_hold_time=cds{i}.Data.TriggerCodes(r,1)/fs;
             show_cue_time=cds{i}.Data.TriggerCodes(r,2)/fs;
+            fill_target_time=cds{i}.Data.TriggerCodes(r,3)/fs;
+            
             errorCode=cds{i}.Data.TriggerCodes(r,end);
             
-            if show_cue_time-center_hold_time<2.8
-                evts=cat(1,evts,{center_hold_time,'0',[1 0 0],2});
+            if ~errorCode
+                color=bsp.TriggerEventDefaultColor;
             else
-                if ~errorCode
-                    color=bsp.TriggerEventDefaultColor;
+                color=[0.8 0 0];
+            end
+            
+            for c=1:6
+                if show_cue_time-center_hold_time<2.8%...
+%                         ||fill_target_time-show_cue_time<0.8...
+%                         ||fill_target_time-show_cue_time>1.7
+                    color=[0.5 0.5 0.5];
+                    evts=cat(1,evts,{cds{i}.Data.TriggerCodes(r,c)/fs,['0-' num2str(c)],color,2});
                 else
-                    color=[0 1 0];
-                end
-                
-                for c=1:6
-                    
                     evts=cat(1,evts,{cds{i}.Data.TriggerCodes(r,c)/fs,num2str(c),color,2});
                 end
             end

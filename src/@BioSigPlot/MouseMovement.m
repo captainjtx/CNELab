@@ -7,7 +7,7 @@ mouseIndex=floor((obj.MouseTime-obj.Time)*obj.SRate);
 if ndata==0
     set(obj.Fig,'pointer','arrow')
 else
-
+    
     if isempty(obj.MouseMode)
         set(obj.Fig,'pointer','crosshair');
         if ~isempty(obj.EventLines)&&~obj.DragMode
@@ -22,10 +22,16 @@ else
             end
         end
         updateUponText(obj,mouseIndex,yvalue);
-        if obj.DragMode
-            obj.DragMode=2;
+        if obj.DragMode==2&&~isempty(obj.SelectedEvent)
+            obj.DragMode=3;
             for i=1:length(obj.Axes)
                 set(obj.LineMeasurer(i),'XData',[mouseIndex mouseIndex],'Color',[0 0.7 0],'LineStyle','-.');
+            end
+        elseif obj.DragMode==1
+            if time>obj.PrevMouseTime
+                set(obj.Fig,'pointer','left');
+            else
+                set(obj.Fig,'pointer','right');
             end
         end
     elseif strcmpi(obj.MouseMode,'Measurer')
@@ -59,80 +65,80 @@ function updateUponText(obj,mouseIndex,yvalue)
 
 obj.UponText=0;
 if ~isempty(obj.EventTexts)&&~obj.DragMode
-        for j=1:size(obj.EventTexts,1)*size(obj.EventTexts,2)
-            if ishandle(obj.EventTexts(j))
-                i=find(get(obj.EventTexts(j),'Parent')==obj.Axes);
-                extent=get(obj.EventTexts(j),'Extent');
-                if mouseIndex>extent(1)&&mouseIndex<extent(1)+extent(3)&&yvalue(i)>extent(2)&&yvalue(i)<extent(2)+extent(4)
-                    obj.UponText=1;
-                    set(obj.Fig,'pointer','hand');
-                    break
-                end
+    for j=1:size(obj.EventTexts,1)*size(obj.EventTexts,2)
+        if ishandle(obj.EventTexts(j))
+            i=find(get(obj.EventTexts(j),'Parent')==obj.Axes);
+            extent=get(obj.EventTexts(j),'Extent');
+            if mouseIndex>extent(1)&&mouseIndex<extent(1)+extent(3)&&yvalue(i)>extent(2)&&yvalue(i)<extent(2)+extent(4)
+                obj.UponText=1;
+                set(obj.Fig,'pointer','hand');
+                break
             end
         end
+    end
 end
 end
 function updateInfoPanel(obj,time,ndata,nchan)
-    
-    if strcmp(obj.TimeUnit,'min')
-        timestamp=time*60;
+
+if strcmp(obj.TimeUnit,'min')
+    timestamp=time*60;
+else
+    timestamp=time;
+end
+
+s=rem(timestamp,60);
+m=rem(floor(timestamp/60),60);
+h=floor(timestamp/3600);
+c=obj.MontageChanNames{ndata}{nchan};
+
+if round(time*obj.SRate)<=size(obj.Data{ndata},1)
+    if iscell(obj.PreprocData)
+        v=obj.PreprocData{ndata}(max(round((time-obj.Time)*obj.SRate),1),nchan);
     else
-        timestamp=time;
-    end
-    
-    s=rem(timestamp,60);
-    m=rem(floor(timestamp/60),60);
-    h=floor(timestamp/3600);
-    c=obj.MontageChanNames{ndata}{nchan};
-    
-    if round(time*obj.SRate)<=size(obj.Data{ndata},1)
-        if iscell(obj.PreprocData)
-            v=obj.PreprocData{ndata}(max(round((time-obj.Time)*obj.SRate),1),nchan);
-        else
-            if ~isempty(obj.PreprocData)
-                v=obj.PreprocData(max(round((time-obj.Time)*obj.SRate),1),nchan);
-            end
+        if ~isempty(obj.PreprocData)
+            v=obj.PreprocData(max(round((time-obj.Time)*obj.SRate),1),nchan);
         end
-    else
-        v=nan;
     end
-    total=size(obj.Data{ndata},1)/obj.SRate;
-    percent=time/total*100;
-    
-    if obj.Filtering{ndata}(nchan)
-        fl=num2str(obj.FilterLow{ndata}(nchan));
-        fh=num2str(obj.FilterHigh{ndata}(nchan));
-        fn1=num2str(obj.FilterNotch1{ndata}(nchan));
-        fn2=num2str(obj.FilterNotch2{ndata}(nchan));
-    else
-        fl='-';
-        fh='-';
-        fn1='-';
-        fn2='-';
-    end
-    
-    s1=['Data: ',num2str(ndata),' ; ',...
-        'SR: ',num2str(obj.SRate,'%0.5g'),' ; ',...
-        'Chan: ',c];
-    
-    s2=['Gain: ',num2str(obj.Gain{ndata}(nchan),'%0.5g'),' ; ',...
-        'Value: ',num2str(v,'%0.5g')];
-    
-    if ~isempty(obj.Units)&&~isempty(obj.Units{ndata})
-        s2=[s2,' ',obj.Units{ndata}{nchan}];
-    end
-    
-    s3=['Time: ',num2str(h,'%02d'),':',num2str(m,'%02d'),':',num2str(s,'%0.3f'),...
-        ' -- ',num2str(percent,'%0.2f'),'%'];
-    
-    s4=['FL: ',fl,' , ',...
-        'FH: ',fh,'  ;  ',...
-        'FN1: ',fn1,' , ',...
-        'FN2: ',fn2];
-    
-    set(obj.TxtInfo1,'String',s1);
-    set(obj.TxtInfo2,'String',s2);
-    set(obj.TxtInfo3,'String',s3);
-    set(obj.TxtInfo4,'String',s4);
+else
+    v=nan;
+end
+total=size(obj.Data{ndata},1)/obj.SRate;
+percent=time/total*100;
+
+if obj.Filtering{ndata}(nchan)
+    fl=num2str(obj.FilterLow{ndata}(nchan));
+    fh=num2str(obj.FilterHigh{ndata}(nchan));
+    fn1=num2str(obj.FilterNotch1{ndata}(nchan));
+    fn2=num2str(obj.FilterNotch2{ndata}(nchan));
+else
+    fl='-';
+    fh='-';
+    fn1='-';
+    fn2='-';
+end
+
+s1=['Data: ',num2str(ndata),' ; ',...
+    'SR: ',num2str(obj.SRate,'%0.5g'),' ; ',...
+    'Chan: ',c];
+
+s2=['Gain: ',num2str(obj.Gain{ndata}(nchan),'%0.5g'),' ; ',...
+    'Value: ',num2str(v,'%0.5g')];
+
+if ~isempty(obj.Units)&&~isempty(obj.Units{ndata})
+    s2=[s2,' ',obj.Units{ndata}{nchan}];
+end
+
+s3=['Time: ',num2str(h,'%02d'),':',num2str(m,'%02d'),':',num2str(s,'%0.3f'),...
+    ' -- ',num2str(percent,'%0.2f'),'%'];
+
+s4=['FL: ',fl,' , ',...
+    'FH: ',fh,'  ;  ',...
+    'FN1: ',fn1,' , ',...
+    'FN2: ',fn2];
+
+set(obj.TxtInfo1,'String',s1);
+set(obj.TxtInfo2,'String',s2);
+set(obj.TxtInfo3,'String',s3);
+set(obj.TxtInfo4,'String',s4);
 
 end
