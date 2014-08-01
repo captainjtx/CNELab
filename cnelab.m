@@ -1,4 +1,4 @@
-function superviewer()
+function cnelab()
 
 cds=[];
 while(1)
@@ -9,7 +9,7 @@ while(1)
         cds=[cds,tmp];
     end
     
-    choice=questdlg('Do you want to select more dataset?','SuperViewer','Yes','No','No');
+    choice=questdlg('Do you want to select more dataset?','CNELab','Yes','No','No');
     
     if strcmpi(choice,'No')
         break;

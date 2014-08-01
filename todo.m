@@ -51,8 +51,11 @@ ctrl+tab/ctrl+shift+tab and ICON to switch between datasets
 
 add position info to montage to help TFMap grid plot
 
-Add Channel Menu Mask, Clear Mask, Channel Number / Page, Channel duration / Page, Auto scale
+% Add Channel Menu Mask, Clear Mask, Channel Number / Page, Channel duration / Page, Auto scale
 
-Make event import auto colored
+% Make event import auto colored
+
+Add File->Info
+Make Event Pannel Adjustable
 
 !!Montage
