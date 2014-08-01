@@ -9,7 +9,6 @@ classdef BioSigPlot < hgsetget
         InfoPanel
         
         FilterPanel
-        ScalePanel
         
         BtnPrevEvent
         BtnPrevPage
@@ -31,9 +30,6 @@ classdef BioSigPlot < hgsetget
         EdtFilterNotch1
         EdtFilterNotch2
         
-        EdtGain
-        BtnAddGain
-        BtnRemGain
         
         BtnTFMap
         BtnPlayBackward
@@ -45,6 +41,10 @@ classdef BioSigPlot < hgsetget
         
         BtnWidthIncrease
         BtnWidthDecrease
+        
+        BtnAutoScale
+        BtnMaskChannel
+        BtnUnMaskChannel
         
         BtnHeightIncrease
         BtnHeightDecrease
@@ -78,9 +78,15 @@ classdef BioSigPlot < hgsetget
         MenuConfigurationState
         MenuPlaySpeed
         MenuColors
-        MenuChan
-        MenuWidth
         MenuSampleRate
+        
+        MenuChannel
+        MenuChannelNumber
+        MenuChannelWidth
+        MenuMask
+        MenuClearMask
+        MenuGain
+        MenuAutoScale
         
         MenuEvent
         MenuEventDelete
@@ -131,6 +137,7 @@ classdef BioSigPlot < hgsetget
         SRate                   %Sampling rate
         WinLength               %Time length of windows
         Gain                    %Gain beetween 2 channels
+        Mask
         ChanNames               %Cell with channel names corresponding to raw data.
         Units                   %Units of the data
         Evts                    %List of events.
@@ -151,7 +158,7 @@ classdef BioSigPlot < hgsetget
         ChanColors
         
         EventSelectColor
-        EventDefaultColor
+        EventDefaultColors
         TriggerEventDefaultColor
         
         DataView                %View Mode {'Vertical'|'Horizontal'|'DAT*'}
@@ -198,6 +205,7 @@ classdef BioSigPlot < hgsetget
         SRate_
         WinLength_
         Gain_
+        Mask_
         ChanNames_
         Units_
         
@@ -218,7 +226,7 @@ classdef BioSigPlot < hgsetget
         AxesBackgroundColor_
         ChanColors_
         EventSelectColor_
-        EventDefaultColor_
+        EventDefaultColors_
         TriggerEventDefaultColor_
         
         DataView_
@@ -402,7 +410,8 @@ classdef BioSigPlot < hgsetget
             obj.ChanSelect2Edit_=cell(1,obj.DataNumber);
             
             obj.Gain_=cell(1,obj.DataNumber);
-            
+            obj.Mask_=cell(1,obj.DataNumber);
+            obj.Mask_=obj.applyPanelVal(obj.Mask_,1);
             
             obj.Filtering_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
             
@@ -546,10 +555,10 @@ classdef BioSigPlot < hgsetget
                 'VideoFile','VideoTimeFrame','VideoLineTime','MainTimer','VideoTimer',...
                 'BadChannels','ChanSelect2Display','ChanSelect2Edit','EventsDisplay',...
                 'TriggerEventsDisplay','EventsWindowDisplay','ChanSelectColor',...
-                'AxesBackgroundColor','ChanColors','EventSelectColor','EventDefaultColor',...
+                'AxesBackgroundColor','ChanColors','EventSelectColor','EventDefaultColors',...
                 'TriggerEventDefaultColor','FastEvts','SelectedFastEvt','TriggerEventsFcn',...
                 'SelectedEvent','STFTWindowLength','STFTOverlap','STFTScaleLow',...
-                'STFTScaleHigh','STFTFreqLow','STFTFreqHigh'};
+                'STFTScaleHigh','STFTFreqLow','STFTFreqHigh','Mask'};
             
             if isempty(obj.Commands)
                 command='a=BioSigPlot(data';
@@ -612,7 +621,7 @@ classdef BioSigPlot < hgsetget
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     NeedHighlightEvents=true;
-                elseif any(strcmpi(g{i},{'Gain'}))
+                elseif any(strcmpi(g{i},{'Gain','Mask'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     NeedChangeGain=true;
@@ -623,7 +632,7 @@ classdef BioSigPlot < hgsetget
                     NeedDrawSelect=true;
                     NeedRedrawTimeChange=true;
                 elseif any(strcmpi(g{i},{'PlaySpeed','FastEvts','SelectedFastEvt',...
-                        'EventDefaultColor','EventsWindowDisplay','TriggerEventsFcn',...
+                        'EventDefaultColors','EventsWindowDisplay','TriggerEventsFcn',...
                         'TriggerEventDefaultColor','MouseMode','STFTWindowLength',...
                         'STFTOverlap','STFTScaleLow','STFTScaleHigh','STFTFreqLow',...
                         'STFTFreqHigh'}))
@@ -680,6 +689,8 @@ classdef BioSigPlot < hgsetget
         function val = get.WinLength(obj), val=obj.WinLength_; end
         function obj = set.Gain(obj,val), set(obj,'Gain',val); end
         function val = get.Gain(obj), val=obj.Gain_; end
+        function obj = set.Mask(obj,val), set(obj,'Mask',val); end
+        function val = get.Mask(obj), val=obj.Mask_; end
         function obj = set.ChanNames(obj,val), set(obj,'ChanNames',val); end
         function val = get.ChanNames(obj), val=obj.ChanNames_; end
         function obj = set.Units(obj,val), set(obj,'Units',val); end
@@ -791,8 +802,8 @@ classdef BioSigPlot < hgsetget
         function obj = set.EventSelectColor(obj,val), set(obj,'EventSelectColor',val); end
         function val = get.EventSelectColor(obj), val=obj.EventSelectColor_; end
         
-        function obj = set.EventDefaultColor(obj,val), set(obj,'EventDefaultColor',val); end
-        function val = get.EventDefaultColor(obj), val=obj.EventDefaultColor_; end
+        function obj = set.EventDefaultColors(obj,val), set(obj,'EventDefaultColors',val); end
+        function val = get.EventDefaultColors(obj), val=obj.EventDefaultColors_; end
         
         function obj = set.TriggerEventDefaultColor(obj,val), set(obj,'TriggerEventDefaultColor',val); end
         function val = get.TriggerEventDefaultColor(obj), val=obj.TriggerEventDefaultColor_; end
@@ -941,11 +952,10 @@ classdef BioSigPlot < hgsetget
         function obj = set.Evts_(obj,val)
             
             if size(val,2)==2
-                c=cell(size(val,1),1);
-                [c{:}]=deal(obj.EventDefaultColor);
+                val=obj.assignEventColor(val);
                 d=cell(size(val,1),1);
                 [d{:}]=deal(0);
-                obj.Evts_=cat(2,val,c,d);
+                obj.Evts_=cat(2,val,d);
             else
                 obj.Evts_=val;
             end
@@ -1001,7 +1011,25 @@ classdef BioSigPlot < hgsetget
         end
         %==================================================================
         %*****************************************************************
-        
+        function newevts=assignEventColor(obj,evts)
+            [C,ia,ic] = unique(evts(:,2));
+            
+            newevts=evts;
+            c=cell(size(evts,1),1);
+            for i=1:size(evts,1)
+                ind=rem(ic(i),size(obj.EventDefaultColors,1));
+                if ~ind
+                    ind=size(obj.EventDefaultColors,1);
+                end
+                c{i}=obj.EventDefaultColors(ind,:);
+            end
+            if size(evts,2)>2
+                newevts(:,3)=c;
+            else
+                newevts=cat(2,newevts,c);
+            end
+            
+        end
         function newcell=applyPanelVal(obj,oldcell,val)
             %var : a single non-empty value
             %oldcell : old configuration
@@ -1087,12 +1115,6 @@ classdef BioSigPlot < hgsetget
                 dd=obj.DisplayedData;
                 if all(cellfun(@isempty,obj.ChanSelect2Edit(dd)))
                     %If there is no channel selected on the current page
-                    
-                    if all(cellfun(@mode,obj.Gain(dd))==mode(obj.Gain{dd(1)}))
-                        set(obj.EdtGain,'String',mode(obj.Gain{dd(1)}));
-                    else
-                        set(obj.EdtGain,'String','-');
-                    end
                     
                     resetFilterPanel(obj);
                 end
@@ -1466,10 +1488,6 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         %Filter Panel Initialization
         filterControlPanel(obj,parent,position)
-        %==================================================================
-        %******************************************************************
-        %Gain Panel Initailization
-        scaleControlPanel(obj,parent,position)
         %==================================================================
         function makeToolbar(obj)
             obj.montageToolbar();
@@ -1952,6 +1970,8 @@ classdef BioSigPlot < hgsetget
         ChangeTime(obj,src)
         redrawChangeTime(obj)
         showGauge(obj,src)
+        maskChannel(obj,src)
+        MnuChanGain(obj,src)
     end
     
     events

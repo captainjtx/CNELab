@@ -61,7 +61,7 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         if ~isempty(obj.PreprocData)
             
             lhs=plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i}(t,:),obj.ChanColors{i},...
-                obj.Gain{i},Nchan(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),obj.DispChans(i),...
+                obj.Gain{i},obj.Mask{i},Nchan(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),obj.DispChans(i),...
                 obj.ChanSelect2Edit{i},obj.ChanSelectColor);
             
             channelLines{i}=lhs;
@@ -86,7 +86,7 @@ else
     i=str2double(obj.DataView(4));
     if ~isempty(obj.PreprocData)
         lhs=plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i}(t,:),obj.ChanColors{i},...
-            obj.Gain{i},obj.MontageChanNumber(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),...
+            obj.Gain{i},obj.Mask{i},obj.MontageChanNumber(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),...
             obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
         channelLines{i}=lhs;
     end
@@ -119,7 +119,7 @@ showGauge(obj);
 
 end
 %**************************************************************************
-function h=plotData(axe,t,data,colors,gain,posY,ChanSelect2Display,FirstDispChan,...
+function h=plotData(axe,t,data,colors,gain,mask,posY,ChanSelect2Display,FirstDispChan,...
     DispChans,ChanSelect2Edit,ChanSelectColor) %#ok<INUSD>
 % Plot data function
 % axe :axes to plot
@@ -140,7 +140,7 @@ if ~isempty(FirstDispChan)&&~isempty(DispChans)
 end
 %make zero gain channel disappear
 gain(isnan(gain))=1;
-gain(gain==0)=nan;
+gain(mask==0)=nan;
 
 if ~isempty(ChanSelect2Display)
     data=data(:,ChanSelect2Display).*...

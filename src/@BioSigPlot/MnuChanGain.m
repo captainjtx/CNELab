@@ -1,11 +1,11 @@
-function MnuWidth2Display(obj)
+function MnuChanGain(obj,src)
 %**************************************************************************
-% Dialog box of page time to display
+% Dialog box of channel gain
 %**************************************************************************
-prompt={'Window time length(s)'};
-def={num2str(obj.WinLength)};
+prompt={'Channel gain'};
+def={'1'};
 
-title='Set window time length';
+title='Change the channel gain';
 
 
 answer=inputdlg(prompt,title,1,def);
@@ -16,9 +16,11 @@ end
 
 tmp=str2double(answer{1});
 if isempty(tmp)||isnan(tmp)
-    tmp=obj.WinLength;
+    tmp=1;
 end
 
-obj.WinLength=tmp;
+obj.Gain=obj.applyPanelVal(obj.Gain_,tmp);
+
+
 end
 

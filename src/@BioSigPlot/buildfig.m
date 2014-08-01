@@ -40,13 +40,10 @@ end
 
 function makeControls(obj)
 
-obj.filterControlPanel(obj.ControlPanel,[0 0 .42 1]);
+obj.filterControlPanel(obj.ControlPanel,[0.58 0 .42 1]);
 
 obj.timeControlPanel(obj.ControlPanel,[0.42 0 .16 1]);
 
-obj.infoControlPanel(obj.ControlPanel,[0.58 0 .32 1]);
-
-obj.scaleControlPanel(obj.ControlPanel,[0.9,0,0.09,1]);
-
+obj.infoControlPanel(obj.ControlPanel,[0 0 .42 1]);
 
 end

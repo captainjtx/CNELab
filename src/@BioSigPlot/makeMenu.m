@@ -23,10 +23,6 @@ obj.MenuCommands=uimenu(obj.MenuSettings,'Label','Command List',...
     'Callback',@(src,evts) listdlg('ListString',obj.Commands,'ListSize',[700 500],'PromptString','List of commands'));
 obj.MenuConfigurationState=uimenu(obj.MenuSettings,'Label','Configuration file','Callback',@(src,evt) ConfigWindow(obj));
 obj.MenuPlaySpeed=uimenu(obj.MenuSettings,'Label','Play speed','Callback',@(src,evt) MnuPlay(obj));
-
-obj.MenuWidth=uimenu(obj.MenuSettings,'Label','Page time','Callback',@(src,evt) MnuWidth2Display(obj));
-obj.MenuChan=uimenu(obj.MenuSettings,'Label','Page channels','Callback',@(src,evt) MnuChan2Display(obj));
-
 obj.MenuColor=uimenu(obj.MenuSettings,'Label','Color');
 obj.MenuSampleRate=uimenu(obj.MenuSettings,'Label','Sample Rate','Callback',@(src,evt) MnuSampleRate(obj),'Accelerator','r');
 %Second Order Menu of Color
@@ -34,6 +30,16 @@ obj.MenuColorCanvas=uimenu(obj.MenuColor,'Label','Canvas','Accelerator','b',...
     'Callback',@(src,evt) set(obj,'AxesBackgroundColor',uisetcolor(obj.AxesBackgroundColor,'AxesBackground Color')));
 obj.MenuColorLines=uimenu(obj.MenuColor,'Label','Lines','Accelerator','l',...
     'Callback',@(src,evt) set(obj,'ChanColors',obj.applyPanelVal(obj.ChanColors_,uisetcolor(obj.NormalModeColor,'Line Color'))));
+%**************************************************************************
+%First Order Menu---------------------------------------------------Channel
+obj.MenuChannel=uimenu(obj.Fig,'Label','Channel');
+obj.MenuChannelNumber=uimenu(obj.MenuChannel,'Label','Channels/Page','Callback',@(src,evt) MnuChan2Display(obj));
+obj.MenuChannelWidth=uimenu(obj.MenuChannel,'Label','Time/Page','Callback',@(src,evt) MnuWidth2Display(obj));
+obj.MenuMask=uimenu(obj.MenuChannel,'Label','Mask','Callback',@(src,evt) maskChannel(obj,src));
+obj.MenuClearMask=uimenu(obj.MenuChannel,'Label','UnMask','Callback',@(src,evt) maskChannel(obj,src));
+obj.MenuGain=uimenu(obj.MenuChannel,'Label','Gain','Callback',@(src,evt) MnuChanGain(obj,src));
+obj.MenuAutoScale=uimenu(obj.MenuChannel,'Label','Auto Scale','Callback',@(src,evt) ChangeGain(obj,src));
+
 %**************************************************************************
 %First Order Menu-----------------------------------------------------Event
 obj.MenuEvent=uimenu(obj.Fig,'Label','Event');

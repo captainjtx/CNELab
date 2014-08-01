@@ -1,7 +1,7 @@
 function updateSelectedFastEvent(obj,x)
 
 if isempty(obj.SelectedFastEvt)||isempty(obj.FastEvts)
-    newEvent={[],'New Event',obj.EventDefaultColor,0};
+    newEvent={[],'New Event',obj.EventDefaultColors(1,:),0};
 else
     newEvent={[],obj.FastEvts{obj.SelectedFastEvt,1},obj.FastEvts{obj.SelectedFastEvt,2},1};
 end

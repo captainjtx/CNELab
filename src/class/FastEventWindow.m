@@ -25,7 +25,7 @@ classdef FastEventWindow  < handle
             obj.bsp=bsp;
             
             if isempty(FastEvts)
-                FastEvts={'New Event',bsp.EventDefaultColor};
+                FastEvts={'New Event',bsp.EventDefaultColors(1,:)};
             end
             
             obj.FastEvts=FastEvts;

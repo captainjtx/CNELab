@@ -180,7 +180,7 @@ elseif strcmpi(obj.MouseMode,'Select')
 elseif strcmpi(obj.MouseMode,'Annotate')
     
     if isempty(obj.SelectedFastEvt)
-        newEvent={time,'New Event',obj.EventDefaultColor,0};
+        newEvent={time,'New Event',obj.EventDefaultColors(1,:),0};
         addNewEvent(obj,newEvent);
     else
         newEvent={time,obj.FastEvts{obj.SelectedFastEvt,1},obj.FastEvts{obj.SelectedFastEvt,2},1};

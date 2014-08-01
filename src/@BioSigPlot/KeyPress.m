@@ -156,7 +156,7 @@ else
     
     if strcmpi(evt.Key,'i')
         obj.MouseMode='annotate';
-        obj.Evts=cat(1,obj.Evts_,{time,'New Event',obj.EventDefaultColor,0});
+        obj.Evts=cat(1,obj.Evts_,{time,'New Event',obj.EventDefaultColors(1,:),0});
         MouseUp(obj);
         obj.MouseMode=[];
         MouseDown(obj);

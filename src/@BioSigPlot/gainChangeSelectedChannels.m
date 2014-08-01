@@ -5,7 +5,7 @@ t=ceil(obj.Time*obj.SRate+1):min(ceil((obj.Time+obj.WinLength)*obj.SRate),size(o
 
 if obj.IsChannelSelected
     for i=1:length(dd)
-        gainChangeChannels(dd(i),obj.PreprocData{dd(i)}(t,:),obj.Gain{dd(i)},obj.MontageChanNumber(dd(i)):-1:1,obj.ChannelLines{dd(i)},...
+        gainChangeChannels(dd(i),obj.PreprocData{dd(i)}(t,:),obj.Gain{dd(i)},obj.Mask{dd(i)},obj.MontageChanNumber(dd(i)):-1:1,obj.ChannelLines{dd(i)},...
             obj.ChanSelect2Display{dd(i)},obj.FirstDispChans(dd(i)),obj.DispChans(dd(i)),obj.ChanSelect2Edit{dd(i)});
         
         if length(obj.Axes)==1
@@ -18,7 +18,7 @@ if obj.IsChannelSelected
 else
     
     for i=1:length(dd)
-        gainChangeChannels(dd(i),obj.PreprocData{dd(i)}(t,:),obj.Gain{dd(i)},obj.MontageChanNumber(dd(i)):-1:1,obj.ChannelLines{dd(i)},...
+        gainChangeChannels(dd(i),obj.PreprocData{dd(i)}(t,:),obj.Gain{dd(i)},obj.Mask{dd(i)},obj.MontageChanNumber(dd(i)):-1:1,obj.ChannelLines{dd(i)},...
             obj.ChanSelect2Display{dd(i)},obj.FirstDispChans(dd(i)),obj.DispChans(dd(i)),obj.ChanSelect2Display{dd(i)});
         if length(obj.Axes)==1
             axes=obj.Axes;
@@ -33,7 +33,7 @@ end
 showGauge(obj);
 end
 
-function gainChangeChannels(dataNum,data,gain,posY,ChannelLines,ChanSelect2Display,FirstDispChan,...
+function gainChangeChannels(dataNum,data,gain,mask,posY,ChannelLines,ChanSelect2Display,FirstDispChan,...
     DispChans,ChanSelect2Edit)
 if ~isempty(FirstDispChan)&&~isempty(DispChans)
     if ~isempty(ChanSelect2Display)
@@ -45,7 +45,7 @@ end
 
 gain(isnan(gain))=1;
 %make zero gain channel disappear
-gain(gain==0)=nan;
+gain(mask==0)=nan;
 
 if ~isempty(ChanSelect2Display)
     data=data(:,ChanSelect2Display).*...

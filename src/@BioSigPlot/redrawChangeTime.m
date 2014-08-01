@@ -6,7 +6,7 @@ for i=1:length(dd)
     if ~isempty(obj.PreprocData)
         Nchan=obj.MontageChanNumber(dd(i));
         updateChannelLines(obj.ChannelLines{dd(i)},t-t(1)+1,obj.PreprocData{dd(i)}(t,:),...
-            obj.Gain{dd(i)},Nchan:-1:1,obj.ChanSelect2Display{dd(i)},...
+            obj.Gain{dd(i)},obj.Mask{dd(i)},Nchan:-1:1,obj.ChanSelect2Display{dd(i)},...
             obj.FirstDispChans(dd(i)),obj.DispChans(dd(i)));
         if length(obj.Axes)==1
             axe=obj.Axes;
@@ -19,7 +19,7 @@ end
 
 end
 
-function updateChannelLines(channellines,t,data,gain,posY,ChanSelect2Display,FirstDispChan,DispChans)
+function updateChannelLines(channellines,t,data,gain,mask,posY,ChanSelect2Display,FirstDispChan,DispChans)
 
 if ~isempty(FirstDispChan)&&~isempty(DispChans)
     if ~isempty(ChanSelect2Display)
@@ -29,7 +29,7 @@ if ~isempty(FirstDispChan)&&~isempty(DispChans)
     end
 end
 %make zero gain channel disappear
-gain(gain==0)=nan;
+gain(mask==0)=nan;
 
 if ~isempty(ChanSelect2Display)
     data=data(:,ChanSelect2Display).*...

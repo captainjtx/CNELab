@@ -70,11 +70,10 @@ for i=1:length(cds)
     if ~isempty(cds{i}.Data.Annotations)
         evts=cat(1,evts,cds{i}.Data.Annotations);
         evts(:,1)=num2cell(cell2mat(evts(:,1))-startTime);
-        color=cell(size(evts,1),1);
         code=cell(size(evts,1),1);
-        [color{:}]=deal(bsp.EventDefaultColor);
         [code{:}]=deal(0);
-        evts=cat(2,evts,color,code);
+        evts=bsp.assignEventColor(evts);
+        evts=cat(2,evts,code);
     else
         evts=[];
     end
@@ -83,7 +82,7 @@ for i=1:length(cds)
         for r=1:size(cds{i}.Data.TriggerCodes,1)
             center_hold_time=cds{i}.Data.TriggerCodes(r,1)/fs;
             show_cue_time=cds{i}.Data.TriggerCodes(r,2)/fs;
-            fill_target_time=cds{i}.Data.TriggerCodes(r,3)/fs;
+%             fill_target_time=cds{i}.Data.TriggerCodes(r,3)/fs;
             
             errorCode=cds{i}.Data.TriggerCodes(r,end);
             
