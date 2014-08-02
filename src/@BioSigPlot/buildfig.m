@@ -19,8 +19,11 @@ pos=get(obj.Fig,'position');
 set(obj.Fig,'position',[0,0 pos(3) pos(4)]);
 ctrlsize=obj.ControlBarSize;
 eventwidth=obj.EventPanelWidth;
+adjustWidth=obj.AdjustWidth;
 
-obj.EventPanel=uipanel(obj.Fig,'units','pixels','position',[0 ctrlsize(2) eventwidth pos(4)-ctrlsize(2)],'BorderType','none');
+obj.EventPanel=uipanel(obj.Fig,'units','pixels','position',[0 ctrlsize(2) eventwidth-adjustWidth pos(4)-ctrlsize(2)],'BorderType','none');
+obj.AdjustPanel=uipanel(obj.Fig,'units','pixels','position',[eventwidth-adjustWidth ctrlsize(2) 10 pos(4)-ctrlsize(2)],'BorderType','etchedout',...
+    'ButtonDownFcn',@(src,evt) AdjustPanelClick(obj));
 obj.MainPanel=uipanel(obj.Fig,'units','pixels','position',[eventwidth ctrlsize(2) ctrlsize(1)-eventwidth pos(4)-ctrlsize(2)],'BorderType','none');
 obj.ControlPanel=uipanel(obj.Fig,'units','pixels','position',[0 0 ctrlsize(1) ctrlsize(2)],'BorderType','none');
 obj.Toolbar=uitoolbar(obj.Fig);
@@ -46,4 +49,8 @@ obj.timeControlPanel(obj.ControlPanel,[0.42 0 .16 1]);
 
 obj.infoControlPanel(obj.ControlPanel,[0 0 .42 1]);
 
+end
+
+function AdjustPanelClick(obj)
+obj.ResizeMode=true;
 end

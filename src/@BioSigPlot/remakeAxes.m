@@ -39,7 +39,7 @@ end
 
 obj.Sliders=[];obj.Axes=[];
 
-ElevWide=.013;ChanNameWidth=.045;TimeHeight=.03;
+ElevWide=.013;
 VerticalSpace=.01;
 Nchan=obj.MontageChanNumber;
 n=obj.DataNumber;

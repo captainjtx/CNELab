@@ -2,12 +2,35 @@ function MouseMovement(obj)
 [nchan,ndata,yvalue]=getMouseInfo(obj);
 time=obj.MouseTime;
 mouseIndex=floor((obj.MouseTime-obj.Time)*obj.SRate);
+pos=get(obj.Fig,'CurrentPoint');
 
+if obj.ResizeMode
+    set(obj.Fig,'pointer','right');
+    pos1=get(obj.EventPanel,'Position');
+    pos2=get(obj.AdjustPanel,'Position');
+    pos3=get(obj.MainPanel,'Position');
+    fpos=get(obj.Fig,'position');
+    
+    set(obj.EventPanel,'Position',[pos1(1) pos1(2) pos(1)-obj.AdjustWidth/2 pos1(4)]);
+    set(obj.AdjustPanel,'Position',[pos(1)-obj.AdjustWidth/2 pos2(2) pos2(3) pos2(4)]);
+    set(obj.MainPanel,'Position',[pos(1)+obj.AdjustWidth/2 pos3(2) fpos(3)-pos(1)-obj.AdjustWidth/2 pos3(4)]);
+    return
+end
+
+obj.UponAdjustPanel=false;
 
 if ndata==0
     set(obj.Fig,'pointer','arrow')
-else
     
+    if strcmpi(get(obj.AdjustPanel,'Visible'),'on')
+        
+        region=get(obj.AdjustPanel,'Position');
+        if pos(1)>region(1)&&pos(1)<region(1)+region(3)&&pos(2)>region(2)&&pos(2)<region(2)+region(4)
+            set(obj.Fig,'pointer','right');
+            obj.UponAdjustPanel=true;
+        end
+    end
+else
     if isempty(obj.MouseMode)
         set(obj.Fig,'pointer','crosshair');
         if ~isempty(obj.EventLines)&&~obj.DragMode
@@ -22,17 +45,13 @@ else
             end
         end
         updateUponText(obj,mouseIndex,yvalue);
-        if obj.DragMode==2&&~isempty(obj.SelectedEvent)
-            obj.DragMode=3;
+        if obj.DragMode&&~isempty(obj.SelectedEvent)
+            obj.DragMode=2;
             for i=1:length(obj.Axes)
                 set(obj.LineMeasurer(i),'XData',[mouseIndex mouseIndex],'Color',[0 0.7 0],'LineStyle','-.');
             end
-        elseif obj.DragMode==1
-            if time>obj.PrevMouseTime
-                set(obj.Fig,'pointer','left');
-            else
-                set(obj.Fig,'pointer','right');
-            end
+        elseif obj.ClickDrag
+            setfigptr('closedhand',obj.Fig);
         end
     elseif strcmpi(obj.MouseMode,'Measurer')
         set(obj.Fig,'pointer','crosshair');

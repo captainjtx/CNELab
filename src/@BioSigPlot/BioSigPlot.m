@@ -314,7 +314,9 @@ classdef BioSigPlot < hgsetget
         SelectedEvent
         
         DragMode
+        ClickDrag
         EditMode
+        ResizeMode
         
         TaskFiles
         
@@ -341,8 +343,10 @@ classdef BioSigPlot < hgsetget
         UponText
         
         EventPanel
+        AdjustPanel
         
         PrevMouseTime
+        UponAdjustPanel
         
     end
     
@@ -400,6 +404,9 @@ classdef BioSigPlot < hgsetget
         
         %*****************************************************************
         function varInitial(obj,g)
+            
+            obj.ResizeMode=false;
+            obj.UponAdjustPanel=false;
             
             obj.VideoLineTime=0;
             obj.IsSelecting=0;
@@ -951,6 +958,8 @@ classdef BioSigPlot < hgsetget
         end
         function obj = set.Evts_(obj,val)
             
+            oldval=obj.Evts_;
+            
             if size(val,2)==2
                 val=obj.assignEventColor(val);
                 d=cell(size(val,1),1);
@@ -959,14 +968,14 @@ classdef BioSigPlot < hgsetget
             else
                 obj.Evts_=val;
             end
-            if ~isempty(obj.Evts_)
+            if ~isempty(obj.Evts_)&&isempty(oldval)
                 obj.IsEvtsSaved=false;
                 
                 set(obj.MenuEventsWindow,'Enable','on');
                 set(obj.MenuEventsDisplay,'Enable','on');
                 obj.EventsWindowDisplay=true;
                 obj.EventsDisplay=true;
-            else
+            elseif isempty(obj.Evts_)
                 obj.IsEvtsSaved=true;
                 set(obj.MenuEventsWindow,'Enable','off');
                 set(obj.MenuEventsDisplay,'Enable','off');
@@ -1209,10 +1218,14 @@ classdef BioSigPlot < hgsetget
             ctrlsize=obj.ControlBarSize;
             if  ~isempty(obj.Evts_)&&obj.EventsWindowDisplay
                 set(obj.EventPanel,'Visible','on');
-                set(obj.MainPanel,'position',[obj.EventPanelWidth ctrlsize(2) pos(3)-obj.EventPanelWidth pos(4)-ctrlsize(2)]);
+                set(obj.AdjustPanel,'Visible','on');
+                posAdjust=get(obj.AdjustPanel,'Position');
+                
+                set(obj.MainPanel,'position',[posAdjust(1)+posAdjust(3) ctrlsize(2) pos(3)-(posAdjust(1)+posAdjust(3)) pos(4)-ctrlsize(2)]);
                 
             else
                 set(obj.EventPanel,'Visible','off');
+                set(obj.AdjustPanel,'Visible','off');
                 set(obj.MainPanel,'position',[0 ctrlsize(2) pos(3) pos(4)-ctrlsize(2)]);
                 
             end
@@ -1789,6 +1802,11 @@ classdef BioSigPlot < hgsetget
         function w=EventPanelWidth(obj)
             w=150;
         end
+        
+        function w=AdjustWidth(obj)
+            w=10;
+        end
+        
         function resize(obj)
             set(obj.Fig,'Units','pixels')
             pos=get(obj.Fig,'position');
@@ -1798,17 +1816,23 @@ classdef BioSigPlot < hgsetget
                 set(obj.Fig,'position',pos);
             end
             ctrlsize=obj.ControlBarSize;
-            eventwidth=obj.EventPanelWidth;
+            
+            posEvent=get(obj.EventPanel,'Position');
+            
+            adjustwidth=obj.AdjustWidth;
             
             set(obj.Fig,'position',pos);
             
-            set(obj.EventPanel,'position',[0 ctrlsize(2) eventwidth pos(4)-ctrlsize(2)]);
+            set(obj.EventPanel,'position',[0 ctrlsize(2) posEvent(3) pos(4)-ctrlsize(2)]);
+            set(obj.AdjustPanel,'position',[posEvent(3) ctrlsize(2) adjustwidth pos(4)-ctrlsize(2)]);
             
             if  ~isempty(obj.Evts_)&&obj.EventsWindowDisplay
                 set(obj.EventPanel,'Visible','on');
-                set(obj.MainPanel,'position',[eventwidth ctrlsize(2) pos(3)-eventwidth pos(4)-ctrlsize(2)]);
+                set(obj.AdjustPanel,'Visible','on');
+                set(obj.MainPanel,'position',[posEvent(3)+adjustwidth ctrlsize(2) pos(3)-posEvent(3)-adjustwidth pos(4)-ctrlsize(2)]);
             else
                 set(obj.EventPanel,'Visible','off');
+                set(obj.AdjustPanel,'Visible','off');
                 set(obj.MainPanel,'position',[0 ctrlsize(2) pos(3) pos(4)-ctrlsize(2)]);
             end
             set(obj.ControlPanel,'position',[0 0 pos(3) ctrlsize(2)]);
@@ -1939,9 +1963,12 @@ classdef BioSigPlot < hgsetget
                 for i=1:length(obj.Axes)
                     
                     yl=get(obj.Axes(i),'ylim');
-                    set(obj.LineMeasurer(i),'XData',[inf inf]);
-                    
-                    set(obj.TxtFastEvent(i),'position',[inf yl(2)]);
+                    if ishandle(obj.LineMeasurer(i))
+                        set(obj.LineMeasurer(i),'XData',[inf inf]);
+                    end
+                    if ishandle(obj.TxtFastEvent(i))
+                        set(obj.TxtFastEvent(i),'position',[inf yl(2)]);
+                    end
                 end
             end
         end

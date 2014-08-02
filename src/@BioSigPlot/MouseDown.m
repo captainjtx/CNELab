@@ -4,8 +4,9 @@ t=floor((obj.MouseTime-obj.Time)*obj.SRate);
 [nchan,ndata,yvalue]=getMouseInfo(obj); %#ok<ASGLU>
 time=obj.MouseTime;
 Modifier=get(obj.Fig,'CurrentModifier');
+obj.PrevMouseTime=time;
 
-if obj.UponText
+if obj.UponText||obj.UponAdjustPanel
     
     %     if strcmpi(get(obj.Fig,'SelectionType'),'open')
     %
@@ -29,10 +30,9 @@ if isempty(obj.MouseMode)
     %Multi Channel Selection
     if ndata
         if isempty(Modifier)
-            obj.PrevMouseTime=time;
             %**********************************************************************
+            obj.ClickDrag=true;
             %Single Event Selection
-            obj.DragMode=1;
             if ~isempty(obj.EventLines)
                 for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
                     if ishandle(obj.EventLines(i))&&obj.EventLines(i)
@@ -41,7 +41,7 @@ if isempty(obj.MouseMode)
                         if abs(t-eventIndex)<50
                             newSelect=obj.EventDisplayIndex(i);
                             obj.SelectedEvent=newSelect;
-                            obj.DragMode=2;
+                            obj.DragMode=1; 
                             return
                         end
                     end

@@ -155,20 +155,20 @@ else
     %'k': Moveup a channel
     
     if strcmpi(evt.Key,'i')
-        obj.MouseMode='annotate';
-        obj.Evts=cat(1,obj.Evts_,{time,'New Event',obj.EventDefaultColors(1,:),0});
-        MouseUp(obj);
-        obj.MouseMode=[];
-        MouseDown(obj);
-        MouseUp(obj);
-        
-        for i=1:length(obj.Axes)
-            if gca==obj.Axes(i)
-                obj.EditMode=1;
-                set(obj.EventTexts(obj.SelectedLines(i)),'Editing','on');
-            end
-        end
-        return
+%         obj.MouseMode='annotate';
+%         obj.Evts=cat(1,obj.Evts_,{time,'New Event',obj.EventDefaultColors(1,:),0});
+%         MouseUp(obj);
+%         obj.MouseMode=[];
+%         MouseDown(obj);
+%         MouseUp(obj);
+%         
+%         for i=1:length(obj.Axes)
+%             if gca==obj.Axes(i)
+%                 obj.EditMode=1;
+%                 set(obj.EventTexts(obj.SelectedLines(i)),'Editing','on');
+%             end
+%         end
+%         return
     elseif strcmpi(evt.Key,'j')
         for i=1:length(dd)
             if isempty(obj.ChanSelect2Edit{dd(i)})
