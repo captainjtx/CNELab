@@ -70,6 +70,7 @@ classdef BioSigPlot < hgsetget
         MenuImport
         MenuImportDataSet
         MenuImportEvents
+        MenuImportMontage
         MenuImportVideo
         MenuCopy
         
@@ -87,6 +88,9 @@ classdef BioSigPlot < hgsetget
         MenuClearMask
         MenuGain
         MenuAutoScale
+        
+        MenuMontage
+        MontageOptMenu
         
         MenuEvent
         MenuEventDelete
@@ -130,6 +134,8 @@ classdef BioSigPlot < hgsetget
         VideoListener
         
         ChannelLines
+        
+        
         
     end
     properties (Dependent,SetObservable)      %Public properties Requiring a redraw and that can be defined at the beginning
@@ -277,7 +283,6 @@ classdef BioSigPlot < hgsetget
         ChanOrderMat
         IsSelecting
         SelectionStart
-        ChanSelect2DisplayStart
         SelRect
         IsInitialize
         RedrawEvtsSkip
@@ -412,7 +417,6 @@ classdef BioSigPlot < hgsetget
             obj.IsSelecting=0;
             obj.SelectionStart=[];
             obj.Selection_=zeros(2,0);
-            obj.ChanSelect2DisplayStart=[];
             obj.ChanSelect2Display_=cell(1,obj.DataNumber);
             obj.ChanSelect2Edit_=cell(1,obj.DataNumber);
             
@@ -444,7 +448,7 @@ classdef BioSigPlot < hgsetget
             obj.VideoHandle=[];
             
             obj.ChanNames_=cell(1,obj.DataNumber);
-            obj.MontageRef_=1;
+            obj.MontageRef_=ones(obj.DataNumber,1);
             
             n=find(strcmpi('Config',g(1:2:end)))*2;
             if isempty(n), g=[{'Config' obj.DefaultConfigFile} g]; end
@@ -996,7 +1000,7 @@ classdef BioSigPlot < hgsetget
                 end
             end
         end
-        
+       
         function evtsInd=get.Evts2Display(obj)
             if isempty(obj.Evts_)
                 evtsInd=[];
@@ -1331,50 +1335,15 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         function obj=set.ChanSelect2Display_(obj,val)
             tmp=cell(1,obj.DataNumber);
-            if iscell(val)
-                if length(val)==1
-                    if ~isempty(val{1})
-                        if ~val{1}||isnan(val{1})
-                            for i=1:obj.DataNumber
-                                tmp{i}=1:obj.MontageChanNumber(i);
-                            end
-                        else
-                            [tmp{:}]=deal(val{1});
-                        end
-                    else
-                        for i=1:obj.DataNumber
-                            tmp{i}=1:obj.MontageChanNumber(i);
-                        end
-                    end
+            
+            for i=1:length(val)
+                if isempty(val{i})
+                    tmp{i}=1:obj.MontageChanNumber(i);
                 else
-                    for i=1:obj.DataNumber
-                        if isempty(val{i})
-                            tmp{i}=1:obj.MontageChanNumber(i);
-                        else
-                            if ~val{i}||isnan(val{i})
-                                tmp{i}=1:obj.MontageChanNumber(i);
-                            else
-                                tmp{i}=val{i};
-                            end
-                        end
-                    end
-                end
-            else
-                if isempty(val)
-                    for i=1:obj.DataNumber
-                        tmp{i}=1:obj.MontageChanNumber(i);
-                    end
-                else
-                    if ~val||isnan(val)
-                        for i=1:obj.DataNumber
-                            tmp{i}=1:obj.MontageChanNumber(i);
-                        end
-                    else
-                        [tmp{:}]=deal(val);
-                    end
+                    tmp{i}=val{i};
                 end
             end
-            
+                    
             
             for i=1:length(tmp)
                 tmp{i}=reshape(max(1,min(round(tmp{i}),obj.MontageChanNumber(i))),length(tmp{i}),1);
@@ -1511,8 +1480,16 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         function montageToolbar(obj)
             obj.TogMontage=uitoggletool(obj.Toolbar,'CData',imread('Raw.bmp'),...
-                'TooltipString','Raw montage','ClickedCallback',@(src,evt) set(obj,'MontageRef',ones(obj.DataNumber,1)));
+                'TooltipString','Raw montage','ClickedCallback',@(src,evt) resetMontage(obj));
             
+        end
+        
+        function resetMontage(obj)
+            
+            for i=1:obj.DataNumber
+                src=obj.MontageOptMenu{i}(1);
+                ChangeMontage(obj,src,i,1);
+            end
         end
         
         %******************************************************************
@@ -1999,6 +1976,9 @@ classdef BioSigPlot < hgsetget
         showGauge(obj,src)
         maskChannel(obj,src)
         MnuChanGain(obj,src)
+        ImportMontage(obj)
+        remakeMontageMenu(obj)
+        ChangeMontage(obj,src,data,mtgref)
     end
     
     events

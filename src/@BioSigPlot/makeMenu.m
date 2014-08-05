@@ -6,6 +6,7 @@ obj.MenuFile=uimenu(obj.Fig,'Label','File');
 obj.MenuImport=uimenu(obj.MenuFile,'Label','Import');
 obj.MenuImportDataSet=uimenu(obj.MenuImport,'Label','DataSet','Callback',@(src,evt) obj.ImportDataSet);
 obj.MenuImportEvents=uimenu(obj.MenuImport,'Label','Events','Callback',@(src,evt) obj.ImportEvents);
+obj.MenuImportMontage=uimenu(obj.MenuImport,'Label','Montage','Callback',@(src,evt) obj.ImportMontage);
 obj.MenuImportVideo=uimenu(obj.MenuImport,'Label','Video','Callback',@(src,evt) obj.ImportVideo);
 
 obj.MenuExport=uimenu(obj.MenuFile,'Label','Export');
@@ -31,8 +32,8 @@ obj.MenuColorCanvas=uimenu(obj.MenuColor,'Label','Canvas','Accelerator','b',...
 obj.MenuColorLines=uimenu(obj.MenuColor,'Label','Lines','Accelerator','l',...
     'Callback',@(src,evt) set(obj,'ChanColors',obj.applyPanelVal(obj.ChanColors_,uisetcolor(obj.NormalModeColor,'Line Color'))));
 %**************************************************************************
-%First Order Menu---------------------------------------------------Channel
-obj.MenuChannel=uimenu(obj.Fig,'Label','Channel');
+%First Order Menu------------------------------------------------------Data
+obj.MenuChannel=uimenu(obj.Fig,'Label','Data');
 obj.MenuChannelNumber=uimenu(obj.MenuChannel,'Label','Channels/Page','Callback',@(src,evt) MnuChan2Display(obj));
 obj.MenuChannelWidth=uimenu(obj.MenuChannel,'Label','Time/Page','Callback',@(src,evt) MnuWidth2Display(obj));
 obj.MenuMask=uimenu(obj.MenuChannel,'Label','Mask','Callback',@(src,evt) maskChannel(obj,src));
@@ -40,6 +41,8 @@ obj.MenuClearMask=uimenu(obj.MenuChannel,'Label','UnMask','Callback',@(src,evt) 
 obj.MenuGain=uimenu(obj.MenuChannel,'Label','Gain','Callback',@(src,evt) MnuChanGain(obj,src));
 obj.MenuAutoScale=uimenu(obj.MenuChannel,'Label','Auto Scale','Callback',@(src,evt) ChangeGain(obj,src));
 
+%First Order Menu---------------------------------------------------Montage
+obj.MenuMontage=uimenu(obj.Fig,'Label','Montage');
 %**************************************************************************
 %First Order Menu-----------------------------------------------------Event
 obj.MenuEvent=uimenu(obj.Fig,'Label','Event');

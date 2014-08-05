@@ -2,22 +2,11 @@ function remakeMontage(obj)
             %Assure Montage properties Coherence
             
             if iscell(obj.Montage_)
-                if length(obj.Montage_)~=obj.DataNumber, error('If system is cell, it must be of same length than data');end
-            else
-                tmp=cell(1,obj.DataNumber);
-                [tmp{:}]=deal(obj.Montage_);
-                obj.Montage_=tmp;
-            end
-            
-            for i=1:length(obj.Montage_)
-                if ischar(obj.Montage_{i})
-                    try
-                        s=load(obj.Montage_{i});
-                        obj.Montage_{i}=s.Montage;
-                    catch  %#ok<CTCH>
-                        obj.Montage_{i}=[];
-                    end
+                if length(obj.Montage_)~=obj.DataNumber
+                    msgbox('If montage is cell, it must be of same length with data','Montage','error');
                 end
+            elseif isempty(obj.Montage)
+                obj.Montage_=cell(obj.DataNumber,1);
             end
             
             if isempty(obj.ChanNames_)
@@ -57,5 +46,7 @@ function remakeMontage(obj)
                     obj.Montage_{i}=struct('name','Raw','mat',obj.ChanOrderMat{i},'channames',obj.ChanNames_(i));
                 end
             end
+            
+            remakeMontageMenu(obj);
             
         end

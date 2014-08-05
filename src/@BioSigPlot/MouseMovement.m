@@ -11,9 +11,13 @@ if obj.ResizeMode
     pos3=get(obj.MainPanel,'Position');
     fpos=get(obj.Fig,'position');
     
-    set(obj.EventPanel,'Position',[pos1(1) pos1(2) pos(1)-obj.AdjustWidth/2 pos1(4)]);
-    set(obj.AdjustPanel,'Position',[pos(1)-obj.AdjustWidth/2 pos2(2) pos2(3) pos2(4)]);
-    set(obj.MainPanel,'Position',[pos(1)+obj.AdjustWidth/2 pos3(2) fpos(3)-pos(1)-obj.AdjustWidth/2 pos3(4)]);
+    pos1(3)=max(1,min(pos(1)-obj.AdjustWidth/2,fpos(3)-obj.AdjustWidth-10));
+    set(obj.EventPanel,'Position',pos1);
+    
+    pos2(1)=pos1(1)+pos1(3);
+    set(obj.AdjustPanel,'Position',pos2);
+    
+    set(obj.MainPanel,'Position',[pos2(1)+pos2(3) pos3(2) fpos(3)-pos1(3)-pos2(3) pos3(4)]);
     return
 end
 
