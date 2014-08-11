@@ -13,11 +13,26 @@ elseif src==obj.BtnPrevSec
 elseif src==obj.BtnPrevEvent
     MovebyEvent(obj,src);
     return
+elseif src==obj.BtnPrevEvent1
+    MovebyEvent(obj,src);
+    return
 elseif src==obj.BtnNextEvent
     MovebyEvent(obj,src);
     return
+elseif src==obj.BtnNextEvent1
+    MovebyEvent(obj,src);
+    return
+elseif src==obj.BtnStart
+    t=0;
+elseif src==obj.BtnEnd
+    t=timemax-obj.WinLength;
 else
-    t=str2double(get(obj.EdtTime,'String'));
+    str=get(obj.EdtTime,'String');
+    if strcmpi(str,'end')
+        t=timemax-obj.WinLength;
+    else
+        t=str2double(str);
+    end
 end
 t=max(0,min(timemax,t));
 obj.Time=t;
@@ -72,6 +87,12 @@ elseif src==obj.BtnNextEvent
         end
         obj.SelectedEvent=ind(I);
     end 
+elseif src==obj.BtnPrevEvent1
+    ind=obj.SelectedEvent-1;
+    obj.SelectedEvent=max(1,min(ind,size(obj.Evts_,1)));
+elseif src==obj.BtnNextEvent1
+    ind=obj.SelectedEvent+1;
+    obj.SelectedEvent=max(1,min(ind,size(obj.Evts_,1)));
 end
 
 end

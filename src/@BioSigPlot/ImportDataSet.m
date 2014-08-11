@@ -12,7 +12,7 @@ end
 switch choice
     case 'Replace'
         delete(obj);
-        superviewer;
+        cnelab;
     case 'Append'
         
     case 'Cancel'

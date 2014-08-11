@@ -10,13 +10,19 @@ classdef BioSigPlot < hgsetget
         
         FilterPanel
         
+        EventInfo
+        
         BtnPrevEvent
+        BtnPrevEvent1
+        BtnStart
         BtnPrevPage
         BtnPrevSec
         EdtTime
         BtnNextSec
         BtnNextPage
         BtnNextEvent
+        BtnNextEvent1
+        BtnEnd
         
         TxtInfo1
         TxtInfo2
@@ -167,6 +173,8 @@ classdef BioSigPlot < hgsetget
         EventDefaultColors
         TriggerEventDefaultColor
         
+        LineDefaultColors
+        
         DataView                %View Mode {'Vertical'|'Horizontal'|'DAT*'}
         MontageRef              %N° Montage
         XGrid                   %true : show Grid line on each sec
@@ -234,6 +242,8 @@ classdef BioSigPlot < hgsetget
         EventSelectColor_
         EventDefaultColors_
         TriggerEventDefaultColor_
+        
+        LineDefaultColors_
         
         DataView_
         MontageRef_
@@ -569,7 +579,7 @@ classdef BioSigPlot < hgsetget
                 'AxesBackgroundColor','ChanColors','EventSelectColor','EventDefaultColors',...
                 'TriggerEventDefaultColor','FastEvts','SelectedFastEvt','TriggerEventsFcn',...
                 'SelectedEvent','STFTWindowLength','STFTOverlap','STFTScaleLow',...
-                'STFTScaleHigh','STFTFreqLow','STFTFreqHigh','Mask'};
+                'STFTScaleHigh','STFTFreqLow','STFTFreqHigh','Mask','LineDefaultColors'};
             
             if isempty(obj.Commands)
                 command='a=BioSigPlot(data';
@@ -592,8 +602,7 @@ classdef BioSigPlot < hgsetget
                         'AxesHeight','YBorder','YGridInterval','TaskFiles',...
                         'VideoStartTime','MainTimerPeriod','VideoTimerPeriod',...
                         'VideoTimeFrame','BadChannels','ChanSelect2Display',...
-                        'ChanSelectColor','AxesBackgroundColor','ChanColors',...
-                        'TriggerEventsFcn'}))
+                        'AxesBackgroundColor','TriggerEventsFcn'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage','DataView',...
@@ -622,7 +631,8 @@ classdef BioSigPlot < hgsetget
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     NeedRedrawEvts=true;
-                elseif any(strcmpi(g{i},{'ChanSelect2Edit'}))
+                elseif any(strcmpi(g{i},{'ChanSelect2Edit','ChanColors',...
+                        'ChanSelectColor','LineDefaultColors'}))
                     
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
@@ -816,6 +826,10 @@ classdef BioSigPlot < hgsetget
         function obj = set.EventDefaultColors(obj,val), set(obj,'EventDefaultColors',val); end
         function val = get.EventDefaultColors(obj), val=obj.EventDefaultColors_; end
         
+        
+        function obj = set.LineDefaultColors(obj,val), set(obj,'LineDefaultColors',val); end
+        function val = get.LineDefaultColors(obj), val=obj.LineDefaultColors_; end
+        
         function obj = set.TriggerEventDefaultColor(obj,val), set(obj,'TriggerEventDefaultColor',val); end
         function val = get.TriggerEventDefaultColor(obj), val=obj.TriggerEventDefaultColor_; end
         
@@ -1000,7 +1014,7 @@ classdef BioSigPlot < hgsetget
                 end
             end
         end
-       
+        
         function evtsInd=get.Evts2Display(obj)
             if isempty(obj.Evts_)
                 evtsInd=[];
@@ -1023,7 +1037,7 @@ classdef BioSigPlot < hgsetget
             end
         end
         %==================================================================
-        %*****************************************************************
+        %******************************************************************
         function newevts=assignEventColor(obj,evts)
             [C,ia,ic] = unique(evts(:,2));
             
@@ -1043,6 +1057,32 @@ classdef BioSigPlot < hgsetget
             end
             
         end
+        %==================================================================
+        %******************************************************************
+        
+        function assignChannelGroupColor(obj)
+            for i=1:length(obj.Montage_)
+                j=obj.MontageRef(i);
+                obj.ChanColors_{i}=ones(size(obj.Montage_{i}(j).mat,1),1)*obj.LineDefaultColors(1,:);
+                if isfield(obj.Montage_{i}(j),'groupnames')
+                    if ~isempty(obj.Montage_{i}(j).groupnames)
+                        [C,ia,ic] = unique(obj.Montage_{i}(j).groupnames);
+                        
+                        c=zeros(length(obj.Montage_{i}(j).groupnames),3);
+                        for k=1:size(c,1)
+                            ind=rem(ic(k),size(obj.LineDefaultColors,1));
+                            if ~ind
+                                ind=size(obj.LineDefaultColors,1);
+                            end
+                            c(k,:)=obj.LineDefaultColors(ind,:);
+                        end
+                        obj.ChanColors_{i}=c;
+                    end
+                end
+            end
+        end
+        %==================================================================
+        %******************************************************************
         function newcell=applyPanelVal(obj,oldcell,val)
             %var : a single non-empty value
             %oldcell : old configuration
@@ -1181,11 +1221,13 @@ classdef BioSigPlot < hgsetget
         function obj = set.SelectedEvent_(obj,val)
             obj.SelectedEvent_=unique(val);
             
-            
             if ~isempty(val)
                 [f,loc]=ismember(val,obj.WinEvts.EvtIndex);
                 
                 set(obj.WinEvts.uilist,'value',loc);
+                evts=obj.Evts_;
+                [ind,num]=EventWindow.findIndexOfEvent(evts(:,2),[evts{:,1}]);
+                set(obj.EventInfo,'String',[num2str(ind(loc)),'|',num2str(num(loc))]);
             end
             
         end
@@ -1343,7 +1385,7 @@ classdef BioSigPlot < hgsetget
                     tmp{i}=val{i};
                 end
             end
-                    
+            
             
             for i=1:length(tmp)
                 tmp{i}=reshape(max(1,min(round(tmp{i}),obj.MontageChanNumber(i))),length(tmp{i}),1);

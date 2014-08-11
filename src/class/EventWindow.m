@@ -16,14 +16,14 @@ classdef EventWindow  < handle
             obj.bsp=bsp;
             
             obj.uilist=uicontrol(bsp.EventPanel,'Style','listbox','units','normalized',...
-                'position',[0 0 1 1],'FontName','FixedWidth','Callback',@(src,evt) click(obj,src),...
+                'position',[0 0 1 0.95],'FontName','FixedWidth','Callback',@(src,evt) click(obj,src),...
                 'Max',10,'Min',1);
             
             eventListMenu=uicontextmenu('Visible','on');
             uimenu(eventListMenu,'Label','Delete','Callback',@(src,evt) bsp.deleteSelected);
             
             set(obj.uilist,'uicontextMenu',eventListMenu);
-           
+            
         end
         
         function click(obj,src)
@@ -33,12 +33,12 @@ classdef EventWindow  < handle
                 obj.EventTime=obj.Evts{val(1),1};
                 
                 if obj.EventTime<obj.bsp.Time||obj.EventTime>obj.bsp.Time+obj.bsp.WinLength
-                   obj.bsp.Time=obj.EventTime;
+                    obj.bsp.Time=obj.EventTime;
                 end
                 
             end
         end
-
+        
         
         function val=get.Evts(obj)
             val=obj.Evts_;
@@ -56,10 +56,11 @@ classdef EventWindow  < handle
             end
             s=cell(size(evts,1),1);
             
-            [ind,num]=obj.findIndexOfEvent(evts(:,2),[evts{:,1}]);
+%             [ind,num]=obj.findIndexOfEvent(evts(:,2),[evts{:,1}]);
             
             for i=1:size(evts,1)
-                s{i}=sprintf('%8.2f - %s ---- #%d|%d',evts{i,1},evts{i,2},ind(i),num(i)); %#ok<AGROW>
+%                 s{i}=sprintf('%8.2f - %s ---- #%d|%d',evts{i,1},evts{i,2},ind(i),num(i));
+                s{i}=sprintf('%8.2f - %s    ',evts{i,1},evts{i,2});
                 s{i}=obj.colorEvent(s{i},evts{i,3});
             end
             obj.Evts_=evts;

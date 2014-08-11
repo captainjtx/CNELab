@@ -59,16 +59,18 @@ function plotXTicks(axe,time,WinLength)
 % axe :  axes to plot
 % time : starting time
 % WinLength :  window time lentgth
-
 h=findobj(axe,'-regexp','DisplayName','XTick*');
-if ~isempty(h)
-    delete(h);
-end
-for i=time:time+WinLength-1
-    p=(i-time)/WinLength;
-    text(p+.002,.002,num2str(i),'Parent',axe,'HorizontalAlignment','left',...
-        'VerticalAlignment','bottom','FontWeight','normal','units','normalized',...
-        'color',[0 0 1],'DisplayName',['XTick',num2str(i)]);
+
+time_labels=linspace(time,time+WinLength,15);
+
+x_lim=get(axe,'XLim');
+set(axe,'XTick',linspace(x_lim(1),x_lim(2),15));
+
+
+for i=1:length(time_labels)
+    t=time_labels(i);
+    h=findobj(axe,'-regexp','DisplayName',['XTick' num2str(i)]);
+    set(h,'String',num2str(t));
 end
 
 end

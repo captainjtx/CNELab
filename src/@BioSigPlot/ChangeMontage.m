@@ -52,6 +52,7 @@ recalculate(obj);
 ChangeGain(obj,[]);
 remakeAxes(obj);
 resetView(obj);
+assignChannelGroupColor(obj);
 redraw(obj);
 redrawEvts(obj);
 

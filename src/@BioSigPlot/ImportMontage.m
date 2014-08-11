@@ -61,17 +61,17 @@ end
 for i=1:length(montage)
     [pathstr, name, ext] = fileparts(FileName{i});
     
-    [montage_channames,mat]=parseMontage(montage{i},obj.ChanNames{tmp});
+    [montage_channames,mat,groupnames]=parseMontage(montage{i},obj.ChanNames{tmp});
     
     num=length(obj.Montage_{tmp});
     obj.Montage_{tmp}(num+1).name=name;
     obj.Montage_{tmp}(num+1).channames=montage_channames;
     obj.Montage_{tmp}(num+1).mat=mat;
+    obj.Montage_{tmp}(num+1).groupnames=groupnames;
     
 end
 
 remakeMontage(obj);
-
 end
 
 
