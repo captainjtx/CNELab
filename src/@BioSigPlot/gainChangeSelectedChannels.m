@@ -1,7 +1,7 @@
 function gainChangeSelectedChannels(obj)
 %hightlight the selection on channels
 dd=obj.DisplayedData;
-t=ceil(obj.Time*obj.SRate+1):min(ceil((obj.Time+obj.WinLength)*obj.SRate),size(obj.Data{1},1));
+t=round(max(1,obj.Time*obj.SRate+1):min((obj.Time+obj.WinLength)*obj.SRate,size(obj.Data{1},1)));
 
 if obj.IsChannelSelected
     for i=1:length(dd)

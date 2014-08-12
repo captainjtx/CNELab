@@ -116,7 +116,8 @@ end
 % obj.EvtContextMenu.update(obj);
 
 showGauge(obj);
-
+showTimeLabel(obj);
+showChannelLabel(obj);
 end
 %**************************************************************************
 function h=plotData(axe,t,data,colors,gain,mask,posY,ChanSelect2Display,FirstDispChan,...
@@ -218,7 +219,7 @@ for i=1:n
         end
         h=text(.002,p+.004,ChanNames{i},'Parent',axe,'HorizontalAlignment','left',...
             'VerticalAlignment','bottom','FontWeight','bold','units','normalized',...
-            'color',YLabelColor);
+            'color',YLabelColor,'DisplayName',['ChanName' num2str(i)]);
         uistack(h,'top');
         
         h=text(0.965,p,num2str(1/gain(i),'%0.3g'),'Parent',axe,'HorizontalAlignment','left',...

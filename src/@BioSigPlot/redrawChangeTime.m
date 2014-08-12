@@ -59,8 +59,6 @@ function plotXTicks(axe,time,WinLength)
 % axe :  axes to plot
 % time : starting time
 % WinLength :  window time lentgth
-h=findobj(axe,'-regexp','DisplayName','XTick*');
-
 time_labels=linspace(time,time+WinLength,15);
 
 x_lim=get(axe,'XLim');

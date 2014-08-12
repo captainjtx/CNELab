@@ -7,9 +7,9 @@ if src==obj.BtnNextPage
 elseif src==obj.BtnPrevPage
     t=obj.Time-obj.WinLength;
 elseif src==obj.BtnNextSec
-    t=obj.Time+1;
+    t=obj.Time+obj.WinLength/15;
 elseif src==obj.BtnPrevSec
-    t=obj.Time-1;
+    t=obj.Time-obj.WinLength/15;
 elseif src==obj.BtnPrevEvent
     MovebyEvent(obj,src);
     return

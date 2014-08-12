@@ -18,7 +18,7 @@
 
 denoise test
 
-Add vertical gauge
+% Add vertical gauge
 Add dynamic gauge
 
 Make Date set axes size resizable
@@ -56,6 +56,14 @@ add position info to montage to help TFMap grid plot
 % Make event import auto colored
 
 Add File->Info
-Make Event Pannel Adjustable
+% Make Event Pannel Adjustable
 
-!!Montage
+Import data by segments
+
+% !Bug when assign parameters together at the begining
+% !Bug change gain
+
+% Add Display->Time Label
+% Add Display->Channel Label
+
+% !!Montage

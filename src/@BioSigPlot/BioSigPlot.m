@@ -11,7 +11,7 @@ classdef BioSigPlot < hgsetget
         FilterPanel
         
         EventInfo
-        
+        BtnSwitchData
         BtnPrevEvent
         BtnPrevEvent1
         BtnStart
@@ -108,6 +108,8 @@ classdef BioSigPlot < hgsetget
         MenuXGrid
         MenuYGrid
         MenuGauge
+        MenuTimeLabel
+        MenuChannelLabel
         
         MenuColor
         MenuColorCanvas
@@ -363,6 +365,9 @@ classdef BioSigPlot < hgsetget
         PrevMouseTime
         UponAdjustPanel
         
+        EventSummaryIndex
+        EventSummaryNumber
+        
     end
     
     methods
@@ -405,6 +410,7 @@ classdef BioSigPlot < hgsetget
             g=varargin;
             varInitial(obj,g);
             
+            %Show up
             resetView(obj);
             remakeMontage(obj);
             remakeAxes(obj);
@@ -412,9 +418,8 @@ classdef BioSigPlot < hgsetget
             recalculate(obj);
             ChangeGain(obj,[]);
             redraw(obj);
-            
+            redrawEvts(obj);
             obj.IsInitialize=false;
-            
         end
         
         %*****************************************************************
@@ -470,7 +475,6 @@ classdef BioSigPlot < hgsetget
             if ~isempty(obj.DispChans)
                 obj.DispChans=obj.DispChans/obj.DataNumber;
             end
-            
             
         end
         function saveConfig(obj)
@@ -673,8 +677,8 @@ classdef BioSigPlot < hgsetget
                     NeedCommand=true;
                 end
             end
-            if NeedRecalculate,recalculate(obj); end
             if NeedRemakeMontage, remakeMontage(obj); end
+            if NeedRecalculate,recalculate(obj); end
             if NeedResetView, resetView(obj); end
             if NeedRemakeAxes, remakeAxes(obj); end
             if NeedRedraw&&~obj.IsInitialize, redraw(obj); end
@@ -1003,6 +1007,13 @@ classdef BioSigPlot < hgsetget
             
             obj.synchEvts();
             
+            
+            evts=obj.WinEvts.Evts_;
+            if ~isempty(evts)
+                [obj.EventSummaryIndex,obj.EventSummaryNumber]=...
+                    EventWindow.findIndexOfEvent(evts(:,2),[evts{:,1}]);
+            end
+            
         end
         
         function obj = set.SelectedFastEvt_(obj,val)
@@ -1225,9 +1236,7 @@ classdef BioSigPlot < hgsetget
                 [f,loc]=ismember(val,obj.WinEvts.EvtIndex);
                 
                 set(obj.WinEvts.uilist,'value',loc);
-                evts=obj.Evts_;
-                [ind,num]=EventWindow.findIndexOfEvent(evts(:,2),[evts{:,1}]);
-                set(obj.EventInfo,'String',[num2str(ind(loc)),'|',num2str(num(loc))]);
+                set(obj.EventInfo,'String',[num2str(obj.EventSummaryIndex(loc)),'|',num2str(obj.EventSummaryNumber(loc))]);
             end
             
         end
@@ -1874,9 +1883,9 @@ classdef BioSigPlot < hgsetget
             end
             
             if src==obj.BtnWidthIncrease
-                val=val+1;
+                val=val*(16/15);
             elseif src==obj.BtnWidthDecrease
-                val=val-1;
+                val=val*(14/15);
             end
             
             if val<=0

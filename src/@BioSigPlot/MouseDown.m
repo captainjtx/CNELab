@@ -38,7 +38,8 @@ if isempty(obj.MouseMode)
                     if ishandle(obj.EventLines(i))&&obj.EventLines(i)
                         XData=get(obj.EventLines(i),'XData');
                         eventIndex=XData(1);
-                        if abs(t-eventIndex)<50
+                        prox_t=max(5,min(obj.WinLength*obj.SRate/50,50));
+                        if abs(t-eventIndex)<prox_t
                             newSelect=obj.EventDisplayIndex(i);
                             obj.SelectedEvent=newSelect;
                             obj.DragMode=1; 

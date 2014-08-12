@@ -9,19 +9,20 @@ if isempty(src)||ismember(src,[obj.MenuAutoScale,obj.BtnAutoScale])
         [data{:}]=deal(1);
     end
     
-    for i=1:obj.DataNumber
-        tmp=mean(std(data{i},1,2));
+    dd=obj.DisplayedData;
+    
+    for i=1:length(dd)
+        tmp=mean(std(data{dd(i)},1,2));
         if tmp==0
             val=1;
         else
             val=0.2/tmp;
         end
-    end
-    
-    if obj.IsInitialize
-        obj.Gain_=obj.applyPanelVal(obj.Gain_,val);
-    else
-        obj.Gain=obj.applyPanelVal(obj.Gain_,val);
+        if obj.IsInitialize
+            obj.Gain_{dd(i)}=ones(obj.MontageChanNumber(dd(i)),1)*val;
+        else
+            obj.Gain{dd(i)}=ones(obj.MontageChanNumber(dd(i)),1)*val;
+        end
     end
 else
     dd=obj.DisplayedData;
