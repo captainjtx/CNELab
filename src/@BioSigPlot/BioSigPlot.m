@@ -416,7 +416,9 @@ classdef BioSigPlot < hgsetget
             remakeAxes(obj);
             
             recalculate(obj);
-            ChangeGain(obj,[]);
+            if all(cellfun(@isempty,obj.Gain))
+                ChangeGain(obj,[]);
+            end
             redraw(obj);
             redrawEvts(obj);
             obj.IsInitialize=false;
@@ -436,6 +438,7 @@ classdef BioSigPlot < hgsetget
             obj.ChanSelect2Edit_=cell(1,obj.DataNumber);
             
             obj.Gain_=cell(1,obj.DataNumber);
+            
             obj.Mask_=cell(1,obj.DataNumber);
             obj.Mask_=obj.applyPanelVal(obj.Mask_,1);
             
@@ -470,11 +473,6 @@ classdef BioSigPlot < hgsetget
             set(obj,g{:});
             
             obj.ChanColors_=obj.applyPanelVal(cell(1,obj.DataNumber),obj.NormalModeColor);
-            
-            
-            if ~isempty(obj.DispChans)
-                obj.DispChans=obj.DispChans/obj.DataNumber;
-            end
             
         end
         function saveConfig(obj)
@@ -685,7 +683,7 @@ classdef BioSigPlot < hgsetget
             if NeedRedrawEvts&&~obj.IsInitialize, redrawEvts(obj); end
             if NeedHighlightChannels, highlightSelectedChannel(obj); end
             if NeedHighlightEvents, highlightSelectedEvents(obj); end
-            if NeedChangeGain, gainChangeSelectedChannels(obj); end
+            if NeedChangeGain&&~obj.IsInitialize, gainChangeSelectedChannels(obj); end
             if NeedDrawSelect, redrawSelection(obj); end
             if NeedRedrawTimeChange, redrawChangeTime(obj); end
             if NeedCommand
@@ -1171,7 +1169,13 @@ classdef BioSigPlot < hgsetget
             
         end
         
-        
+        function obj = set.Gain_(obj,val)
+            if iscell(val)
+                obj.Gain_=val;
+            elseif isnumeric(val)
+                obj.Gain_=obj.applyPanelVal(obj.Gain_,val);
+            end
+        end
         %******************************************************************
         function obj = set.DataView_(obj,val)
             obj.DataView_=val;

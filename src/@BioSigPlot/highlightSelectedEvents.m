@@ -10,8 +10,10 @@ SelectedEvent=obj.SelectedEvent;
 SelectedColor=obj.EventSelectColor;
 
 for i=1:size(EventIndex,1)*size(EventIndex,2)
+    if ishandle(EventLines(i))&&ishandle(EventTexts(i))
         set(EventLines(i),'Color',colors{EventIndex(i)});
         set(EventTexts(i),'EdgeColor',colors{EventIndex(i)},'BackgroundColor',colors{EventIndex(i)});
+    end
 end
 
 if isempty(SelectedEvent)
