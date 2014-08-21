@@ -2,7 +2,7 @@
 
 function MouseMovementMeasurer(obj)
 lt=floor((obj.MouseTime-obj.Time)*obj.SRate);
-nt=max(floor(obj.MouseTime*obj.SRate),0);
+nt=min(max(floor(obj.MouseTime*obj.SRate),0),size(obj.Data{1},1));
 
 for i=1:length(obj.Axes)
     set(obj.LineMeasurer(i),'XData',[lt lt])
