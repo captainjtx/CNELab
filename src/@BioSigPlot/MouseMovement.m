@@ -133,11 +133,18 @@ if obj.Filtering{ndata}(nchan)
     fh=num2str(obj.FilterHigh{ndata}(nchan));
     fn1=num2str(obj.FilterNotch1{ndata}(nchan));
     fn2=num2str(obj.FilterNotch2{ndata}(nchan));
+    fci=obj.FilterCustomIndex{ndata}(nchan)-1;
+    if fci
+        fcum=num2str(fci);
+    else
+        fcum='-';
+    end
 else
     fl='-';
     fh='-';
     fn1='-';
     fn2='-';
+    fcum='-';
 end
 
 s1=['Data: ',num2str(ndata),' ; ',...
@@ -157,7 +164,8 @@ s3=['Time: ',num2str(h,'%02d'),':',num2str(m,'%02d'),':',num2str(s,'%0.3f'),...
 s4=['FL: ',fl,' , ',...
     'FH: ',fh,'  ;  ',...
     'FN1: ',fn1,' , ',...
-    'FN2: ',fn2];
+    'FN2: ',fn2,'  ;  ',...
+    'FCUM:',fcum];
 
 set(obj.TxtInfo1,'String',s1);
 set(obj.TxtInfo2,'String',s2);

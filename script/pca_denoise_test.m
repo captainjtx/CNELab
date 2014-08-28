@@ -32,68 +32,69 @@ scalpdata=cell(length(sample_artifact_pos),1);
 
 evts=cell(length(sample_artifact_pos),2);
 
-noise_comp=[1 2 3 5 6];
-ave_rawdata=0;
+noise_comp=[1 2];
+
+aveVar=0;
+
 for i=1:length(sample_artifact_pos)
     pos=sample_artifact_pos(i);
     dataseg=data(pos-sample_before:pos+sample_after,:);
     
     evts{i,1}=(i-1)*(sample_before+sample_after+1)/fs;
     evts{i,2}=num2str(i);
-    ave_rawdata=ave_rawdata+dataseg;
+
     rawdata{i}=dataseg;
     
-    %     [U,S,V]=svd(dataseg);
-    %     pcadata{i}=dataseg*V;
-    %     rawdata{i}=dataseg;
-    %     for j=1:length(noise_comp)
-    %         S(noise_comp(j),noise_comp(j))=0;
-    %     end
-    %     recondata{i}=U*S*V';
-    %
-    %
-    %     SS=zeros(size(S));
-    %     SS(noise_comp(1),noise_comp(1))=1;
-    %     scalpdata{i}=U*SS*V';
+    aveVar=aveVar+dataseg'*dataseg;
 end
 
-ave_rawdata=ave_rawdata/length(sample_artifact_pos);
-[U,S,V]=svd(ave_rawdata);
+%=======================================================================PCA
+%**************************************************************************
+aveVar=aveVar/length(sample_artifact_pos);
+
+[V,D]=eig(aveVar);
+
+[e,ID]=sort(diag(D),'descend');
+
+SV=V(:,ID);
+
 %==========================================================================
 %**************************************************************************
 % for i=1:length(sample_artifact_pos)
-%     pcadata{i}=rawdata{i}*V;
-%     us=pcadata{i};
-%     us(:,noise_comp)=zeros(size(us,1),length(noise_comp));
-%     recondata{i}=us*V';
+%     pcadata{i}=rawdata{i}*SV;
 %     
-%     uss=zeros(size(pcadata{i}));
-%     uss(:,noise_comp(1))=pcadata{i}(:,noise_comp(1));
-%     scalpdata{i}=uss*V';
+%     selectedPCA=pcadata{i};
+%     selectedPCA(:,noise_comp)=0;
+%     
+%     recondata{i}=selectedPCA*SV';
 % end
-
-% Visualize the segments
-
-%concatenate the segments
+% 
+% % Visualize the segments
+% % concatenate the segments
 % pdata=[];
 % rdata=[];
 % cdata=[];
-% sdata=[];
+% 
 % for i=1:length(pcadata)
 %     rdata=cat(1,rdata,rawdata{i});
 %     pdata=cat(1,pdata,pcadata{i});
 %     cdata=cat(1,cdata,recondata{i});
-%     sdata=cat(1,sdata,scalpdata{i});
 % end
-
+% 
 % bsp=BioSigPlot({rdata,pdata,cdata},'SRate',fs,...
 %                                    'Winlength',(sample_before+sample_after+1)/fs*10,...
 %                                    'Evts',evts,...
 %                                    'DispChans',30,...
 %                                    'Gain',2.5,...
 %                                    'DataView','Horizontal');
+%                                
+% figure
+% 
+% plot(e(1:20),'--rs','LineWidth',2,...
+%                 'MarkerEdgeColor','k',...
+%                 'MarkerFaceColor','g',...
+%                 'MarkerSize',10)
 %==========================================================================
-
 %Apply on the whole data
 originalDir='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Xu Yun/data.mat';
 
@@ -102,12 +103,12 @@ data=obj.data1;
 data=data(:,1:120);
 data(:,badchannels)=[];
 
-pcaData=data*V;
+pcaData=data*SV;
 US=pcaData;
 US(:,noise_comp)=0;
-reconData=US*V';
+reconData=US*SV';
 
-bsp=BioSigPlot({data,reconData},'SRate',fs,...
-                                   'DispChans',30,...
+bsp=BioSigPlot({data,pcaData,reconData},'SRate',fs,...
+                                   'DispChans',20,...
                                    'Gain',1.8,...
                                    'DataView','Vertical');

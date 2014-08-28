@@ -27,8 +27,6 @@ obj.Mask_=cell(1,obj.DataNumber);
 obj.Mask_=obj.applyPanelVal(obj.Mask_,1);
 
 obj.Filtering_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
-
-obj.StrongFilter_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
 obj.FilterLow_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
 obj.FilterHigh_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
 obj.FilterNotch1_=obj.applyPanelVal(cell(1,obj.DataNumber),0);

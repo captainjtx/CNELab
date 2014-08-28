@@ -30,11 +30,12 @@ classdef BioSigPlot < hgsetget
         TxtInfo4
         
         ChkFilter
-        ChkStrongFilter
         EdtFilterLow
         EdtFilterHigh
         EdtFilterNotch1
         EdtFilterNotch2
+        
+        PopFilter
         
         
         BtnTFMap
@@ -164,7 +165,8 @@ classdef BioSigPlot < hgsetget
         FilterHigh              %The high value of filtering: Cut-off frequency of low pass filter
         FilterNotch1             %The 2 notch filter values for 50 or 60Hz rejection. (eg. [58 62]
         FilterNotch2
-        StrongFilter            %false : 1st order filter; true : 4 order filter with forward-backward filter
+        FilterCustomIndex
+        
         Colors                  %Colors of each Data set.
         NormalModeColor         %Colors for view Horizontal, Vertical, or single (DAT*)
         ChanSelectColor         %Colors when Channels are selected
@@ -236,7 +238,8 @@ classdef BioSigPlot < hgsetget
         FilterHigh_
         FilterNotch1_
         FilterNotch2_
-        StrongFilter_
+        FilterCustomIndex_
+        
         NormalModeColor_
         ChanSelectColor_
         AxesBackgroundColor_
@@ -368,6 +371,8 @@ classdef BioSigPlot < hgsetget
         EventSummaryIndex
         EventSummaryNumber
         
+        CustomFilters
+        
     end
     
     methods
@@ -410,6 +415,8 @@ classdef BioSigPlot < hgsetget
             g=varargin;
             varInitial(obj,g);
             
+            scanFilterBank(obj);
+            
             %Show up
             resetView(obj);
             remakeMontage(obj);
@@ -444,11 +451,11 @@ classdef BioSigPlot < hgsetget
             
             obj.Filtering_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
             
-            obj.StrongFilter_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
             obj.FilterLow_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
             obj.FilterHigh_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
             obj.FilterNotch1_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
             obj.FilterNotch2_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
+            obj.FilterCustomIndex_=obj.applyPanelVal(cell(1,obj.DataNumber),1);
             
             resetFilterPanel(obj);
             
@@ -534,10 +541,6 @@ classdef BioSigPlot < hgsetget
                     DATA{i}=data(:,:,i);
                 end
             end
-            l=cell2mat(cellfun(@size,DATA,'UniformOutput',false)');
-            if ~all(l(1,1)==l(:,1))
-                error('All data must have the same number of time samples');
-            end
             
             for i=1:length(DATA)
                 if size(DATA{i},1)<size(DATA{i},2)
@@ -546,6 +549,11 @@ classdef BioSigPlot < hgsetget
                         DATA{i}=DATA{i}';
                     end
                 end
+            end
+            
+            l=cell2mat(cellfun(@size,DATA,'UniformOutput',false)');
+            if ~all(l(1,1)==l(:,1))
+                error('All data must have the same number of time samples');
             end
             
         end
@@ -571,7 +579,7 @@ classdef BioSigPlot < hgsetget
             keylist={'Config','SRate','WinLength','Gain','DataView','Montage',...
                 'MontageRef','Evts','Time','FirstDispChans','DispChans','TimeUnit',...
                 'Colors','Filtering','FilterLow','FilterHigh',...
-                'FilterNotch1','FilterNotch2','StrongFilter','NormalModeColor',...
+                'FilterNotch1','FilterNotch2','FilterCustomIndex','NormalModeColor',...
                 'ChanNames','Units','XGrid','YGrid','Position','Title','MouseMode',...
                 'PlaySpeed','MainTimerPeriod','VideoTimerPeriod','AxesHeight',...
                 'YBorder','YGridInterval','Selection','TaskFiles','VideoStartTime',...
@@ -599,7 +607,7 @@ classdef BioSigPlot < hgsetget
                 if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage',...
                         'DataView','MontageRef','FirstDispChans','DispChans',...
                         'TimeUnit','Colors','Filtering','FilterLow',...
-                        'FilterHigh','FilterNotch1','FilterNotch2','StrongFilter',...
+                        'FilterHigh','FilterNotch1','FilterNotch2','FilterCustomIndex'...
                         'NormalModeColor','ChanNames','Units','XGrid','YGrid',...
                         'AxesHeight','YBorder','YGridInterval','TaskFiles',...
                         'VideoStartTime','MainTimerPeriod','VideoTimerPeriod',...
@@ -620,7 +628,7 @@ classdef BioSigPlot < hgsetget
                     end
                     if any(strcmpi(g{i},{'SRate','Montage','MontageRef',...
                             'Filtering','FilterLow','FilterHigh',...
-                            'FilterNotch1','FilterNotch2','StrongFilter'}))
+                            'FilterNotch1','FilterNotch2','FilterCustomIndex'}))
                         NeedRecalculate=true;
                     end
                     
@@ -741,8 +749,9 @@ classdef BioSigPlot < hgsetget
         function obj = set.FilterNotch2(obj,val), set(obj,'FilterNotch2',val); end
         function val = get.FilterNotch2(obj), val=obj.FilterNotch2_; end
         
-        function obj = set.StrongFilter(obj,val), set(obj,'StrongFilter',val); end
-        function val = get.StrongFilter(obj), val=obj.StrongFilter_; end
+        function obj = set.FilterCustomIndex(obj,val), set(obj,'FilterCustomIndex',val); end
+        function val = get.FilterCustomIndex(obj), val=obj.FilterCustomIndex_; end
+        
         function obj = set.NormalModeColor(obj,val), set(obj,'NormalModeColor',val); end
         function val = get.NormalModeColor(obj), val=obj.NormalModeColor_; end
         
@@ -1919,6 +1928,8 @@ classdef BioSigPlot < hgsetget
                     if str2double(get(src,'String'))==0||isnan(str2double(get(src,'String')))
                         set(src,'String','-');
                     end
+                case obj.PopFilter
+                    
             end
             
             filterCheck(obj);
@@ -2034,6 +2045,7 @@ classdef BioSigPlot < hgsetget
         ImportMontage(obj)
         remakeMontageMenu(obj)
         ChangeMontage(obj,src,data,mtgref)
+        scanFilterBank(obj)
     end
     
     events

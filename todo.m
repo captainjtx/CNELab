@@ -67,3 +67,5 @@ Import data by segments
 % Add Display->Channel Label
 
 % !!Montage
+
+BioSigPlot('Time',) bug

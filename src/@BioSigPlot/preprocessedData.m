@@ -33,19 +33,18 @@ fs=obj.SRate;
 ext=2*obj.SRate;
 phs=0;
 ftyp='iir';
+order=2;
 
 for i=1:size(d,2)
     if obj.Filtering{n}(i)
-        if obj.StrongFilter{n}(i)
-            order=2;
-        else
-            order=1;
-        end
+        
         fl=obj.FilterLow{n}(i);
         fh=obj.FilterHigh{n}(i);
         
         fn1=obj.FilterNotch1{n}(i);
         fn2=obj.FilterNotch2{n}(i);
+        
+        fcum=obj.FilterCustomIndex{n}(i);
         
         if fl==0||isempty(fl)||isnan(fl)
             if fh~=0
@@ -74,6 +73,31 @@ for i=1:size(d,2)
             d(:,i)=filter_symmetric(b,a,d(:,i),ext,phs,ftyp);
         end
         
+        d(:,i)=applyCustomFilters(obj,d(:,i),fcum);
+        
     end
 end
+end
+
+function data=applyCustomFilters(obj,data,fcum)
+if fcum==1
+    return
+else
+    
+    CustomFilters=obj.CustomFilters;
+    fs=obj.SRate;
+    
+    if isfield(CustomFilters{fcum-1},'fir')
+        fir=CustomFilters{fcum-1}.fir;
+        for i=1:length(fir)
+            a=1;
+            b=fir(i).h;
+            data=filter_symmetric(b,a,data,fs,0,'fir');
+        end
+        
+    elseif isfield(CustomFilters{fcum-1},'iir')
+        
+    end
+end
+
 end
