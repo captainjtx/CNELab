@@ -143,9 +143,7 @@ classdef BioSigPlot < hgsetget
         VideoListener
         
         ChannelLines
-        
-        
-        
+
     end
     properties (Dependent,SetObservable)      %Public properties Requiring a redraw and that can be defined at the beginning
         Config                  %Default config file [def: defaultconfig] contains all default values
@@ -373,6 +371,7 @@ classdef BioSigPlot < hgsetget
         
         CustomFilters
         
+        CNELabDir
     end
     
     methods
@@ -481,13 +480,15 @@ classdef BioSigPlot < hgsetget
             
             obj.ChanColors_=obj.applyPanelVal(cell(1,obj.DataNumber),obj.NormalModeColor);
             
+            p=mfilename('fullpath');
+            obj.CNELabDir=fullfile([p(1:end-10),'../..']);
         end
         function saveConfig(obj)
             cfg=load('-mat',obj.Config);
             cfg.FastEvts=obj.FastEvts;
             cfg.SelectedFastEvt=obj.SelectedFastEvt;
             cfg.TriggerEventsFcn=obj.TriggerEventsFcn;
-            save(fullfile(pwd,'/db/cfg/','defaultconfig.cfg'),'-struct','cfg');
+            save(fullfile(obj.CNELabDir,'/db/cfg/','defaultconfig.cfg'),'-struct','cfg');
         end
         function delete(obj)
             % Delete the figure

@@ -4,7 +4,7 @@ function scanFilterBank(obj)
 %for customized filters
 
 
-listing=dir('db/filters/*mat');
+listing=dir([obj.CNELabDir,'/db/filters/*mat']);
 popStr=cell(1,1+length(listing));
 
 popStr{1}='None';
