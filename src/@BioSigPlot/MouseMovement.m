@@ -113,6 +113,7 @@ s=rem(timestamp,60);
 m=rem(floor(timestamp/60),60);
 h=floor(timestamp/3600);
 c=obj.MontageChanNames{ndata}{nchan};
+c=[c,' -- ',num2str(nchan),' | ',num2str(length(obj.MontageChanNames{ndata}))];
 
 if round(time*obj.SRate)<=size(obj.Data{ndata},1)
     if iscell(obj.PreprocData)
@@ -168,8 +169,8 @@ s4=['FL: ',fl,' , ',...
     'FCUM:',fcum];
 
 set(obj.TxtInfo1,'String',s1);
-set(obj.TxtInfo2,'String',s2);
+set(obj.TxtInfo2,'String',s4);
 set(obj.TxtInfo3,'String',s3);
-set(obj.TxtInfo4,'String',s4);
+set(obj.TxtInfo4,'String',s2);
 
 end

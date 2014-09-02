@@ -33,12 +33,13 @@ for i=2:length(cds)
 end
 
 data=cell(1,length(cds));
+fnames=cell(1,length(cds));
 for i=1:length(cds)
     data{i}=cds{i}.Data.Data;
+    fnames{i}=cds{i}.Data.FileName;
 end
-bsp=BioSigPlot(data);
-
-%**************************************************************************
+bsp=BioSigPlot(data,'DataFileNames',fnames);
+%==========================================================================
 if isempty(fs)||(fs==0)
     fs=256;
 end

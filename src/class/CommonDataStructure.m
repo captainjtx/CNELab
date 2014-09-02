@@ -177,6 +177,7 @@ classdef CommonDataStructure < handle
             s.Data.PreFilter='';
             s.Data.DownSample=[];
             s.Data.SampleRate=[];
+            s.Data.FileName=[];
             
             %obj.Montage construction
             s.Montage.ChannelNames=[];
@@ -599,6 +600,7 @@ classdef CommonDataStructure < handle
                     case 6
                         cds{i}.assign(CommonDataStructure.readFromEDF(filename));
                 end
+                cds{i}.Data.FileName=FileName{i};
             end
             
         end

@@ -1,4 +1,3 @@
-
 function KeyPress(obj,src,evt)
 
 dd=obj.DisplayedData;
@@ -131,7 +130,7 @@ if ~isempty(evt.Modifier)
                 %Ctl/Cmd+Num Switch to dataset(Num)
                 for i=1:obj.DataNumber
                     if strcmpi(evt.Key,num2str(i))
-                        obj.DataView=['DAT' num2str(i)];
+                        ChangeData(obj,[],i);
                         return;
                     end
                 end

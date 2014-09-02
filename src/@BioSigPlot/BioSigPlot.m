@@ -146,6 +146,8 @@ classdef BioSigPlot < hgsetget
 
     end
     properties (Dependent,SetObservable)      %Public properties Requiring a redraw and that can be defined at the beginning
+        Version
+        DataFileNames
         Config                  %Default config file [def: defaultconfig] contains all default values
         SRate                   %Sampling rate
         WinLength               %Time length of windows
@@ -217,6 +219,8 @@ classdef BioSigPlot < hgsetget
         STFTScaleHigh
     end
     properties (Access=protected,Hidden)%Storage of public properties
+        Version_
+        DataFileNames_
         Config_
         SRate_
         WinLength_
@@ -303,7 +307,7 @@ classdef BioSigPlot < hgsetget
     
     properties (Dependent) %'Public properties which does not requires redrawing
         Position                    %Position of the figure (in pixels)
-        Title                       %Title of the figure
+        
     end
     properties (Dependent) %'Public computed read-only properties
         DataTime
@@ -432,7 +436,7 @@ classdef BioSigPlot < hgsetget
         
         %*****************************************************************
         function varInitial(obj,g)
-            
+            obj.DataFileNames=cell(1,obj.DataNumber);
             obj.ResizeMode=false;
             obj.UponAdjustPanel=false;
             
@@ -577,11 +581,11 @@ classdef BioSigPlot < hgsetget
             %Rearrangement: make sure there is no conflict on the order of
             %properties. Constraint config must be before all and Colors
             %must be before *ModeColors
-            keylist={'Config','SRate','WinLength','Gain','DataView','Montage',...
+            keylist={'DataFileNames','Config','SRate','WinLength','Gain','DataView','Montage',...
                 'MontageRef','Evts','Time','FirstDispChans','DispChans','TimeUnit',...
                 'Colors','Filtering','FilterLow','FilterHigh',...
                 'FilterNotch1','FilterNotch2','FilterCustomIndex','NormalModeColor',...
-                'ChanNames','Units','XGrid','YGrid','Position','Title','MouseMode',...
+                'ChanNames','Units','XGrid','YGrid','Position','Version','MouseMode',...
                 'PlaySpeed','MainTimerPeriod','VideoTimerPeriod','AxesHeight',...
                 'YBorder','YGridInterval','Selection','TaskFiles','VideoStartTime',...
                 'VideoFile','VideoTimeFrame','VideoLineTime','MainTimer','VideoTimer',...
@@ -667,7 +671,7 @@ classdef BioSigPlot < hgsetget
                         'EventDefaultColors','EventsWindowDisplay','TriggerEventsFcn',...
                         'TriggerEventDefaultColor','MouseMode','STFTWindowLength',...
                         'STFTOverlap','STFTScaleLow','STFTScaleHigh','STFTFreqLow',...
-                        'STFTFreqHigh'}))
+                        'STFTFreqHigh','DataFileNames','Version'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                 elseif any(strcmpi(g{i},{'Selection'}))
@@ -713,7 +717,12 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         %SetGet method for properties requiring redraw (Would be auto-generates in future version)
         %******************************************************************
-        function obj = set.Config(obj,val), set(obj,'Config',val); end %#ok<MCHV2>
+        function obj = set.Version(obj,val), set(obj,'Version',val); end
+        function val = get.Version(obj),     val=obj.Version_; end
+        
+        function obj = set.DataFileNames(obj,val), set(obj,'DataFileNames',val); end
+        function val = get.DataFileNames(obj), val=obj.DataFileNames_; end
+        function obj = set.Config(obj,val), set(obj,'Config',val); end 
         function val = get.Config(obj), val=obj.Config_; end
         function obj = set.SRate(obj,val), set(obj,'SRate',val); end
         function val = get.SRate(obj), val=obj.SRate_; end
@@ -793,8 +802,6 @@ classdef BioSigPlot < hgsetget
         
         function obj = set.Position(obj,val), set(obj.Fig,'Position',val); end
         function val = get.Position(obj),     val=get(obj.Fig,'Position'); end
-        function obj = set.Title(obj,val), set(obj.Fig,'Name',val); end
-        function val = get.Title(obj),     val=get(obj.Fig,'Name'); end
         
         function obj = set.EventDisplayIndex(obj,val), obj.EventDisplayIndex=val; end
         function val = get.EventDisplayIndex(obj), val=obj.EventDisplayIndex; end
@@ -957,14 +964,12 @@ classdef BioSigPlot < hgsetget
             def=load('-mat',val);
             names=fieldnames(def);
             names=names(~strcmpi('Colors',names) &...
-                ~strcmpi('Position',names) & ...
-                ~strcmpi('Title',names)); % Remove this field because it's not the same properties working
+                ~strcmpi('Position',names));
             set(obj,'Colors_',def.Colors);
             for i=1:length(names)
                 set(obj,[names{i} '_'],def.(names{i}));
             end
             obj.Position=def.Position; %#ok<*MCSUP>
-            obj.Title=def.Title;
         end
         
         %******************************************************************
@@ -1189,6 +1194,16 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         function obj = set.DataView_(obj,val)
             obj.DataView_=val;
+            
+            if ~isempty(regexp(val,'DAT','ONCE'))
+                if ~isempty(obj.DataFileNames{obj.DisplayedData})
+                    set(obj.Fig,'Name',[obj.DataFileNames{obj.DisplayedData},' -- ',obj.Version]);
+                end
+            else
+                set(obj.Fig,'Name',obj.Version);
+            end
+            
+            
             if ~obj.IsInitialize
                 dd=obj.DisplayedData;
                 if all(cellfun(@isempty,obj.ChanSelect2Edit(dd)))
