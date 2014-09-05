@@ -1190,6 +1190,10 @@ classdef BioSigPlot < hgsetget
             elseif isnumeric(val)
                 obj.Gain_=obj.applyPanelVal(obj.Gain_,val);
             end
+            
+            for i=1:length(obj.Gain_)
+                obj.Gain_{i}(isnan(obj.Gain_{i}))=1;
+            end
         end
         %******************************************************************
         function obj = set.DataView_(obj,val)
