@@ -69,3 +69,4 @@ Import data by segments
 % !!Montage
 
 BioSigPlot('Time',) bug
+implement fft

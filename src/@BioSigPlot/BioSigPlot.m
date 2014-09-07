@@ -1269,7 +1269,7 @@ classdef BioSigPlot < hgsetget
                 [f,loc]=ismember(val,obj.WinEvts.EvtIndex);
                 
                 set(obj.WinEvts.uilist,'value',loc);
-                set(obj.EventInfo,'String',[num2str(obj.EventSummaryIndex(loc)),'|',num2str(obj.EventSummaryNumber(loc))]);
+                set(obj.EventInfo,'String',[num2str(obj.EventSummaryIndex(loc(1))),'|',num2str(obj.EventSummaryNumber(loc(1)))]);
             end
             
         end

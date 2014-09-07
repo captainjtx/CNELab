@@ -45,24 +45,6 @@ classdef CommonDataStructure < handle
             end
             
         end
-        function export(obj)
-            
-            cds.Data=obj.Data;
-            cds.Montage=obj.Montage;
-            cds.PatientInfo=obj.PatientInfo;
-            
-            [FileName,FilePath]=uiputfile({...
-                '*.cds;*.mat','Common Data Structure Formats (*.cds;*.mat)';...
-                '*.mat','Matlab Mat File (*.mat)';
-                '*.cds','Common Data Structure Fromat (*.cds)'}...
-                ,'Save your common data structure','untitled');
-            
-            if ~FileName
-                return
-            end
-            save(fullfile(FilePath,FileName),'-struct','cds','-mat');
-        end
-        
         function y=import(obj)
             y=0;
             [FileName,FilePath,FilterIndex]=uigetfile({...
@@ -107,6 +89,25 @@ classdef CommonDataStructure < handle
                     
             end
         end
+        function export(obj)
+            
+            cds.Data=obj.Data;
+            cds.Montage=obj.Montage;
+            cds.PatientInfo=obj.PatientInfo;
+            
+            [FileName,FilePath]=uiputfile({...
+                '*.cds;*.mat','Common Data Structure Formats (*.cds;*.mat)';...
+                '*.mat','Matlab Mat File (*.mat)';
+                '*.cds','Common Data Structure Fromat (*.cds)'}...
+                ,'Save your common data structure','untitled');
+            
+            if ~FileName
+                return
+            end
+            save(fullfile(FilePath,FileName),'-struct','cds','-mat');
+        end
+        
+        
         
     end
     methods (Static=true)
@@ -137,7 +138,7 @@ classdef CommonDataStructure < handle
                         FilterIndex=4;
                         return
                         
-                    %check if it is old cds file
+                        %check if it is old cds file
                     elseif isfield(s.data,'data')
                         FilterIndex=3;
                         return
@@ -152,7 +153,7 @@ classdef CommonDataStructure < handle
                 
                 %check if it is raw data file
                 if length(field)>1
-                        msgbox('The file contain more than one field, try to import the first one...','CommonDataStructure','warn');
+                    msgbox('The file contain more than one field, try to import the first one...','CommonDataStructure','warn');
                 end
                 if ismatrix(s.(field{1}))
                     FilterIndex=0;
@@ -298,7 +299,7 @@ classdef CommonDataStructure < handle
                 if isfield(oldcds.data,'triggerCodes')
                     s.Data.TriggerCodes=oldcds.data.triggerCodes;
                 end
-               
+                
                 
             end
             
