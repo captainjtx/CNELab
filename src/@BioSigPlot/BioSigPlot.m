@@ -37,8 +37,9 @@ classdef BioSigPlot < hgsetget
         
         PopFilter
         
-        
+        BtnPSD
         BtnTFMap
+        
         BtnPlayBackward
         BtnPlayForward
         TogPlay
@@ -127,6 +128,12 @@ classdef BioSigPlot < hgsetget
         MenuTFMapChannel
         MenuTFMapGrid
         MenuTFMapSettings
+        
+        MenuPSD
+        MenuPSDAverage
+        MenuPSDChannel
+        MenuPSDGrid
+        MenuPSDSettings
         
         MenuSave
         PanObj
@@ -217,6 +224,11 @@ classdef BioSigPlot < hgsetget
         STFTFreqHigh
         STFTScaleLow
         STFTScaleHigh
+        
+        PSDWindowLength
+        PSDOverlap
+        PSDFreqLow
+        PSDFreqHigh
     end
     properties (Access=protected,Hidden)%Storage of public properties
         Version_
@@ -290,6 +302,11 @@ classdef BioSigPlot < hgsetget
         STFTScaleHigh_
         STFTFreqLow_
         STFTFreqHigh_
+        
+        PSDWindowLength_
+        PSDOverlap_
+        PSDFreqLow_
+        PSDFreqHigh_
     end
     properties (SetAccess=protected) %Readonly properties
         Data                        %(Read-Only)All the Signals
@@ -323,6 +340,7 @@ classdef BioSigPlot < hgsetget
         Fig
         Axes
         TFMapFig
+        PSDFig
         IconPlay
         IconPause
         VideoFig
@@ -525,7 +543,11 @@ classdef BioSigPlot < hgsetget
             if ishandle(h)
                 delete(h);
             end
-            
+            h = obj.PSDFig;
+            if ishandle(h)
+                delete(h);
+            end
+
             h = obj.TFMapFig;
             if ishandle(h)
                 delete(h);
@@ -594,7 +616,8 @@ classdef BioSigPlot < hgsetget
                 'AxesBackgroundColor','ChanColors','EventSelectColor','EventDefaultColors',...
                 'TriggerEventDefaultColor','FastEvts','SelectedFastEvt','TriggerEventsFcn',...
                 'SelectedEvent','STFTWindowLength','STFTOverlap','STFTScaleLow',...
-                'STFTScaleHigh','STFTFreqLow','STFTFreqHigh','Mask','LineDefaultColors'};
+                'STFTScaleHigh','STFTFreqLow','STFTFreqHigh','Mask','LineDefaultColors',...
+                'PSDWindowLength','PSDOverlap','PSDFreqLow','PSDFreqHigh'};
             
             if isempty(obj.Commands)
                 command='a=BioSigPlot(data';
@@ -671,7 +694,8 @@ classdef BioSigPlot < hgsetget
                         'EventDefaultColors','EventsWindowDisplay','TriggerEventsFcn',...
                         'TriggerEventDefaultColor','MouseMode','STFTWindowLength',...
                         'STFTOverlap','STFTScaleLow','STFTScaleHigh','STFTFreqLow',...
-                        'STFTFreqHigh','DataFileNames','Version'}))
+                        'STFTFreqHigh','DataFileNames','Version','PSDWindowLength',...
+                        'PSDOverlap','PSDFreqLow','PSDFreqHigh'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                 elseif any(strcmpi(g{i},{'Selection'}))
@@ -878,6 +902,19 @@ classdef BioSigPlot < hgsetget
         
         function obj = set.STFTFreqHigh(obj,val), set(obj,'STFTFreqHigh',val); end
         function val = get.STFTFreqHigh(obj), val=obj.STFTFreqHigh_; end
+        
+        
+        function obj = set.PSDWindowLength(obj,val), set(obj,'PSDWindowLength',val); end
+        function val = get.PSDWindowLength(obj), val=obj.PSDWindowLength_; end
+        
+        function obj = set.PSDOverlap(obj,val), set(obj,'PSDOverlap',val); end
+        function val = get.PSDOverlap(obj), val=obj.PSDOverlap_; end
+        
+        function obj = set.PSDFreqLow(obj,val), set(obj,'PSDFreqLow',val); end
+        function val = get.PSDFreqLow(obj), val=obj.PSDFreqLow_; end
+        
+        function obj = set.PSDFreqHigh(obj,val), set(obj,'PSDFreqHigh',val); end
+        function val = get.PSDFreqHigh(obj), val=obj.PSDFreqHigh_; end
         %*****************************************************************
         % ***************** User available methods  **********************
         %*****************************************************************
@@ -982,6 +1019,9 @@ classdef BioSigPlot < hgsetget
             obj.SRate_=val;
             obj.STFTFreqLow=0;
             obj.STFTFreqHigh=val/2;
+            
+            obj.PSDFreqLow=0;
+            obj.PSDFreqHigh=val/2;
         end
         %******************************************************************
         function val = get.Evts(obj)
@@ -2066,6 +2106,8 @@ classdef BioSigPlot < hgsetget
         remakeMontageMenu(obj)
         ChangeMontage(obj,src,data,mtgref)
         scanFilterBank(obj)
+        MnuPSDSettings(obj)
+        Power_Spectrum_Density(obj,src)
     end
     
     events

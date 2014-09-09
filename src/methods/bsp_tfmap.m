@@ -21,7 +21,7 @@ for i=1:size(eeg,2)
             title(channames{i});
             
             subplot(2,1,2)
-            imagesc(t,f,20*log10(tf));
+            imagesc(t,f,10*log10(tf));
             set(gca,'Tag','TFMapAxes','YLim',freq);
             if ~isempty(s)
                 set(gca,'CLim',s);
@@ -41,7 +41,7 @@ if nargout==0
     if ishandle(fig)
         clf(fig)
         figure(fig)
-        imagesc(t,f,20*log10(tfm));
+        imagesc(t,f,10*log10(tfm));
         set(gca,'Tag','TFMapAxes','YLim',freq);
         if ~isempty(s)
             set(gca,'CLim',s);

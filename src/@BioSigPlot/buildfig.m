@@ -56,6 +56,7 @@ obj.makeMenu();
 obj.WinEvts=EventWindow(obj);
 
 obj.TFMapFig=figure('Name','TFMap','Visible','off','NumberTitle','off');
+obj.PSDFig=figure('Name','Power Spectrum Density','Visible','off','NumberTitle','off');
 
 obj.VideoFig=figure('Name','Video','Visible','off','NumberTitle','off');
 
