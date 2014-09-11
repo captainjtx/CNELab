@@ -2108,6 +2108,7 @@ classdef BioSigPlot < hgsetget
         scanFilterBank(obj)
         MnuPSDSettings(obj)
         Power_Spectrum_Density(obj,src)
+        PCA_Analysis(obj,src)
     end
     
     events
