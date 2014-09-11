@@ -60,55 +60,55 @@ SV=V(:,ID);
 
 %==========================================================================
 %**************************************************************************
-% for i=1:length(sample_artifact_pos)
-%     pcadata{i}=rawdata{i}*SV;
-%     
-%     selectedPCA=pcadata{i};
-%     selectedPCA(:,noise_comp)=0;
-%     
-%     recondata{i}=selectedPCA*SV';
-% end
-% 
-% % Visualize the segments
-% % concatenate the segments
-% pdata=[];
-% rdata=[];
-% cdata=[];
-% 
-% for i=1:length(pcadata)
-%     rdata=cat(1,rdata,rawdata{i});
-%     pdata=cat(1,pdata,pcadata{i});
-%     cdata=cat(1,cdata,recondata{i});
-% end
-% 
-% bsp=BioSigPlot({rdata,pdata,cdata},'SRate',fs,...
-%                                    'Winlength',(sample_before+sample_after+1)/fs*10,...
-%                                    'Evts',evts,...
-%                                    'DispChans',30,...
-%                                    'Gain',2.5,...
-%                                    'DataView','Horizontal');
-%                                
-% figure
-% 
-% plot(e(1:20),'--rs','LineWidth',2,...
-%                 'MarkerEdgeColor','k',...
-%                 'MarkerFaceColor','g',...
-%                 'MarkerSize',10)
+for i=1:length(sample_artifact_pos)
+    pcadata{i}=rawdata{i}*SV;
+    
+    selectedPCA=pcadata{i};
+    selectedPCA(:,noise_comp)=0;
+    
+    recondata{i}=selectedPCA*SV';
+end
+
+% Visualize the segments
+% concatenate the segments
+pdata=[];
+rdata=[];
+cdata=[];
+
+for i=1:length(pcadata)
+    rdata=cat(1,rdata,rawdata{i});
+    pdata=cat(1,pdata,pcadata{i});
+    cdata=cat(1,cdata,recondata{i});
+end
+
+bsp=BioSigPlot({rdata,pdata,cdata},'SRate',fs,...
+                                   'Winlength',(sample_before+sample_after+1)/fs*10,...
+                                   'Evts',evts,...
+                                   'DispChans',30,...
+                                   'Gain',2.5,...
+                                   'DataView','Horizontal');
+                               
+figure
+
+plot(e(1:20),'--rs','LineWidth',2,...
+                'MarkerEdgeColor','k',...
+                'MarkerFaceColor','g',...
+                'MarkerSize',10)
 %==========================================================================
 %Apply on the whole data
-originalDir='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Xu Yun/data.mat';
-
-obj=load(originalDir,'-mat');
-data=obj.data1;
-data=data(:,1:120);
-data(:,badchannels)=[];
-
-pcaData=data*SV;
-US=pcaData;
-US(:,noise_comp)=0;
-reconData=US*SV';
-
-bsp=BioSigPlot({data,pcaData,reconData},'SRate',fs,...
-                                   'DispChans',20,...
-                                   'Gain',1.8,...
-                                   'DataView','Vertical');
+% originalDir='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Xu Yun/data.mat';
+% 
+% obj=load(originalDir,'-mat');
+% data=obj.data1;
+% data=data(:,1:120);
+% data(:,badchannels)=[];
+% 
+% pcaData=data*SV;
+% US=pcaData;
+% US(:,noise_comp)=0;
+% reconData=US*SV';
+% 
+% bsp=BioSigPlot({data,pcaData,reconData},'SRate',fs,...
+%                                    'DispChans',20,...
+%                                    'Gain',1.8,...
+%                                    'DataView','Vertical');

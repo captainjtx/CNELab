@@ -13,7 +13,7 @@ for i=1:length(dd)
         else
             axe=obj.Axes(dd(i));
         end
-        plotXTicks(axe,obj.Time,obj.WinLength)
+        plotXTicks(axe,obj.Time,obj.WinLength,obj.SRate)
     end
 end
 
@@ -54,21 +54,30 @@ for i=1:length(channellines)
 end
 
 end
-function plotXTicks(axe,time,WinLength)
+function plotXTicks(axe,time,WinLength,fs)
 % Plot X ticks
 % axe :  axes to plot
 % time : starting time
 % WinLength :  window time lentgth
-time_labels=linspace(time,time+WinLength,15);
+h=findobj(axe,'-regexp','DisplayName','XTick*');
+if ~isempty(h)
+    delete(h);
+end
 
-x_lim=get(axe,'XLim');
-set(axe,'XTick',linspace(x_lim(1),x_lim(2),15));
+delta=roundsd(WinLength/15,1);
 
+startTime=ceil(time/delta)*delta;
+
+time_labels=startTime:delta:time+WinLength;
+
+set(axe,'XTick',(time_labels-time)*fs);
 
 for i=1:length(time_labels)
     t=time_labels(i);
-    h=findobj(axe,'-regexp','DisplayName',['XTick' num2str(i)]);
-    set(h,'String',num2str(t));
+    p=(t-time)/WinLength;
+    text(p+.002,.002,num2str(t),'Parent',axe,'HorizontalAlignment','left',...
+        'VerticalAlignment','bottom','FontWeight','normal','units','normalized',...
+        'color',[0 0 1],'DisplayName',['XTick',num2str(i)]);
 end
 
 end

@@ -500,7 +500,7 @@ classdef CommonDataStructure < handle
             if size(data,2)>size(data,1)
                 
                 choice=questdlg('The data seems to be row-wise, do you want to transpose it?','CommonDataStructure','Yes','No','Yes');
-                if strcmpi(choice,'y')
+                if strcmpi(choice,'Yes')
                     data=data';
                 end
             end

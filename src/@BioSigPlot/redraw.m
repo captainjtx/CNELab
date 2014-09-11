@@ -57,7 +57,7 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         cla(obj.Axes(i))
         set(obj.Axes(i),'Ylim',ylim,'Ytick',0.5:1:Nchan(i)+0.5,'YTickLabel',{},'XtickLabel',{});
         
-        plotXTicks(obj.Axes(i),obj.Time,obj.WinLength);
+        plotXTicks(obj.Axes(i),obj.Time,obj.WinLength,obj.SRate);
         if ~isempty(obj.PreprocData)
             
             lhs=plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i}(t,:),obj.ChanColors{i},...
@@ -92,7 +92,7 @@ else
     end
     plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.ChanSelect2Edit{i},obj.ChanSelectColor,obj.Gain{i});
     
-    plotXTicks(obj.Axes,obj.Time,obj.WinLength)
+    plotXTicks(obj.Axes,obj.Time,obj.WinLength,obj.SRate)
 end
 
 obj.ChannelLines=channelLines;
@@ -175,7 +175,7 @@ end
 end
 
 %**************************************************************************
-function plotXTicks(axe,time,WinLength)
+function plotXTicks(axe,time,WinLength,fs)
 % Plot X ticks
 % axe :  axes to plot
 % time : starting time
@@ -185,10 +185,13 @@ if ~isempty(h)
     delete(h);
 end
 
-time_labels=linspace(time,time+WinLength,15);
+delta=roundsd(WinLength/15,1);
 
-x_lim=get(axe,'XLim');
-set(axe,'XTick',linspace(x_lim(1),x_lim(2),15));
+startTime=ceil(time/delta)*delta;
+
+time_labels=startTime:delta:time+WinLength;
+
+set(axe,'XTick',(time_labels-time)*fs);
 
 for i=1:length(time_labels)
     t=time_labels(i);
