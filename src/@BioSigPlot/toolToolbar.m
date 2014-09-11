@@ -41,5 +41,5 @@ obj.BtnTFMap=uipushtool(obj.Toolbar,'CData',imread('tfmap.bmp'),'TooltipString',
     'ClickedCallback',@(src,evt) Time_Freq_Map(obj,src));
 
 obj.BtnPCA=uitoggletool(obj.Toolbar,'CData',imread('pca.png'),'TooltipString','Principle Component Analysis',...
-    'ClickedCallback',@(src,evt) PCA_Analysis(obj,src));
+    'ClickedCallback',@(src,evt) SPF_Analysis(obj,src));
 end

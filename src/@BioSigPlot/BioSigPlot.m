@@ -39,6 +39,7 @@ classdef BioSigPlot < hgsetget
         
         BtnPSD
         BtnTFMap
+        BtnPCA
         
         BtnPlayBackward
         BtnPlayForward
@@ -394,6 +395,8 @@ classdef BioSigPlot < hgsetget
         CustomFilters
         
         CNELabDir
+        
+        SPFObj
     end
     
     methods
@@ -2108,7 +2111,7 @@ classdef BioSigPlot < hgsetget
         scanFilterBank(obj)
         MnuPSDSettings(obj)
         Power_Spectrum_Density(obj,src)
-        PCA_Analysis(obj,src)
+        SPF_Analysis(obj,src)
     end
     
     events
