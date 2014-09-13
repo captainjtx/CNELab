@@ -50,7 +50,7 @@ if ~ishandle(obj.PSDFig)
     obj.PSDFig=figure('Name','Power Spectrum Density','Visible','off','NumberTitle','off');
 end
 figure(obj.PSDFig)
-set(gcf,'visible','on')
+set(obj.PSDFig,'visible','on')
 clf
 
 switch option
@@ -82,8 +82,8 @@ switch option
             psd=cat(2,psd,tmp);
         end
         
-        indLow=max(1,min(ceil(freq(1)/(fs/2)*length(psd)),length(psd)));
-        indHigh=max(1,min(ceil(freq(2)/(fs/2)*length(psd)),length(psd)));
+        indLow=max(1,min(ceil(freq(1)/(fs/2)*size(psd,1)),size(psd,1)));
+        indHigh=max(1,min(ceil(freq(2)/(fs/2)*size(psd,1)),size(psd,1)));
         f=linspace(freq(1),freq(2),indHigh-indLow+1);
         f=reshape(f,length(f),1);
         plot(f*ones(1,size(psd,2)),10*log10(psd(indLow:indHigh,:)));

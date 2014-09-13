@@ -69,7 +69,7 @@ if src==obj.BtnPrevEvent
     
     if ~isempty(ind)
         if obj.Evts_{ind(I),1}<obj.Time
-            obj.Time=obj.Evts_{ind(I),1}-obj.WinLength+obj.WinLength/20;
+            obj.Time=obj.Evts_{ind(I),1}-obj.WinLength+obj.WinLength/3;
         end
         obj.SelectedEvent=ind(I);
     end
@@ -83,7 +83,7 @@ elseif src==obj.BtnNextEvent
     
     if ~isempty(ind)
         if obj.Evts_{ind(I),1}>obj.Time+obj.WinLength
-            obj.Time=obj.Evts_{ind(I),1}-obj.WinLength/20;
+            obj.Time=obj.Evts_{ind(I),1}-obj.WinLength/3;
         end
         obj.SelectedEvent=ind(I);
     end 

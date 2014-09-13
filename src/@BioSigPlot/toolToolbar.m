@@ -42,4 +42,6 @@ obj.BtnTFMap=uipushtool(obj.Toolbar,'CData',imread('tfmap.bmp'),'TooltipString',
 
 obj.BtnPCA=uitoggletool(obj.Toolbar,'CData',imread('pca.png'),'TooltipString','Principle Component Analysis',...
     'ClickedCallback',@(src,evt) SPF_Analysis(obj,src));
+obj.BtnICA=uitoggletool(obj.Toolbar,'CData',imread('ica.png'),'TooltipString','Independent Component Analysis',...
+    'ClickedCallback',@(src,evt) SPF_Analysis(obj,src));
 end

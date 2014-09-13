@@ -30,7 +30,6 @@ else
     end
 end
 
-showGauge(obj);
 end
 
 function gainChangeChannels(axes,dataNum,data,gain,mask,posY,ChannelLines,ChanSelect2Display,FirstDispChan,...

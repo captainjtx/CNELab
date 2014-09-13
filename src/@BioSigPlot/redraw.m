@@ -114,7 +114,6 @@ for i=1:length(obj.Axes)
 end
 
 % obj.EvtContextMenu.update(obj);
-
 showGauge(obj);
 showTimeLabel(obj);
 showChannelLabel(obj);

@@ -40,6 +40,7 @@ classdef BioSigPlot < hgsetget
         BtnPSD
         BtnTFMap
         BtnPCA
+        BtnICA
         
         BtnPlayBackward
         BtnPlayForward
@@ -68,6 +69,7 @@ classdef BioSigPlot < hgsetget
         TogSelection
         TogVideo
         TogAnnotate
+        
         MenuFile
         MenuExport
         MenuExportFigure
@@ -108,11 +110,15 @@ classdef BioSigPlot < hgsetget
         MenuEventsDisplay
         
         MenuDisplay
+        MenuToolbarDisplay
         MenuXGrid
         MenuYGrid
         MenuGauge
         MenuTimeLabel
         MenuChannelLabel
+        Menupanels
+        MenuControlPanel
+        MenuLockLayout
         
         MenuColor
         MenuColorCanvas
@@ -195,6 +201,10 @@ classdef BioSigPlot < hgsetget
         EventsDisplay           %true : show Events
         TriggerEventsDisplay
         EventsWindowDisplay     %true : show Events Window
+        ControlPanelDisplay
+        LockLayout
+        ToolbarDisplay
+        DisplayGauge
         
         MouseMode               %the Mouse Mode :{'Pan'|'Measurer'}
         PlaySpeed               %Play speed
@@ -273,6 +283,10 @@ classdef BioSigPlot < hgsetget
         EventsDisplay_
         TriggerEventsDisplay_
         EventsWindowDisplay_
+        ControlPanelDisplay_
+        LockLayout_
+        ToolbarDisplay_
+        DisplayGauge_
         
         MouseMode_
         PlaySpeed_
@@ -493,8 +507,12 @@ classdef BioSigPlot < hgsetget
             obj.Evts_={};
             obj.IsEvtsSaved=true;
             obj.EventsWindowDisplay=true;
+            obj.ControlPanelDisplay=true;
+            obj.ToolbarDisplay=true;
+            obj.LockLayout=true;
             
             obj.VideoHandle=[];
+            obj.DisplayGauge=true;
             
             obj.ChanNames_=cell(1,obj.DataNumber);
             obj.MontageRef_=ones(obj.DataNumber,1);
@@ -620,7 +638,8 @@ classdef BioSigPlot < hgsetget
                 'TriggerEventDefaultColor','FastEvts','SelectedFastEvt','TriggerEventsFcn',...
                 'SelectedEvent','STFTWindowLength','STFTOverlap','STFTScaleLow',...
                 'STFTScaleHigh','STFTFreqLow','STFTFreqHigh','Mask','LineDefaultColors',...
-                'PSDWindowLength','PSDOverlap','PSDFreqLow','PSDFreqHigh'};
+                'PSDWindowLength','PSDOverlap','PSDFreqLow','PSDFreqHigh','ControlPanelDisplay',...
+                'LockLayout','ToolbarDisplay','DisplayGauge'};
             
             if isempty(obj.Commands)
                 command='a=BioSigPlot(data';
@@ -698,7 +717,8 @@ classdef BioSigPlot < hgsetget
                         'TriggerEventDefaultColor','MouseMode','STFTWindowLength',...
                         'STFTOverlap','STFTScaleLow','STFTScaleHigh','STFTFreqLow',...
                         'STFTFreqHigh','DataFileNames','Version','PSDWindowLength',...
-                        'PSDOverlap','PSDFreqLow','PSDFreqHigh'}))
+                        'PSDOverlap','PSDFreqLow','PSDFreqHigh','ControlPanelDisplay',...
+                        'LockLayout','ToolbarDisplay','DisplayGauge'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                 elseif any(strcmpi(g{i},{'Selection'}))
@@ -859,6 +879,17 @@ classdef BioSigPlot < hgsetget
         function obj = set.EventsWindowDisplay(obj,val), set(obj,'EventsWindowDisplay',val); end
         function val = get.EventsWindowDisplay(obj), val=obj.EventsWindowDisplay_; end
         
+        function obj = set.ToolbarDisplay(obj,val), set(obj,'ToolbarDisplay',val); end
+        function val = get.ToolbarDisplay(obj), val=obj.ToolbarDisplay_; end
+        
+        function obj = set.DisplayGauge(obj,val), set(obj,'DisplayGauge',val); end
+        function val = get.DisplayGauge(obj), val=obj.DisplayGauge_; end
+        
+        function obj = set.ControlPanelDisplay(obj,val), set(obj,'ControlPanelDisplay',val); end
+        function val = get.ControlPanelDisplay(obj), val=obj.ControlPanelDisplay_; end
+        
+        function obj = set.LockLayout(obj,val), set(obj,'LockLayout',val); end
+        function val = get.LockLayout(obj), val=obj.LockLayout_; end
         
         function obj = set.ChanColors(obj,val), set(obj,'ChanColors',val); end
         function val = get.ChanColors(obj), val=obj.ChanColors_; end
@@ -1344,7 +1375,6 @@ classdef BioSigPlot < hgsetget
             else
                 set(obj.MenuEventsWindow,'Checked','off');
             end
-            
             pos=get(obj.Fig,'position');
             ctrlsize=obj.ControlBarSize;
             if  ~isempty(obj.Evts_)&&obj.EventsWindowDisplay
@@ -1362,7 +1392,83 @@ classdef BioSigPlot < hgsetget
             end
         end
         %==================================================================
+        %******************************************************************
+        function obj = set.ControlPanelDisplay_(obj,val)
+            if ischar(val)
+                obj.ControlPanelDisplay_=strcmpi(val,'on');
+            else
+                obj.ControlPanelDisplay_=val;
+            end
+            
+            evtPos=get(obj.EventPanel,'position');
+            adjustPos=get(obj.AdjustPanel,'position');
+            mainPos=get(obj.MainPanel,'position');
+            ctrlsize=obj.ControlBarSize;
+            
+            if obj.ControlPanelDisplay_
+                set(obj.MenuControlPanel,'Checked','on');
+                set(obj.ControlPanel,'Visible','on');
+                
+                set(obj.EventPanel,'position',[evtPos(1),evtPos(2)+ctrlsize(2),evtPos(3),evtPos(4)-ctrlsize(2)]);
+                set(obj.AdjustPanel,'position',[adjustPos(1),adjustPos(2)+ctrlsize(2),adjustPos(3),adjustPos(4)-ctrlsize(2)]);
+                set(obj.MainPanel,'position',[mainPos(1),mainPos(2)+ctrlsize(2),mainPos(3),mainPos(4)-ctrlsize(2)]);
+            else
+                set(obj.MenuControlPanel,'Checked','off');
+                set(obj.ControlPanel,'Visible','off');
+                
+                set(obj.EventPanel,'position',[evtPos(1),evtPos(2)-ctrlsize(2),evtPos(3),evtPos(4)+ctrlsize(2)]);
+                set(obj.AdjustPanel,'position',[adjustPos(1),adjustPos(2)-ctrlsize(2),adjustPos(3),adjustPos(4)+ctrlsize(2)]);
+                set(obj.MainPanel,'position',[mainPos(1),mainPos(2)-ctrlsize(2),mainPos(3),mainPos(4)+ctrlsize(2)]);
+            end
+        end
+        %==================================================================
+        %******************************************************************
+        function obj = set.LockLayout_(obj,val)
+            if ischar(val)
+                obj.LockLayout_=strcmpi(val,'on');
+            else
+                obj.LockLayout_=val;
+            end
+            
+            if obj.LockLayout_
+                set(obj.MenuLockLayout,'Checked','on');
+            else
+                set(obj.MenuLockLayout,'Checked','off');
+            end
+            
+        end
+        %==================================================================
+        %******************************************************************
+        function obj = set.DisplayGauge_(obj,val)
+            if ischar(val)
+                obj.DisplayGauge_=strcmpi(val,'on');
+            else
+                obj.DisplayGauge_=val;
+            end
+            
+            showGauge(obj);
+            
+        end
+        %==================================================================
+        %******************************************************************
         
+        function obj = set.ToolbarDisplay_(obj,val)
+            if ischar(val)
+                obj.ToolbarDisplay_=strcmpi(val,'on');
+            else
+                obj.ToolbarDisplay_=val;
+            end
+            
+            if obj.ToolbarDisplay_
+                set(obj.MenuToolbarDisplay,'Checked','on');
+                set(obj.Toolbar,'Visible','on');
+            else
+                set(obj.MenuToolbarDisplay,'Checked','off');
+                set(obj.Toolbar,'Visible','off');
+            end
+            
+        end
+        %==================================================================
         %******************************************************************
         function obj = set.MouseMode_(obj,val)
             obj.MouseMode_=val;
@@ -1916,29 +2022,46 @@ classdef BioSigPlot < hgsetget
             pos=get(obj.Fig,'position');
             cbs=obj.ControlBarSize;
             if pos(3)<=cbs(1)
-                pos(3)=cbs(1);
-                set(obj.Fig,'position',pos);
+                if obj.LockLayout
+                    pos(3)=cbs(1);
+                end
             end
+            
+            set(obj.Fig,'position',pos);
+            
             ctrlsize=obj.ControlBarSize;
             
             posEvent=get(obj.EventPanel,'Position');
             
             adjustwidth=obj.AdjustWidth;
             
-            set(obj.Fig,'position',pos);
             
-            set(obj.EventPanel,'position',[0 ctrlsize(2) posEvent(3) pos(4)-ctrlsize(2)]);
-            set(obj.AdjustPanel,'position',[posEvent(3) ctrlsize(2) adjustwidth pos(4)-ctrlsize(2)]);
+            if obj.ControlPanelDisplay
+                set(obj.EventPanel,'position',[0 ctrlsize(2) posEvent(3) pos(4)-ctrlsize(2)]);
+                set(obj.AdjustPanel,'position',[posEvent(3) ctrlsize(2) adjustwidth pos(4)-ctrlsize(2)]);
+            else
+                set(obj.EventPanel,'position',[0 0 posEvent(3) pos(4)]);
+                set(obj.AdjustPanel,'position',[posEvent(3) 0 adjustwidth pos(4)]);
+            end
             
             if  ~isempty(obj.Evts_)&&obj.EventsWindowDisplay
                 set(obj.EventPanel,'Visible','on');
                 set(obj.AdjustPanel,'Visible','on');
-                set(obj.MainPanel,'position',[posEvent(3)+adjustwidth ctrlsize(2) pos(3)-posEvent(3)-adjustwidth pos(4)-ctrlsize(2)]);
+                if obj.ControlPanelDisplay
+                    set(obj.MainPanel,'position',[posEvent(3)+adjustwidth ctrlsize(2) pos(3)-posEvent(3)-adjustwidth pos(4)-ctrlsize(2)]);
+                else
+                    set(obj.MainPanel,'position',[posEvent(3)+adjustwidth 0 pos(3)-posEvent(3)-adjustwidth pos(4)]);
+                end
             else
                 set(obj.EventPanel,'Visible','off');
                 set(obj.AdjustPanel,'Visible','off');
-                set(obj.MainPanel,'position',[0 ctrlsize(2) pos(3) pos(4)-ctrlsize(2)]);
+                if obj.ControlPanelDisplay
+                    set(obj.MainPanel,'position',[0 ctrlsize(2) pos(3) pos(4)-ctrlsize(2)]);
+                else
+                    set(obj.MainPanel,'position',[0 0 pos(3) pos(4)]);
+                end
             end
+
             set(obj.ControlPanel,'position',[0 0 pos(3) ctrlsize(2)]);
         end
         
@@ -2102,7 +2225,7 @@ classdef BioSigPlot < hgsetget
         d=preprocessedAllData(obj,n,chan,selection)
         ChangeTime(obj,src)
         redrawChangeTime(obj)
-        showGauge(obj,src)
+        showGauge(obj)
         maskChannel(obj,src)
         MnuChanGain(obj,src)
         ImportMontage(obj)

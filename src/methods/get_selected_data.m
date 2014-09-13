@@ -1,10 +1,13 @@
-function [data,chanNames]=get_selected_data(obj)
+function [data,chanNames,dataset,channel,sample]=get_selected_data(obj)
 %This function returns the selected data and the corresponding channel
 %names
 dd=obj.DisplayedData;
 fs=obj.SRate;
 data=[];
 selection=[];
+dataset=[];
+channel=[];
+sample=[];
 
 if ~isempty(obj.Selection)
     for i=1:size(obj.Selection,2)
@@ -22,13 +25,16 @@ for i=1:length(dd)
         chan=1:obj.MontageChanNumber(dd(i));
     else
         chan=obj.ChanSelect2Edit{dd(i)};
+        chan=sort(chan);
     end
     d=obj.PreprocData{dd(i)}(selection,chan);
-    
+    dataset=cat(2,dataset,dd(i)*ones(1,size(d,2)));
+    channel=cat(2,channel,reshape(chan,1,length(chan)));
+    sample=cat(2,sample,reshape(selection,length(selection),1)*ones(1,length(chan)));
     data=cat(2,data,d);
+    
     chanNames=cat(2,chanNames,reshape(obj.MontageChanNames{dd(i)}(chan),length(chan),1));
 end
-
 
 end
 
