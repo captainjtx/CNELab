@@ -38,13 +38,12 @@ for i=1:length(cds)
     data{i}=cds{i}.Data.Data;
     fnames{i}=cds{i}.Data.FileName;
 end
-bsp=BioSigPlot(data,'DataFileNames',fnames);
+
 %==========================================================================
 if isempty(fs)||(fs==0)
     fs=256;
 end
 
-bsp.SRate=fs;
 %==========================================================================
 %**************************************************************************
 ChanNames=cell(1,length(cds));
@@ -55,7 +54,41 @@ for i=1:length(cds)
         ChanNames{i}=[];
     end
 end
-bsp.ChanNames=ChanNames;
+%==========================================================================
+%**************************************************************************
+VideoStartTime=0;
+VideoTimeFrame=[];
+
+for i=1:length(cds)
+    if ~isempty(cds{i}.Data.Video.StartTime)
+        VideoStartTime=cds{i}.Data.Video.StartTime;
+    end
+    
+    if ~isempty(cds{i}.Data.Video.TimeFrame)
+        VideoTimeFrame=cds{i}.Data.Video.TimeFrame;
+    end
+end
+
+%==========================================================================
+%**************************************************************************
+Units=cell(length(cds),1);
+for i=1:length(cds)
+    if iscell(cds{i}.Data.Units)
+        if length(cds{i}.Data.Units)==size(cds{i}.Data.Data,2)
+            Units{i}=cds{i}.Data.Units;
+        end
+    elseif ischar(cds{i}.Data.Units)
+        Units{i}=cell(1,size(cds{i}.Data.Data,2));
+        [Units{i}{:}]=deal(cds{i}.Data.Units);
+    end
+end
+%==========================================================================
+bsp=BioSigPlot(data,'DataFileNames',fnames,...
+                    'SRate',fs,...
+                    'ChanNames',ChanNames,...
+                    'VideoStartTime',VideoStartTime,...
+                    'VideoTimeFrame',VideoTimeFrame,...
+                    'Units',Units);
 
 %==========================================================================
 %**************************************************************************
@@ -108,39 +141,6 @@ for i=1:length(cds)
 end
 
 bsp.Evts=evts;
-%==========================================================================
-%**************************************************************************
-VideoStartTime=0;
-VideoTimeFrame=[];
-
-for i=1:length(cds)
-    if ~isempty(cds{i}.Data.Video.StartTime)
-        VideoStartTime=cds{i}.Data.Video.StartTime;
-    end
-    
-    if ~isempty(cds{i}.Data.Video.TimeFrame)
-        VideoTimeFrame=cds{i}.Data.Video.TimeFrame;
-    end
-end
-
-bsp.VideoStartTime=VideoStartTime;
-bsp.VideoTimeFrame=VideoTimeFrame;
-%==========================================================================
-%**************************************************************************
-Units=cell(length(cds),1);
-for i=1:length(cds)
-    if iscell(cds{i}.Data.Units)
-        if length(cds{i}.Data.Units)==size(cds{i}.Data.Data,2)
-            Units{i}=cds{i}.Data.Units;
-        end
-    elseif ischar(cds{i}.Data.Units)
-        Units{i}=cell(1,size(cds{i}.Data.Data,2));
-        [Units{i}{:}]=deal(cds{i}.Data.Units);
-    end
-end
-
-bsp.Units=Units;
-
 %==========================================================================
 assignin('base','bsp',bsp);
 end
