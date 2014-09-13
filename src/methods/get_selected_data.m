@@ -18,7 +18,7 @@ if ~isempty(obj.Selection)
 else
     selection=1:size(obj.Data{1},1);
 end
-
+sample=selection;
 chanNames=[];
 for i=1:length(dd)
     if ~obj.IsChannelSelected
@@ -30,7 +30,6 @@ for i=1:length(dd)
     d=obj.PreprocData{dd(i)}(selection,chan);
     dataset=cat(2,dataset,dd(i)*ones(1,size(d,2)));
     channel=cat(2,channel,reshape(chan,1,length(chan)));
-    sample=cat(2,sample,reshape(selection,length(selection),1)*ones(1,length(chan)));
     data=cat(2,data,d);
     
     chanNames=cat(2,chanNames,reshape(obj.MontageChanNames{dd(i)}(chan),length(chan),1));

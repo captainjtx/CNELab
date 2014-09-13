@@ -44,7 +44,7 @@ end
 function spf_selected_data(obj,dataset,channel,sample)
 fdata=obj.SPFObj.PreprocData{3};
 for i=1:size(fdata,2)
-    obj.PreprocData{dataset(i)}(sample(:,i),channel(i))=fdata(:,i);
+    obj.PreprocData{dataset(i)}(sample,channel(i))=fdata(:,i);
 end
 
 obj.redrawChangeTime;
