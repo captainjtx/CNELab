@@ -14,6 +14,10 @@ if isempty(obj.ChanNames_)
     [obj.ChanNames_{:}]=deal([]);
 end
 
+if obj.DataNumber==1&&~iscell(obj.ChanNames_{1})
+    obj.ChanNames_{1}=obj.ChanNames_;
+end
+
 for i=1:obj.DataNumber
     if isempty(obj.ChanNames_{i})
         obj.ChanNames_{i}=num2cell(1:size(obj.Data{i},2));

@@ -89,9 +89,10 @@ bsp=BioSigPlot(data,'DataFileNames',fnames,...
                     'VideoStartTime',VideoStartTime,...
                     'VideoTimeFrame',VideoTimeFrame,...
                     'Units',Units);
-
+set(bsp.Fig,'Visible','off');
 %==========================================================================
 %**************************************************************************
+
 startTime=0;
 for i=1:length(cds)
     if ~isempty(cds{i}.Data.TimeStamps)
@@ -143,5 +144,6 @@ end
 bsp.Evts=evts;
 %==========================================================================
 assignin('base','bsp',bsp);
+set(bsp.Fig,'Visible','on')
 end
 
