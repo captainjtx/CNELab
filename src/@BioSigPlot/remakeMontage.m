@@ -14,7 +14,7 @@ if isempty(obj.ChanNames_)
     [obj.ChanNames_{:}]=deal([]);
 end
 
-if obj.DataNumber==1&&~iscell(obj.ChanNames_{1})
+if obj.DataNumber==1&&~iscell(obj.ChanNames_{1})&&~isempty(obj.ChanNames_{1})
     obj.ChanNames_{1}=obj.ChanNames_;
 end
 
@@ -25,10 +25,14 @@ for i=1:obj.DataNumber
         obj.ChanOrderMat{i}=eye(obj.ChanNumber(i));
     elseif ~isempty(obj.Montage{i})
         
-        if all(ismember(obj.ChanNames_{i},obj.Montage_{i}(1).channames))
+        if length(obj.ChanNames_{i})==length(obj.Montage_{i}(1).channames)
+            obj.ChanOrderMat{i}=eye(obj.ChanNumber(i));
+            obj.Montage_{i}=struct('name','Raw','mat',obj.ChanOrderMat{i},'channames',obj.ChanNames_(i));
+        elseif all(ismember(obj.ChanNames_{i},obj.Montage_{i}(1).channames))
             
             obj.ChanOrderMat{i}=eye(obj.ChanNumber(i));
             p=zeros(1,size(obj.ChanOrderMat{i},1));
+            
             for j=1:size(obj.ChanOrderMat{i},1)
                 for k=1:length(obj.ChanNames_{i})
                     if strcmpi(obj.Montage_{i}(1).channames{j},obj.ChanNames_{i}{k})
@@ -40,9 +44,7 @@ for i=1:obj.DataNumber
             for j=1:length(obj.Montage_{i})
                 obj.Montage_{i}(j).mat=obj.Montage_{i}(j).mat*obj.ChanOrderMat{i};
             end
-        elseif length(obj.ChanNames_{i})==length(obj.Montage_{i}(1).channames)
-            obj.ChanOrderMat{i}=eye(obj.ChanNumber(i));
-            obj.Montage_{i}=struct('name','Raw','mat',obj.ChanOrderMat{i},'channames',obj.ChanNames_(i));
+            
         end
     end
     if isempty(obj.Montage{i})

@@ -45,15 +45,16 @@ for i=1:size(d,2)
         fn2=obj.FilterNotch2{n}(i);
         
         fcum=obj.FilterCustomIndex{n}(i);
-        
-        if fl==0||isempty(fl)||isnan(fl)
+        b=[];
+        a=[];
+        if fl==0||isempty(fl)||isnan(fl)||isinf(fl)
             if fh~=0
                 if fh<(fs/2)
                     [b,a]=butter(order,fh/(fs/2),'low');
                 end
             end
         else
-            if fh==0||isempty(fh)||isnan(fh)
+            if fh==0||isempty(fh)||isnan(fh)||isinf(fh)
                 [b,a]=butter(order,fl/(fs/2),'high');
             else
                 if fl<fh
@@ -64,7 +65,7 @@ for i=1:size(d,2)
             end
         end
         
-        if exist('b','var')&&exist('a','var')
+        if ~isempty(b)||~isempty(a)
             d(:,i)=filter_symmetric(b,a,d(:,i),ext,phs,ftyp);
         end
         

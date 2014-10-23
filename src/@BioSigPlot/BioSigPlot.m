@@ -161,7 +161,7 @@ classdef BioSigPlot < hgsetget
     end
     properties (Dependent,SetObservable)      %Public properties Requiring a redraw and that can be defined at the beginning
         Version
-        DataFileNames
+        Title
         Config                  %Default config file [def: defaultconfig] contains all default values
         SRate                   %Sampling rate
         WinLength               %Time length of windows
@@ -243,7 +243,7 @@ classdef BioSigPlot < hgsetget
     end
     properties (Access=protected,Hidden)%Storage of public properties
         Version_
-        DataFileNames_
+        Title_
         Config_
         SRate_
         WinLength_
@@ -470,7 +470,7 @@ classdef BioSigPlot < hgsetget
         
         %*****************************************************************
         function varInitial(obj,g)
-            obj.DataFileNames=cell(1,obj.DataNumber);
+            obj.Title=cell(1,obj.DataNumber);
             obj.ResizeMode=false;
             obj.UponAdjustPanel=false;
             
@@ -623,7 +623,7 @@ classdef BioSigPlot < hgsetget
             %Rearrangement: make sure there is no conflict on the order of
             %properties. Constraint config must be before all and Colors
             %must be before *ModeColors
-            keylist={'DataFileNames','Config','SRate','WinLength','Gain','DataView','Montage',...
+            keylist={'Title','Config','SRate','WinLength','Gain','DataView','Montage',...
                 'MontageRef','Evts','Time','FirstDispChans','DispChans','TimeUnit',...
                 'Colors','Filtering','FilterLow','FilterHigh',...
                 'FilterNotch1','FilterNotch2','FilterCustomIndex','NormalModeColor',...
@@ -715,7 +715,7 @@ classdef BioSigPlot < hgsetget
                         'EventDefaultColors','EventsWindowDisplay','TriggerEventsFcn',...
                         'TriggerEventDefaultColor','MouseMode','STFTWindowLength',...
                         'STFTOverlap','STFTScaleLow','STFTScaleHigh','STFTFreqLow',...
-                        'STFTFreqHigh','DataFileNames','Version','PSDWindowLength',...
+                        'STFTFreqHigh','Title','Version','PSDWindowLength',...
                         'PSDOverlap','PSDFreqLow','PSDFreqHigh','ControlPanelDisplay',...
                         'LockLayout','ToolbarDisplay','DisplayGauge'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
@@ -766,8 +766,8 @@ classdef BioSigPlot < hgsetget
         function obj = set.Version(obj,val), set(obj,'Version',val); end
         function val = get.Version(obj),     val=obj.Version_; end
         
-        function obj = set.DataFileNames(obj,val), set(obj,'DataFileNames',val); end
-        function val = get.DataFileNames(obj), val=obj.DataFileNames_; end
+        function obj = set.Title(obj,val), set(obj,'Title',val); end
+        function val = get.Title(obj), val=obj.Title_; end
         function obj = set.Config(obj,val), set(obj,'Config',val); end 
         function val = get.Config(obj), val=obj.Config_; end
         function obj = set.SRate(obj,val), set(obj,'SRate',val); end
@@ -967,7 +967,7 @@ classdef BioSigPlot < hgsetget
         function val = get.DataNumber(obj)
             val=length(obj.Data);
         end
-        
+       
         %******************************************************************
         function val = get.ChanNumber(obj)
             l=cell2mat(cellfun(@size,obj.Data,'UniformOutput',false)');
@@ -1041,7 +1041,13 @@ classdef BioSigPlot < hgsetget
             end
             obj.Position=def.Position; %#ok<*MCSUP>
         end
-        
+        function obj = set.Title_(obj,val)
+            if ~iscell(val)
+                val={val};
+            end
+            
+            obj.Title_=val;
+        end
         %******************************************************************
         function obj = set.Colors_(obj,val)
             obj.Colors_=val;
@@ -1273,8 +1279,8 @@ classdef BioSigPlot < hgsetget
             obj.DataView_=val;
             
             if ~isempty(regexp(val,'DAT','ONCE'))
-                if ~isempty(obj.DataFileNames{obj.DisplayedData})
-                    set(obj.Fig,'Name',[obj.DataFileNames{obj.DisplayedData},' -- ',obj.Version]);
+                if ~isempty(obj.Title{obj.DisplayedData})
+                    set(obj.Fig,'Name',[obj.Title{obj.DisplayedData},' -- ',obj.Version]);
                 end
             else
                 set(obj.Fig,'Name',obj.Version);

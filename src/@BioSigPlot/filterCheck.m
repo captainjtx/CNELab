@@ -3,9 +3,17 @@ function filterCheck(obj)
 %do not require recalculate and redraw
 obj.Filtering_=obj.applyPanelVal(obj.Filtering_,get(obj.ChkFilter,'Value'));
 
-obj.FilterLow_=obj.applyPanelVal(obj.FilterLow_,str2double(get(obj.EdtFilterLow,'String')));
+val=str2double(get(obj.EdtFilterLow,'String'));
+if isnan(val)
+    val=-inf;
+end
+obj.FilterLow_=obj.applyPanelVal(obj.FilterLow_,val);
 
-obj.FilterHigh_=obj.applyPanelVal(obj.FilterHigh_,str2double(get(obj.EdtFilterHigh,'String')));
+val=str2double(get(obj.EdtFilterHigh,'String'));
+if isnan(val)
+    val=inf;
+end
+obj.FilterHigh_=obj.applyPanelVal(obj.FilterHigh_,val);
 
 obj.FilterNotch1_=obj.applyPanelVal(obj.FilterNotch1_,str2double(get(obj.EdtFilterNotch1,'String')));
 
