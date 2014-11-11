@@ -78,5 +78,6 @@ Change the color of existed events in fast event
 Play the signal as sound
 
 Change scale in PSD
-
 % Remove High Pass filter bug (by empty the high pass filter value)
+
+Percect error check for example empty field of annotation
