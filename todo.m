@@ -81,3 +81,14 @@ Change scale in PSD
 % Remove High Pass filter bug (by empty the high pass filter value)
 
 Percect error check for example empty field of annotation
+
+One of three
+Tyr Java thread
+Try Maltab Parallel Computing toolbox 
+Use FFMpeg or OpenCV to play Video (In C++ So that we can compile into different environments)
+
+Add adjust bar between axes
+
+show time label bug when off and change time
+
+display channel label bug

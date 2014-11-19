@@ -1981,6 +1981,10 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         function ExportToFigure(obj)
             f=figure('Name','Mirror figure','Position',get(obj.Fig,'Position'));
+%             for i=1:length(obj.Axes)
+%                 set(obj.Axes(i),'YTick',[]);
+%                 set(obj.Axes(i),'XTick',[]);
+%             end
             copyobj(obj.Axes(:),f);
         end
         function ExportToWindow(obj)

@@ -81,7 +81,7 @@ else
         ylim=[obj.MontageChanNumber(n)+2-obj.YBorder_(1)-obj.FirstDispChans(n)-min(obj.DispChans(n),obj.MontageChanNumber(n))    obj.MontageChanNumber(n)+obj.YBorder_(2)-obj.FirstDispChans(n)+1];
     end
     cla(obj.Axes)
-    set(obj.Axes,'Ylim',ylim,'Ytick',0.5:1:Nchan+0.5,'TickLength',[.005 0]);
+    set(obj.Axes,'Ylim',ylim,'Ytick',0.5:1:Nchan+0.5,'YTickLabel',{},'TickLength',[.005 0]);
     
     i=str2double(obj.DataView(4));
     if ~isempty(obj.PreprocData)

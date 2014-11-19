@@ -18,7 +18,8 @@ if ~isempty(obj.Axes)
         h=findobj(axe,'-regexp','DisplayName','YGauge*');
         if ~isempty(h)
             for j=1:length(h)
-                set(h(j),'Visible',get(obj.MenuGauge,'checked'));
+                onoff=get(obj.MenuGauge,'checked');
+                set(h(j),'Visible',onoff);
             end
         end
     end

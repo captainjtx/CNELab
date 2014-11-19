@@ -19,7 +19,8 @@ for i=1:length(dd)
     h=findobj(axe,'-regexp','DisplayName','XTick*');
     if ~isempty(h)
         for j=1:length(h)
-            set(h(j),'Visible',get(obj.MenuTimeLabel,'checked'));
+            offon=get(obj.MenuTimeLabel,'checked');
+            set(h(j),'Visible',offon);
         end
     end
 end
