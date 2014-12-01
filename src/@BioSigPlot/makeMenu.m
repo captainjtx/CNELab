@@ -40,6 +40,7 @@ obj.MenuMask=uimenu(obj.MenuChannel,'Label','Mask','Callback',@(src,evt) maskCha
 obj.MenuClearMask=uimenu(obj.MenuChannel,'Label','UnMask','Callback',@(src,evt) maskChannel(obj,src));
 obj.MenuGain=uimenu(obj.MenuChannel,'Label','Gain','Callback',@(src,evt) MnuChanGain(obj,src));
 obj.MenuAutoScale=uimenu(obj.MenuChannel,'Label','Auto Scale','Callback',@(src,evt) ChangeGain(obj,src));
+obj.MenuDetrend=uimenu(obj.MenuChannel,'Label','Detrend','Callback',@(src,evt) DetrendData(obj,src));
 
 %First Order Menu---------------------------------------------------Montage
 obj.MenuMontage=uimenu(obj.Fig,'Label','Montage');

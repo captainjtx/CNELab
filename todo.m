@@ -92,3 +92,11 @@ Add adjust bar between axes
 show time label bug when off and change time
 
 display channel label bug
+
+detrend
+
+j+k navigation in separate data
+
+update the event color dynamically by changing the event name
+
+Search engine for event

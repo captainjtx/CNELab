@@ -99,6 +99,7 @@ classdef BioSigPlot < hgsetget
         MenuClearMask
         MenuGain
         MenuAutoScale
+        MenuDetrend
         
         MenuMontage
         MontageOptMenu

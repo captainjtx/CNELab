@@ -28,7 +28,24 @@ classdef SPFPlot < BioSigPlot
                 demix=SV;
                 weg=e;
             elseif strcmpi(method,'ica')
-                [icasig, A, W] = fastica(data','verbose', 'off', 'displayMode', 'off');
+                
+                prompt='Number of ICA:';
+                
+                title='ICA';
+                
+                
+                answer=inputdlg(prompt,title,1,{num2str(size(data,2))});
+                
+                if isempty(answer)
+%                     obj=[];
+                    return
+                end
+                tmp=str2double(answer{1});
+                if isempty(tmp)||isnan(tmp)
+                    tmp=size(data,2);
+                end
+                
+                [icasig, A, W] = fastica(data','verbose', 'off', 'displayMode', 'off','numOfIC', tmp);
                 reconData=data;
                 subspaceData=icasig';
                 
