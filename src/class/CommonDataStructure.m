@@ -93,6 +93,7 @@ classdef CommonDataStructure < handle
                     obj.assign(CommonDataStructure.readFromEDF(filename));
                     
             end
+            obj.Data.FileName=filename;
         end
         function export(obj)
             

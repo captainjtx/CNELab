@@ -21,11 +21,9 @@ for i=1:obj.DataNumber
         
         MontageOptMenu{i}(j)=h;
     end
-    
 end
 
 obj.MontageOptMenu=MontageOptMenu;
-
 end
 
 
