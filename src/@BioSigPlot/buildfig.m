@@ -26,6 +26,11 @@ makeControls(obj);
 obj.makeToolbar();
 obj.makeMenu();
 
+if isempty(regexp(computer,'WIN','ONCE'))
+    set(obj.MenuImportVideo,'Enable','off');
+    set(obj.TogVideo,'Enable','off');
+end
+
 obj.WinEvts=EventWindow(obj);
 
 obj.TFMapFig=figure('Name','TFMap','Visible','off','NumberTitle','off');
