@@ -42,8 +42,8 @@ classdef BioSigPlot < hgsetget
         BtnPCA
         BtnICA
         
-        BtnPlayBackward
-        BtnPlayForward
+        BtnPlaySlower
+        BtnPlayFaster
         TogPlay
         
         BtnGainIncrease
@@ -209,8 +209,8 @@ classdef BioSigPlot < hgsetget
         
         MouseMode               %the Mouse Mode :{'Pan'|'Measurer'}
         PlaySpeed               %Play speed
-        MainTimerPeriod         %Period of the Main timer
-        VideoTimerPeriod        %Period of the Video timer
+
+        VideoTimerPeriod        %Period of the Video 
         Montage                 %Path for a system file wich contains info on Montage
         AxesHeight              %Height ratio of Axes for Vertical Mode.
         YBorder                 %Vector of 2elements containing the space height between the last channel and the bottom and between the top and the first channel (Units: 'Gain' relative)
@@ -291,7 +291,6 @@ classdef BioSigPlot < hgsetget
         
         MouseMode_
         PlaySpeed_
-        MainTimerPeriod_
         VideoTimerPeriod_
         Montage_
         AxesHeight_
@@ -302,7 +301,7 @@ classdef BioSigPlot < hgsetget
         ChanSelect2Display_
         ChanSelect2Edit_
         
-        TaskFiles_
+        FileDir_
         VideoStartTime_
         VideoTimeFrame_
         
@@ -359,7 +358,6 @@ classdef BioSigPlot < hgsetget
         PSDFig
         IconPlay
         IconPause
-        VideoFig
     end
     
     properties
@@ -374,23 +372,17 @@ classdef BioSigPlot < hgsetget
         EditMode
         ResizeMode
         
-        TaskFiles
+        FileDir
         
-        VideoObj
-        AudioObj
+        KeepVideoFront
         
         VideoStartTime         %Start time of the first frame of the video
         VideoFile              %File path of video
-        VideoHandle
-        TotalVideoFrame
-        VideoFrame
-        VideoFrameInd
+        
         VideoTimeFrame
-        VideoTotalTime
         
         VideoLineTime
-        
-        MainTimer
+
         VideoTimer
         
         IsEvtsSaved
@@ -511,7 +503,6 @@ classdef BioSigPlot < hgsetget
             obj.ToolbarDisplay=true;
             obj.LockLayout=true;
             
-            obj.VideoHandle=[];
             obj.DisplayGauge=true;
             
             obj.ChanNames_=cell(1,obj.DataNumber);
@@ -534,11 +525,12 @@ classdef BioSigPlot < hgsetget
             save(fullfile(obj.CNELabDir,'/db/cfg/','defaultconfig.cfg'),'-struct','cfg');
         end
         function delete(obj)
-            % Delete the figure
-            %             if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
-            %                 delete(obj.WinVideo)
-            %             end
+%             Delete the figure
             saveConfig(obj);
+            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+                delete(obj.WinVideo)
+            end
+            
             if ~isempty(obj.Evts)&&~obj.IsEvtsSaved
                 default='yes';
                 choice=questdlg('There are changes in events, do you want to save them before exit?',...
@@ -553,11 +545,6 @@ classdef BioSigPlot < hgsetget
             
             if isa(obj.WinFastEvts,'FastEventWindow') && isvalid(obj.WinFastEvts)
                 delete(obj.WinFastEvts);
-            end
-            
-            h=obj.VideoFig;
-            if ishandle(h)
-                delete(h)
             end
             
             h = obj.Fig;
@@ -629,9 +616,9 @@ classdef BioSigPlot < hgsetget
                 'Colors','Filtering','FilterLow','FilterHigh',...
                 'FilterNotch1','FilterNotch2','FilterCustomIndex','NormalModeColor',...
                 'ChanNames','Units','XGrid','YGrid','Position','Version','MouseMode',...
-                'PlaySpeed','MainTimerPeriod','VideoTimerPeriod','AxesHeight',...
-                'YBorder','YGridInterval','Selection','TaskFiles','VideoStartTime',...
-                'VideoFile','VideoTimeFrame','VideoLineTime','MainTimer','VideoTimer',...
+                'PlaySpeed','VideoTimerPeriod','AxesHeight',...
+                'YBorder','YGridInterval','Selection','FileDir','VideoStartTime',...
+                'VideoFile','VideoTimeFrame','VideoLineTime','VideoTimer',...
                 'BadChannels','ChanSelect2Display','ChanSelect2Edit','EventsDisplay',...
                 'TriggerEventsDisplay','EventsWindowDisplay','ChanSelectColor',...
                 'AxesBackgroundColor','ChanColors','EventSelectColor','EventDefaultColors',...
@@ -659,8 +646,8 @@ classdef BioSigPlot < hgsetget
                         'TimeUnit','Colors','Filtering','FilterLow',...
                         'FilterHigh','FilterNotch1','FilterNotch2','FilterCustomIndex'...
                         'NormalModeColor','ChanNames','Units','XGrid','YGrid',...
-                        'AxesHeight','YBorder','YGridInterval','TaskFiles',...
-                        'VideoStartTime','MainTimerPeriod','VideoTimerPeriod',...
+                        'AxesHeight','YBorder','YGridInterval','FileDir',...
+                        'VideoStartTime','VideoTimerPeriod',...
                         'VideoTimeFrame','BadChannels','ChanSelect2Display',...
                         'AxesBackgroundColor','TriggerEventsFcn'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
@@ -830,8 +817,6 @@ classdef BioSigPlot < hgsetget
         function val = get.MouseMode(obj), val=obj.MouseMode_; end
         function obj = set.PlaySpeed(obj,val), set(obj,'PlaySpeed',val); end
         function val = get.PlaySpeed(obj), val=obj.PlaySpeed_; end
-        function obj = set.MainTimerPeriod(obj,val), set(obj,'MainTimerPeriod',val); end
-        function val = get.MainTimerPeriod(obj), val=obj.MainTimerPeriod_; end
         
         function obj = set.VideoTimerPeriod(obj,val), set(obj,'VideoTimerPeriod',val); end
         function val = get.VideoTimerPeriod(obj), val=obj.VideoTimerPeriod_; end
@@ -853,11 +838,14 @@ classdef BioSigPlot < hgsetget
         function obj = set.EventDisplayIndex(obj,val), obj.EventDisplayIndex=val; end
         function val = get.EventDisplayIndex(obj), val=obj.EventDisplayIndex; end
         
-        function obj = set.TaskFiles(obj,val), set(obj,'TaskFiles',val); end
-        function val = get.TaskFiles(obj), val=obj.TaskFiles_; end
+        function obj = set.FileDir(obj,val), set(obj,'FileDir',val); end
+        function val = get.FileDir(obj), val=obj.FileDir_; end
         
         function obj = set.VideoStartTime(obj,val), set(obj,'VideoStartTime',val);end
         function val = get.VideoStartTime(obj), val=obj.VideoStartTime_; end
+        
+        function obj = set.VideoTimeFrame(obj,val), set(obj,'VideoTimeFrame',val);end
+        function val = get.VideoTimeFrame(obj), val=obj.VideoTimeFrame_; end
         
         function obj = set.BadChannels(obj,val), set(obj,'BadChannels',val); end
         function val = get.BadChannels(obj), val=obj.BadChannels_; end
@@ -1228,6 +1216,9 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         function obj = set.Time_(obj,val)
             %Save the current page's event
+            if isempty(val)
+                return
+            end
             if ~isempty(obj.EventDisplayIndex)&&~isempty(obj.EventTexts)
                 EventList=obj.Evts_;
                 flag=false;
@@ -1252,15 +1243,7 @@ classdef BioSigPlot < hgsetget
             
             obj.Time_=min(max(val,0),m);
             set(obj.EdtTime,'String',obj.Time_);
-            
             obj.VideoLineTime=obj.Time;
-            if ~isempty(obj.VideoTimeFrame)
-                ind=dsearchn(obj.VideoTimeFrame(:,1),obj.VideoLineTime-obj.VideoStartTime);
-                if ~isempty(obj.VideoHandle)
-                    obj.VideoFrameInd=ind(1);
-                    obj.VideoFrame=obj.VideoTimeFrame(ind(1),2);
-                end
-            end
             
         end
         
@@ -1490,11 +1473,6 @@ classdef BioSigPlot < hgsetget
             
         end
         %==================================================================
-        function obj =set.MainTimerPeriod_(obj,val)
-            obj.MainTimerPeriod_=val;
-            set(obj.MainTimer,'period',val);
-        end
-        %==================================================================
         function obj =set.VideoTimerPeriod_(obj,val)
             obj.VideoTimerPeriod_=val;
             set(obj.VideoTimer,'period',val);
@@ -1628,16 +1606,6 @@ classdef BioSigPlot < hgsetget
                 if ishandle(obj.LineVideo(i))
                     set(obj.LineVideo(i),'XData',[t t]);
                 end
-            end
-        end
-        %==================================================================
-        %******************************************************************
-        function obj=set.VideoFrame(obj,val)
-            
-            obj.VideoFrame=min(max(1,val),obj.TotalVideoFrame);
-            if ~isempty(obj.VideoHandle)&&ishandle(obj.VideoHandle)&&strcmpi(get(obj.VideoFig,'Visible'),'on')
-                set(obj.VideoHandle,'CData',obj.VideoObj.frames(obj.VideoFrame).cdata);
-                drawnow
             end
         end
         %==================================================================
@@ -1792,91 +1760,98 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         %********************Interface Action Methods *********************
         %******************************************************************
-        function UpdateVideo(obj)
+        function SynchDataWithVideo(obj)
             
-            if ~isempty(obj.VideoFile)
-                videoFrameInd=max(1,min(round(obj.VideoFrameInd+obj.PlaySpeed),size(obj.VideoTimeFrame,1)));
-                videoTimeFrame=obj.VideoTimeFrame;
-                
-                videoFrame=videoTimeFrame(videoFrameInd,2);
-                if videoFrame~=obj.VideoFrame
-                    obj.VideoFrame=videoFrame;
-                    %                 set(obj,'VideoFrame',videoFrame);
-                    obj.VideoFrameInd=videoFrameInd;
+            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+                t=obj.WinVideo.CurrentPosition+obj.VideoStartTime;
+            else
+                t=obj.VideoLineTime+obj.VideoTimerPeriod*obj.PlaySpeed;
+            end
+            %stop if exceeds data length
+            if abs(t)>obj.DataTime
+                PausePlay(obj);
+                error('Data time exceeds video length');
+            end
+            if t<0
+                obj.WinVideo.CurrentPosition=-obj.VideoStartTime;
+                t=0;
+            end
+            
+            obj.VideoLineTime=t;
+            
+            if (t-obj.Time)>obj.WinLength
+                set(obj,'Time',t);
+            elseif t<obj.Time
+                set(obj,'Time',t)
+            end
+        end
+        
+        function SynchVideoState(obj)
+            if ~isempty(regexp(obj.WinVideo.Actx.status,'Playing','ONCE'))
+                set(obj.TogPlay,'CData',obj.IconPause,'ClickedCallback',@(src,evt) PausePlay(obj),'State','on');
+                if strcmpi(obj.VideoTimer.Running,'off')
+                    start(obj.VideoTimer);
+                end
+            else
+                set(obj.TogPlay,'CData',obj.IconPlay,'ClickedCallback',@(src,evt) StartPlay(obj),'State','off');
+                if strcmpi(obj.VideoTimer.Running,'on')
+                    stop(obj.VideoTimer);
                 end
             end
-        end
-        function StartPlay(obj)
             
+            obj.PlaySpeed=obj.WinVideo.PlaySpeed;
+        end
+        
+        function StartPlay(obj)     
             set(obj.TogPlay,'CData',obj.IconPause,'ClickedCallback',@(src,evt) PausePlay(obj),'State','on');
-            start(obj.MainTimer);
-            if ~isempty(obj.VideoFile)
+            if strcmpi(obj.VideoTimer.Running,'off')
                 start(obj.VideoTimer);
             end
-            
-            %             audioStart=(obj.VideoFrameInd-1)*obj.VideoTimerPeriod;
-            %             audioStart=round(audioStart*get(obj.MAudioPlayer,'SampleRate'));
-            %             play(obj.MAudioPlayer,audioStart);
+            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+                obj.WinVideo.Actx.controls.play;
+            end
         end
-        
         
         function PausePlay(obj)
-            % Stop Autoscrolling
-            %
-            % USAGE
-            % 	obj.StopPlay();
-            
             set(obj.TogPlay,'CData',obj.IconPlay,'ClickedCallback',@(src,evt) StartPlay(obj),'State','off');
-            
-            stop(obj.MainTimer);
-            
-            if ~isempty(obj.VideoFile)
+            if strcmpi(obj.VideoTimer.Running,'on')
                 stop(obj.VideoTimer);
             end
-            %             pause(obj.MAudioPlayer);
+            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+                obj.WinVideo.Actx.controls.pause;
+            end
         end
-        
-        function PlayForward(obj)
+        function StopPlay(obj)
+            set(obj.TogPlay,'CData',obj.IconPlay,'ClickedCallback',@(src,evt) StartPlay(obj),'State','off');
+            if strcmpi(obj.VideoTimer.Running,'on')
+                stop(obj.VideoTimer);
+            end
+%             obj.VideoLineTime=0;
+        end
+        function PlayFaster(obj)
             obj.PlaySpeed=obj.PlaySpeed+1;
             if obj.PlaySpeed==0
                 obj.PlaySpeed=1;
             end
+            
+            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+                obj.WinVideo.PlaySpeed=obj.PlaySpeed;
+            end
         end
         
-        function PlayBackward(obj)
-            obj.PlaySpeed=obj.PlaySpeed-1;
-            if obj.PlaySpeed==0
-                obj.PlaySpeed=-1;
+        function PlaySlower(obj)
+            obj.PlaySpeed=obj.PlaySpeed/2;
+            
+            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+                obj.WinVideo.PlaySpeed=obj.PlaySpeed;
             end
         end
         %==================================================================
         %******************************************************************
-        function PlayTime(obj)
-            if ~isempty(obj.VideoFile)
-                t=obj.VideoTimeFrame(obj.VideoFrameInd,1)+obj.VideoStartTime;
-                obj.VideoLineTime=t;
-            else
-                t=obj.VideoLineTime+obj.MainTimerPeriod*obj.PlaySpeed;
-                obj.VideoLineTime=t;
-            end
-            
-            m=(size(obj.Data{1},1)-1)/obj.SRate;
-            if strcmpi(get(obj.TogPlay,'State'),'on')
-                if t<0
-                    obj.PlaySpeed=1;
-                    obj.VideoLineTime=0;
-                    PausePlay(obj);
-                elseif t>m
-                    obj.PlaySpeed=-1;
-                    obj.VideoLineTime=m;
-                    PausePlay(obj);
-                end
-            end
-            
-            if (t-obj.Time)>obj.WinLength
-                set(obj,'Time',obj.Time+obj.WinLength);
-            elseif t<obj.Time
-                set(obj,'Time',obj.Time-obj.WinLength);
+        function WinVideoFcn(obj)
+            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+                %Bring Video Figure To The Front If Exists
+                figure(obj.WinVideo.Fig)
             end
         end
         %==================================================================
@@ -2001,18 +1976,6 @@ classdef BioSigPlot < hgsetget
             obj.WinFastEvts=FastEventWindow(obj,obj.FastEvts,obj.SelectedFastEvt);
             addlistener(obj.WinFastEvts,'FastEvtsChange',@(src,evt) set(obj,'FastEvts',obj.WinFastEvts.FastEvts));
             addlistener(obj.WinFastEvts,'SelectedFastEvtChange',@(src,evt) set(obj,'SelectedFastEvt',obj.WinFastEvts.SelectedFastEvt));
-        end
-        
-        %******************************************************************
-        function WinVideoFcn(obj,src)
-            
-            if ~ishandle(obj.VideoFig)
-                obj.VideoFig=figure('Name','Video','NumberTitle','off');
-                if ~isempty(obj.VideoObj)
-                    obj.VideoHandle=imagesc(obj.VideoObj.frames(obj.VideoFrame).cdata);
-                end
-            end
-            set(obj.VideoFig,'Visible',get(src,'state'));
         end
         %******************************************************************
         function s=ControlBarSize(obj) %#ok<MANU>

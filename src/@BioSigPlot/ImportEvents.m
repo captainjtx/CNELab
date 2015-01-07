@@ -15,7 +15,8 @@ end
 [FileName,FilePath]=uigetfile({'*.mat;*.evt','Event Files (*.mat;*.evt)';...
     '*.mat','Matlab Mat File (*.mat)';
     '*.evt','Event File (*.evt)'},...
-    'select your events file');
+    'select your events file',...
+    obj.FileDir);
 if FileName~=0
     Events=load(fullfile(FilePath,FileName),'-mat');
     

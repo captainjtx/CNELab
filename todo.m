@@ -100,3 +100,7 @@ j+k navigation in separate data
 update the event color dynamically by changing the event name
 
 Search engine for event
+
+Change into stream based processing (filtering/scrolling)
+
+Auto scan for video

@@ -1,9 +1,6 @@
 function cnelab()
-
 cds=[];
 while(1)
-    
-    
     tmp=CommonDataStructure.multiImport();
     if ~isempty(tmp)
         cds=[cds,tmp];
@@ -36,9 +33,10 @@ data=cell(1,length(cds));
 fnames=cell(1,length(cds));
 for i=1:length(cds)
     data{i}=cds{i}.Data.Data;
-    fnames{i}=cds{i}.Data.FileName;
+    
+    [pathstr,fnames{i},ext]=fileparts(cds{i}.Data.FileName);
 end
-
+[FileDir,name,ext] = fileparts(cds{1}.Data.FileName);
 %==========================================================================
 if isempty(fs)||(fs==0)
     fs=256;
@@ -88,7 +86,8 @@ bsp=BioSigPlot(data,'Title',fnames,...
                     'ChanNames',ChanNames,...
                     'VideoStartTime',VideoStartTime,...
                     'VideoTimeFrame',VideoTimeFrame,...
-                    'Units',Units);
+                    'Units',Units,...
+                    'FileDir',FileDir);
 set(bsp.Fig,'Visible','off');
 %==========================================================================
 %**************************************************************************

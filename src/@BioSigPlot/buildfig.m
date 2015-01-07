@@ -9,8 +9,7 @@ obj.Fig=figure('MenuBar','none','ToolBar','none','DockControls','off','NumberTit
 
 obj.PanObj=pan(obj.Fig);
 set(obj.PanObj,'Motion','vertical','ActionPostCallback',@(src,evts) ChangeSliders(obj,src,evts))
-obj.MainTimer = timer('TimerFcn',@(src ,evts) PlayTime(obj),'ExecutionMode','fixedRate','BusyMode','queue');
-obj.VideoTimer = timer('TimerFcn',@ (src,evts) UpdateVideo(obj),'ExecutionMode','fixedRate','BusyMode','queue');
+obj.VideoTimer = timer('TimerFcn',@ (src,evts) SynchDataWithVideo(obj),'ExecutionMode','fixedRate','BusyMode','queue');
 
 % Panel declaration
 
@@ -31,8 +30,6 @@ obj.WinEvts=EventWindow(obj);
 
 obj.TFMapFig=figure('Name','TFMap','Visible','off','NumberTitle','off');
 obj.PSDFig=figure('Name','Power Spectrum Density','Visible','off','NumberTitle','off');
-
-obj.VideoFig=figure('Name','Video','Visible','off','NumberTitle','off');
 
 end
 function makeEventPanel(obj)
