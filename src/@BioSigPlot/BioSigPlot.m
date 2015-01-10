@@ -1592,7 +1592,17 @@ classdef BioSigPlot < hgsetget
             obj.ChanSelect2Edit_=tmp;
             
         end
-        
+        %==================================================================
+        %******************************************************************
+        function obj=set.VideoTimeFrame_(obj,val)
+            xq=min(val(:,2)):max(val(:,2));
+            t=interp1(val(:,2),val(:,1),xq);
+            tmp=zeros(length(t),2);
+            tmp(:,1)=reshape(t,length(t),1);
+            tmp(:,2)=reshape(xq,length(xq),1);
+            
+            obj.VideoTimeFrame_=tmp;
+        end
         %==================================================================
         %******************************************************************
         function obj = set.VideoLineTime(obj,val)
@@ -1606,6 +1616,14 @@ classdef BioSigPlot < hgsetget
                 if ishandle(obj.LineVideo(i))
                     set(obj.LineVideo(i),'XData',[t t]);
                 end
+            end
+        end
+        %==================================================================
+        %******************************************************************
+        function obj=set.PlaySpeed_(obj,val)
+            obj.PlaySpeed_=val;
+            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+                obj.WinVideo.PlaySpeed=val;
             end
         end
         %==================================================================
@@ -1761,9 +1779,10 @@ classdef BioSigPlot < hgsetget
         %********************Interface Action Methods *********************
         %******************************************************************
         function SynchDataWithVideo(obj)
-            
             if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
-                t=obj.WinVideo.CurrentPosition+obj.VideoStartTime;
+                dp=ceil(size(obj.VideoTimeFrame,1)*obj.WinVideo.CurrentPositionRatio);
+                dp=max(1,dp);
+                t=obj.VideoTimeFrame(dp,1)+obj.VideoStartTime;
             else
                 t=obj.VideoLineTime+obj.VideoTimerPeriod*obj.PlaySpeed;
             end
@@ -1787,7 +1806,7 @@ classdef BioSigPlot < hgsetget
         end
         
         function SynchVideoState(obj)
-            if ~isempty(regexp(obj.WinVideo.Actx.status,'Playing','ONCE'))
+            if strcmpi(obj.WinVideo.Status,'Playing')
                 set(obj.TogPlay,'CData',obj.IconPause,'ClickedCallback',@(src,evt) PausePlay(obj),'State','on');
                 if strcmpi(obj.VideoTimer.Running,'off')
                     start(obj.VideoTimer);
@@ -1808,7 +1827,7 @@ classdef BioSigPlot < hgsetget
                 start(obj.VideoTimer);
             end
             if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
-                obj.WinVideo.Actx.controls.play;
+                obj.WinVideo.play;
             end
         end
         
@@ -1818,7 +1837,7 @@ classdef BioSigPlot < hgsetget
                 stop(obj.VideoTimer);
             end
             if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
-                obj.WinVideo.Actx.controls.pause;
+                obj.WinVideo.pause;
             end
         end
         function StopPlay(obj)
@@ -1833,18 +1852,10 @@ classdef BioSigPlot < hgsetget
             if obj.PlaySpeed==0
                 obj.PlaySpeed=1;
             end
-            
-            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
-                obj.WinVideo.PlaySpeed=obj.PlaySpeed;
-            end
         end
         
         function PlaySlower(obj)
             obj.PlaySpeed=obj.PlaySpeed/2;
-            
-            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
-                obj.WinVideo.PlaySpeed=obj.PlaySpeed;
-            end
         end
         %==================================================================
         %******************************************************************

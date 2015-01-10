@@ -67,6 +67,8 @@ for i=1:length(cds)
     end
 end
 
+%VideoTimeFrame Must Contain All Frame Information
+%BioSigPlot will internally interpolate uneven frame
 %==========================================================================
 %**************************************************************************
 Units=cell(length(cds),1);

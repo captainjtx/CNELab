@@ -4,50 +4,79 @@ classdef VideoWindow  < handle
         Fig
         Actx
         VideoLength
+        Status %Playing or Paused or Stopped
+        
+        ActxOpt %WMplayer or VLC
+        ActxName
+        
+        CurrentFrameNumber
+        FrameRate
+        TotalFrame
+        
     end
     properties(Dependent)
         PlaySpeed
         CurrentPosition
+        CurrentPositionRatio
     end
     methods
-        function obj=VideoWindow(file)
-            obj.File=file;
+        function obj=VideoWindow(file,varargin)
+            
+            if nargin==1
+                obj.ActxOpt='WMPlayer';
+            else
+                obj.ActxOpt=varargin{1};
+            end
+            
+            if strcmpi(obj.ActxOpt,'WMPlayer')
+                obj.ActxName='WMPlayer.OCX.7';
+            elseif strcmpi(obj.ActxOpt,'VLC')
+                obj.ActxName='VideoLAN.VLCPlugin.2';
+            end
+            
+            obj.File=['file://localhost/' file];
             
             %Create Matlab Figure Container
-            obj.Fig=figure('MenuBar','none','position',[200 100 400 300],...
-                           'NumberTitle','off','Name','Video (Windows Media Player)',...
-                           'CloseRequestFcn',@(src,evts) delete(obj),...
-                           'ResizeFcn',@(src,evts) resize(obj),...
-                           'ButtonDownFcn',@(src,evts) keyDown_Callback(obj));
+            obj.Fig=figure('MenuBar','none','position',[200 100 400 400],...
+                'NumberTitle','off','Name',obj.ActxOpt,...
+                'CloseRequestFcn',@(src,evts) delete(obj),...
+                'ResizeFcn',@(src,evts) resize(obj),...
+                'ButtonDownFcn',@(src,evts) keyDown_Callback(obj));
             try
-                %Create Media Player ActiveX Controller
-                obj.Actx = actxcontrol('WMPlayer.OCX','parent',obj.Fig,...
-                                       'position',[0 0 400 300]);
+                %Create ActiveX Controller
+                obj.Actx=actxcontrol(obj.ActxName,'parent',obj.Fig,...
+                    'position',[0 0 400 400]);
             catch %#ok<CTCH>
-                error('Error during ActiveX openning. The video feature windows media player plugin')
+                error('Error during ActiveX openning.')
             end
             
             %Add Matlab Callback Functions To Events
-            registerevent(obj.Actx,{'PlayStateChange',@ obj.playStateChange_Callback;...
-                                    'KeyDown',@ obj.keyDown_Callback;...
-                                    'Click',@ obj.click_Callback;...
-                                    'PositionChange',@ obj.positionChange_Callback});
-       
-            obj.Actx.playlistCollection.newPlaylist('SynchVideo');
-            
-            newvideo=obj.Actx.newMedia(obj.File);
-            obj.Actx.currentPlaylist.appendItem(newvideo);
-            
-            obj.VideoLength=obj.Actx.currentMedia.duration;
-
-%             obj.Actx.controls.play;
+            if strcmpi(obj.ActxOpt,'WMPlayer')
+                registerevent(obj.Actx,{'PlayStateChange',@ obj.playStateChange_Callback;...
+                    'KeyDown',@ obj.keyDown_Callback;...
+                    'Click',@ obj.click_Callback;...
+                    'PositionChange',@ obj.positionChange_Callback});
+                obj.Actx.playlistCollection.newPlaylist('SynchVideo');
+                
+                newvideo=obj.Actx.newMedia(obj.File);
+                obj.Actx.currentPlaylist.appendItem(newvideo);
+            elseif strcmpi(obj.ActxOpt,'VLC')
+                obj.Actx.registerevent({'MediaPlayerPlaying', @obj.playStateChange_Callback;...
+                    'MediaPlayerPaused', @obj.playStateChange_Callback;...
+                    'MediaPlayerStopped',@obj.playStateChange_Callback;...
+                    'MediaPlayerForward', @obj.playStateChange_Callback;...
+                    'MediaPlayerBackward', @obj.playStateChange_Callback;...
+                    'MediaPlayerPositionChanged', @obj.positionChange_Callback;...
+                    'MediaPlayerTimeChanged', @obj.positionChange_Callback});
+                obj.Actx.playlist.add(obj.File);
+            end
         end
         
         function delete(obj)
             % Delete the figure
-
+            
             h = obj.Fig;
-            obj.Actx.controls.stop();
+            obj.stop;
             delete(obj.Actx);
             pause(0.1);
             
@@ -70,41 +99,157 @@ classdef VideoWindow  < handle
         
         %Events Callback Functions=========================================
         function playStateChange_Callback(obj,varargin)
-%             disp('play state change'); 
+            %             disp('play state change');
             notify(obj,'VideoChangeState');
         end
         
         function keyDown_Callback(obj,varargin)
-%             disp('key down');
+            %             disp('key down');
         end
         
         function click_Callback(obj,varargin)
-%             disp('click');
-            if ~isempty(regexp(obj.Actx.status,'Paused','ONCE'))
-                obj.Actx.controls.play;
-            elseif ~isempty(regexp(obj.Actx.status,'Playing','ONCE'))
-                obj.Actx.controls.pause;
+            %             disp('click');
+            if strcmpi(obj.Status,'Paused')
+                obj.Actx.play;
+            elseif strcmpi(obj.Status,'Playing')
+                obj.Actx.pause;
             end
         end
         
         function positionChange_Callback(obj,varargin)
-%             disp('position change')
+            %             disp('position change')
             notify(obj,'VideoChangeTime')
         end
         %------------------------------------------------------------------
-        
+        function val=get.TotalFrame(obj)
+            if strcmpi(obj.ActxOpt,'WMPlayer')
+                val=[];
+            elseif strcmpi(obj.ActxOpt,'VLC')
+                val=floor(obj.VideoLength*obj.FrameRate);
+            end
+        end
+        function val=get.CurrentFrameNumber(obj)
+            if strcmpi(obj.ActxOpt,'WMPlayer')
+                val=[];
+            elseif strcmpi(obj.ActxOpt,'VLC')
+                val=max(1,floor(obj.CurrentPosition*obj.FrameRate));
+            end
+        end
+        function val=get.FrameRate(obj)
+            if strcmpi(obj.ActxOpt,'WMPlayer')
+                val=[];
+            elseif strcmpi(obj.ActxOpt,'VLC')
+                val=obj.Actx.input.fps;
+            end
+        end
+        function val=get.VideoLength(obj)
+            if strcmpi(obj.ActxOpt,'WMPlayer')
+                val=obj.Actx.currentMedia.duration;
+            elseif strcmpi(obj.ActxOpt,'VLC')
+                val=double(obj.Actx.input.length)/1000;
+            end
+        end
         function val=get.CurrentPosition(obj)
-            val=obj.Actx.controls.currentPosition;
+            if strcmpi(obj.ActxOpt,'WMPlayer')
+                val=obj.Actx.controls.currentPosition;
+            elseif strcmpi(obj.ActxOpt,'VLC')
+                val=double(obj.Actx.input.time)/1000;
+%                val=obj.Actx.input.position*obj.VideoLength;
+            end
         end
         function set.CurrentPosition(obj,val)
-            obj.Actx.controls.currentPosition=val;
+            if strcmpi(obj.ActxOpt,'WMPlayer')
+                obj.Actx.controls.currentPosition=val;
+            elseif strcmpi(obj.ActxOpt,'VLC')
+            end
         end
         
+       function val=get.CurrentPositionRatio(obj)
+            if strcmpi(obj.ActxOpt,'WMPlayer')
+                val=[];
+            elseif strcmpi(obj.ActxOpt,'VLC')
+                val=obj.Actx.input.position;
+            end
+        end
+        
+        function set.CurrentPositionRatio(obj,val)
+            val=max(0,min(1,val));
+            if strcmpi(obj.ActxOpt,'WMPlayer')
+                
+            elseif strcmpi(obj.ActxOpt,'VLC')
+                obj.Actx.input.position=val;
+            end
+        end
         function val=get.PlaySpeed(obj)
-            val=obj.Actx.settings.rate;
+            if strcmpi(obj.ActxOpt,'WMPlayer')
+                val=obj.Actx.settings.rate;
+            elseif strcmpi(obj.ActxOpt,'VLC')
+                val=obj.Actx.input.rate;
+            end
         end
         function set.PlaySpeed(obj,val)
-            obj.Actx.settings.rate=val;
+            if strcmpi(obj.ActxOpt,'WMPlayer')
+                obj.Actx.settings.rate=val;
+            elseif strcmpi(obj.ActxOpt,'VLC')
+                obj.Actx.input.rate=val;
+            end
+        end
+       
+        function val=get.Status(obj)
+            if strcmpi(obj.ActxOpt,'WMPlayer')
+                if ~isempty(regexp(obj.Actx.status,'Playing','ONCE'))
+                    val='Playing';
+                elseif ~isempty(regexp(obj.Actx.status,'Paused','ONCE'))
+                    val='Paused';
+                elseif ~isempty(regexp(obj.Actx.status,'Stopped','ONCE'))
+                    val='Stopped';
+                else
+                    val=obj.Actx.status;
+                end
+            elseif strcmpi(obj.ActxOpt,'VLC')
+                switch (obj.Actx.input.state)
+                    case 0
+                        val='Idle';
+                    case 1
+                        val='Openning';
+                    case 2
+                        val='Buffering';
+                    case 3
+                        val='Playing';
+                    case 4
+                        val='Paused';
+                    case 5
+                        val='Stopped';
+                    case 6
+                        val='Ended';
+                    case 7
+                        val='Error';
+                end
+                        
+            end
+        end
+        
+        function play(obj)
+            if strcmpi(obj.ActxOpt,'WMPlayer')
+                obj.Actx.controls.play
+            elseif strcmpi(obj.ActxOpt,'VLC')
+                obj.Actx.playlist.play
+            end
+        end
+        
+        function pause(obj)
+            if strcmpi(obj.ActxOpt,'WMPlayer')
+                obj.Actx.controls.pause
+            elseif strcmpi(obj.ActxOpt,'VLC')
+                obj.Actx.playlist.pause
+            end
+        end
+        function stop(obj)
+            if strcmpi(obj.ActxOpt,'WMPlayer')
+                obj.Actx.controls.stop
+            elseif strcmpi(obj.ActxOpt,'VLC')
+                obj.Actx.playlist.stop
+            end
         end
     end
     events
