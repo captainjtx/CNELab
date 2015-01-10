@@ -302,6 +302,7 @@ classdef BioSigPlot < hgsetget
         ChanSelect2Edit_
         
         FileDir_
+        VideoActxOpt_
         VideoStartTime_
         VideoTimeFrame_
         
@@ -373,9 +374,8 @@ classdef BioSigPlot < hgsetget
         ResizeMode
         
         FileDir
-        
-        KeepVideoFront
-        
+    
+        VideoActxOpt           %WMP or VLC
         VideoStartTime         %Start time of the first frame of the video
         VideoFile              %File path of video
         
@@ -618,7 +618,7 @@ classdef BioSigPlot < hgsetget
                 'ChanNames','Units','XGrid','YGrid','Position','Version','MouseMode',...
                 'PlaySpeed','VideoTimerPeriod','AxesHeight',...
                 'YBorder','YGridInterval','Selection','FileDir','VideoStartTime',...
-                'VideoFile','VideoTimeFrame','VideoLineTime','VideoTimer',...
+                'VideoFile','VideoTimeFrame','VideoLineTime','VideoTimer','VideoActxOpt',...
                 'BadChannels','ChanSelect2Display','ChanSelect2Edit','EventsDisplay',...
                 'TriggerEventsDisplay','EventsWindowDisplay','ChanSelectColor',...
                 'AxesBackgroundColor','ChanColors','EventSelectColor','EventDefaultColors',...
@@ -647,7 +647,7 @@ classdef BioSigPlot < hgsetget
                         'FilterHigh','FilterNotch1','FilterNotch2','FilterCustomIndex'...
                         'NormalModeColor','ChanNames','Units','XGrid','YGrid',...
                         'AxesHeight','YBorder','YGridInterval','FileDir',...
-                        'VideoStartTime','VideoTimerPeriod',...
+                        'VideoStartTime','VideoTimerPeriod','VideoActxOpt',...
                         'VideoTimeFrame','BadChannels','ChanSelect2Display',...
                         'AxesBackgroundColor','TriggerEventsFcn'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
@@ -840,6 +840,9 @@ classdef BioSigPlot < hgsetget
         
         function obj = set.FileDir(obj,val), set(obj,'FileDir',val); end
         function val = get.FileDir(obj), val=obj.FileDir_; end
+        
+        function obj = set.VideoActxOpt(obj,val), set(obj,'VideoActxOpt',val);end
+        function val = get.VideoActxOpt(obj), val=obj.VideoActxOpt_; end
         
         function obj = set.VideoStartTime(obj,val), set(obj,'VideoStartTime',val);end
         function val = get.VideoStartTime(obj), val=obj.VideoStartTime_; end
