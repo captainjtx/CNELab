@@ -114,9 +114,9 @@ classdef VideoWindow  < handle
         function click_Callback(obj,varargin)
             %             disp('click');
             if strcmpi(obj.Status,'Paused')
-                obj.Actx.play;
+                obj.play;
             elseif strcmpi(obj.Status,'Playing')
-                obj.Actx.pause;
+                obj.pause;
             end
         end
         
@@ -179,7 +179,7 @@ classdef VideoWindow  < handle
         function set.CurrentPositionRatio(obj,val)
             val=max(0,min(1,val));
             if strcmpi(obj.ActxOpt,'WMP')
-                
+                obj.Actx.controls.currentPosition=val*obj.VideoLength;
             elseif strcmpi(obj.ActxOpt,'VLC')
                 obj.Actx.input.position=val;
             end

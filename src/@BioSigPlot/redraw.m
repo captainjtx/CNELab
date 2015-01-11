@@ -108,7 +108,8 @@ if ~isempty(obj.LineVideo)
     delete(obj.LineMeasurer(ishandle(obj.LineMeasurer)));
 end
 for i=1:length(obj.Axes)
-    obj.LineVideo(i)=line([inf inf],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0],'LineStyle','-.');
+    obj.LineVideo(i)=line([inf inf],[0 1000],'parent',obj.Axes(i),...
+        'Color',[1 0 0],'LineStyle','-.','LineWidth',1.5);
     obj.LineMeasurer(i)=line([inf inf],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]);
     uistack(obj.LineVideo(i));
 end

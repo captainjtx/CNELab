@@ -103,4 +103,7 @@ Search engine for event
 
 Change into stream based processing (filtering/scrolling)
 
-Auto scan for video
+Auto scan for video import
+
+Make Video Line Dragable
+

@@ -1246,7 +1246,16 @@ classdef BioSigPlot < hgsetget
             
             obj.Time_=min(max(val,0),m);
             set(obj.EdtTime,'String',obj.Time_);
+            
             obj.VideoLineTime=obj.Time;
+            
+            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+               if ~strcmpi(obj.WinVideo.Status,'Playing')
+                   obj.WinVideo.CurrentPositionRatio=...
+                       interp1(obj.VideoTimeFrame(:,1),obj.VideoTimeFrame(:,2),...
+                       (obj.VideoLineTime-obj.VideoStartTime))/max(obj.VideoTimeFrame(:,2));
+               end
+            end
             
         end
         
@@ -1598,7 +1607,7 @@ classdef BioSigPlot < hgsetget
         %==================================================================
         %******************************************************************
         function obj=set.VideoTimeFrame_(obj,val)
-            xq=min(val(:,2)):max(val(:,2));
+            xq=1:max(val(:,2));
             t=interp1(val(:,2),val(:,1),xq);
             tmp=zeros(length(t),2);
             tmp(:,1)=reshape(t,length(t),1);
