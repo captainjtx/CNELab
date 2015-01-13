@@ -27,7 +27,7 @@ for i=1:obj.DataNumber
         
         if length(obj.ChanNames_{i})==length(obj.Montage_{i}(1).channames)
             obj.ChanOrderMat{i}=eye(obj.ChanNumber(i));
-            obj.Montage_{i}=struct('name','Raw','mat',obj.ChanOrderMat{i},'channames',obj.ChanNames_(i));
+            obj.Montage_{i}(1)=struct('name','Raw','mat',obj.ChanOrderMat{i},'channames',obj.ChanNames_(i),'groupnames',[]);
         elseif all(ismember(obj.ChanNames_{i},obj.Montage_{i}(1).channames))
             
             obj.ChanOrderMat{i}=eye(obj.ChanNumber(i));

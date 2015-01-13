@@ -1,13 +1,13 @@
 classdef VideoWindow  < handle
     properties
         File
-        Fig
-        Actx
-        VideoLength
+        Fig %The handle of the matlab figure
+        Actx %Activex component handle
+        VideoLength %Total Video Time in Seconds
         Status %Playing or Paused or Stopped
         
         ActxOpt %WMP or VLC
-        ActxName
+        ActxName 
         
         CurrentFrameNumber
         FrameRate
@@ -16,8 +16,8 @@ classdef VideoWindow  < handle
     end
     properties(Dependent)
         PlaySpeed
-        CurrentPosition
-        CurrentPositionRatio
+        CurrentPosition %Current position in second
+        CurrentPositionRatio %Current position of ratio, from 0 to 1
     end
     methods
         function obj=VideoWindow(file,varargin)

@@ -158,7 +158,7 @@ classdef BioSigPlot < hgsetget
         VideoListener
         
         ChannelLines
-
+        
     end
     properties (Dependent,SetObservable)      %Public properties Requiring a redraw and that can be defined at the beginning
         Version
@@ -209,8 +209,8 @@ classdef BioSigPlot < hgsetget
         
         MouseMode               %the Mouse Mode :{'Pan'|'Measurer'}
         PlaySpeed               %Play speed
-
-        VideoTimerPeriod        %Period of the Video 
+        
+        VideoTimerPeriod        %Period of the Video
         Montage                 %Path for a system file wich contains info on Montage
         AxesHeight              %Height ratio of Axes for Vertical Mode.
         YBorder                 %Vector of 2elements containing the space height between the last channel and the bottom and between the top and the first channel (Units: 'Gain' relative)
@@ -374,7 +374,7 @@ classdef BioSigPlot < hgsetget
         ResizeMode
         
         FileDir
-    
+        
         VideoActxOpt           %WMP or VLC
         VideoStartTime         %Start time of the first frame of the video
         VideoFile              %File path of video
@@ -382,7 +382,7 @@ classdef BioSigPlot < hgsetget
         VideoTimeFrame
         
         VideoLineTime
-
+        
         VideoTimer
         
         IsEvtsSaved
@@ -440,7 +440,7 @@ classdef BioSigPlot < hgsetget
             obj.IsInitialize=true;
             
             obj.Data=obj.uniform(data);
-
+            
             obj.buildfig;
             g=varargin;
             varInitial(obj,g);
@@ -455,7 +455,7 @@ classdef BioSigPlot < hgsetget
             end
             redraw(obj);
             redrawEvts(obj);
-
+            
             obj.IsInitialize=false;
             
             set(obj.Fig,'Visible','on')
@@ -525,7 +525,7 @@ classdef BioSigPlot < hgsetget
             save(fullfile(obj.CNELabDir,'/db/cfg/','defaultconfig.cfg'),'-struct','cfg');
         end
         function delete(obj)
-%             Delete the figure
+            %             Delete the figure
             saveConfig(obj);
             if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
                 delete(obj.WinVideo)
@@ -555,7 +555,7 @@ classdef BioSigPlot < hgsetget
             if ishandle(h)
                 delete(h);
             end
-
+            
             h = obj.TFMapFig;
             if ishandle(h)
                 delete(h);
@@ -756,7 +756,7 @@ classdef BioSigPlot < hgsetget
         
         function obj = set.Title(obj,val), set(obj,'Title',val); end
         function val = get.Title(obj), val=obj.Title_; end
-        function obj = set.Config(obj,val), set(obj,'Config',val); end 
+        function obj = set.Config(obj,val), set(obj,'Config',val); end
         function val = get.Config(obj), val=obj.Config_; end
         function obj = set.SRate(obj,val), set(obj,'SRate',val); end
         function val = get.SRate(obj), val=obj.SRate_; end
@@ -959,7 +959,7 @@ classdef BioSigPlot < hgsetget
         function val = get.DataNumber(obj)
             val=length(obj.Data);
         end
-       
+        
         %******************************************************************
         function val = get.ChanNumber(obj)
             l=cell2mat(cellfun(@size,obj.Data,'UniformOutput',false)');
@@ -1250,11 +1250,11 @@ classdef BioSigPlot < hgsetget
             obj.VideoLineTime=obj.Time;
             
             if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
-               if ~strcmpi(obj.WinVideo.Status,'Playing')
-                   obj.WinVideo.CurrentPositionRatio=...
-                       interp1(obj.VideoTimeFrame(:,1),obj.VideoTimeFrame(:,2),...
-                       (obj.VideoLineTime-obj.VideoStartTime))/max(obj.VideoTimeFrame(:,2));
-               end
+                if ~strcmpi(obj.WinVideo.Status,'Playing')
+                    obj.WinVideo.CurrentPositionRatio=...
+                        interp1(obj.VideoTimeFrame(:,1),obj.VideoTimeFrame(:,2),...
+                        (obj.VideoLineTime-obj.VideoStartTime))/max(obj.VideoTimeFrame(:,2));
+                end
             end
             
         end
@@ -1607,13 +1607,15 @@ classdef BioSigPlot < hgsetget
         %==================================================================
         %******************************************************************
         function obj=set.VideoTimeFrame_(obj,val)
-            xq=1:max(val(:,2));
-            t=interp1(val(:,2),val(:,1),xq);
-            tmp=zeros(length(t),2);
-            tmp(:,1)=reshape(t,length(t),1);
-            tmp(:,2)=reshape(xq,length(xq),1);
-            
-            obj.VideoTimeFrame_=tmp;
+            if ~isempty(val)
+                xq=1:max(val(:,2));
+                t=interp1(val(:,2),val(:,1),xq);
+                tmp=zeros(length(t),2);
+                tmp(:,1)=reshape(t,length(t),1);
+                tmp(:,2)=reshape(xq,length(xq),1);
+                
+                obj.VideoTimeFrame_=tmp;
+            end
         end
         %==================================================================
         %******************************************************************
@@ -1833,7 +1835,7 @@ classdef BioSigPlot < hgsetget
             obj.PlaySpeed=obj.WinVideo.PlaySpeed;
         end
         
-        function StartPlay(obj)     
+        function StartPlay(obj)
             set(obj.TogPlay,'CData',obj.IconPause,'ClickedCallback',@(src,evt) PausePlay(obj),'State','on');
             if strcmpi(obj.VideoTimer.Running,'off')
                 start(obj.VideoTimer);
@@ -1857,7 +1859,7 @@ classdef BioSigPlot < hgsetget
             if strcmpi(obj.VideoTimer.Running,'on')
                 stop(obj.VideoTimer);
             end
-%             obj.VideoLineTime=0;
+            %             obj.VideoLineTime=0;
         end
         function PlayFaster(obj)
             obj.PlaySpeed=obj.PlaySpeed+1;
@@ -1980,10 +1982,10 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         function ExportToFigure(obj)
             f=figure('Name','Mirror figure','Position',get(obj.Fig,'Position'));
-%             for i=1:length(obj.Axes)
-%                 set(obj.Axes(i),'YTick',[]);
-%                 set(obj.Axes(i),'XTick',[]);
-%             end
+            %             for i=1:length(obj.Axes)
+            %                 set(obj.Axes(i),'YTick',[]);
+            %                 set(obj.Axes(i),'XTick',[]);
+            %             end
             copyobj(obj.Axes(:),f);
         end
         function ExportToWindow(obj)
@@ -2056,7 +2058,7 @@ classdef BioSigPlot < hgsetget
                     set(obj.MainPanel,'position',[0 0 pos(3) pos(4)]);
                 end
             end
-
+            
             set(obj.ControlPanel,'position',[0 0 pos(3) ctrlsize(2)]);
         end
         
