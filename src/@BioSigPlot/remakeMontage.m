@@ -49,7 +49,7 @@ for i=1:obj.DataNumber
     end
     if isempty(obj.Montage{i})
         obj.ChanOrderMat{i}=eye(obj.ChanNumber(i));
-        obj.Montage_{i}=struct('name','Raw','mat',obj.ChanOrderMat{i},'channames',obj.ChanNames_(i));
+        obj.Montage_{i}=struct('name','Raw','mat',obj.ChanOrderMat{i},'channames',obj.ChanNames_(i),'groupnames',[]);
     end
 end
 

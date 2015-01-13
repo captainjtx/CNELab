@@ -59,21 +59,29 @@ if length(obj.DataNumber)>1
     end
     
 end
+newnum=ones(length(montage),1);
 
 for i=1:length(montage)
     [pathstr, name, ext] = fileparts(FileName{i});
     
     [montage_channames,mat,groupnames]=parseMontage(montage{i},obj.ChanNames{tmp});
-    
     num=length(obj.Montage_{tmp});
+    
     obj.Montage_{tmp}(num+1).name=name;
     obj.Montage_{tmp}(num+1).channames=montage_channames;
     obj.Montage_{tmp}(num+1).mat=mat;
     obj.Montage_{tmp}(num+1).groupnames=groupnames;
     
+    newnum(i)=num+1;
+    
 end
 
 remakeMontage(obj);
+
+for i=1:length(montage)
+    ChangeMontage(obj,obj.MontageOptMenu{i}(newnum(i)),obj.DisplayedData(i),newnum(i));
+end
+
 end
 
 
