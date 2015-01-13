@@ -134,9 +134,16 @@ classdef VideoWindow  < handle
         end
         function val=get.CurrentFrameNumber(obj)
             if strcmpi(obj.ActxOpt,'WMP')
-                val=[];
+                try
+                    timecodestr=obj.ActxOpt.controls.currentPositionTimeCode;
+                    frame_str=regexp(timecodestr,'\..+$','match');
+                    val=str2double(frame_str(2:end));
+                catch
+                    val=[];
+                end
             elseif strcmpi(obj.ActxOpt,'VLC')
-                val=max(1,floor(obj.CurrentPosition*obj.FrameRate));
+%                 val=max(1,floor(obj.CurrentPosition*obj.FrameRate));
+                  val=[];
             end
         end
         function val=get.FrameRate(obj)

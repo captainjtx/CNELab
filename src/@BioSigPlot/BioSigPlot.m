@@ -1792,32 +1792,7 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         %********************Interface Action Methods *********************
         %******************************************************************
-        function SynchDataWithVideo(obj)
-            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
-                dp=ceil(size(obj.VideoTimeFrame,1)*obj.WinVideo.CurrentPositionRatio);
-                dp=max(1,dp);
-                t=obj.VideoTimeFrame(dp,1)+obj.VideoStartTime;
-            else
-                t=obj.VideoLineTime+obj.VideoTimerPeriod*obj.PlaySpeed;
-            end
-            %stop if exceeds data length
-            if abs(t)>obj.DataTime
-                PausePlay(obj);
-                error('Data time exceeds video length');
-            end
-            if t<0
-                obj.WinVideo.CurrentPosition=-obj.VideoStartTime;
-                t=0;
-            end
-            
-            obj.VideoLineTime=t;
-            
-            if (t-obj.Time)>obj.WinLength
-                set(obj,'Time',t);
-            elseif t<obj.Time
-                set(obj,'Time',t)
-            end
-        end
+
         
         function SynchVideoState(obj)
             if strcmpi(obj.WinVideo.Status,'Playing')
@@ -2232,6 +2207,7 @@ classdef BioSigPlot < hgsetget
         MnuPSDSettings(obj)
         Power_Spectrum_Density(obj,src)
         SPF_Analysis(obj,src)
+        SynchDataWithVideo(obj)
     end
     
     events
