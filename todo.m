@@ -107,3 +107,5 @@ Auto scan for video import
 
 Make Video Line Dragable
 
+Ticks outside
+
