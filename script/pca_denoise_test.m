@@ -15,13 +15,11 @@ data(:,badchannels)=[];
 
 fs=500;
 
-
 sample_before=20;
 sample_after=50;
 
 eventDir='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Xu Yun/anno_artifact.evt';
 evts=load(eventDir,'-mat');
-
 
 sample_artifact_pos=round(evts.stamp(strcmpi(evts.text,'A'))*fs);
 
@@ -82,34 +80,34 @@ for i=1:length(pcadata)
     cdata=cat(1,cdata,recondata{i});
 end
 
-% bsp=BioSigPlot({rdata,pdata,cdata},'SRate',fs,...
-%                                    'Winlength',(sample_before+sample_after+1)/fs*10,...
-%                                    'Evts',evts,...
-%                                    'DispChans',30,...
-%                                    'Gain',2.5,...
-%                                    'DataView','Horizontal');
-%                                
-% figure
-% 
-% plot(e(1:20),'--rs','LineWidth',2,...
-%                 'MarkerEdgeColor','k',...
-%                 'MarkerFaceColor','g',...
-%                 'MarkerSize',10)
+bsp=BioSigPlot({rdata,pdata,cdata},'SRate',fs,...
+                                   'Winlength',(sample_before+sample_after+1)/fs*10,...
+                                   'Evts',evts,...
+                                   'DispChans',30,...
+                                   'Gain',2.5,...
+                                   'DataView','Horizontal');
+                               
+figure
+
+plot(e(1:20),'--rs','LineWidth',2,...
+                'MarkerEdgeColor','k',...
+                'MarkerFaceColor','g',...
+                'MarkerSize',10)
 %==========================================================================
 %Apply on the whole data
-originalDir='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Xu Yun/data.mat';
-
-obj=load(originalDir,'-mat');
-data=obj.data1;
-data=data(:,1:120);
-data(:,badchannels)=[];
-
-pcaData=data*SV;
-US=pcaData;
-US(:,noise_comp)=0;
-reconData=US*SV';
-
-bsp=BioSigPlot({data,pcaData,reconData},'SRate',fs,...
-                                   'DispChans',20,...
-                                   'Gain',1.8,...
-                                   'DataView','Vertical');
+% originalDir='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Xu Yun/data.mat';
+% 
+% obj=load(originalDir,'-mat');
+% data=obj.data1;
+% data=data(:,1:120);
+% data(:,badchannels)=[];
+% 
+% pcaData=data*SV;
+% US=pcaData;
+% US(:,noise_comp)=0;
+% reconData=US*SV';
+% 
+% bsp=BioSigPlot({data,pcaData,reconData},'SRate',fs,...
+%                                    'DispChans',20,...
+%                                    'Gain',1.8,...
+%                                    'DataView','Vertical');
