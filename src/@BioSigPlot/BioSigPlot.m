@@ -579,7 +579,7 @@ classdef BioSigPlot < hgsetget
             
             for i=1:length(DATA)
                 if size(DATA{i},1)<size(DATA{i},2)
-                    choice=questdlg(['The DATA ',num2str(i), ' appears to be row-wise, do you want to transpose it?','BioSigplot','Yes','No','Yes']);
+                    choice=questdlg(['The DATA ',num2str(i), ' appears to be row-wise, do you want to transpose it?'],'BioSigplot','Yes','No','Yes');
                     if strcmpi(choice,'Yes')
                         DATA{i}=DATA{i}';
                     end
@@ -1251,9 +1251,13 @@ classdef BioSigPlot < hgsetget
             
             if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
                 if ~strcmpi(obj.WinVideo.Status,'Playing')
-                    obj.WinVideo.CurrentPositionRatio=...
-                        interp1(obj.VideoTimeFrame(:,1),obj.VideoTimeFrame(:,2),...
-                        (obj.VideoLineTime-obj.VideoStartTime))/max(obj.VideoTimeFrame(:,2));
+                    if ~isempty(obj.VideoTimeFrame)
+                        obj.WinVideo.CurrentPositionRatio=...
+                            interp1(obj.VideoTimeFrame(:,1),obj.VideoTimeFrame(:,2),...
+                            (obj.VideoLineTime-obj.VideoStartTime))/max(obj.VideoTimeFrame(:,2));
+                    else
+                        obj.WinVideo.CurrentPosition=obj.VideoLineTime-obj.VideoStartTime;
+                    end
                 end
             end
             
