@@ -11,7 +11,11 @@ if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
             t=obj.VideoTimeFrame(dp,1)+obj.VideoStartTime;
         end
     else
-        t=obj.WinVideo.CurrentPosition+obj.VideoStartTime;
+        if ~isempty(obj.VideoEndTime)
+            t=(obj.VideoEndTime-obj.VideoStartTime)*obj.WinVideo.CurrentPositionRatio+obj.VideoStartTime;
+        else
+            t=obj.WinVideo.CurrentPosition+obj.VideoStartTime;
+        end
     end
 else
     t=obj.VideoLineTime+obj.VideoTimerPeriod*obj.PlaySpeed;
