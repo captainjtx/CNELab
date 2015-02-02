@@ -26,6 +26,7 @@ obj.MenuConfigurationState=uimenu(obj.MenuSettings,'Label','Configuration file',
 obj.MenuPlaySpeed=uimenu(obj.MenuSettings,'Label','Play speed','Callback',@(src,evt) MnuPlay(obj));
 obj.MenuColor=uimenu(obj.MenuSettings,'Label','Color');
 obj.MenuSampleRate=uimenu(obj.MenuSettings,'Label','Sample Rate','Callback',@(src,evt) MnuSampleRate(obj),'Accelerator','r');
+obj.MenuVideoStartEnd=uimenu(obj.MenuSettings,'Label','Video Start End',@(src,evt) MnuVideoStartEnd(obj));
 %Second Order Menu of Color
 obj.MenuColorCanvas=uimenu(obj.MenuColor,'Label','Canvas','Accelerator','b',...
     'Callback',@(src,evt) set(obj,'AxesBackgroundColor',uisetcolor(obj.AxesBackgroundColor,'AxesBackground Color')));

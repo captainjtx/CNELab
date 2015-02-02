@@ -91,6 +91,7 @@ classdef BioSigPlot < hgsetget
         MenuPlaySpeed
         MenuColors
         MenuSampleRate
+        MenuVideoStartEnd
         
         MenuChannel
         MenuChannelNumber
