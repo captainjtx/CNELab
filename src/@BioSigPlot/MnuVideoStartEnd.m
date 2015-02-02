@@ -2,14 +2,14 @@ function MnuVideoStartEnd(obj)
 %**************************************************************************
 % Dialog box of video start and end
 %**************************************************************************
-prompt={'Specify the start and end of the video'};
+title='Specify the start and end of the video';
 
 def={num2str(obj.VideoStartTime),num2str(obj.VideoEndTime)};
 
-title={'Video Start (s)','Video End (s)'};
+prompt={'Video Start (s)','Video End (s)'};
 
 
-answer=inputdlg(prompt,title,2,def);
+answer=inputdlg(prompt,title,1,def);
 
 if isempty(answer)
     return

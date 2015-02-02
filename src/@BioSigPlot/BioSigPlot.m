@@ -305,6 +305,8 @@ classdef BioSigPlot < hgsetget
         FileDir_
         VideoActxOpt_
         VideoStartTime_
+        VideoEndTime_
+        
         VideoTimeFrame_
         
         SelectedEvent_
