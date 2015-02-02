@@ -1,5 +1,8 @@
 function vec=parseMontageExpStr(expstr,channames)
 vec=zeros(1,length(channames));
+if isnum(expstr)
+    expstr=num2str(expstr);
+end
 
 if ~ismember(expstr(1),{'-','+'})
     expstr=['+',expstr];
