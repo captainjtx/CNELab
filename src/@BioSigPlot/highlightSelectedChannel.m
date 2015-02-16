@@ -33,6 +33,8 @@ if ~isempty(ChanSelect2Display)
     [f,ChanSelect2Edit]=ismember(ChanSelect2Edit,ChanSelect2Display);
 end
 
+colors=colors(ChanSelect2Display,:);
+
 for i=1:length(ChannelLines)
     set(ChannelLines(i),'Color',colors(i,:));
 end

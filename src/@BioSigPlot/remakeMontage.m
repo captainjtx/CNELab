@@ -63,6 +63,8 @@ end
 
 remakeMontageMenu(obj);
 
+assignChannelGroupColor(obj);
+
 end
 
 function mat=MeanRefMat(channum)
