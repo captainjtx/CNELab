@@ -4,17 +4,19 @@ function makeMenu(obj)
 obj.MenuFile=uimenu(obj.Fig,'Label','File');
 
 obj.MenuImport=uimenu(obj.MenuFile,'Label','Import');
-obj.MenuImportDataSet=uimenu(obj.MenuImport,'Label','DataSet','Callback',@(src,evt) obj.ImportDataSet);
+obj.MenuImportDataSet=uimenu(obj.MenuImport,'Label','Data','Callback',@(src,evt) obj.ImportDataSet);
 obj.MenuImportEvents=uimenu(obj.MenuImport,'Label','Events','Callback',@(src,evt) obj.ImportEvents);
 obj.MenuImportMontage=uimenu(obj.MenuImport,'Label','Montage','Callback',@(src,evt) obj.ImportMontage);
 obj.MenuImportVideo=uimenu(obj.MenuImport,'Label','Video','Callback',@(src,evt) obj.ImportVideo);
 
 obj.MenuExport=uimenu(obj.MenuFile,'Label','Export');
+obj.MenuExportData=uimenu(obj.MenuExport,'Label','Selected Data','Callback',@(src,evt) obj.ExportData);
+obj.MenuExportEvents=uimenu(obj.MenuExport,'Label','Events','Callback',@(src,evt) obj.ExportEvents);
+obj.MenuExportMontage=uimenu(obj.MenuExport,'Label','Montage','Callback',@(src,evt) obj.ExportMontage);
 obj.MenuExportFigure=uimenu(obj.MenuExport,'Label','Figure');
 obj.MenuExportFigureMirror=uimenu(obj.MenuExportFigure,'Label','Mirror','Callback',@(src,evt) obj.ExportToFigure,'Accelerator','p');
 obj.MenuExportFigureAdvanced=uimenu(obj.MenuExportFigure,'Label','Advanced','Callback',@(src,evt) obj.ExportToWindow);
-obj.MenuExportEvents=uimenu(obj.MenuExport,'Label','Events','Callback',@(src,evt) obj.ExportEvents);
-obj.MenuExportData=uimenu(obj.MenuExport,'Label','Data','Callback',@(src,evt) obj.ExportData);
+
 
 obj.MenuCopy=uimenu(obj.MenuFile,'Label','Copy','Enable','off');
 %**************************************************************************
@@ -108,6 +110,10 @@ obj.MenuTFMapGrid=uimenu(obj.MenuTFMap,'Label','Grid',...
 
 obj.MenuTFMapSettings=uimenu(obj.MenuTFMap,'Label','Settings','Separator','on',...
     'Callback', @(src,evt) MnuTFMapSettings(obj));
+
+obj.MenuAdvFilter=uimenu(obj.MenuApp,'Label','Advanced Filter');
+obj.MenuMeanRef=uimenu(obj.MenuAdvFilter,'Label','Mean-Reference',...
+    'Callback', @(src,evt) Mean_Reference_Filter(obj));
 
 end
 

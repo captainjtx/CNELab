@@ -1,13 +1,5 @@
 function ExportData(obj)
 
-[FileName,FilePath]=uiputfile({...
-    '*.mat','Binary Matlab File (*.mat)'}...
-    ,'Save the data','data');
-
-if ~FileName
-    return
-end
-
 dd=obj.DisplayedData;
 fs=obj.SRate;
 selection=[];
@@ -23,6 +15,10 @@ else
 end
 
 for i=1:length(dd)
+    
+    cds=CommonDataStructure;
+    
+    
     if ~obj.IsChannelSelected
         chan=1:obj.MontageChanNumber(dd(i));
     else
@@ -30,10 +26,18 @@ for i=1:length(dd)
     end
     d=obj.PreprocData{dd(i)}(selection,chan);
 %     chanNames=catreshape(obj.MontageChanNames{dd(i)}(chan),length(chan),1);
-    cds.(['data' num2str(dd(i))])=d;
+    cds.Data.Data=d;
+    cds.Data.Annotations=obj.Evts;
+    cds.Data.SampleRate=obj.SRate;
+    cds.Data.Units=obj.Units{dd(i)};
+    cds.Data.VideoName=obj.VideoFile;
+    cds.Montage.ChannelNames=obj.MontageChanNames{dd(i)}(chan);
+    cds.Montage.Name=obj.Montage{dd(i)}(obj.MontageRef).name;
+    cds.Montage.GroupNames=obj.Montage{dd(i)}(obj.MontageRef).groupnames;
+    cds.export();
 end
 
-save(fullfile(FilePath,FileName),'-struct','cds','-mat');
+
 
 
 end

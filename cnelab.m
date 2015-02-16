@@ -52,6 +52,15 @@ for i=1:length(cds)
         ChanNames{i}=[];
     end
 end
+
+GroupNames=cell(1,length(cds));
+for i=1:length(cds)
+    if ~isempty(cds{i}.Montage.GroupNames)
+        GroupNames{i}=cds{i}.Montage.GroupNames;
+    else
+        GroupNames{i}=[];
+    end
+end
 %==========================================================================
 %**************************************************************************
 VideoStartTime=0;
@@ -86,6 +95,7 @@ end
 bsp=BioSigPlot(data,'Title',fnames,...
                     'SRate',fs,...
                     'ChanNames',ChanNames,...
+                    'GroupNames',GroupNames,...
                     'VideoStartTime',VideoStartTime,...
                     'VideoTimeFrame',VideoTimeFrame,...
                     'Units',Units,...

@@ -26,13 +26,21 @@ obj.Gain_=cell(1,obj.DataNumber);
 obj.Mask_=cell(1,obj.DataNumber);
 obj.Mask_=obj.applyPanelVal(obj.Mask_,1);
 
+NeedRefilter=false;
+for i=1:obj.DataNumber
+    if length(obj.Filtering_{i})~=obj.MontageChanNumber(i)
+        NeedRefilter=true;
+    end
+end
+
+if NeedRefilter
 obj.Filtering_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
 obj.FilterLow_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
 obj.FilterHigh_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
 obj.FilterNotch1_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
 obj.FilterNotch2_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
-
 resetFilterPanel(obj);
+end
 
 obj.EventLines=[];
 obj.EventTexts=[];

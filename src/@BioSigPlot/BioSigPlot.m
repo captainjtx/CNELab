@@ -63,6 +63,7 @@ classdef BioSigPlot < hgsetget
         ArrScale
         Toolbar
         TogMontage
+        TogComAve
         TogHorizontal
         TogVertical
         TogMeasurer
@@ -77,6 +78,7 @@ classdef BioSigPlot < hgsetget
         MenuExportFigureAdvanced
         MenuExportEvents
         MenuExportData
+        MenuExportMontage
         
         MenuImport
         MenuImportDataSet
@@ -144,6 +146,9 @@ classdef BioSigPlot < hgsetget
         MenuPSDGrid
         MenuPSDSettings
         
+        MenuAdvFilter
+        MenuMeanRef
+        
         MenuSave
         PanObj
         LineVideo
@@ -170,6 +175,7 @@ classdef BioSigPlot < hgsetget
         Gain                    %Gain beetween 2 channels
         Mask
         ChanNames               %Cell with channel names corresponding to raw data.
+        GroupNames
         Units                   %Units of the data
         Evts                    %List of events.
         Time                    %Current time (in TimeUnit) of the current
@@ -252,6 +258,7 @@ classdef BioSigPlot < hgsetget
         Gain_
         Mask_
         ChanNames_
+        GroupNames_
         Units_
         
         Evts_
@@ -511,6 +518,7 @@ classdef BioSigPlot < hgsetget
             obj.DisplayGauge=true;
             
             obj.ChanNames_=cell(1,obj.DataNumber);
+            obj.GroupNames_=cell(1,obj.DataNumber);
             obj.MontageRef_=ones(obj.DataNumber,1);
             
             n=find(strcmpi('Config',g(1:2:end)))*2;
@@ -620,7 +628,7 @@ classdef BioSigPlot < hgsetget
                 'MontageRef','Evts','Time','FirstDispChans','DispChans','TimeUnit',...
                 'Colors','Filtering','FilterLow','FilterHigh',...
                 'FilterNotch1','FilterNotch2','FilterCustomIndex','NormalModeColor',...
-                'ChanNames','Units','XGrid','YGrid','Position','Version','MouseMode',...
+                'ChanNames','GroupNames','Units','XGrid','YGrid','Position','Version','MouseMode',...
                 'PlaySpeed','VideoTimerPeriod','AxesHeight',...
                 'YBorder','YGridInterval','Selection','FileDir','VideoStartTime','VideoEndTime',...
                 'VideoFile','VideoTimeFrame','VideoLineTime','VideoTimer','VideoActxOpt',...
@@ -650,7 +658,7 @@ classdef BioSigPlot < hgsetget
                         'DataView','MontageRef','FirstDispChans','DispChans',...
                         'TimeUnit','Colors','Filtering','FilterLow',...
                         'FilterHigh','FilterNotch1','FilterNotch2','FilterCustomIndex'...
-                        'NormalModeColor','ChanNames','Units','XGrid','YGrid',...
+                        'NormalModeColor','ChanNames','GroupNames','Units','XGrid','YGrid',...
                         'AxesHeight','YBorder','YGridInterval','FileDir',...
                         'VideoEndTime','VideoStartTime','VideoTimerPeriod','VideoActxOpt',...
                         'VideoTimeFrame','BadChannels','ChanSelect2Display',...
@@ -662,8 +670,8 @@ classdef BioSigPlot < hgsetget
                             'AxesBackgroundColor'}))
                         NeedRemakeAxes=true;
                     end
-                    if any(strcmpi(g{i},{'Config','Montage','ChanNames','DataView','MontageRef'}))
-                        if any(strcmpi(g{i},{'Config','Montage','ChanNames'}))
+                    if any(strcmpi(g{i},{'Config','Montage','ChanNames','GroupNames','DataView','MontageRef'}))
+                        if any(strcmpi(g{i},{'Config','Montage','ChanNames','GroupNames'}))
                             NeedRemakeMontage=true;
                         end
                         NeedResetView=true;
@@ -773,6 +781,8 @@ classdef BioSigPlot < hgsetget
         function val = get.Mask(obj), val=obj.Mask_; end
         function obj = set.ChanNames(obj,val), set(obj,'ChanNames',val); end
         function val = get.ChanNames(obj), val=obj.ChanNames_; end
+        function obj = set.GroupNames(obj,val), set(obj,'GroupNames',val); end
+        function val = get.GroupNames(obj), val=obj.GroupNames_; end
         function obj = set.Units(obj,val), set(obj,'Units',val); end
         function val = get.Units(obj), val=obj.Units_; end
         function obj = set.Evts(obj,val), set(obj,'Evts',val); end
@@ -1736,15 +1746,24 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         function montageToolbar(obj)
             obj.TogMontage=uitoggletool(obj.Toolbar,'CData',imread('Raw.bmp'),...
-                'TooltipString','Raw montage','ClickedCallback',@(src,evt) resetMontage(obj));
+                'TooltipString','Raw','ClickedCallback',@(src,evt) resetMontage(obj));
+            
+            obj.TogComAve=uitoggletool(obj.Toolbar,'CData',imread('common.bmp'),...
+                'TooltipString','Mean Ref','ClickedCallback',@(src,evt) resetMontage(obj,2));
             
         end
         
-        function resetMontage(obj)
+        function resetMontage(obj,varargin)
+            
+            if isempty(varargin)
+                ind=1;
+            else
+                ind=varargin{1};
+            end
             
             for i=1:obj.DataNumber
-                src=obj.MontageOptMenu{i}(1);
-                ChangeMontage(obj,src,i,1);
+                src=obj.MontageOptMenu{i}(ind);
+                ChangeMontage(obj,src,i,ind);
             end
         end
         
@@ -2225,6 +2244,8 @@ classdef BioSigPlot < hgsetget
         Power_Spectrum_Density(obj,src)
         SPF_Analysis(obj,src)
         SynchDataWithVideo(obj)
+        Mean_Reference_Filter(obj)
+        ExportMontage(obj)
     end
     
     events

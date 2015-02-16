@@ -109,3 +109,6 @@ Make Video Line Dragable
 
 Ticks outside
 
+Read data chunck by chunk, cutomize chunck size and sample rate for data review
+
+Add Common Average Filter

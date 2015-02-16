@@ -95,22 +95,28 @@ classdef CommonDataStructure < handle
             end
             obj.Data.FileName=filename;
         end
-        function export(obj)
+        function export(obj,varargin)
             
             cds.Data=obj.Data;
             cds.Montage=obj.Montage;
             cds.PatientInfo=obj.PatientInfo;
             
-            [FileName,FilePath]=uiputfile({...
-                '*.cds;*.mat','Common Data Structure Formats (*.cds;*.mat)';...
-                '*.mat','Matlab Mat File (*.mat)';
-                '*.cds','Common Data Structure Fromat (*.cds)'}...
-                ,'Save your common data structure','untitled');
-            
-            if ~FileName
-                return
+            if isempty(varargin)
+                [FileName,FilePath]=uiputfile({...
+                    '*.cds;*.mat','Common Data Structure Formats (*.cds;*.mat)';...
+                    '*.mat','Matlab Mat File (*.mat)';
+                    '*.cds','Common Data Structure Fromat (*.cds)'}...
+                    ,'Save your common data structure','untitled');
+                
+                if ~FileName
+                    return
+                end
+                
+                fnames=fullfile(FilePath,FileName);
+            else
+                fnames=varargin{1};
             end
-            save(fullfile(FilePath,FileName),'-struct','cds','-mat');
+            save(fnames,'-struct','cds','-mat');
         end
         
         
