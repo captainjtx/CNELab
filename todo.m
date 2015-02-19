@@ -115,3 +115,5 @@ Read data chunck by chunk, cutomize chunck size and sample rate for data review
 
 Add Export Montage and Montage Customization Window
 New Montage File
+
+Permanently store spatial filter result

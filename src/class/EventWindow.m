@@ -21,7 +21,7 @@ classdef EventWindow  < handle
             
             eventListMenu=uicontextmenu('Visible','on');
             uimenu(eventListMenu,'Label','Delete','Callback',@(src,evt) bsp.deleteSelected);
-            
+            uimenu(eventListMenu,'Label','Group Delete','Callback',@(src,evt) bsp.groupDeleteSelected);
             set(obj.uilist,'uicontextMenu',eventListMenu);
             
         end
@@ -71,8 +71,9 @@ classdef EventWindow  < handle
                 val(val>length(s))=[];
             end
             
-            set(obj.uilist,'Value',val);
             set(obj.uilist,'String',s);
+            set(obj.uilist,'Value',val);
+            
         end
         
     end

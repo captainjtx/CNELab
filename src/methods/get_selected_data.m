@@ -1,6 +1,11 @@
 function [data,chanNames,dataset,channel,sample]=get_selected_data(obj)
 %This function returns the selected data and the corresponding channel
 %names
+
+%obj.Selection format
+%|sta_1,sta_2,...|
+%|end_1,end_2,...|
+
 dd=obj.DisplayedData;
 fs=obj.SRate;
 data=[];
@@ -12,7 +17,7 @@ if ~isempty(obj.Selection)
     for i=1:size(obj.Selection,2)
         startInd=max(1,round(obj.Selection(1,i)*fs));
         endInd=min(size(obj.Data{1},1),round(obj.Selection(2,i)*fs));
-        selection=cat(1,selection,startInd:endInd);
+        selection=cat(2,selection,startInd:endInd);
     end
 else
     selection=1:size(obj.Data{1},1);

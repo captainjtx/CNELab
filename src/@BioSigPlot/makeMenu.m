@@ -19,6 +19,9 @@ obj.MenuExportFigureAdvanced=uimenu(obj.MenuExportFigure,'Label','Advanced','Cal
 
 
 obj.MenuCopy=uimenu(obj.MenuFile,'Label','Copy','Enable','off');
+
+obj.MenuSave=uimenu(obj.MenuFile,'Label','Save');
+obj.MenuSaveAs=uimenu(obj.MenuFile,'Label','Save As');
 %**************************************************************************
 %First Order Menu--------------------------------------------------Settings
 obj.MenuSettings=uimenu(obj.Fig,'Label','Settings');
@@ -52,6 +55,7 @@ obj.MenuMontage=uimenu(obj.Fig,'Label','Montage');
 obj.MenuEvent=uimenu(obj.Fig,'Label','Event');
 obj.MenuFastEvent=uimenu(obj.MenuEvent,'Label','Fast Event','Callback',@(src,evt) WinFastEvents(obj));
 obj.MenuEventDelete=uimenu(obj.MenuEvent,'Label','Delete','Callback',@(src,evt) deleteSelected(obj));
+obj.MenuEventDelete=uimenu(obj.MenuEvent,'Label','Group Delete','Callback',@(src,evt) groupDeleteSelected(obj));
 
 obj.MenuTriggerEvents=uimenu(obj.MenuEvent,'Label','Advance','Separator','on');
 obj.MenuTriggerEventsCalculate=uimenu(obj.MenuTriggerEvents,'Label','Detect',...

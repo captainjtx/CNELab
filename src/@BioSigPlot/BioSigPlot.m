@@ -87,6 +87,9 @@ classdef BioSigPlot < hgsetget
         MenuImportVideo
         MenuCopy
         
+        MenuSave
+        MenuSaveAs
+        
         MenuSettings
         MenuCommands
         MenuConfigurationState
@@ -2180,6 +2183,7 @@ classdef BioSigPlot < hgsetget
     
     methods
         deleteSelected(obj)
+        groupDeleteSelected(obj)
         openText(obj,src,axenum,count)
         addNewEvent(obj,newEvent)
         updateSelectedFastEvent(obj,x)
@@ -2257,6 +2261,7 @@ classdef BioSigPlot < hgsetget
         TPCA_Event_Label
         TPCA_Seg_Before
         TPCA_Seg_After
+        TPCA_S
         
     end
     events

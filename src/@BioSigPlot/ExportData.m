@@ -25,11 +25,23 @@ for i=1:length(dd)
         chan=obj.ChanSelect2Edit{dd(i)};
     end
     d=obj.PreprocData{dd(i)}(selection,chan);
-%     chanNames=catreshape(obj.MontageChanNames{dd(i)}(chan),length(chan),1);
-
-    Events=obj.Evts(:,1:2);
-    for evt=1:size(Events,1)
-        Events{evt,1}=Events{evt,1}+obj.StartTime;
+    %     chanNames=catreshape(obj.MontageChanNames{dd(i)}(chan),length(chan),1);
+    
+    Events=[];
+    if ~isempty(obj.Evts_)
+        
+        EventsList=obj.Evts_(obj.Evts2Display,:);
+        
+        if ~isempty(EventsList)
+            EventsList=sortrows(EventsList,1);
+        else
+            EventsList=[];
+        end
+        
+        Events=EventsList(:,1:2);
+        for evt=1:size(Events,1)
+            Events{evt,1}=Events{evt,1}+obj.StartTime;
+        end
     end
     
     cds.Data.Data=d;
