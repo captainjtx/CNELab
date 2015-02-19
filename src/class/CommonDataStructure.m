@@ -101,20 +101,39 @@ classdef CommonDataStructure < handle
             cds.Montage=obj.Montage;
             cds.PatientInfo=obj.PatientInfo;
             
+            title=[];
+            fnames=[];
             if isempty(varargin)
+            elseif length(varargin)==1
+                fnames=varargin{1};
+            else
+                for i=1:2:length(varargin)
+                    if strcmpi(varargin{i},'FileName')
+                        fnames=varargin{i+1};
+                    elseif strcmpi(varargin{i},'Title')
+                        title=varargin{i+1};
+                    else
+                        msgbox('Invalid argument-value pair!','CommonDataStructure.export','error');
+                        return
+                    end
+                end
+            end
+            
+            if isempty(title)
+                title='Save your common data structure';
+            end
+            if isempty(fnames)
                 [FileName,FilePath]=uiputfile({...
                     '*.cds;*.mat','Common Data Structure Formats (*.cds;*.mat)';...
                     '*.mat','Matlab Mat File (*.mat)';
                     '*.cds','Common Data Structure Fromat (*.cds)'}...
-                    ,'Save your common data structure','untitled');
+                    ,title,'untitled');
                 
                 if ~FileName
                     return
                 end
                 
                 fnames=fullfile(FilePath,FileName);
-            else
-                fnames=varargin{1};
             end
             save(fnames,'-struct','cds','-mat');
         end

@@ -133,6 +133,8 @@ classdef BioSigPlot < hgsetget
         MenuTriggerEvents
         MenuTriggerEventsCalculate
         MenuTriggerEventsLoad
+        MenuTriggerEventsFunction
+        MenuTriggerEventsQRS
         
         MenuTFMap
         MenuTFMapAverage
@@ -148,8 +150,9 @@ classdef BioSigPlot < hgsetget
         
         MenuAdvFilter
         MenuMeanRef
+        MenuTemporalPCA
+        MenuRemovePulse
         
-        MenuSave
         PanObj
         LineVideo
         LineMeasurer
@@ -353,6 +356,7 @@ classdef BioSigPlot < hgsetget
         
     end
     properties (Dependent) %'Public computed read-only properties
+        
         DataTime
         DataNumber                  %(Read-Only) Number of Dataset
         ChanNumber                  %(Read-Only) Channel number for the Raw data
@@ -369,53 +373,6 @@ classdef BioSigPlot < hgsetget
         PSDFig
         IconPlay
         IconPause
-    end
-    
-    properties
-        EventDisplayIndex       %Indx of displayed events
-        EventLines              %Event lines displayed
-        EventTexts              %Event texts displayed
-        
-        SelectedEvent
-        
-        DragMode
-        ClickDrag
-        EditMode
-        ResizeMode
-        
-        FileDir
-        
-        VideoActxOpt           %WMP or VLC
-        VideoStartTime         %Start time of the first frame of the video
-        VideoEndTime           %End time of the video
-        
-        VideoFile              %File path of video
-        
-        VideoTimeFrame
-        
-        VideoLineTime
-        
-        VideoTimer
-        
-        IsEvtsSaved
-        
-        MAudioPlayer
-        UponText
-        
-        EventPanel
-        AdjustPanel
-        
-        PrevMouseTime
-        UponAdjustPanel
-        
-        EventSummaryIndex
-        EventSummaryNumber
-        
-        CustomFilters
-        
-        CNELabDir
-        
-        SPFObj
     end
     
     methods
@@ -1138,12 +1095,12 @@ classdef BioSigPlot < hgsetget
                 if obj.TriggerEventsDisplay
                     evtsInd=1:size(obj.Evts_,1);
                 else
-                    evtsInd=find([obj.Evts_{:,4}]~=2);
+                    evtsInd=find([obj.Evts_{:,4}]==0);
                 end
             else
                 
                 if obj.TriggerEventsDisplay
-                    evtsInd=find([obj.Evts_{:,4}]==2);
+                    evtsInd=find([obj.Evts_{:,4}]~=0);
                 else
                     evtsInd=[];
                 end
@@ -1828,7 +1785,7 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         %********************Interface Action Methods *********************
         %******************************************************************
-
+        
         
         function SynchVideoState(obj)
             if strcmpi(obj.WinVideo.Status,'Playing')
@@ -2246,8 +2203,62 @@ classdef BioSigPlot < hgsetget
         SynchDataWithVideo(obj)
         Mean_Reference_Filter(obj)
         ExportMontage(obj)
+        Temporal_PCA(obj)
+        Auto_Remove_ECG_Artifact(obj)
     end
     
+    properties
+        EventDisplayIndex       %Indx of displayed events
+        EventLines              %Event lines displayed
+        EventTexts              %Event texts displayed
+        
+        SelectedEvent
+        
+        DragMode
+        ClickDrag
+        EditMode
+        ResizeMode
+        
+        FileDir
+        StartTime
+        
+        VideoActxOpt           %WMP or VLC
+        VideoStartTime         %Start time of the first frame of the video
+        VideoEndTime           %End time of the video
+        
+        VideoFile              %File path of video
+        
+        VideoTimeFrame
+        
+        VideoLineTime
+        
+        VideoTimer
+        
+        IsEvtsSaved
+        
+        MAudioPlayer
+        UponText
+        
+        EventPanel
+        AdjustPanel
+        
+        PrevMouseTime
+        UponAdjustPanel
+        
+        EventSummaryIndex
+        EventSummaryNumber
+        
+        CustomFilters
+        
+        CNELabDir
+        
+        SPFObj
+        
+        TPCA_Event_Label
+        TPCA_Seg_Before
+        TPCA_Seg_After
+        
+    end
     events
         SelectedFastEvtChange
     end

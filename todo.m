@@ -77,21 +77,21 @@ Change the color of existed events in fast event
 
 Play the signal as sound
 
-Change scale in PSD
+% Change scale in PSD
 % Remove High Pass filter bug (by empty the high pass filter value)
 
-Percect error check for example empty field of annotation
+% Percect error check for example empty field of annotation
 
-One of three
-Tyr Java thread
-Try Maltab Parallel Computing toolbox 
-Use FFMpeg or OpenCV to play Video (In C++ So that we can compile into different environments)
+% One of three
+% Tyr Java thread
+% Try Maltab Parallel Computing toolbox 
+% Use FFMpeg or OpenCV to play Video (In C++ So that we can compile into different environments)
 
 Add adjust bar between axes
 
-show time label bug when off and change time
+% show time label bug when off and change time
 
-display channel label bug
+% display channel label bug
 
 detrend
 
@@ -111,4 +111,7 @@ Ticks outside
 
 Read data chunck by chunk, cutomize chunck size and sample rate for data review
 
-Add Common Average Filter
+% Add Common Average Filter
+
+Add Export Montage and Montage Customization Window
+New Montage File

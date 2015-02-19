@@ -4,12 +4,19 @@ function TriggerEvents(obj,src)
 switch src
     case obj.MenuTriggerEventsCalculate
         if isempty(obj.TriggerEventsFcn)
-            msgbox('No function loaded!','TriggerEvents','error');
-            return
+            if strcmpi(get(obj.MenuTriggerEventsQRS,'checked'),'on')
+                obj.TriggerEventsFcn='get_ekg_qrs';
+            else
+                msgbox('No function loaded!','TriggerEvents','error');
+                return
+            end
         else
             [pathstr,name,ext] = fileparts(obj.TriggerEventsFcn);
-            addpath(pathstr,'-frozen');
+            if ~isempty(pathstr)
+                addpath(pathstr,'-frozen');
+            end
             getTriggerEvents=str2func(name);
+            
         end
         
         if ~obj.IsChannelSelected
@@ -20,34 +27,57 @@ switch src
             return
         else
             
-            for i=1:obj.DataNumber
-                if ~isempty(obj.ChanSelect2Edit{i})
-                    t=zeros(size(obj.Data{i},2),1);
-                    t(obj.ChanSelect2Edit{i})=1;
-                    trigger=double(obj.Data{i})*(obj.Montage{i}(obj.MontageRef(i)).mat*obj.ChanOrderMat{i})'*t;
-                    triggerEvents=getTriggerEvents(trigger,obj.SRate);
-                    
-                    triggerEventsColor=cell(size(triggerEvents,1),1);
-                    [triggerEventsColor{:}]=deal(obj.TriggerEventDefaultColor);
-                    
-                    triggerEventsCode=cell(size(triggerEvents,1),1);
-                    [triggerEventsCode{:}]=deal(2);
-                    
-                    triggerEvents=cat(2,triggerEvents,triggerEventsColor,triggerEventsCode);
-                    
-                    obj.Evts_([obj.Evts_{:,4}]==2,:)=[];
-                    obj.Evts=cat(1,obj.Evts_,triggerEvents);
-                    return
-                end
+            [data,chanNames,dataset,channel,sample]=get_selected_data(obj);
+            triggerEvents=getTriggerEvents(data,obj.SRate,sample/obj.SRate);
+            
+            triggerEventsColor=cell(size(triggerEvents,1),1);
+            triggerEventsCode=cell(size(triggerEvents,1),1);
+            
+            if strcmpi(get(obj.MenuTriggerEventsQRS,'checked'),'on')
+                %Code and Color definition for QRS Event
+                obj.Evts_([obj.Evts_{:,4}]==100,:)=[];
+                %Red
+                col=[1,0,0];
+                code=100;
+            else
+                %Code and Color definition for customized event
+                obj.Evts_([obj.Evts_{:,4}]==2,:)=[];
+                col=obj.TriggerEventDefaultColor;
+                code=2;
             end
+            [triggerEventsColor{:}]=deal(col);
+            [triggerEventsCode{:}]=deal(code);
+            triggerEvents=cat(2,triggerEvents,triggerEventsColor,triggerEventsCode);
+            
+            obj.Evts=cat(1,obj.Evts_,triggerEvents);
+            return
+            
         end
+        
     case obj.MenuTriggerEventsLoad
         [FileName,FilePath]=uigetfile({'*.m','matlab function(*.m)'},'Select the trigger events extraction function.','extractTriggerEvents.m');
         if ~FileName
             return
         end
+        %Set off predefined functions
+        set(obj.MenuTriggerEventsQRS,'checked','off');
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         
         obj.TriggerEventsFcn=fullfile(FilePath,FileName);
+        
+    case obj.MenuTriggerEventsQRS
+        %Select QRS detection as advanced events
+        if strcmpi(get(obj.MenuTriggerEventsQRS,'checked'),'on')
+            set(obj.MenuTriggerEventsQRS,'checked','off');
+            %Set off other menus
+            
+            %===================
+            obj.TriggerEventsFcn='';
+        else
+            set(obj.MenuTriggerEventsQRS,'checked','on');
+            obj.TriggerEventsFcn='get_ekg_qrs';
+        end
+        
         
 end
 

@@ -7,7 +7,6 @@ data=[];
 selection=[];
 dataset=[];
 channel=[];
-sample=[];
 
 if ~isempty(obj.Selection)
     for i=1:size(obj.Selection,2)
@@ -19,7 +18,7 @@ else
     selection=1:size(obj.Data{1},1);
 end
 sample=selection;
-chanNames=[];
+chanNames={};
 for i=1:length(dd)
     if ~obj.IsChannelSelected
         chan=1:obj.MontageChanNumber(dd(i));
@@ -32,7 +31,7 @@ for i=1:length(dd)
     channel=cat(2,channel,reshape(chan,1,length(chan)));
     data=cat(2,data,d);
     
-    chanNames=cat(2,chanNames,reshape(obj.MontageChanNames{dd(i)}(chan),length(chan),1));
+    chanNames=cat(1,chanNames,obj.MontageChanNames{dd(i)}(chan));
 end
 
 end

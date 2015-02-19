@@ -41,7 +41,7 @@ for i=1:length(dd)
     cds.Montage.ChannelNames=obj.MontageChanNames{dd(i)}(chan);
     cds.Montage.Name=obj.Montage{dd(i)}(obj.MontageRef(dd(i))).name;
     cds.Montage.GroupNames=obj.Montage{dd(i)}(obj.MontageRef(dd(i))).groupnames;
-    cds.export('title',['DataSet-',num2str(dd(i))]);
+    cds.export('title',['DataSet',]);
 end
 
 

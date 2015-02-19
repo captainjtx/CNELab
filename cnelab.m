@@ -92,6 +92,15 @@ for i=1:length(cds)
     end
 end
 %==========================================================================
+%**************************************************************************
+StartTime=0;
+for i=1:length(cds)
+    if ~isempty(cds{i}.Data.TimeStamps)
+        StartTime=cds{i}.Data.TimeStamps(1);
+        break;
+    end
+end
+%==========================================================================
 bsp=BioSigPlot(data,'Title',fnames,...
                     'SRate',fs,...
                     'ChanNames',ChanNames,...
@@ -99,7 +108,8 @@ bsp=BioSigPlot(data,'Title',fnames,...
                     'VideoStartTime',VideoStartTime,...
                     'VideoTimeFrame',VideoTimeFrame,...
                     'Units',Units,...
-                    'FileDir',FileDir);
+                    'FileDir',FileDir,...
+                    'StartTime',StartTime);
 set(bsp.Fig,'Visible','off');
 %==========================================================================
 %**************************************************************************
@@ -114,15 +124,16 @@ end
 evts=[];
 for i=1:length(cds)
     if ~isempty(cds{i}.Data.Annotations)
-        evts=cat(1,evts,cds{i}.Data.Annotations);
-        evts(:,1)=num2cell(cell2mat(evts(:,1))-startTime);
-        code=cell(size(evts,1),1);
+        tmp_evts=cds{i}.Data.Annotations;
+        tmp_evts(:,1)=num2cell(cell2mat(tmp_evts(:,1))-startTime);
+        code=cell(size(tmp_evts,1),1);
         [code{:}]=deal(0);
-        evts=bsp.assignEventColor(evts);
-        evts=cat(2,evts,code);
+        tmp_evts=bsp.assignEventColor(tmp_evts);
+        tmp_evts=cat(2,tmp_evts,code);
     else
-        evts=[];
+        tmp_evts=[];
     end
+    evts=cat(1,evts,tmp_evts);
     
     if isfield(cds{i}.Data,'TriggerCodes')
         for r=1:size(cds{i}.Data.TriggerCodes,1)
