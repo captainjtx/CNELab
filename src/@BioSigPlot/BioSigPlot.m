@@ -2209,6 +2209,7 @@ classdef BioSigPlot < hgsetget
         ExportMontage(obj)
         Temporal_PCA(obj)
         Auto_Remove_ECG_Artifact(obj)
+        ReadMontage(obj)
     end
     
     properties

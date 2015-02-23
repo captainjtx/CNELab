@@ -1,11 +1,10 @@
 function ImportMontage(obj)
 
 [FileName,FilePath,FilterIndex]=uigetfile({...
-    '*.mtg;*.txt;*.mat',...
-    'Supported formats (*.mtg;*.txt;*.mat)';...
-    '*.mtg','Montage File';...
-    '*.txt','Montage Txt File';...
-    '*.mat','Montage Matlab Binary Format'},...
+    '*.txt;*.csv;*.mtg;*.mat',...
+    'Supported formats (*.csv;*.txt;*.mtg;*.mat)';...
+    '*.csv;*.txt','Montage Txt File';...
+    '*.mtg;*.mat','Montage Matlab Binary Format'},...
     'Select Montage Files',...
     [obj.CNELabDir,'/db/montage/'],...
     'MultiSelect','on');
@@ -24,22 +23,20 @@ for i=1:length(FileName)
     switch FilterIndex
         case 1
             [pathstr, name, ext] = fileparts(FileName{i});
-            if strcmpi(ext,'.txt')||strcmpi(ext,'.mtg')
-                montage{i}=ReadYaml(filename);
-            elseif strcmpi(ext,'.mat')
+            if strcmpi(ext,'.txt')||strcmpi(ext,'.csv')
+                montage{i}=ReadMontage(filename);
+            elseif strcmpi(ext,'.mat')||strcmpi(ext,'.mtg')
                 montage{i}=load(filename,'-mat');
             end
         case 2
-            montage{i}=ReadYaml(filename);
+            montage{i}=ReadMontage(filename);
         case 3
-            montage{i}=ReadYaml(filename);
-        case 4
             montage{i}=load(filename,'-mat');
     end
 end
 
-tmp=1;
-if length(obj.DataNumber)>1
+tmp=obj.DisplayedData(1);
+if length(obj.DisplayedData)>1
     prompt={'Input the data that you want to link with the montage: '};
     
     def={num2str(obj.DisplayedData(1))};

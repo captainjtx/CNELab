@@ -3,24 +3,32 @@ function [montage_channames,mat,group_name]=parseMontage(montage,channames)
 %ECG_L-ECG_R
 %Note: + - * is reserved for montage expression
 %mat is a row-wise projection matrix
-chanNum=length(channames);
 
-montage_channames=cell(length(montage),1);
-mat=zeros(length(montage),chanNum);
-group_name=cell(length(montage),1);
-for i=1:length(montage)
-    if isfield(montage{i},'name')
-        montage_channames{i}=montage{i}.name;
+
+if ~isfield(montage,'name')
+    msgbox('No name field in montage!','parseMontage','error');
+    return
+end
+
+chanNum=length(channames);
+montage_channames=cell(length(montage.name),1);
+mat=zeros(length(montage.name),chanNum);
+group_name=cell(length(montage.name),1);
+
+if isfield(montage,'exp')
+    for i=1:length(montage.exp)
+        mat(i,:)=parseMontageExpStr(montage.exp{i},channames);
     end
-    
-    if isfield(montage{i},'exp')
-        mat(i,:)=parseMontageExpStr(montage{i}.exp,channames);
-    elseif isfield(montage{i},'vector')
-    end
-    
-    if isfield(montage{i},'group')
-        group_name{i}=montage{i}.group;
-    end
+elseif isfield(montage,'mat')
+    mat=montage.mat';
+end
+
+if isfield(montage,'group')
+    group_name=montage.group;
+end
+
+if isfield(montage,'name')
+    montage_channames=montage.name;
 end
 
 end
