@@ -122,3 +122,5 @@ Add old cnelab version detection and deletion features
 
 Startup Resize Bug
 
+Add PSD and TFMap in magnitude scale and refine the options
+

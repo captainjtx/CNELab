@@ -140,12 +140,21 @@ classdef BioSigPlot < hgsetget
         MenuTriggerEventsQRS
         
         MenuTFMap
+        MenuTFMap_Unit
+        MenuTFMap_Normal
+        MenuTFMap_DB
+        MenuTFMapLayout
         MenuTFMapAverage
         MenuTFMapChannel
         MenuTFMapGrid
         MenuTFMapSettings
         
+        
         MenuPSD
+        MenuPSD_Unit
+        MenuPSD_Normal
+        MenuPSD_DB
+        MenuLayout
         MenuPSDAverage
         MenuPSDChannel
         MenuPSDGrid
@@ -245,15 +254,10 @@ classdef BioSigPlot < hgsetget
         
         STFTWindowLength
         STFTOverlap
-        STFTFreqLow
-        STFTFreqHigh
-        STFTScaleLow
-        STFTScaleHigh
         
         PSDWindowLength
         PSDOverlap
-        PSDFreqLow
-        PSDFreqHigh
+        
     end
     properties (Access=protected,Hidden)%Storage of public properties
         Version_
@@ -330,15 +334,9 @@ classdef BioSigPlot < hgsetget
         
         STFTWindowLength_
         STFTOverlap_
-        STFTScaleLow_
-        STFTScaleHigh_
-        STFTFreqLow_
-        STFTFreqHigh_
         
         PSDWindowLength_
         PSDOverlap_
-        PSDFreqLow_
-        PSDFreqHigh_
     end
     properties (SetAccess=protected) %Readonly properties
         Data                        %(Read-Only)All the Signals
@@ -369,6 +367,13 @@ classdef BioSigPlot < hgsetget
         MouseChan                   %(Read-Only) The channel on which the mouse is in
         MouseDataset                %(Read-Only) The dataset on which the mouse is in
     end
+    
+    properties (Dependent)
+        %User friendly named properties
+        
+        sdata                       %(Read-Only)  Selected data
+    end
+ 
     properties
         Fig
         Axes
@@ -596,9 +601,9 @@ classdef BioSigPlot < hgsetget
                 'TriggerEventsDisplay','EventsWindowDisplay','ChanSelectColor',...
                 'AxesBackgroundColor','ChanColors','EventSelectColor','EventDefaultColors',...
                 'TriggerEventDefaultColor','FastEvts','SelectedFastEvt','TriggerEventsFcn',...
-                'SelectedEvent','STFTWindowLength','STFTOverlap','STFTScaleLow',...
-                'STFTScaleHigh','STFTFreqLow','STFTFreqHigh','Mask','LineDefaultColors',...
-                'PSDWindowLength','PSDOverlap','PSDFreqLow','PSDFreqHigh','ControlPanelDisplay',...
+                'SelectedEvent','STFTWindowLength','STFTOverlap',...
+                'Mask','LineDefaultColors',...
+                'PSDWindowLength','PSDOverlap','ControlPanelDisplay',...
                 'LockLayout','ToolbarDisplay','DisplayGauge'};
             
             if isempty(obj.Commands)
@@ -675,9 +680,8 @@ classdef BioSigPlot < hgsetget
                 elseif any(strcmpi(g{i},{'PlaySpeed','FastEvts','SelectedFastEvt',...
                         'EventDefaultColors','EventsWindowDisplay','TriggerEventsFcn',...
                         'TriggerEventDefaultColor','MouseMode','STFTWindowLength',...
-                        'STFTOverlap','STFTScaleLow','STFTScaleHigh','STFTFreqLow',...
-                        'STFTFreqHigh','Title','Version','PSDWindowLength',...
-                        'PSDOverlap','PSDFreqLow','PSDFreqHigh','ControlPanelDisplay',...
+                        'STFTOverlap','Title','Version','PSDWindowLength',...
+                        'PSDOverlap','ControlPanelDisplay',...
                         'LockLayout','ToolbarDisplay','DisplayGauge'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
@@ -894,30 +898,12 @@ classdef BioSigPlot < hgsetget
         function obj = set.STFTOverlap(obj,val), set(obj,'STFTOverlap',val); end
         function val = get.STFTOverlap(obj), val=obj.STFTOverlap_; end
         
-        function obj = set.STFTScaleLow(obj,val), set(obj,'STFTScaleLow',val); end
-        function val = get.STFTScaleLow(obj), val=obj.STFTScaleLow_; end
-        
-        function obj = set.STFTScaleHigh(obj,val), set(obj,'STFTScaleHigh',val); end
-        function val = get.STFTScaleHigh(obj), val=obj.STFTScaleHigh_; end
-        
-        function obj = set.STFTFreqLow(obj,val), set(obj,'STFTFreqLow',val); end
-        function val = get.STFTFreqLow(obj), val=obj.STFTFreqLow_; end
-        
-        function obj = set.STFTFreqHigh(obj,val), set(obj,'STFTFreqHigh',val); end
-        function val = get.STFTFreqHigh(obj), val=obj.STFTFreqHigh_; end
-        
-        
         function obj = set.PSDWindowLength(obj,val), set(obj,'PSDWindowLength',val); end
         function val = get.PSDWindowLength(obj), val=obj.PSDWindowLength_; end
         
         function obj = set.PSDOverlap(obj,val), set(obj,'PSDOverlap',val); end
         function val = get.PSDOverlap(obj), val=obj.PSDOverlap_; end
-        
-        function obj = set.PSDFreqLow(obj,val), set(obj,'PSDFreqLow',val); end
-        function val = get.PSDFreqLow(obj), val=obj.PSDFreqLow_; end
-        
-        function obj = set.PSDFreqHigh(obj,val), set(obj,'PSDFreqHigh',val); end
-        function val = get.PSDFreqHigh(obj), val=obj.PSDFreqHigh_; end
+
         %*****************************************************************
         % ***************** User available methods  **********************
         %*****************************************************************
@@ -990,7 +976,10 @@ classdef BioSigPlot < hgsetget
         function [ndata]=get.MouseDataset(obj)
             [unused,ndata]=getMouseInfo(obj); %#ok<ASGLU>
         end
-        
+        %******************************************************************
+        function d=get.sdata(obj)
+            d=get_selected_data(obj);
+        end
         %*****************************************************************
         %**********************Private Properties*************************
         %*****************************************************************
@@ -2189,7 +2178,6 @@ classdef BioSigPlot < hgsetget
         updateSelectedFastEvent(obj,x)
         Time_Freq_Map(obj,src)
         filterCheck(obj)
-        MnuTFMapSettings(obj)
         ExportData(obj)
         d=preprocessedAllData(obj,n,chan,selection)
         ChangeTime(obj,src)
@@ -2201,7 +2189,6 @@ classdef BioSigPlot < hgsetget
         remakeMontageMenu(obj)
         ChangeMontage(obj,src,data,mtgref)
         scanFilterBank(obj)
-        MnuPSDSettings(obj)
         Power_Spectrum_Density(obj,src)
         SPF_Analysis(obj,src)
         SynchDataWithVideo(obj)
@@ -2264,6 +2251,13 @@ classdef BioSigPlot < hgsetget
         TPCA_Seg_After
         TPCA_S
         
+        STFTFreqLow
+        STFTFreqHigh
+        STFTScaleLow
+        STFTScaleHigh
+        
+        PSDFreqLow
+        PSDFreqHigh
     end
     events
         SelectedFastEvtChange

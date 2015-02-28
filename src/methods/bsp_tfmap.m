@@ -1,4 +1,4 @@
-function [tfm,f,t]=bsp_tfmap(fig,eeg,fs,wd,ov,s,channames,freq)
+function [tfm,f,t]=bsp_tfmap(fig,eeg,fs,wd,ov,s,channames,freq,unit)
 
 nf=2^nextpow2(wd);
 win=hanning(wd);
@@ -18,10 +18,14 @@ for i=1:size(eeg,2)
             subplot(2,1,1)
             plot(eeg(:,i));
             xlim([0 length(eeg(:,i))]);
-            title(channames{i});
+            title({channames{i};'Press any key to coninue'});
             
             subplot(2,1,2)
-            imagesc(t,f,10*log10(tf));
+            if strcmpi(unit,'dB')
+                imagesc(t,f,10*log10(tf));
+            else
+                imagesc(t,f,tf);
+            end
             set(gca,'Tag','TFMapAxes','YLim',freq);
             if ~isempty(s)
                 set(gca,'CLim',s);
@@ -41,7 +45,12 @@ if nargout==0
     if ishandle(fig)
         clf(fig)
         figure(fig)
-        imagesc(t,f,10*log10(tfm));
+        if strcmpi(unit,'dB')
+            imagesc(t,f,10*log10(tfm));
+        else
+            imagesc(t,f,tfm);
+        end
+        
         set(gca,'Tag','TFMapAxes','YLim',freq);
         if ~isempty(s)
             set(gca,'CLim',s);
