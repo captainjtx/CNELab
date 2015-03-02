@@ -116,11 +116,14 @@ Read data chunck by chunk, cutomize chunck size and sample rate for data review
 Add Export Montage and Montage Customization Window
 New Montage File
 
-Permanently store spatial filter result
+% Permanently store spatial filter result
 
 Add old cnelab version detection and deletion features
 
 Startup Resize Bug
 
-Add PSD and TFMap in magnitude scale and refine the options
+% Add PSD and TFMap in magnitude scale and refine the options
 
+Test it under Matlab 2012
+
+% Dynamically add the filter bank

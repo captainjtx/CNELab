@@ -181,7 +181,7 @@ classdef BioSigPlot < hgsetget
         ChannelLines
         
     end
-    properties (Dependent,SetObservable)      %Public properties Requiring a redraw and that can be defined at the beginning
+    properties (Dependent,SetObservable)
         Version
         Title
         Config                  %Default config file [def: defaultconfig] contains all default values
@@ -320,9 +320,6 @@ classdef BioSigPlot < hgsetget
         ChanSelect2Edit_
         
         FileDir_
-        VideoActxOpt_
-        VideoStartTime_
-        VideoEndTime_
         
         VideoTimeFrame_
         
@@ -595,8 +592,8 @@ classdef BioSigPlot < hgsetget
                 'FilterNotch1','FilterNotch2','FilterCustomIndex','NormalModeColor',...
                 'ChanNames','GroupNames','Units','XGrid','YGrid','Position','Version','MouseMode',...
                 'PlaySpeed','VideoTimerPeriod','AxesHeight',...
-                'YBorder','YGridInterval','Selection','FileDir','VideoStartTime','VideoEndTime',...
-                'VideoFile','VideoTimeFrame','VideoLineTime','VideoTimer','VideoActxOpt',...
+                'YBorder','YGridInterval','Selection','FileDir',...
+                'VideoFile','VideoTimeFrame','VideoTimer',...
                 'BadChannels','ChanSelect2Display','ChanSelect2Edit','EventsDisplay',...
                 'TriggerEventsDisplay','EventsWindowDisplay','ChanSelectColor',...
                 'AxesBackgroundColor','ChanColors','EventSelectColor','EventDefaultColors',...
@@ -625,7 +622,7 @@ classdef BioSigPlot < hgsetget
                         'FilterHigh','FilterNotch1','FilterNotch2','FilterCustomIndex'...
                         'NormalModeColor','ChanNames','GroupNames','Units','XGrid','YGrid',...
                         'AxesHeight','YBorder','YGridInterval','FileDir',...
-                        'VideoEndTime','VideoStartTime','VideoTimerPeriod','VideoActxOpt',...
+                        'VideoTimerPeriod',...
                         'VideoTimeFrame','BadChannels','ChanSelect2Display',...
                         'AxesBackgroundColor','TriggerEventsFcn'}))
                     g{i}=keylist{strcmpi(g{i},keylist)};
@@ -820,15 +817,6 @@ classdef BioSigPlot < hgsetget
         function obj = set.FileDir(obj,val), set(obj,'FileDir',val); end
         function val = get.FileDir(obj), val=obj.FileDir_; end
         
-        function obj = set.VideoActxOpt(obj,val), set(obj,'VideoActxOpt',val);end
-        function val = get.VideoActxOpt(obj), val=obj.VideoActxOpt_; end
-        
-        function obj = set.VideoStartTime(obj,val), set(obj,'VideoStartTime',val);end
-        function val = get.VideoStartTime(obj), val=obj.VideoStartTime_; end
-        
-        function obj = set.VideoEndTime(obj,val), set(obj,'VideoEndTime',val);end
-        function val = get.VideoEndTime(obj), val=obj.VideoEndTime_; end
-        
         function obj = set.VideoTimeFrame(obj,val), set(obj,'VideoTimeFrame',val);end
         function val = get.VideoTimeFrame(obj), val=obj.VideoTimeFrame_; end
         
@@ -992,13 +980,14 @@ classdef BioSigPlot < hgsetget
             obj.Config_=val;
             def=load('-mat',val);
             names=fieldnames(def);
-            names=names(~strcmpi('Colors',names) &...
-                ~strcmpi('Position',names));
-            set(obj,'Colors_',def.Colors);
+            names=names(~strcmpi('Position',names)&~strcmpi('VideoStartTime',names)...
+                &~strcmpi('VideoActxOpt',names));
             for i=1:length(names)
                 set(obj,[names{i} '_'],def.(names{i}));
             end
             obj.Position=def.Position; %#ok<*MCSUP>
+            obj.VideoStartTime=def.VideoStartTime;
+            obj.VideoActxOpt=def.VideoActxOpt;
         end
         function obj = set.Title_(obj,val)
             if ~iscell(val)
@@ -1599,7 +1588,6 @@ classdef BioSigPlot < hgsetget
             
             obj.VideoLineTime=val;
             %try
-            
             t=(val-obj.Time)*obj.SRate_;
             
             for i=1:length(obj.LineVideo)
@@ -2072,6 +2060,9 @@ classdef BioSigPlot < hgsetget
                         set(src,'String','-');
                     end
                 case obj.PopFilter
+                    if get(obj.PopFilter,'value')==1
+                        scanFilterBank(obj);
+                    end
                     
             end
             

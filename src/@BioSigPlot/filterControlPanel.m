@@ -26,7 +26,7 @@ obj.EdtFilterNotch2=uicontrol(obj.FilterPanel,'Style','edit','units','normalized
 uicontrol(obj.FilterPanel,'Style','text','String','Custom:','units','normalized','position',[0.72 0.2,0.1,0.6],'HorizontalAlignment','right',...
     'FontUnits','normalized','FontSize',0.55);
 obj.PopFilter=uicontrol(obj.FilterPanel,'Style','popupmenu','units','normalized','position',[.83 0.1 0.165 0.8],'BackgroundColor',[1 1 1],...
-    'Callback',@(src,evt) ChangeFilter(obj,src),'String','None');
+    'Callback',@(src,evt) ChangeFilter(obj,src),'String',{'Refresh','None'},'SelectionHighlight','off','ButtonDownFcn',@(src,evt) ChangeFilter(obj,src));
 end
 
 

@@ -81,22 +81,22 @@ end
 end
 
 function data=applyCustomFilters(obj,data,fcum)
-if fcum==1
+if fcum==1||fcum==2
     return
 else
     
     CustomFilters=obj.CustomFilters;
     fs=obj.SRate;
     
-    if isfield(CustomFilters{fcum-1},'fir')
-        fir=CustomFilters{fcum-1}.fir;
+    if isfield(CustomFilters{fcum-2},'fir')
+        fir=CustomFilters{fcum-2}.fir;
         for i=1:length(fir)
             a=1;
             b=fir(i).h;
             data=filter_symmetric(b,a,data,fs,0,'fir');
         end
         
-    elseif isfield(CustomFilters{fcum-1},'iir')
+    elseif isfield(CustomFilters{fcum-2},'iir')
         
     end
 end

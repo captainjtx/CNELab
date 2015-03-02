@@ -100,7 +100,7 @@ obj.ChannelLines=channelLines;
 
 offon={'off','on'};
 for i=1:length(obj.Axes)
-    set(obj.Axes(i),'XGrid',offon{obj.XGrid+1},'YGrid',offon{obj.YGrid+1},'DrawMode','fast','GridLineStyle',':')
+    set(obj.Axes(i),'XGrid',offon{obj.XGrid+1},'YGrid',offon{obj.YGrid+1},'GridLineStyle',':')
 end
 
 if ~isempty(obj.LineVideo)

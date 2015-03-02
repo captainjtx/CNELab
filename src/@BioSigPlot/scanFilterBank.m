@@ -5,17 +5,20 @@ function scanFilterBank(obj)
 
 
 listing=dir([obj.CNELabDir,'/db/filters/*mat']);
-popStr=cell(1,1+length(listing));
+popStr=cell(2+length(listing),1);
 
-popStr{1}='None';
+popStr{1}='Refresh';
+popStr{2}='None';
 for i=1:length(listing)
     [pathstr, name, ext] = fileparts(listing(i).name);
     obj.CustomFilters{i}=load(listing(i).name,'-mat');
     
-    popStr{i+1}=[num2str(i),'-',name];
+    popStr{i+2}=[num2str(i),'-',name];
 end
 
 set(obj.PopFilter,'String',popStr);
+set(obj.PopFilter,'Value',2);
+
 
 end
 
