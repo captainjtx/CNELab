@@ -30,13 +30,15 @@ for i=2:length(cds)
 end
 
 data=cell(1,length(cds));
+FileNames=cell(1,length(cds));
 fnames=cell(1,length(cds));
 for i=1:length(cds)
     data{i}=cds{i}.Data.Data;
     
-    [pathstr,fnames{i},ext]=fileparts(cds{i}.Data.FileName);
+    FileNames{i}=cds{i}.Data.FileName;
+    fnames{i}=fileparts(cds{i}.Data.FileName);
 end
-[FileDir,name,ext] = fileparts(cds{1}.Data.FileName);
+
 %==========================================================================
 if isempty(fs)||(fs==0)
     fs=256;
@@ -108,7 +110,7 @@ bsp=BioSigPlot(data,'Title',fnames,...
                     'VideoStartTime',VideoStartTime,...
                     'VideoTimeFrame',VideoTimeFrame,...
                     'Units',Units,...
-                    'FileDir',FileDir,...
+                    'FileNames',FileNames,...
                     'StartTime',StartTime);
 set(bsp.Fig,'Visible','off');
 %==========================================================================

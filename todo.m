@@ -127,3 +127,13 @@ Startup Resize Bug
 Test it under Matlab 2012
 
 % Dynamically add the filter bank
+
+Adjustable Height of Event note and transparent background
+
+% Open montage in the current folder
+
+% Display events
+
+Import filter
+
+Enlarge events when you select

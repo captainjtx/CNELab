@@ -127,7 +127,7 @@ classdef CommonDataStructure < handle
                     '*.cds;*.mat','Common Data Structure Formats (*.cds;*.mat)';...
                     '*.mat','Matlab Mat File (*.mat)';
                     '*.cds','Common Data Structure Fromat (*.cds)'}...
-                    ,title,'untitled');
+                    ,title,obj.Data.FileName);
                 
                 if ~FileName
                     return

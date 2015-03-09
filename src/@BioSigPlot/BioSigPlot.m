@@ -258,6 +258,8 @@ classdef BioSigPlot < hgsetget
         PSDWindowLength
         PSDOverlap
         
+        FileDir
+        
     end
     properties (Access=protected,Hidden)%Storage of public properties
         Version_
@@ -319,7 +321,7 @@ classdef BioSigPlot < hgsetget
         ChanSelect2Display_
         ChanSelect2Edit_
         
-        FileDir_
+        FileNames_
         
         VideoTimeFrame_
         
@@ -592,7 +594,7 @@ classdef BioSigPlot < hgsetget
                 'FilterNotch1','FilterNotch2','FilterCustomIndex','NormalModeColor',...
                 'ChanNames','GroupNames','Units','XGrid','YGrid','Position','Version','MouseMode',...
                 'PlaySpeed','VideoTimerPeriod','AxesHeight',...
-                'YBorder','YGridInterval','Selection','FileDir',...
+                'YBorder','YGridInterval','Selection','FileNames',...
                 'VideoFile','VideoTimeFrame','VideoTimer',...
                 'BadChannels','ChanSelect2Display','ChanSelect2Edit','EventsDisplay',...
                 'TriggerEventsDisplay','EventsWindowDisplay','ChanSelectColor',...
@@ -621,7 +623,7 @@ classdef BioSigPlot < hgsetget
                         'TimeUnit','Colors','Filtering','FilterLow',...
                         'FilterHigh','FilterNotch1','FilterNotch2','FilterCustomIndex'...
                         'NormalModeColor','ChanNames','GroupNames','Units','XGrid','YGrid',...
-                        'AxesHeight','YBorder','YGridInterval','FileDir',...
+                        'AxesHeight','YBorder','YGridInterval','FileNames',...
                         'VideoTimerPeriod',...
                         'VideoTimeFrame','BadChannels','ChanSelect2Display',...
                         'AxesBackgroundColor','TriggerEventsFcn'}))
@@ -814,8 +816,8 @@ classdef BioSigPlot < hgsetget
         function obj = set.EventDisplayIndex(obj,val), obj.EventDisplayIndex=val; end
         function val = get.EventDisplayIndex(obj), val=obj.EventDisplayIndex; end
         
-        function obj = set.FileDir(obj,val), set(obj,'FileDir',val); end
-        function val = get.FileDir(obj), val=obj.FileDir_; end
+        function obj = set.FileNames(obj,val), set(obj,'FileNames',val); end
+        function val = get.FileNames(obj), val=obj.FileNames_; end
         
         function obj = set.VideoTimeFrame(obj,val), set(obj,'VideoTimeFrame',val);end
         function val = get.VideoTimeFrame(obj), val=obj.VideoTimeFrame_; end
@@ -891,7 +893,8 @@ classdef BioSigPlot < hgsetget
         
         function obj = set.PSDOverlap(obj,val), set(obj,'PSDOverlap',val); end
         function val = get.PSDOverlap(obj), val=obj.PSDOverlap_; end
-
+        
+        function val=get.FileDir(obj), val=fileparts(obj.FileNames{obj.DisplayedData(1)}); end
         %*****************************************************************
         % ***************** User available methods  **********************
         %*****************************************************************
@@ -903,7 +906,7 @@ classdef BioSigPlot < hgsetget
         %*****************************************************************
         % ***************** Public computed read-only properties*********
         %*****************************************************************
-        
+
         %******************************************************************
         function val = get.DataTime(obj)
             val=size(obj.Data{1},1)/obj.SRate;
@@ -1079,7 +1082,6 @@ classdef BioSigPlot < hgsetget
                     evtsInd=find([obj.Evts_{:,4}]==0);
                 end
             else
-                
                 if obj.TriggerEventsDisplay
                     evtsInd=find([obj.Evts_{:,4}]~=0);
                 else
@@ -2202,7 +2204,7 @@ classdef BioSigPlot < hgsetget
         EditMode
         ResizeMode
         
-        FileDir
+        FileNames
         StartTime
         
         VideoActxOpt           %WMP or VLC
