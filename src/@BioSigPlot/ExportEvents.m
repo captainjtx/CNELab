@@ -26,7 +26,7 @@ if ~isempty(Events)
     [FileName,FilePath]=uiputfile({'*.mat;*.evt','Event Files (*.mat;*.evt)';...
         '*.mat','Matlab Mat file (*.mat)';
         '*.evt','Event File (*.evt)'}...
-        ,'save your Events','untitled');
+        ,'save your Events',fullfile(obj.FileDir,'untitled'));
     if FileName~=0
         save(fullfile(FilePath,FileName),'-struct','Events','-mat');
         obj.IsEvtsSaved=true;

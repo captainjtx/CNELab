@@ -137,3 +137,7 @@ Adjustable Height of Event note and transparent background
 Import filter
 
 Enlarge events when you select
+
+Group change event
+
+Zoom in and out at both spatial and time scale
