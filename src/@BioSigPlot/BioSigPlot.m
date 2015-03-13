@@ -204,8 +204,7 @@ classdef BioSigPlot < hgsetget
         FilterNotch2
         FilterCustomIndex
         
-        Colors                  %Colors of each Data set.
-        NormalModeColor         %Colors for view Horizontal, Vertical, or single (DAT*)
+        DefaultLineColor         %Colors for view Horizontal, Vertical, or single (DAT*)
         ChanSelectColor         %Colors when Channels are selected
         AxesBackgroundColor
         ChanColors
@@ -220,7 +219,6 @@ classdef BioSigPlot < hgsetget
         MontageRef              %N° Montage
         XGrid                   %true : show Grid line on each sec
         YGrid                   %true : show Grid line on each channel
-        YGridInterval           %Number of subdivision for the grid
         EventsDisplay           %true : show Events
         TriggerEventsDisplay
         EventsWindowDisplay     %true : show Events Window
@@ -278,7 +276,7 @@ classdef BioSigPlot < hgsetget
         DispChans_
         FirstDispChans_
         TimeUnit_
-        Colors_
+
         Filtering_
         FilterLow_
         FilterHigh_
@@ -286,7 +284,7 @@ classdef BioSigPlot < hgsetget
         FilterNotch2_
         FilterCustomIndex_
         
-        NormalModeColor_
+        DefaultLineColor_
         ChanSelectColor_
         AxesBackgroundColor_
         ChanColors_
@@ -298,7 +296,6 @@ classdef BioSigPlot < hgsetget
         
         DataView_
         MontageRef_
-        YGridInterval_
         XGrid_
         YGrid_
         EventsDisplay_
@@ -442,7 +439,7 @@ classdef BioSigPlot < hgsetget
             obj.Title=cell(1,obj.DataNumber);
             obj.ResizeMode=false;
             obj.UponAdjustPanel=false;
-            
+
             obj.VideoLineTime=0;
             obj.IsSelecting=0;
             obj.SelectionStart=[];
@@ -489,7 +486,7 @@ classdef BioSigPlot < hgsetget
             if isempty(n), g=[{'Config' obj.DefaultConfigFile} g]; end
             set(obj,g{:});
             
-            obj.ChanColors_=obj.applyPanelVal(cell(1,obj.DataNumber),obj.NormalModeColor);
+            obj.ChanColors_=obj.applyPanelVal(cell(1,obj.DataNumber),obj.DefaultLineColor);
             
             p=mfilename('fullpath');
             obj.CNELabDir=fullfile([p(1:end-10),'../..']);
@@ -585,25 +582,6 @@ classdef BioSigPlot < hgsetget
             NeedRedrawTimeChange=false;
             
             g=varargin;
-            %Rearrangement: make sure there is no conflict on the order of
-            %properties. Constraint config must be before all and Colors
-            %must be before *ModeColors
-            keylist={'Title','Config','SRate','WinLength','Gain','DataView','Montage',...
-                'MontageRef','Evts','Time','FirstDispChans','DispChans','TimeUnit',...
-                'Colors','Filtering','FilterLow','FilterHigh',...
-                'FilterNotch1','FilterNotch2','FilterCustomIndex','NormalModeColor',...
-                'ChanNames','GroupNames','Units','XGrid','YGrid','Position','Version','MouseMode',...
-                'PlaySpeed','VideoTimerPeriod','AxesHeight',...
-                'YBorder','YGridInterval','Selection','FileNames',...
-                'VideoFile','VideoTimeFrame','VideoTimer',...
-                'BadChannels','ChanSelect2Display','ChanSelect2Edit','EventsDisplay',...
-                'TriggerEventsDisplay','EventsWindowDisplay','ChanSelectColor',...
-                'AxesBackgroundColor','ChanColors','EventSelectColor','EventDefaultColors',...
-                'TriggerEventDefaultColor','FastEvts','SelectedFastEvt','TriggerEventsFcn',...
-                'SelectedEvent','STFTWindowLength','STFTOverlap',...
-                'Mask','LineDefaultColors',...
-                'PSDWindowLength','PSDOverlap','ControlPanelDisplay',...
-                'LockLayout','ToolbarDisplay','DisplayGauge'};
             
             if isempty(obj.Commands)
                 command='a=BioSigPlot(data';
@@ -612,26 +590,21 @@ classdef BioSigPlot < hgsetget
                 command='set(a';
             end
             
-            n=find(strcmpi('Colors',g(1:2:end)))*2;
-            if ~isempty(n), g=g([n-1 n 1:n-2 n+1:end]); end
             n=find(strcmpi('Config',g(1:2:end)))*2;
             if ~isempty(n), g=g([n-1 n 1:n-2 n+1:end]); end
             
             for i=1:2:length(g)
                 if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage',...
-                        'DataView','MontageRef','FirstDispChans','DispChans',...
-                        'TimeUnit','Colors','Filtering','FilterLow',...
+                        'DataView','MontageRef','DispChans',...
+                        'Filtering','FilterLow',...
                         'FilterHigh','FilterNotch1','FilterNotch2','FilterCustomIndex'...
-                        'NormalModeColor','ChanNames','GroupNames','Units','XGrid','YGrid',...
-                        'AxesHeight','YBorder','YGridInterval','FileNames',...
-                        'VideoTimerPeriod',...
-                        'VideoTimeFrame','BadChannels','ChanSelect2Display',...
-                        'AxesBackgroundColor','TriggerEventsFcn'}))
-                    g{i}=keylist{strcmpi(g{i},keylist)};
+                        'ChanNames','GroupNames',...
+                        'AxesHeight','YBorder',...
+                        'ChanSelect2Display','FirstDispChans'}))
+                   
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage','DataView',...
-                            'MontageRef','DispChans','AxesHeight'...
-                            'AxesBackgroundColor'}))
+                            'MontageRef','DispChans','AxesHeight'}))
                         NeedRemakeAxes=true;
                     end
                     if any(strcmpi(g{i},{'Config','Montage','ChanNames','GroupNames','DataView','MontageRef'}))
@@ -652,48 +625,41 @@ classdef BioSigPlot < hgsetget
                     
                 elseif any(strcmpi(g{i},{'EventsDisplay','Evts',...
                         'EventSelectColor','TriggerEventsDisplay'}))
-                    g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     NeedRedrawEvts=true;
                 elseif any(strcmpi(g{i},{'ChanSelect2Edit','ChanColors',...
                         'ChanSelectColor','LineDefaultColors'}))
-                    
-                    g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     NeedHighlightChannels=true;
                     
                 elseif any(strcmpi(g{i},{'SelectedEvent'}))
-                    g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     NeedHighlightEvents=true;
                 elseif any(strcmpi(g{i},{'Gain','Mask'}))
-                    g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     NeedChangeGain=true;
                 elseif any(strcmpi(g{i},{'Time'}))
-                    g{i}=keylist{strcmpi(g{i},keylist)};
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     NeedRedrawEvts=true;
                     NeedDrawSelect=true;
                     NeedRedrawTimeChange=true;
+                elseif any(strcmpi(g{i},{'Selection'}))
+                    set@hgsetget(obj,[g{i} '_'],g{i+1})
+                    NeedDrawSelect=true;
                 elseif any(strcmpi(g{i},{'PlaySpeed','FastEvts','SelectedFastEvt',...
                         'EventDefaultColors','EventsWindowDisplay','TriggerEventsFcn',...
                         'TriggerEventDefaultColor','MouseMode','STFTWindowLength',...
                         'STFTOverlap','Title','Version','PSDWindowLength',...
                         'PSDOverlap','ControlPanelDisplay',...
-                        'LockLayout','ToolbarDisplay','DisplayGauge'}))
-                    g{i}=keylist{strcmpi(g{i},keylist)};
+                        'LockLayout','ToolbarDisplay','DisplayGauge','XGrid','YGrid',...
+                        'VideoTimerPeriod','VideoTimeFrame','BadChannels','AxesBackgroundColor',...
+                        'DefaultLineColor','Units','TimeUnit','FileNames','TriggerEventsFcn'}))
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
-                elseif any(strcmpi(g{i},{'Selection'}))
-                    g{i}=keylist{strcmpi(g{i},keylist)};
-                    set@hgsetget(obj,[g{i} '_'],g{i+1})
-                    NeedDrawSelect=true;
                 else
                     set@hgsetget(obj,varargin{i},varargin{i+1})
                 end
                 
-                
-                if any(strcmpi(g{i},keylist))
+                if isprop(obj,g{i})
                     command=[command ',''' g{i} ''',' obj2str(g{i+1})]; %#ok<AGROW>
                     NeedCommand=true;
                 end
@@ -708,7 +674,7 @@ classdef BioSigPlot < hgsetget
             if NeedHighlightEvents, highlightSelectedEvents(obj); end
             if NeedChangeGain&&~obj.IsInitialize, gainChangeSelectedChannels(obj); end
             if NeedDrawSelect, redrawSelection(obj); end
-            if NeedRedrawTimeChange, redrawChangeTime(obj); end
+            if NeedRedrawTimeChange, redrawChangeBlock(obj); end
             if NeedCommand
                 if strcmpi(command(1:12),'a=BioSigPlot')
                     n=1;
@@ -757,8 +723,6 @@ classdef BioSigPlot < hgsetget
         function val = get.FirstDispChans(obj), val=obj.FirstDispChans_; end
         function obj = set.TimeUnit(obj,val), set(obj,'TimeUnit',val); end
         function val = get.TimeUnit(obj), val=obj.TimeUnit_; end
-        function obj = set.Colors(obj,val), set(obj,'Colors',val); end
-        function val = get.Colors(obj), val=obj.Colors_; end
         function obj = set.Filtering(obj,val), set(obj,'Filtering',val); end
         function val = get.Filtering(obj), val=obj.Filtering_; end
         function obj = set.FilterLow(obj,val), set(obj,'FilterLow',val); end
@@ -774,8 +738,8 @@ classdef BioSigPlot < hgsetget
         function obj = set.FilterCustomIndex(obj,val), set(obj,'FilterCustomIndex',val); end
         function val = get.FilterCustomIndex(obj), val=obj.FilterCustomIndex_; end
         
-        function obj = set.NormalModeColor(obj,val), set(obj,'NormalModeColor',val); end
-        function val = get.NormalModeColor(obj), val=obj.NormalModeColor_; end
+        function obj = set.DefaultLineColor(obj,val), set(obj,'DefaultLineColor',val); end
+        function val = get.DefaultLineColor(obj), val=obj.DefaultLineColor_; end
         
         function obj = set.ChanSelectColor(obj,val), set(obj,'ChanSelectColor', val); end
         function val = get.ChanSelectColor(obj), val=obj.ChanSelectColor_; end
@@ -805,8 +769,6 @@ classdef BioSigPlot < hgsetget
         function val = get.AxesHeight(obj), val=obj.AxesHeight_; end
         function obj = set.YBorder(obj,val), set(obj,'YBorder',val); end
         function val = get.YBorder(obj), val=obj.YBorder_; end
-        function obj = set.YGridInterval(obj,val), set(obj,'YGridInterval',val); end
-        function val = get.YGridInterval(obj), val=obj.YGridInterval_; end
         function obj = set.Selection(obj,val), set(obj,'Selection',val); end
         function val = get.Selection(obj), val=obj.Selection_; end
         
@@ -999,11 +961,7 @@ classdef BioSigPlot < hgsetget
             
             obj.Title_=val;
         end
-        %******************************************************************
-        function obj = set.Colors_(obj,val)
-            obj.Colors_=val;
-            obj.NormalModeColor_=val;
-        end
+        %*****************************************************************
         
         function obj = set.SRate_(obj,val)
             obj.SRate_=val;
@@ -1259,7 +1217,14 @@ classdef BioSigPlot < hgsetget
                 end
             end
         end
-        
+        %******************************************************************
+        function obj = set.AxesBackgroundColor_(obj,val)
+            obj.AxesBackgroundColor_=val;
+            if ~isempty(obj.Axes)
+                set(obj.Axes(obj.DisplayedData(ishandle(obj.Axes(obj.DisplayedData)))),'color',val);
+            end
+            
+        end
         %******************************************************************
         function obj = set.XGrid_(obj,val)
             if ischar(val)
@@ -1269,8 +1234,16 @@ classdef BioSigPlot < hgsetget
             end
             if obj.XGrid_
                 set(obj.MenuXGrid,'Checked','on');
+                
+                if ~isempty(obj.Axes)
+                    set(obj.Axes(obj.DisplayedData(ishandle(obj.Axes(obj.DisplayedData)))),'XGrid','on','XMinorGrid','on');
+                end
+                
             else
                 set(obj.MenuXGrid,'Checked','off');
+                if ~isempty(obj.Axes)
+                    set(obj.Axes(obj.DisplayedData(ishandle(obj.Axes(obj.DisplayedData)))),'XGrid','off','XMinorGrid','off');
+                end
             end
         end
         
@@ -1283,8 +1256,14 @@ classdef BioSigPlot < hgsetget
             end
             if obj.YGrid_
                 set(obj.MenuYGrid,'Checked','on');
+                if ~isempty(obj.Axes)
+                    set(obj.Axes(obj.DisplayedData(ishandle(obj.Axes(obj.DisplayedData)))),'YGrid','on','YMinorGrid','on');
+                end
             else
                 set(obj.MenuYGrid,'Checked','off');
+                if ~isempty(obj.Axes)
+                    set(obj.Axes(obj.DisplayedData(ishandle(obj.Axes(obj.DisplayedData)))),'YGrid','off','YMinorGrid','off');
+                end
             end
         end
         %==================================================================
@@ -2174,7 +2153,7 @@ classdef BioSigPlot < hgsetget
         ExportData(obj)
         d=preprocessedAllData(obj,n,chan,selection)
         ChangeTime(obj,src)
-        redrawChangeTime(obj)
+        redrawChangeBlock(obj)
         showGauge(obj)
         maskChannel(obj,src)
         MnuChanGain(obj,src)

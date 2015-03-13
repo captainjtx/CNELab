@@ -58,7 +58,7 @@ if strcmp(obj.DataView,'Horizontal')
             
         end
         obj.Axes(i)=axes('parent',obj.MainPanel,'XLim',[0 obj.WinLength*obj.SRate],'XTick',0:obj.SRate:obj.WinLength*obj.SRate,...
-            'TickLength',[.005 0],'position',position,'color',backgroundColor,'YAxisLocation','right');
+            'TickLength',[.005 0],'position',position,'color',backgroundColor,'YAxisLocation','right','Layer','bottom');
     end
 elseif strcmp(obj.DataView,'Vertical')
     for i=1:n
@@ -75,7 +75,7 @@ elseif strcmp(obj.DataView,'Vertical')
                 'min',0,'max',m,'SliderStep',[1 obj.DispChans(i)]/max(1,m),'Callback',@(src,evt) ChangeSliders(obj,src));
         end
         obj.Axes(i)=axes('parent',obj.MainPanel,'XLim',[0 obj.WinLength*obj.SRate],'XTick',0:obj.SRate:obj.WinLength*obj.SRate,...
-            'TickLength',[.005 0],'position',position,'color',backgroundColor,'YAxisLocation','right');
+            'TickLength',[.005 0],'position',position,'color',backgroundColor,'YAxisLocation','right','Layer','bottom');
     end
 else
     
@@ -90,7 +90,7 @@ else
             'min',0,'max',m,'SliderStep',[1 obj.DispChans(n)]/max(1,m),'Callback',@(src,evt) ChangeSliders(obj,src));
     end
     obj.Axes=axes('parent',obj.MainPanel,'XLim',[0 obj.WinLength*obj.SRate],'XTick',0:obj.SRate:obj.WinLength*obj.SRate,...
-        'TickLength',[.005 0],'position',position,'color',backgroundColor,'YAxisLocation','right');
+        'TickLength',[.005 0],'position',position,'color',backgroundColor,'YAxisLocation','right','Layer','bottom');
 end
 
 if ~isempty(obj.DispChans) && strcmp(obj.MouseMode,'Pan')

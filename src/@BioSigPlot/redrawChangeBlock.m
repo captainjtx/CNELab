@@ -1,4 +1,4 @@
-function redrawChangeTime(obj)
+function redrawChangeBlock(obj)
 dd=obj.DisplayedData;
 t=round(max(1,obj.Time*obj.SRate+1):min((obj.Time+obj.WinLength)*obj.SRate,size(obj.Data{1},1)));
 
@@ -13,7 +13,13 @@ for i=1:length(dd)
         else
             axe=obj.Axes(dd(i));
         end
-        plotXTicks(axe,obj.Time,obj.WinLength,obj.SRate)
+        plotXTicks(axe,obj.Time,obj.WinLength,obj.SRate);
+        
+        
+%         ylim=[obj.MontageChanNumber(dd(i))+2-obj.YBorder_(1)-obj.FirstDispChans(dd(i))-min(obj.DispChans(dd(i)),obj.MontageChanNumber(dd(i)))    ...
+%             obj.MontageChanNumber(dd(i))+obj.YBorder_(2)-obj.FirstDispChans(dd(i))+1];
+%         set(axe,'YLim',ylim);
+        
     end
 end
 
