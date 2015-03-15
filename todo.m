@@ -141,3 +141,5 @@ Enlarge events when you select
 Group change event
 
 Zoom in and out at both spatial and time scale
+
+Empty event bug

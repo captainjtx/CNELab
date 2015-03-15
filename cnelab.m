@@ -166,11 +166,14 @@ for i=1:length(cds)
 end
     
 %check if the event is duplicated==========================================
-[tmp,itime,ic]=unique([evts{:,1}]);
-[tmp,itxt,ic]=unique(evts(:,2));
-imerge=unique(cat(1,itime,itxt));
+if ~isempty(evts)
+    [tmp,itime,ic]=unique([evts{:,1}]);
+    [tmp,itxt,ic]=unique(evts(:,2));
+    imerge=unique(cat(1,itime,itxt));
+    evts=evts(imerge,:);
+end
 %==========================================================================
-bsp.Evts=evts(imerge,:);
+bsp.Evts=evts;
 %==========================================================================
 assignin('base','bsp',bsp);
 set(bsp.Fig,'Visible','on')
