@@ -52,7 +52,8 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         if isempty(obj.DispChans) %No elevator
             ylim=[1-obj.YBorder_(1) Nchan(i)+obj.YBorder_(2)];
         else
-            ylim=[Nchan(i)+2-obj.YBorder_(1)-obj.FirstDispChans(i)-min(Nchan(i),obj.DispChans(i))      Nchan(i)+obj.YBorder_(2)-obj.FirstDispChans(i)+1];
+            ylim=[Nchan(i)+2-obj.YBorder_(1)-obj.FirstDispChans(i)-min(Nchan(i),obj.DispChans(i))      ...
+                Nchan(i)+obj.YBorder_(2)-obj.FirstDispChans(i)+1];
         end
         cla(obj.Axes(i))
         set(obj.Axes(i),'Ylim',ylim,'Ytick',0.5:1:Nchan(i)+0.5,'YTickLabel',{},'XtickLabel',{});
@@ -200,9 +201,10 @@ set(axe,'XTick',(time_labels-time)*fs);
 for i=1:length(time_labels)
     t=time_labels(i);
     p=(t-time)/WinLength;
-    text(p+.002,.002,num2str(t),'Parent',axe,'HorizontalAlignment','left',...
+    h=text(p+.002,.002,num2str(t),'Parent',axe,'HorizontalAlignment','left',...
         'VerticalAlignment','bottom','FontWeight','normal','units','normalized',...
         'color',[0 0 1],'DisplayName',['XTick',num2str(i)]);
+    uistack(h,'top');
 end
 
 end
@@ -215,10 +217,22 @@ function plotYTicks(axe,ChanNames,ChanSelect2Edit,ChanSelectColor,gain)
 
 lim=get(axe,'Ylim');
 
+h=findobj(axe,'-regexp','DisplayName','ChanName*');
+if ~isempty(h)
+    delete(h);
+end
+
+h=findobj(axe,'-regexp','DisplayName','YGauge*');
+if ~isempty(h)
+    delete(h);
+end
+
 n=length(ChanNames);
+count=0;
 for i=1:n
     p=(n-i+1-lim(1))/(lim(2)-lim(1));
     if p<.99 && p>0
+         count=count+1;
         if ismember(i,ChanSelect2Edit)
             YLabelColor=ChanSelectColor;
         else
@@ -226,13 +240,13 @@ for i=1:n
         end
         h=text(.002,p+.004,ChanNames{i},'Parent',axe,'HorizontalAlignment','left',...
             'VerticalAlignment','bottom','FontWeight','bold','units','normalized',...
-            'color',YLabelColor,'DisplayName',['ChanName' num2str(i)]);
+            'color',YLabelColor,'DisplayName',['ChanName' num2str(count)]);
 %         drawnow;
-        uistack(h,'top');
+        uistack(h,'bottom');
         
         h=text(0.965,p,num2str(1/gain(i),'%0.3g'),'Parent',axe,'HorizontalAlignment','left',...
             'VerticalAlignment','middle','FontWeight','bold','units','normalized',...
-            'DisplayName',['YGauge' num2str(i)],'Color',[1 0 1]);
+            'DisplayName',['YGauge' num2str(count)],'Color',[1 0 1]);
 %         drawnow;
         uistack(h,'top');
     end

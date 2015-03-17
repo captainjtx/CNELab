@@ -148,3 +148,5 @@ Zoom in and out at both spatial and time scale
 % Add default layout: event panel width and axes height according to channels/page
 
 Initial axe adjust bar width bug
+
+Plot XTick and YTick text accelerate

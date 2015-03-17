@@ -64,7 +64,8 @@ if strcmp(obj.DataView,'Horizontal')
             
         end
         obj.Axes(i)=axes('parent',obj.MainPanel,'XLim',[0 obj.WinLength*obj.SRate],'XTick',0:obj.SRate:obj.WinLength*obj.SRate,...
-            'TickLength',[.005 0],'position',position,'color',backgroundColor,'YAxisLocation','right','Layer','bottom');
+            'TickLength',[.005 0],'position',position,'color',backgroundColor,'YAxisLocation','right','Layer','bottom',...
+            'FontSmoothing','on');
     end
 elseif strcmp(obj.DataView,'Vertical')
     for i=1:n
@@ -85,7 +86,7 @@ elseif strcmp(obj.DataView,'Vertical')
         end
         obj.Axes(i)=axes('parent',obj.MainPanel,'XLim',[0 obj.WinLength*obj.SRate],'XTick',0:obj.SRate:obj.WinLength*obj.SRate,...
             'TickLength',[.005 0],'units','normalized','position',[0,position(2)/MainPos(4),position(3)/MainPos(3),position(4)/MainPos(4)],...
-            'color',backgroundColor,'YAxisLocation','right','Layer','bottom');
+            'color',backgroundColor,'YAxisLocation','right','Layer','bottom','FontSmoothing','on');
         
         if i~=n
             obj.AxesAdjustPanels(i)=uipanel(obj.MainPanel,'units','normalized','BorderType','etchedout',...
@@ -107,7 +108,8 @@ else
             'min',0,'max',m,'SliderStep',[1 obj.DispChans(n)]/max(1,m),'Callback',@(src,evt) ChangeSliders(obj,src));
     end
     obj.Axes=axes('parent',obj.MainPanel,'XLim',[0 obj.WinLength*obj.SRate],'XTick',0:obj.SRate:obj.WinLength*obj.SRate,...
-        'TickLength',[.005 0],'position',position,'color',backgroundColor,'YAxisLocation','right','Layer','bottom');
+        'TickLength',[.005 0],'position',position,'color',backgroundColor,'YAxisLocation','right','Layer','bottom',...
+        'FontSmoothing','on');
 end
 
 if ~isempty(obj.DispChans) && strcmp(obj.MouseMode,'Pan')

@@ -58,7 +58,7 @@ for i=1:size(evts,1)
         EventLines(count)=line([x x],[0 1000],'parent',axe,'Color',colors{i});
         EventTexts(count)=text('Parent',axe,'position',[x yl(2)],'BackgroundColor',colors{i},'EdgeColor',colors{i},...
             'VerticalAlignment','Top','Margin',1,'FontSize',12,'String',evts{i,2},'Editing','off','SelectionHighlight','on',...
-            'ButtonDownFcn',@(src,evt)openText(obj,src,axenum));
+            'ButtonDownFcn',@(src,evt)openText(obj,src,axenum),'DisplayName',['Event',num2str(count)]);
         EventIndex(count)=i;
     end
 end

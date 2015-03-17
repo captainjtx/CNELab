@@ -584,6 +584,7 @@ classdef BioSigPlot < hgsetget
             NeedChangeGain=false;
             NeedDrawSelect=false;
             NeedRedrawTimeChange=false;
+            NeedRedrawChannelChange=false;
             
             g=varargin;
             
@@ -604,7 +605,7 @@ classdef BioSigPlot < hgsetget
                         'FilterHigh','FilterNotch1','FilterNotch2','FilterCustomIndex'...
                         'ChanNames','GroupNames',...
                         'AxesHeight','YBorder',...
-                        'ChanSelect2Display','FirstDispChans'}))
+                        'ChanSelect2Display'}))
                    
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage','DataView',...
@@ -647,6 +648,11 @@ classdef BioSigPlot < hgsetget
                     NeedRedrawEvts=true;
                     NeedDrawSelect=true;
                     NeedRedrawTimeChange=true;
+                elseif any(strcmpi(g{i},{'FirstDispChans'}))
+                    set@hgsetget(obj,[g{i} '_'],g{i+1})
+%                     NeedRedrawEvts=true;
+                    NeedDrawSelect=true;
+                    NeedRedrawChannelChange=true;
                 elseif any(strcmpi(g{i},{'Selection'}))
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     NeedDrawSelect=true;
@@ -678,7 +684,8 @@ classdef BioSigPlot < hgsetget
             if NeedHighlightEvents, highlightSelectedEvents(obj); end
             if NeedChangeGain&&~obj.IsInitialize, gainChangeSelectedChannels(obj); end
             if NeedDrawSelect, redrawSelection(obj); end
-            if NeedRedrawTimeChange, redrawChangeBlock(obj); end
+            if NeedRedrawTimeChange, redrawChangeBlock(obj,'time'); end
+            if NeedRedrawChannelChange, redrawChangeBlock(obj,'channel'); end
             if NeedCommand
                 if strcmpi(command(1:12),'a=BioSigPlot')
                     n=1;
@@ -2157,7 +2164,7 @@ classdef BioSigPlot < hgsetget
         ExportData(obj)
         d=preprocessedAllData(obj,n,chan,selection)
         ChangeTime(obj,src)
-        redrawChangeBlock(obj)
+        redrawChangeBlock(obj,opt)
         showGauge(obj)
         maskChannel(obj,src)
         MnuChanGain(obj,src)
