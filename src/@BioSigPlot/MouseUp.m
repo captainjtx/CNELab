@@ -1,6 +1,9 @@
 function MouseUp(obj)
 obj.ClickDrag=false;
 obj.ResizeMode=false;
+for i=1:length(obj.AxesResizeMode)
+    obj.AxesResizeMode(i)=false;
+end
 
 [nchan,ndata,yvalue]=getMouseInfo(obj); %#ok<ASGLU>
 time=obj.MouseTime;

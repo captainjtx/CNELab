@@ -13,7 +13,8 @@ for i=1:length(dd)
         else
             axe=obj.Axes(dd(i));
         end
-        plotXTicks(axe,obj.Time,obj.WinLength,obj.SRate);
+        offon=get(obj.MenuTimeLabel,'checked');
+        plotXTicks(axe,obj.Time,obj.WinLength,obj.SRate,offon);
         
         
 %         ylim=[obj.MontageChanNumber(dd(i))+2-obj.YBorder_(1)-obj.FirstDispChans(dd(i))-min(obj.DispChans(dd(i)),obj.MontageChanNumber(dd(i)))    ...
@@ -60,7 +61,7 @@ for i=1:length(channellines)
 end
 
 end
-function plotXTicks(axe,time,WinLength,fs)
+function plotXTicks(axe,time,WinLength,fs,offon)
 % Plot X ticks
 % axe :  axes to plot
 % time : starting time
@@ -83,7 +84,7 @@ for i=1:length(time_labels)
     p=(t-time)/WinLength;
     text(p+.002,.002,num2str(t),'Parent',axe,'HorizontalAlignment','left',...
         'VerticalAlignment','bottom','FontWeight','normal','units','normalized',...
-        'color',[0 0 1],'DisplayName',['XTick',num2str(i)]);
+        'color',[0 0 1],'DisplayName',['XTick',num2str(i)],'Visible',offon);
 end
 
 end

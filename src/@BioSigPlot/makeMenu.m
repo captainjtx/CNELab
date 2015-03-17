@@ -7,6 +7,7 @@ obj.MenuImport=uimenu(obj.MenuFile,'Label','Import');
 obj.MenuImportDataSet=uimenu(obj.MenuImport,'Label','Data','Callback',@(src,evt) obj.ImportDataSet);
 obj.MenuImportEvents=uimenu(obj.MenuImport,'Label','Events','Callback',@(src,evt) obj.ImportEvents);
 obj.MenuImportMontage=uimenu(obj.MenuImport,'Label','Montage','Callback',@(src,evt) obj.ImportMontage);
+obj.MenuImportFilter=uimenu(obj.MenuImport,'Label','Filter','Callback',@(src,evt) obj.ImportFilter);
 obj.MenuImportVideo=uimenu(obj.MenuImport,'Label','Video','Callback',@(src,evt) obj.ImportVideo);
 
 obj.MenuExport=uimenu(obj.MenuFile,'Label','Export');

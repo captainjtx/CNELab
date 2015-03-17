@@ -35,15 +35,21 @@ end
 for i=1:length(obj.Axes)
     delete(obj.Axes(i));
 end
+for i=1:length(obj.AxesAdjustPanels)
+    delete(obj.AxesAdjustPanels(i));
+end
+
+obj.Sliders=[];obj.Axes=[];obj.AxesAdjustPanels=[];obj.AxesResizeMode=[];
 
 
-obj.Sliders=[];obj.Axes=[];
-
-ElevWide=.013;
-VerticalSpace=.01;
 Nchan=obj.MontageChanNumber;
 n=obj.DataNumber;
 
+MainPos=get(obj.MainPanel,'Position');
+
+adjustwidth=obj.AdjustWidth/2;
+
+ElevWide=adjustwidth/MainPos(3);
 
 if strcmp(obj.DataView,'Horizontal')
     for i=1:n
@@ -62,20 +68,31 @@ if strcmp(obj.DataView,'Horizontal')
     end
 elseif strcmp(obj.DataView,'Vertical')
     for i=1:n
-        
-        DrawingHeightSpace=(1-(n-1)*VerticalSpace);
-        Height=DrawingHeightSpace*obj.AxesHeight(i)/sum(obj.AxesHeight(1:n));
-        start=(n-i)*VerticalSpace+DrawingHeightSpace*sum(obj.AxesHeight(i+1:n))/sum(obj.AxesHeight(1:n));
-        position=[0    start    1    Height];
+        if i==1
+            start=0;
+        else
+            start=(MainPos(4)-(n-1)*adjustwidth)/sum(obj.DispChans)*sum(obj.DispChans(1:i-1));
+        end
+        start=start+(i-1)*adjustwidth;
+        Height=(MainPos(4)-(n-1)*adjustwidth)/sum(obj.DispChans)*obj.DispChans(i);
+        position=[0    start    MainPos(3)    Height];
         if ~isempty(obj.DispChans(i)) %Need elevator
-            position(3)=position(3)-ElevWide; % Multiple Elevator
+            position(3)=position(3)-adjustwidth; % Multiple Elevator
             
             m=max(0.00001,Nchan(i)-obj.DispChans(i));
-            obj.Sliders(i)=uicontrol(obj.MainPanel,'style','slider','units','normalized','position',[1-ElevWide (n-i)/n ElevWide 1/n],...
+            obj.Sliders(i)=uicontrol(obj.MainPanel,'style','slider','units','normalized','position',[1-ElevWide start/MainPos(4) ElevWide Height/MainPos(4)],...
                 'min',0,'max',m,'SliderStep',[1 obj.DispChans(i)]/max(1,m),'Callback',@(src,evt) ChangeSliders(obj,src));
         end
         obj.Axes(i)=axes('parent',obj.MainPanel,'XLim',[0 obj.WinLength*obj.SRate],'XTick',0:obj.SRate:obj.WinLength*obj.SRate,...
-            'TickLength',[.005 0],'position',position,'color',backgroundColor,'YAxisLocation','right','Layer','bottom');
+            'TickLength',[.005 0],'units','normalized','position',[0,position(2)/MainPos(4),position(3)/MainPos(3),position(4)/MainPos(4)],...
+            'color',backgroundColor,'YAxisLocation','right','Layer','bottom');
+        
+        if i~=n
+            obj.AxesAdjustPanels(i)=uipanel(obj.MainPanel,'units','normalized','BorderType','etchedout',...
+                                             'ButtonDownFcn',@(src,evt) AxesAdjustPanelClick(obj,src),...
+                                             'Position',[0,(position(2)+Height)/MainPos(4),1,adjustwidth/MainPos(4)]);
+            obj.AxesResizeMode(i)=false;
+        end
     end
 else
     
@@ -101,4 +118,11 @@ end
 
 end
 
+function AxesAdjustPanelClick(obj,src)
+for i=1:length(obj.AxesAdjustPanels)
+    if src==obj.AxesAdjustPanels(i)
+        obj.AxesResizeMode(i)=true;
+    end
+end
+end
 

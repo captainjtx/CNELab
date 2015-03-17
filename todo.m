@@ -87,7 +87,7 @@ Play the signal as sound
 % Try Maltab Parallel Computing toolbox 
 % Use FFMpeg or OpenCV to play Video (In C++ So that we can compile into different environments)
 
-Add adjust bar between axes
+% Add adjust bar between axes
 
 % show time label bug when off and change time
 
@@ -142,4 +142,7 @@ Group change event
 
 Zoom in and out at both spatial and time scale
 
-Empty event bug
+% Show time label bug
+% Empty event bug
+
+% Add default layout: event panel width and axes height according to channels/page

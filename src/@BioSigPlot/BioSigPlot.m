@@ -4,6 +4,8 @@ classdef BioSigPlot < hgsetget
         Sliders
         
         MainPanel
+        AxesAdjustPanels
+        
         ControlPanel
         TimePanel
         InfoPanel
@@ -85,6 +87,7 @@ classdef BioSigPlot < hgsetget
         MenuImportEvents
         MenuImportMontage
         MenuImportVideo
+        MenuImportFilter
         MenuCopy
         
         MenuSave
@@ -438,6 +441,7 @@ classdef BioSigPlot < hgsetget
         function varInitial(obj,g)
             obj.Title=cell(1,obj.DataNumber);
             obj.ResizeMode=false;
+            obj.AxesResizeMode=[];
             obj.UponAdjustPanel=false;
 
             obj.VideoLineTime=0;
@@ -2169,6 +2173,7 @@ classdef BioSigPlot < hgsetget
         Temporal_PCA(obj)
         Auto_Remove_ECG_Artifact(obj)
         ReadMontage(obj)
+        ImportFilter(obj)
     end
     
     properties
@@ -2182,6 +2187,7 @@ classdef BioSigPlot < hgsetget
         ClickDrag
         EditMode
         ResizeMode
+        AxesResizeMode
         
         FileNames
         StartTime

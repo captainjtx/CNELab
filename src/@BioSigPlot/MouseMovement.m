@@ -21,17 +21,55 @@ if obj.ResizeMode
     return
 end
 
+for i=1:length(obj.AxesAdjustPanels)
+    if obj.AxesResizeMode(i)
+        set(obj.Fig,'pointer','top');
+        pos3=get(obj.MainPanel,'Position');
+        v=(pos(2)-pos3(2))/pos3(4);
+        
+        axe_down_pos=get(obj.Axes(i),'Position');
+        axe_up_pos=get(obj.Axes(i+1),'Position');
+        slider_down_pos=get(obj.Sliders(i),'Position');
+        slider_up_pos=get(obj.Sliders(i+1),'Position');
+        
+        adjustwidth=obj.AdjustWidth/2/pos3(4);
+        v=min(max(v,0.001+axe_down_pos(2)),axe_up_pos(2)+axe_up_pos(4)-adjustwidth-0.001);
+        
+        set(obj.Axes(i),'Position',[0,axe_down_pos(2),axe_down_pos(3),v-axe_down_pos(2)]);
+        set(obj.Sliders(i),'Position',[slider_down_pos(1),slider_down_pos(2),slider_down_pos(3),v-axe_down_pos(2)]);
+        
+        set(obj.Axes(i+1),'Position',[0,v+adjustwidth,axe_up_pos(3),axe_up_pos(4)+axe_up_pos(2)-v-adjustwidth]);
+        set(obj.Sliders(i+1),'Position',[slider_up_pos(1),v+adjustwidth,slider_up_pos(3),axe_up_pos(4)+axe_up_pos(2)-v-adjustwidth]);
+        
+        set(obj.AxesAdjustPanels(i),'Position',[0,v,1,adjustwidth]);
+        return
+    end
+end
+
 obj.UponAdjustPanel=false;
 
 if ndata==0
-    set(obj.Fig,'pointer','arrow')
-    
+    set(obj.Fig,'pointer','arrow');
     if strcmpi(get(obj.AdjustPanel,'Visible'),'on')
-        
         region=get(obj.AdjustPanel,'Position');
         if pos(1)>region(1)&&pos(1)<region(1)+region(3)&&pos(2)>region(2)&&pos(2)<region(2)+region(4)
             set(obj.Fig,'pointer','right');
             obj.UponAdjustPanel=true;
+            return
+        end
+    end
+    
+    if ~isempty(obj.AxesAdjustPanels)
+        for i=1:length(obj.AxesAdjustPanels)
+            MainPos=getpixelposition(obj.MainPanel,true);
+            region = getpixelposition(obj.AxesAdjustPanels(i));
+            region(1)=region(1)+MainPos(1);
+            region(2)=region(2)+MainPos(2);
+            if pos(1)>region(1)&&pos(1)<region(1)+region(3)&&pos(2)>region(2)&&pos(2)<region(2)+region(4)
+                set(obj.Fig,'pointer','top');
+                obj.UponAdjustPanel=true;
+                return
+            end
         end
     end
 else
