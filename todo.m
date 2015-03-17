@@ -146,3 +146,5 @@ Zoom in and out at both spatial and time scale
 % Empty event bug
 
 % Add default layout: event panel width and axes height according to channels/page
+
+Initial axe adjust bar width bug

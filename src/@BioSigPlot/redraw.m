@@ -112,6 +112,7 @@ end
 for i=1:length(obj.Axes)
     obj.LineVideo(i)=line([inf inf],[0 1000],'parent',obj.Axes(i),...
         'Color',[1 0 0],'LineStyle','-.','LineWidth',1.5);
+    drawnow;
     obj.LineMeasurer(i)=line([inf inf],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]);
     uistack(obj.LineVideo(i));
 end
@@ -167,6 +168,7 @@ y=[data;NaN*ones(1,size(data,2))];
 % y=data';
 
 h=line(x,y,'parent',axe,'Color',[0 0 0]);
+drawnow;
 for i=1:length(h)
     set(h(i),'Color',colors(i,:));
 end
@@ -225,11 +227,13 @@ for i=1:n
         h=text(.002,p+.004,ChanNames{i},'Parent',axe,'HorizontalAlignment','left',...
             'VerticalAlignment','bottom','FontWeight','bold','units','normalized',...
             'color',YLabelColor,'DisplayName',['ChanName' num2str(i)]);
+%         drawnow;
         uistack(h,'top');
         
         h=text(0.965,p,num2str(1/gain(i),'%0.3g'),'Parent',axe,'HorizontalAlignment','left',...
             'VerticalAlignment','middle','FontWeight','bold','units','normalized',...
             'DisplayName',['YGauge' num2str(i)],'Color',[1 0 1]);
+%         drawnow;
         uistack(h,'top');
     end
 end
