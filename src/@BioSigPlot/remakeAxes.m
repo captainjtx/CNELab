@@ -49,7 +49,7 @@ MainPos=get(obj.MainPanel,'Position');
 
 adjustwidth=obj.AdjustWidth/2;
 
-ElevWide=adjustwidth/MainPos(3);
+ElevWide=adjustwidth*2/MainPos(3);
 
 if strcmp(obj.DataView,'Horizontal')
     for i=1:n
