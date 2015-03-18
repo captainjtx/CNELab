@@ -384,34 +384,7 @@ classdef BioSigPlot < hgsetget
     methods
         
         %*****************************************************************
-        function obj=BioSigPlot(data,varargin)
-            % Create an instance of BioSigPlot
-            %
-            % SYNTAX
-            %   >> BioSigPlot(Data, 'key1', value1 ...);
-            %   OR
-            %   >> obj=BioSigPlot(Data, 'key1', value1 ...);
-            %
-            % INPUT
-            %   Data
-            %       object containing all signals. 3 formats are accepted :
-            %           - matrix (n x m)  : there will be n signals with m time samples
-            %           - matrix (n x m x k): there will be k dataset
-            %           - cell (with Data{k} is matrix(n_k x m)) there will be multiple dataset.
-            %             The first dataset will have n_1 channels, the second will have n_2,...
-            %
-            %   'key1', value1, ...
-            %       Setting properties:
-            %       You can set properties in the constructor in the same
-            %       way you can by using set method or the (dot) syntax. So
-            %       this is equivalent to:
-            %           >> set(obj,'key1',value1,'key2',value2,...) (Faster if there is more than 1 keys)
-            %           OR
-            %           >> obj.key1=value1
-            %
-            % EXAMPLE
-            %   load filterdemo;
-            %   a=BioSigPlot(data,'Srate',250);
+        function obj=BioSigPlot(data,varargin)  
             obj.IsInitialize=true;
             
             obj.Data=obj.uniform(data);
@@ -433,7 +406,7 @@ classdef BioSigPlot < hgsetget
             
             obj.IsInitialize=false;
             
-            set(obj.Fig,'Visible','on')
+%             set(obj.Fig,'Visible','on')
         end
         
         %*****************************************************************
@@ -1954,6 +1927,10 @@ classdef BioSigPlot < hgsetget
         function resize(obj)
             pos=get(obj.Fig,'position');
             cbs=obj.ControlBarSize;
+            
+            if isempty(pos)
+                return
+            end
             if pos(3)<=cbs(1)
                 if obj.LockLayout
                     pos(3)=cbs(1);

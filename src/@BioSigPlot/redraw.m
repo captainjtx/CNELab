@@ -113,7 +113,7 @@ end
 for i=1:length(obj.Axes)
     obj.LineVideo(i)=line([inf inf],[0 1000],'parent',obj.Axes(i),...
         'Color',[1 0 0],'LineStyle','-.','LineWidth',1.5);
-    drawnow;
+%     drawnow;
     obj.LineMeasurer(i)=line([inf inf],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]);
     uistack(obj.LineVideo(i));
 end
@@ -169,7 +169,7 @@ y=[data;NaN*ones(1,size(data,2))];
 % y=data';
 
 h=line(x,y,'parent',axe,'Color',[0 0 0]);
-drawnow;
+% drawnow;
 for i=1:length(h)
     set(h(i),'Color',colors(i,:));
 end
