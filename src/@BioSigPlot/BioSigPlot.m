@@ -235,7 +235,6 @@ classdef BioSigPlot < hgsetget
         
         VideoTimerPeriod        %Period of the Video
         Montage                 %Path for a system file wich contains info on Montage
-        AxesHeight              %Height ratio of Axes for Vertical Mode.
         YBorder                 %Vector of 2elements containing the space height between the last channel and the bottom and between the top and the first channel (Units: 'Gain' relative)
         Selection               %Time of Selected area
         
@@ -313,7 +312,7 @@ classdef BioSigPlot < hgsetget
         PlaySpeed_
         VideoTimerPeriod_
         Montage_
-        AxesHeight_
+
         YBorder_
         Selection_
         
@@ -603,13 +602,12 @@ classdef BioSigPlot < hgsetget
                         'DataView','MontageRef','DispChans',...
                         'Filtering','FilterLow',...
                         'FilterHigh','FilterNotch1','FilterNotch2','FilterCustomIndex'...
-                        'ChanNames','GroupNames',...
-                        'AxesHeight','YBorder',...
+                        'ChanNames','GroupNames','YBorder',...
                         'ChanSelect2Display'}))
                    
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage','DataView',...
-                            'MontageRef','DispChans','AxesHeight'}))
+                            'MontageRef','DispChans'}))
                         NeedRemakeAxes=true;
                     end
                     if any(strcmpi(g{i},{'Config','Montage','ChanNames','GroupNames','DataView','MontageRef'}))
@@ -776,8 +774,6 @@ classdef BioSigPlot < hgsetget
         
         function obj = set.Montage(obj,val), set(obj,'Montage',val); end
         function val = get.Montage(obj), val=obj.Montage_; end
-        function obj = set.AxesHeight(obj,val), set(obj,'AxesHeight',val); end
-        function val = get.AxesHeight(obj), val=obj.AxesHeight_; end
         function obj = set.YBorder(obj,val), set(obj,'YBorder',val); end
         function val = get.YBorder(obj), val=obj.YBorder_; end
         function obj = set.Selection(obj,val), set(obj,'Selection',val); end

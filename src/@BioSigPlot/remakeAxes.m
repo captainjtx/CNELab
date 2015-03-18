@@ -46,6 +46,7 @@ Nchan=obj.MontageChanNumber;
 n=obj.DataNumber;
 
 MainPos=get(obj.MainPanel,'Position');
+fpos=get(obj.Fig,'Position');
 
 adjustwidth=obj.AdjustWidth/2;
 
