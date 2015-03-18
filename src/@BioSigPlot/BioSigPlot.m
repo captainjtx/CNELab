@@ -1986,7 +1986,7 @@ classdef BioSigPlot < hgsetget
                     set(obj.Axes(i),'Position',[axe_pos(1),axe_pos(2),1-obj.ElevWidth/MainPos(3),axe_pos(4)]);
                     
                     slider_pos=get(obj.Sliders(i),'Position');
-                    set(obj.Sliders(i),'Position',[slider_pos(1),slider_pos(2),obj.ElevWidth/MainPos(3),slider_pos(4)]);
+                    set(obj.Sliders(i),'Position',[1-obj.ElevWidth/MainPos(3),slider_pos(2),obj.ElevWidth/MainPos(3),slider_pos(4)]);
                 end
                 
             end
