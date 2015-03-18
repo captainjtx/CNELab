@@ -48,8 +48,6 @@ n=obj.DataNumber;
 MainPos=get(obj.MainPanel,'Position');
 fpos=get(obj.Fig,'Position');
 
-adjustwidth=obj.AdjustWidth/2;
-
 ElevWide=obj.ElevWidth/MainPos(3);
 
 if strcmp(obj.DataView,'Horizontal')
@@ -73,26 +71,26 @@ elseif strcmp(obj.DataView,'Vertical')
         if i==1
             start=0;
         else
-            start=(MainPos(4)-(n-1)*adjustwidth)/sum(obj.DispChans)*sum(obj.DispChans(1:i-1));
+            start=(MainPos(4)-(n-1)*obj.AxesAdjustWidth)/sum(obj.DispChans)*sum(obj.DispChans(1:i-1));
         end
-        start=start+(i-1)*adjustwidth;
-        Height=(MainPos(4)-(n-1)*adjustwidth)/sum(obj.DispChans)*obj.DispChans(i);
+        start=start+(i-1)*obj.AxesAdjustWidth;
+        Height=(MainPos(4)-(n-1)*obj.AxesAdjustWidth)/sum(obj.DispChans)*obj.DispChans(i);
         position=[0    start    MainPos(3)    Height];
-        if ~isempty(obj.DispChans(i)) %Need elevator
-            position(3)=position(3)-obj.ElevWidth; % Multiple Elevator
-            
-            m=max(0.00001,Nchan(i)-obj.DispChans(i));
-            obj.Sliders(i)=uicontrol(obj.MainPanel,'style','slider','units','normalized','position',[1-ElevWide start/MainPos(4) ElevWide Height/MainPos(4)],...
-                'min',0,'max',m,'SliderStep',[1 obj.DispChans(i)]/max(1,m),'Callback',@(src,evt) ChangeSliders(obj,src));
-        end
+        
+        position(3)=position(3)-obj.ElevWidth; % Multiple Elevator
+        
+        m=max(0.00001,Nchan(i)-obj.DispChans(i));
+        obj.Sliders(i)=uicontrol(obj.MainPanel,'style','slider','units','pixels','position',[MainPos(3)-obj.ElevWidth start obj.ElevWidth Height],...
+            'min',0,'max',m,'SliderStep',[1 obj.DispChans(i)]/max(1,m),'Callback',@(src,evt) ChangeSliders(obj,src));
+        
         obj.Axes(i)=axes('parent',obj.MainPanel,'XLim',[0 obj.WinLength*obj.SRate],'XTick',0:obj.SRate:obj.WinLength*obj.SRate,...
-            'TickLength',[.005 0],'units','normalized','position',[0,position(2)/MainPos(4),position(3)/MainPos(3),position(4)/MainPos(4)],...
+            'TickLength',[.005 0],'units','pixels','position',position,...
             'color',backgroundColor,'YAxisLocation','right','Layer','bottom','FontSmoothing','on');
         
         if i~=n
-            obj.AxesAdjustPanels(i)=uipanel(obj.MainPanel,'units','normalized','BorderType','etchedout',...
+            obj.AxesAdjustPanels(i)=uipanel(obj.MainPanel,'units','pixels','BorderType','etchedout',...
                                              'ButtonDownFcn',@(src,evt) AxesAdjustPanelClick(obj,src),...
-                                             'Position',[0,(position(2)+Height)/MainPos(4),1,adjustwidth/MainPos(4)]);
+                                             'Position',[0,position(2)+Height,MainPos(3),obj.AxesAdjustWidth]);
             obj.AxesResizeMode(i)=false;
         end
     end

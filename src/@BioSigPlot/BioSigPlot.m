@@ -1310,11 +1310,13 @@ classdef BioSigPlot < hgsetget
                 posAdjust=get(obj.AdjustPanel,'Position');
                 
                 set(obj.MainPanel,'position',[posAdjust(1)+posAdjust(3) ctrlsize(2) pos(3)-(posAdjust(1)+posAdjust(3)) pos(4)-ctrlsize(2)]);
+                obj.resizeAxes([posAdjust(1)+posAdjust(3) ctrlsize(2) pos(3)-(posAdjust(1)+posAdjust(3)) pos(4)-ctrlsize(2)]);
                 
             else
                 set(obj.EventPanel,'Visible','off');
                 set(obj.AdjustPanel,'Visible','off');
                 set(obj.MainPanel,'position',[0 ctrlsize(2) pos(3) pos(4)-ctrlsize(2)]);
+                obj.resizeAxes([0 ctrlsize(2) pos(3) pos(4)-ctrlsize(2)]);
                 
             end
         end
@@ -1339,6 +1341,7 @@ classdef BioSigPlot < hgsetget
                 set(obj.EventPanel,'position',[0,ctrlsize(2),evtPos(3),evtPos(4)-ctrlsize(2)]);
                 set(obj.AdjustPanel,'position',[adjustPos(1),ctrlsize(2),adjustPos(3),adjustPos(4)-ctrlsize(2)]);
                 set(obj.MainPanel,'position',[mainPos(1),ctrlsize(2),mainPos(3),mainPos(4)-ctrlsize(2)]);
+                obj.resizeAxes([mainPos(1),ctrlsize(2),mainPos(3),mainPos(4)-ctrlsize(2)]);
             else
                 set(obj.MenuControlPanel,'Checked','off');
                 set(obj.ControlPanel,'Visible','off');
@@ -1346,6 +1349,7 @@ classdef BioSigPlot < hgsetget
                 set(obj.EventPanel,'position',[0,0,evtPos(3),evtPos(4)+ctrlsize(2)]);
                 set(obj.AdjustPanel,'position',[adjustPos(1),0,adjustPos(3),adjustPos(4)+ctrlsize(2)]);
                 set(obj.MainPanel,'position',[mainPos(1),0,mainPos(3),mainPos(4)+ctrlsize(2)]);
+                obj.resizeAxes([mainPos(1),0,mainPos(3),mainPos(4)+ctrlsize(2)]);
             end
         end
         %==================================================================
@@ -1928,6 +1932,35 @@ classdef BioSigPlot < hgsetget
             w=20;
         end
         
+        function w=AxesAdjustWidth(obj)
+            w=5;
+        end
+        
+        function resizeAxes(obj,MainPos)
+            n=length(obj.Axes);
+            for i=1:length(obj.Axes)
+                if strcmp(obj.DataView,'Vertical')
+                    if i==1
+                        start=0;
+                    else
+                        start=(MainPos(4)-(n-1)*obj.AxesAdjustWidth)/sum(obj.DispChans)*sum(obj.DispChans(1:i-1));
+                    end
+                    start=start+(i-1)*obj.AxesAdjustWidth;
+                    Height=(MainPos(4)-(n-1)*obj.AxesAdjustWidth)/sum(obj.DispChans)*obj.DispChans(i);
+                    position=[0    start    MainPos(3)-obj.ElevWidth    Height];
+                    
+                    set(obj.Axes(i),'Position',position);
+                    
+                    set(obj.Sliders(i),'Position',[MainPos(3)-obj.ElevWidth start obj.ElevWidth Height]);
+                    
+                    if i~=n
+                        set(obj.AxesAdjustPanels(i),'Position',[0,(position(2)+Height),MainPos(3),obj.AxesAdjustWidth]);
+                    end
+                    
+                end
+                
+            end
+        end
         function resize(obj)
             pos=get(obj.Fig,'position');
             cbs=obj.ControlBarSize;
@@ -1958,38 +1991,31 @@ classdef BioSigPlot < hgsetget
                 set(obj.AdjustPanel,'position',[posEvent(3) 0 adjustwidth pos(4)]);
             end
             
+            
             if  ~isempty(obj.Evts_)&&obj.EventsWindowDisplay
                 set(obj.EventPanel,'Visible','on');
                 set(obj.AdjustPanel,'Visible','on');
                 if obj.ControlPanelDisplay
-                    set(obj.MainPanel,'position',[posEvent(3)+adjustwidth ctrlsize(2) pos(3)-posEvent(3)-adjustwidth pos(4)-ctrlsize(2)]);
+                    MainPos=[posEvent(3)+adjustwidth ctrlsize(2) pos(3)-posEvent(3)-adjustwidth pos(4)-ctrlsize(2)];
+                    set(obj.MainPanel,'position',MainPos);
                 else
-                    set(obj.MainPanel,'position',[posEvent(3)+adjustwidth 0 pos(3)-posEvent(3)-adjustwidth pos(4)]);
+                    MainPos=[posEvent(3)+adjustwidth 0 pos(3)-posEvent(3)-adjustwidth pos(4)];
+                    set(obj.MainPanel,'position',MainPos);
                 end
             else
                 set(obj.EventPanel,'Visible','off');
                 set(obj.AdjustPanel,'Visible','off');
                 if obj.ControlPanelDisplay
-                    set(obj.MainPanel,'position',[0 ctrlsize(2) pos(3) pos(4)-ctrlsize(2)]);
+                    MainPos=[0 ctrlsize(2) pos(3) pos(4)-ctrlsize(2)];
+                    set(obj.MainPanel,'position',MainPos);
                 else
-                    set(obj.MainPanel,'position',[0 0 pos(3) pos(4)]);
+                    MainPos=[0 0 pos(3) pos(4)];
+                    set(obj.MainPanel,'position',MainPos);
                 end
             end
             
             set(obj.ControlPanel,'position',[0 0 pos(3) ctrlsize(2)]);
-            
-            MainPos=get(obj.MainPanel,'Position');
-            for i=1:length(obj.Axes)
-                if strcmp(obj.DataView,'Vertical')
-                    axe_pos=get(obj.Axes(i),'Position');
-                    
-                    set(obj.Axes(i),'Position',[axe_pos(1),axe_pos(2),1-obj.ElevWidth/MainPos(3),axe_pos(4)]);
-                    
-                    slider_pos=get(obj.Sliders(i),'Position');
-                    set(obj.Sliders(i),'Position',[1-obj.ElevWidth/MainPos(3),slider_pos(2),obj.ElevWidth/MainPos(3),slider_pos(4)]);
-                end
-                
-            end
+            obj.resizeAxes(MainPos);
         end
         
         function recalculate(obj)
