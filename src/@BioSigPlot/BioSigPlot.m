@@ -1924,6 +1924,10 @@ classdef BioSigPlot < hgsetget
             w=10;
         end
         
+        function w=ElevWidth(obj)
+            w=20;
+        end
+        
         function resize(obj)
             pos=get(obj.Fig,'position');
             cbs=obj.ControlBarSize;
@@ -1973,6 +1977,19 @@ classdef BioSigPlot < hgsetget
             end
             
             set(obj.ControlPanel,'position',[0 0 pos(3) ctrlsize(2)]);
+            
+            MainPos=get(obj.MainPanel,'Position');
+            for i=1:length(obj.Axes)
+                if strcmp(obj.DataView,'Vertical')
+                    axe_pos=get(obj.Axes(i),'Position');
+                    
+                    set(obj.Axes(i),'Position',[axe_pos(1),axe_pos(2),1-obj.ElevWidth/MainPos(3),axe_pos(4)]);
+                    
+                    slider_pos=get(obj.Sliders(i),'Position');
+                    set(obj.Sliders(i),'Position',[slider_pos(1),slider_pos(2),obj.ElevWidth/MainPos(3),slider_pos(4)]);
+                end
+                
+            end
         end
         
         function recalculate(obj)

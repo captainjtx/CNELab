@@ -50,7 +50,7 @@ fpos=get(obj.Fig,'Position');
 
 adjustwidth=obj.AdjustWidth/2;
 
-ElevWide=adjustwidth*4/MainPos(3);
+ElevWide=obj.ElevWidth/MainPos(3);
 
 if strcmp(obj.DataView,'Horizontal')
     for i=1:n
@@ -79,7 +79,7 @@ elseif strcmp(obj.DataView,'Vertical')
         Height=(MainPos(4)-(n-1)*adjustwidth)/sum(obj.DispChans)*obj.DispChans(i);
         position=[0    start    MainPos(3)    Height];
         if ~isempty(obj.DispChans(i)) %Need elevator
-            position(3)=position(3)-4*adjustwidth; % Multiple Elevator
+            position(3)=position(3)-obj.ElevWidth; % Multiple Elevator
             
             m=max(0.00001,Nchan(i)-obj.DispChans(i));
             obj.Sliders(i)=uicontrol(obj.MainPanel,'style','slider','units','normalized','position',[1-ElevWide start/MainPos(4) ElevWide Height/MainPos(4)],...
