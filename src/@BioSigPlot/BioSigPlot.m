@@ -74,6 +74,8 @@ classdef BioSigPlot < hgsetget
         TogAnnotate
         
         MenuFile
+        MenuNew
+        MenuNewMontage
         MenuExport
         MenuExportFigure
         MenuExportFigureMirror
@@ -133,14 +135,14 @@ classdef BioSigPlot < hgsetget
         MenuColor
         MenuColorCanvas
         MenuColorLines
-        MenuTriggerEventsDisplay
+        MenuAdvanceEventsDisplay
         
         MenuApp
-        MenuTriggerEvents
-        MenuTriggerEventsCalculate
-        MenuTriggerEventsLoad
-        MenuTriggerEventsFunction
-        MenuTriggerEventsQRS
+        MenuAdvanceEvents
+        MenuAdvanceEventsCalculate
+        MenuAdvanceEventsLoad
+        MenuAdvanceEventsFunction
+        MenuAdvanceEventsQRS
         
         MenuTFMap
         MenuTFMap_Unit
@@ -214,7 +216,7 @@ classdef BioSigPlot < hgsetget
         
         EventSelectColor
         EventDefaultColors
-        TriggerEventDefaultColor
+        AdvanceEventDefaultColor
         
         LineDefaultColors
         
@@ -223,7 +225,7 @@ classdef BioSigPlot < hgsetget
         XGrid                   %true : show Grid line on each sec
         YGrid                   %true : show Grid line on each channel
         EventsDisplay           %true : show Events
-        TriggerEventsDisplay
+        AdvanceEventsDisplay
         EventsWindowDisplay     %true : show Events Window
         ControlPanelDisplay
         LockLayout
@@ -240,7 +242,7 @@ classdef BioSigPlot < hgsetget
         
         BadChannels             %The bad channels
         ChanSelect2Display      %Selected Channels to Display
-        ChanSelect2Edit         %Selected Channels to Edit (Filter,Gain adjust,TriggerEvent)
+        ChanSelect2Edit         %Selected Channels to Edit (Filter,Gain adjust,AdvanceEvent)
         
         IsDataSameSize
         DisplayedData           %Vector of displayed data
@@ -248,7 +250,7 @@ classdef BioSigPlot < hgsetget
         
         FastEvts
         SelectedFastEvt
-        TriggerEventsFcn
+        AdvanceEventsFcn
         
         Evts2Display
         
@@ -292,7 +294,7 @@ classdef BioSigPlot < hgsetget
         ChanColors_
         EventSelectColor_
         EventDefaultColors_
-        TriggerEventDefaultColor_
+        AdvanceEventDefaultColor_
         
         LineDefaultColors_
         
@@ -301,7 +303,7 @@ classdef BioSigPlot < hgsetget
         XGrid_
         YGrid_
         EventsDisplay_
-        TriggerEventsDisplay_
+        AdvanceEventsDisplay_
         EventsWindowDisplay_
         ControlPanelDisplay_
         LockLayout_
@@ -328,7 +330,7 @@ classdef BioSigPlot < hgsetget
         
         FastEvts_
         SelectedFastEvt_
-        TriggerEventsFcn_
+        AdvanceEventsFcn_
         
         STFTWindowLength_
         STFTOverlap_
@@ -471,7 +473,7 @@ classdef BioSigPlot < hgsetget
             cfg=load('-mat',obj.Config);
             cfg.FastEvts=obj.FastEvts;
             cfg.SelectedFastEvt=obj.SelectedFastEvt;
-            cfg.TriggerEventsFcn=obj.TriggerEventsFcn;
+            cfg.AdvanceEventsFcn=obj.AdvanceEventsFcn;
             save(fullfile(obj.CNELabDir,'/db/cfg/','defaultconfig.cfg'),'-struct','cfg');
         end
         function delete(obj)
@@ -600,7 +602,7 @@ classdef BioSigPlot < hgsetget
                     NeedDrawSelect=true;
                     
                 elseif any(strcmpi(g{i},{'EventsDisplay','Evts',...
-                        'EventSelectColor','TriggerEventsDisplay'}))
+                        'EventSelectColor','AdvanceEventsDisplay'}))
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     NeedRedrawEvts=true;
                 elseif any(strcmpi(g{i},{'ChanSelect2Edit','ChanColors',...
@@ -628,13 +630,13 @@ classdef BioSigPlot < hgsetget
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     NeedDrawSelect=true;
                 elseif any(strcmpi(g{i},{'PlaySpeed','FastEvts','SelectedFastEvt',...
-                        'EventDefaultColors','EventsWindowDisplay','TriggerEventsFcn',...
-                        'TriggerEventDefaultColor','MouseMode','STFTWindowLength',...
+                        'EventDefaultColors','EventsWindowDisplay','AdvanceEventsFcn',...
+                        'AdvanceEventDefaultColor','MouseMode','STFTWindowLength',...
                         'STFTOverlap','Title','Version','PSDWindowLength',...
                         'PSDOverlap','ControlPanelDisplay',...
                         'LockLayout','ToolbarDisplay','DisplayGauge','XGrid','YGrid',...
                         'VideoTimerPeriod','VideoTimeFrame','BadChannels','AxesBackgroundColor',...
-                        'DefaultLineColor','Units','TimeUnit','FileNames','TriggerEventsFcn'}))
+                        'DefaultLineColor','Units','TimeUnit','FileNames','AdvanceEventsFcn'}))
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                 else
                     set@hgsetget(obj,varargin{i},varargin{i+1})
@@ -778,8 +780,8 @@ classdef BioSigPlot < hgsetget
         function val = get.EventsDisplay(obj), val=obj.EventsDisplay_; end
         
         
-        function obj = set.TriggerEventsDisplay(obj,val), set(obj,'TriggerEventsDisplay',val); end
-        function val = get.TriggerEventsDisplay(obj), val=obj.TriggerEventsDisplay_; end
+        function obj = set.AdvanceEventsDisplay(obj,val), set(obj,'AdvanceEventsDisplay',val); end
+        function val = get.AdvanceEventsDisplay(obj), val=obj.AdvanceEventsDisplay_; end
         
         function obj = set.EventsWindowDisplay(obj,val), set(obj,'EventsWindowDisplay',val); end
         function val = get.EventsWindowDisplay(obj), val=obj.EventsWindowDisplay_; end
@@ -812,8 +814,8 @@ classdef BioSigPlot < hgsetget
         function obj = set.LineDefaultColors(obj,val), set(obj,'LineDefaultColors',val); end
         function val = get.LineDefaultColors(obj), val=obj.LineDefaultColors_; end
         
-        function obj = set.TriggerEventDefaultColor(obj,val), set(obj,'TriggerEventDefaultColor',val); end
-        function val = get.TriggerEventDefaultColor(obj), val=obj.TriggerEventDefaultColor_; end
+        function obj = set.AdvanceEventDefaultColor(obj,val), set(obj,'AdvanceEventDefaultColor',val); end
+        function val = get.AdvanceEventDefaultColor(obj), val=obj.AdvanceEventDefaultColor_; end
         
         function obj = set.FastEvts(obj,val), set(obj,'FastEvts',val); end
         function val = get.FastEvts(obj), val=obj.FastEvts_; end
@@ -821,8 +823,8 @@ classdef BioSigPlot < hgsetget
         function obj = set.SelectedFastEvt(obj,val), set(obj,'SelectedFastEvt',val); end
         function val = get.SelectedFastEvt(obj), val=obj.SelectedFastEvt_; end
         
-        function obj = set.TriggerEventsFcn(obj,val), set(obj,'TriggerEventsFcn',val); end
-        function val = get.TriggerEventsFcn(obj), val=obj.TriggerEventsFcn_; end
+        function obj = set.AdvanceEventsFcn(obj,val), set(obj,'AdvanceEventsFcn',val); end
+        function val = get.AdvanceEventsFcn(obj), val=obj.AdvanceEventsFcn_; end
         
         function obj = set.STFTWindowLength(obj,val), set(obj,'STFTWindowLength',val); end
         function val = get.STFTWindowLength(obj), val=obj.STFTWindowLength_; end
@@ -1014,13 +1016,13 @@ classdef BioSigPlot < hgsetget
             end
             
             if obj.EventsDisplay
-                if obj.TriggerEventsDisplay
+                if obj.AdvanceEventsDisplay
                     evtsInd=1:size(obj.Evts_,1);
                 else
                     evtsInd=find([obj.Evts_{:,4}]==0);
                 end
             else
-                if obj.TriggerEventsDisplay
+                if obj.AdvanceEventsDisplay
                     evtsInd=find([obj.Evts_{:,4}]~=0);
                 else
                     evtsInd=[];
@@ -1274,17 +1276,17 @@ classdef BioSigPlot < hgsetget
             end
             
         end
-        function obj = set.TriggerEventsDisplay_(obj,val)
+        function obj = set.AdvanceEventsDisplay_(obj,val)
             if ischar(val)
-                obj.TriggerEventsDisplay_=strcmpi(val,'on');
+                obj.AdvanceEventsDisplay_=strcmpi(val,'on');
             else
-                obj.TriggerEventsDisplay_=val;
+                obj.AdvanceEventsDisplay_=val;
             end
             
-            if obj.TriggerEventsDisplay_
-                set(obj.MenuTriggerEventsDisplay,'Checked','on');
+            if obj.AdvanceEventsDisplay_
+                set(obj.MenuAdvanceEventsDisplay,'Checked','on');
             else
-                set(obj.MenuTriggerEventsDisplay,'Checked','off');
+                set(obj.MenuAdvanceEventsDisplay,'Checked','off');
             end
             
             obj.synchEvts();
@@ -2197,6 +2199,7 @@ classdef BioSigPlot < hgsetget
         Auto_Remove_ECG_Artifact(obj)
         ReadMontage(obj)
         ImportFilter(obj)
+        NewMontage(obj)
     end
     
     properties

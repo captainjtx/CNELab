@@ -5,7 +5,9 @@ t=round(max(1,obj.Time*obj.SRate+1):min((obj.Time+obj.WinLength)*obj.SRate,size(
 
 if obj.IsChannelSelected
     for i=1:length(dd)
-        
+        if isempty(obj.Gain(dd(i)))
+            continue
+        end
         if length(obj.Axes)==1
             axes=obj.Axes;
         else
@@ -19,6 +21,9 @@ else
     
     for i=1:length(dd)
         
+        if isempty(obj.Gain(dd(i)))
+            continue
+        end
         if length(obj.Axes)==1
             axes=obj.Axes;
         else

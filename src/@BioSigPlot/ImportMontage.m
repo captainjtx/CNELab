@@ -35,7 +35,7 @@ for i=1:length(FileName)
     end
 end
 
-tmp=obj.DisplayedData(1);
+tmp=obj.DisplayedData;
 if length(obj.DisplayedData)>1
     prompt={'Input the data that you want to link with the montage: '};
     
@@ -50,33 +50,33 @@ if length(obj.DisplayedData)>1
         return
     end
     
-    tmp=str2double(answer{1});
-    if isempty(tmp)||isnan(tmp)||tmp<0||tmp>obj.DataNumber
-        tmp=obj.DisplayedData(1);
+    tmp=str2num(answer{1});
+    if isempty(tmp)||isnan(tmp)||any(tmp<0)||any(tmp>obj.DataNumber)
+        tmp=obj.DisplayedData;
     end
     
 end
-newnum=ones(length(montage),1);
 
-for i=1:length(montage)
-    [pathstr, name, ext] = fileparts(FileName{i});
-    
-    [montage_channames,mat,groupnames]=parseMontage(montage{i},obj.ChanNames{tmp});
-    num=length(obj.Montage_{tmp});
-    
-    obj.Montage_{tmp}(num+1).name=name;
-    obj.Montage_{tmp}(num+1).channames=montage_channames;
-    obj.Montage_{tmp}(num+1).mat=mat;
-    obj.Montage_{tmp}(num+1).groupnames=groupnames;
-    
-    newnum(i)=num+1;
-    
+for t=1:length(tmp)
+    for i=1:length(montage)
+        [pathstr, name, ext] = fileparts(FileName{i});
+        
+        [montage_channames,mat,groupnames]=parseMontage(montage{i},obj.ChanNames{tmp(t)});
+        
+        num=length(obj.Montage_{tmp(t)});
+        obj.Montage_{tmp(t)}(num+1).name=name;
+        obj.Montage_{tmp(t)}(num+1).channames=montage_channames;
+        obj.Montage_{tmp(t)}(num+1).mat=mat;
+        obj.Montage_{tmp(t)}(num+1).groupnames=groupnames;
+        
+    end
 end
 
 remakeMontage(obj);
 
-for i=1:length(montage)
-    ChangeMontage(obj,obj.MontageOptMenu{i}(newnum(i)),obj.DisplayedData(i),newnum(i));
+
+for i=1:length(tmp)
+    ChangeMontage(obj,obj.MontageOptMenu{tmp(i)}(end),tmp(i),length(obj.Montage_{tmp(i)}));
 end
 
 end

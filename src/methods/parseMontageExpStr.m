@@ -4,15 +4,11 @@ if isnumeric(expstr)
     expstr=num2str(expstr);
 end
 
-if ~ismember(expstr(1),{'-','+'})
-    expstr=['+',expstr];
-end
-
-if ~ismember(expstr(end),{'-','+'})
-    expstr=[expstr,'+'];
-end
+expstr=['+',expstr,'+'];
 
 for i=1:length(channames)
+    %Disable special +/- characters contained in channames
+    channames{i}=regexprep(channames{i},'[+-]','\\$0');
     [si,ei]=regexp(expstr,['[+*-]',channames{i},'[+-]']);
     
     if ~isempty(si)

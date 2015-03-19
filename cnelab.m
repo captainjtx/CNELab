@@ -146,7 +146,7 @@ for i=1:length(cds)
             errorCode=cds{i}.Data.TriggerCodes(r,end);
             
             if ~errorCode
-                color=bsp.TriggerEventDefaultColor;
+                color=bsp.AdvanceEventDefaultColor;
             else
                 color=[0.8 0 0];
             end

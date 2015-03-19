@@ -14,6 +14,7 @@ for i=1:length(dd)
         else
             axe=obj.Axes(dd(i));
         end
+        
         if strcmpi(opt,'channel')
             if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
                 
@@ -33,7 +34,7 @@ for i=1:length(dd)
                 end
             end
             set(axe,'YLim',ylim);
-            updateYTicks(axe,obj.MontageChanNames{dd(i)},obj.ChanSelect2Edit{dd(i)},obj.ChanSelectColor,obj.Gain{dd(i)});
+            updateYTicks(axe,obj.MontageChanNames{dd(i)},obj.Gain{dd(i)});
             updateEvents(axe);
         elseif strcmpi(opt,'time')
             updateXTicks(axe,obj.Time,obj.WinLength,obj.SRate);
@@ -43,6 +44,8 @@ for i=1:length(dd)
         
     end
 end
+
+highlightSelectedChannel(obj);
 
 end
 
@@ -105,7 +108,7 @@ end
 
 end
 
-function updateYTicks(axe,ChanNames,ChanSelect2Edit,ChanSelectColor,gain)
+function updateYTicks(axe,ChanNames,gain)
 lim=get(axe,'Ylim');
 
 n=length(ChanNames);
@@ -116,18 +119,13 @@ for i=1:n
     p=(n-i+1-lim(1))/(lim(2)-lim(1));
     if p<.99 && p>0
         count=count+1;
-        if ismember(i,ChanSelect2Edit)
-            YLabelColor=ChanSelectColor;
-        else
-            YLabelColor=[0 0 0];
-        end
         
         h=findobj(axe,'-regexp','DisplayName',['ChanName' num2str(count)]);
         
-        set(h,'String',ChanNames{i},'color',YLabelColor);
+        set(h,'String',ChanNames{i});
         
         h=findobj(axe,'-regexp','DisplayName',['YGauge' num2str(count)]);
-        set(h,'String',num2str(1/gain(i),'%0.3g'))
+        set(h,'String',num2str(1/gain(i),'%0.3g'));
 
     end
 end

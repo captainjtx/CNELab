@@ -154,3 +154,7 @@ Zoom in and out at both spatial and time scale
 Customize resize to pixels for horizontal view.
 
 Reorder DataSets
+
+Export/Import Montage from plain text and mat file (with matrix transformation)
+
+Auto Scan Montage in db/Montage folder

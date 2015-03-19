@@ -52,17 +52,18 @@ function highlightYTicks(axe,ChanNames,ChanSelect2Edit,ChanSelectColor)
 % insideticks :1 (Ticks are inside) 0 (Ticks are outside)                                                                  *
 lim=get(axe,'Ylim');
 n=length(ChanNames);
+count=0;
 for i=1:n
     p=(n-i+1-lim(1))/(lim(2)-lim(1));
     if p<.99 && p>0
+        count=count+1;
         if ismember(i,ChanSelect2Edit)
             YLabelColor=ChanSelectColor;
         else
             YLabelColor=[0 0 0];
         end
-        text(.002,p+.004,ChanNames{i},'Parent',axe,'HorizontalAlignment','left',...
-            'VerticalAlignment','bottom','FontWeight','bold','units','normalized',...
-            'color',YLabelColor)
+        h=findobj(axe,'-regexp','DisplayName',['ChanName' num2str(count)]);
+        set(h,'Color',YLabelColor);
     end
 end
 end

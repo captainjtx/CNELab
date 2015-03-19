@@ -4,6 +4,9 @@ if strcmpi(get(src,'Checked'),'on')
     return
 end
 
+if strcmpi(mtgref,'end')
+    mtgref=legnth(obj.Montage_{data});
+end
 for i=1:length(obj.MontageOptMenu{data})
     set(obj.MontageOptMenu{data}(i),'Checked','off');
 end
@@ -48,7 +51,7 @@ obj.EventTexts=[];
 obj.DragMode=0;
 obj.EditMode=0;
 
-obj.ChanColors_=obj.applyPanelVal(cell(1,obj.DataNumber),obj.NormalModeColor);
+obj.ChanColors_=obj.applyPanelVal(cell(1,obj.DataNumber),obj.DefaultLineColor);
 
 obj.ChanSelect2Display_{data}=1:size(obj.Montage{data}(mtgref).mat,1);
 obj.DispChans_(data)=min(obj.DispChans_(data),size(obj.Montage{data}(mtgref).mat,1));

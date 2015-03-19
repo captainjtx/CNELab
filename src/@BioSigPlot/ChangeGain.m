@@ -18,11 +18,11 @@ if isempty(src)||ismember(src,[obj.MenuAutoScale,obj.BtnAutoScale])
         else
             val=0.2/tmp;
         end
-        if obj.IsInitialize
-            obj.Gain_{dd(i)}=ones(obj.MontageChanNumber(dd(i)),1)*val;
-        else
-            obj.Gain{dd(i)}=ones(obj.MontageChanNumber(dd(i)),1)*val;
-        end
+        obj.Gain_{dd(i)}=ones(obj.MontageChanNumber(dd(i)),1)*val;
+    end
+    
+    if ~obj.IsInitialize
+        gainChangeSelectedChannels(obj);
     end
 else
     dd=obj.DisplayedData;
@@ -31,21 +31,25 @@ else
         %applied to all channels of current data
         for i=1:length(dd)
             if src==obj.BtnGainIncrease
-                obj.Gain{dd(i)}=obj.Gain{dd(i)}*2^0.25;
+                obj.Gain_{dd(i)}=obj.Gain{dd(i)}*2^0.25;
             elseif src==obj.BtnGainDecrease
-                obj.Gain{dd(i)}=obj.Gain{dd(i)}*2^-0.25;
+                obj.Gain_{dd(i)}=obj.Gain{dd(i)}*2^-0.25;
             end
         end
+        
+        gainChangeSelectedChannels(obj);
     else
         %if there are channels selected
         %var will be applied to the selected channels
         for i=1:length(dd)
             if src==obj.BtnGainIncrease
-                obj.Gain{dd(i)}(obj.ChanSelect2Edit{dd(i)},:)=obj.Gain{dd(i)}(obj.ChanSelect2Edit{dd(i)},:)*2^0.25;
+                obj.Gain_{dd(i)}(obj.ChanSelect2Edit{dd(i)},:)=obj.Gain{dd(i)}(obj.ChanSelect2Edit{dd(i)},:)*2^0.25;
             elseif src==obj.BtnGainDecrease
-                obj.Gain{dd(i)}(obj.ChanSelect2Edit{dd(i)},:)=obj.Gain{dd(i)}(obj.ChanSelect2Edit{dd(i)},:)*2^-0.25;
+                obj.Gain_{dd(i)}(obj.ChanSelect2Edit{dd(i)},:)=obj.Gain{dd(i)}(obj.ChanSelect2Edit{dd(i)},:)*2^-0.25;
             end
         end
+        
+        gainChangeSelectedChannels(obj);
     end
     
 end

@@ -3,6 +3,9 @@ function makeMenu(obj)
 %First Order Menu------------------------------------------------------File
 obj.MenuFile=uimenu(obj.Fig,'Label','File');
 
+obj.MenuNew=uimenu(obj.MenuFile,'Label','New');
+obj.MenuNewMontage=uimenu(obj.MenuNew,'Label','Montage','Callback',@(src,evt) obj.NewMontage);
+
 obj.MenuImport=uimenu(obj.MenuFile,'Label','Import');
 obj.MenuImportDataSet=uimenu(obj.MenuImport,'Label','Data','Callback',@(src,evt) obj.ImportDataSet);
 obj.MenuImportEvents=uimenu(obj.MenuImport,'Label','Events','Callback',@(src,evt) obj.ImportEvents);
@@ -58,17 +61,17 @@ obj.MenuFastEvent=uimenu(obj.MenuEvent,'Label','Fast Event','Callback',@(src,evt
 obj.MenuEventDelete=uimenu(obj.MenuEvent,'Label','Delete','Callback',@(src,evt) deleteSelected(obj));
 obj.MenuEventDelete=uimenu(obj.MenuEvent,'Label','Group Delete','Callback',@(src,evt) groupDeleteSelected(obj));
 
-obj.MenuTriggerEvents=uimenu(obj.MenuEvent,'Label','Advance','Separator','on');
-obj.MenuTriggerEventsCalculate=uimenu(obj.MenuTriggerEvents,'Label','Detect',...
-    'Callback',@(src,evt) TriggerEvents(obj,src));
-obj.MenuTriggerEventsFunction=uimenu(obj.MenuTriggerEvents,'Label','Function',...
-    'Callback',@(src,evt) TriggerEvents(obj,src));
-obj.MenuTriggerEventsQRS=uimenu(obj.MenuTriggerEventsFunction,'Label','EKG(QRS)',...
-    'CallBack',@(src,evt) TriggerEvents(obj,src),'checked','off');
-obj.MenuTriggerEventsLoad=uimenu(obj.MenuTriggerEventsFunction,'Label','Load',...
-    'Separator','on','Callback',@(src,evt) TriggerEvents(obj,src));
-obj.MenuTriggerEventsDisplay=uimenu(obj.MenuTriggerEvents,'Label','Display',...
-    'CallBack',@(src,evt) set(obj,'TriggerEventsDisplay',~obj.TriggerEventsDisplay));
+obj.MenuAdvanceEvents=uimenu(obj.MenuEvent,'Label','Advance','Separator','on');
+obj.MenuAdvanceEventsCalculate=uimenu(obj.MenuAdvanceEvents,'Label','Detect',...
+    'Callback',@(src,evt) AdvanceEvents(obj,src));
+obj.MenuAdvanceEventsFunction=uimenu(obj.MenuAdvanceEvents,'Label','Function',...
+    'Callback',@(src,evt) AdvanceEvents(obj,src));
+obj.MenuAdvanceEventsQRS=uimenu(obj.MenuAdvanceEventsFunction,'Label','EKG(QRS)',...
+    'CallBack',@(src,evt) AdvanceEvents(obj,src),'checked','off');
+obj.MenuAdvanceEventsLoad=uimenu(obj.MenuAdvanceEventsFunction,'Label','Load',...
+    'Separator','on','Callback',@(src,evt) AdvanceEvents(obj,src));
+obj.MenuAdvanceEventsDisplay=uimenu(obj.MenuAdvanceEvents,'Label','Display',...
+    'CallBack',@(src,evt) set(obj,'AdvanceEventsDisplay',~obj.AdvanceEventsDisplay));
 
 %First Order Menu---------------------------------------------------Display
 obj.MenuDisplay=uimenu(obj.Fig,'Label','Display');
