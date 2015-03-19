@@ -34,7 +34,7 @@ for i=1:length(dd)
                 end
             end
             set(axe,'YLim',ylim);
-            updateYTicks(axe,obj.MontageChanNames{dd(i)},obj.Gain{dd(i)});
+            updateYTicks(axe,obj.MontageChanNames{dd(i)},obj.Gain{dd(i)},obj.ChanColors{dd(i)});
             updateEvents(axe);
         elseif strcmpi(opt,'time')
             updateXTicks(axe,obj.Time,obj.WinLength,obj.SRate);
@@ -108,7 +108,7 @@ end
 
 end
 
-function updateYTicks(axe,ChanNames,gain)
+function updateYTicks(axe,ChanNames,gain,colors)
 lim=get(axe,'Ylim');
 
 n=length(ChanNames);
@@ -122,7 +122,7 @@ for i=1:n
         
         h=findobj(axe,'-regexp','DisplayName',['ChanName' num2str(count)]);
         
-        set(h,'String',ChanNames{i});
+        set(h,'String',ChanNames{i},'Color',colors(i,:));
         
         h=findobj(axe,'-regexp','DisplayName',['YGauge' num2str(count)]);
         set(h,'String',num2str(1/gain(i),'%0.3g'));

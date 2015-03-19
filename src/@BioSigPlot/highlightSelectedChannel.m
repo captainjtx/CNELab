@@ -4,13 +4,13 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
     for i=1:length(obj.Axes)
         highlightChannels(i,obj.ChannelLines{i},obj.ChanColors{i},obj.ChanSelect2Display{i},obj.FirstDispChans(i),...
             obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
-        highlightYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.ChanSelect2Edit{i},obj.ChanSelectColor);
+        highlightYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.ChanSelect2Edit{i},obj.ChanSelectColor,obj.ChanColors{i});
     end
 else
     i=str2double(obj.DataView(4));
     highlightChannels(i,obj.ChannelLines{i},obj.ChanColors{i},obj.ChanSelect2Display{i},obj.FirstDispChans(i),...
         obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
-    highlightYTicks(obj.Axes,obj.MontageChanNames{i},obj.ChanSelect2Edit{i},obj.ChanSelectColor);
+    highlightYTicks(obj.Axes,obj.MontageChanNames{i},obj.ChanSelect2Edit{i},obj.ChanSelectColor,obj.ChanColors{i});
     
 end
 
@@ -45,7 +45,7 @@ end
 
 end
 
-function highlightYTicks(axe,ChanNames,ChanSelect2Edit,ChanSelectColor)
+function highlightYTicks(axe,ChanNames,ChanSelect2Edit,ChanSelectColor,colors)
 % Write channels names on Y Ticks
 %  axe :  axes to plot
 % ChanNames : cell of channel names that will be writted
@@ -60,7 +60,7 @@ for i=1:n
         if ismember(i,ChanSelect2Edit)
             YLabelColor=ChanSelectColor;
         else
-            YLabelColor=[0 0 0];
+            YLabelColor=colors(i,:);
         end
         h=findobj(axe,'-regexp','DisplayName',['ChanName' num2str(count)]);
         set(h,'Color',YLabelColor);

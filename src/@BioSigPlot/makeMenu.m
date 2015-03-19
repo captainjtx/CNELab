@@ -40,7 +40,7 @@ obj.MenuVideoStartEnd=uimenu(obj.MenuSettings,'Label','Video Start End','Callbac
 obj.MenuColorCanvas=uimenu(obj.MenuColor,'Label','Canvas','Accelerator','b',...
     'Callback',@(src,evt) set(obj,'AxesBackgroundColor',uisetcolor(obj.AxesBackgroundColor,'AxesBackground Color')));
 obj.MenuColorLines=uimenu(obj.MenuColor,'Label','Lines','Accelerator','l',...
-    'Callback',@(src,evt) set(obj,'ChanColors',obj.applyPanelVal(obj.ChanColors_,uisetcolor(obj.NormalModeColor,'Line Color'))));
+    'Callback',@(src,evt) MnuLineColor(obj));
 %**************************************************************************
 %First Order Menu------------------------------------------------------Data
 obj.MenuChannel=uimenu(obj.Fig,'Label','Data');

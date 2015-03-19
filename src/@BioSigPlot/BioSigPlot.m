@@ -2168,7 +2168,14 @@ classdef BioSigPlot < hgsetget
                 delete(obj.TxtFastEvent(ishandle(obj.TxtFastEvent)));
             end
         end
-        
+        function MnuLineColor(obj)
+            
+            col=uisetcolor('Line Color');
+            if length(col)~=1||col~=0
+               set(obj,'ChanColors',obj.applyPanelVal(obj.ChanColors_,col));
+            end
+            
+        end
     end
     
     methods
