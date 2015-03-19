@@ -33,7 +33,7 @@ for i=1:length(dd)
                 end
             end
             set(axe,'YLim',ylim);
-            updateYTicks(axe,obj.MontageChanNames{dd(i)},obj.ChanSelect2Edit{dd(i)},obj.ChanSelectColor,obj.Gain{i});
+            updateYTicks(axe,obj.MontageChanNames{dd(i)},obj.ChanSelect2Edit{dd(i)},obj.ChanSelectColor,obj.Gain{dd(i)});
             updateEvents(axe);
         elseif strcmpi(opt,'time')
             updateXTicks(axe,obj.Time,obj.WinLength,obj.SRate);
