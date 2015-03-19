@@ -9,6 +9,9 @@ popStr=cell(2+length(listing),1);
 
 popStr{1}='Refresh';
 popStr{2}='None';
+
+obj.CustomFilters={};
+
 for i=1:length(listing)
     [pathstr, name, ext] = fileparts(listing(i).name);
     obj.CustomFilters{i}=load(listing(i).name,'-mat');
