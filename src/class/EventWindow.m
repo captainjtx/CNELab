@@ -20,9 +20,12 @@ classdef EventWindow  < handle
                 'Max',10,'Min',1);
             
             eventListMenu=uicontextmenu('Visible','on');
-            uimenu(eventListMenu,'Label','Delete','Callback',@(src,evt) bsp.deleteSelected);
-            uimenu(eventListMenu,'Label','Group Delete','Callback',@(src,evt) bsp.groupDeleteSelected);
+            uimenu(eventListMenu,'Label','Rename','Callback',@(src,evt)bsp.modifySelectedEvent('rename'));
+            uimenu(eventListMenu,'Label','Group Rename','Callback',@(src,evt)bsp.groupModifySelectedEvent('rename'));
+            uimenu(eventListMenu,'Label','Delete','Callback',@(src,evt) bsp.modifySelectedEvent('delete'));
+            uimenu(eventListMenu,'Label','Group Delete','Callback',@(src,evt) bsp.groupModifySelectedEvent('delete'));
             set(obj.uilist,'uicontextMenu',eventListMenu);
+            
             
         end
         

@@ -41,6 +41,8 @@ obj.MenuColorCanvas=uimenu(obj.MenuColor,'Label','Canvas','Accelerator','b',...
     'Callback',@(src,evt) set(obj,'AxesBackgroundColor',uisetcolor(obj.AxesBackgroundColor,'AxesBackground Color')));
 obj.MenuColorLines=uimenu(obj.MenuColor,'Label','Lines','Accelerator','l',...
     'Callback',@(src,evt) MnuLineColor(obj));
+obj.MenuFigurePosition=uimenu(obj.MenuSettings,'Label','Figue Position',...
+    'Callback',@(src,evts) MnuFigurePosition(obj));
 %**************************************************************************
 %First Order Menu------------------------------------------------------Data
 obj.MenuChannel=uimenu(obj.Fig,'Label','Data');
@@ -58,9 +60,7 @@ obj.MenuMontage=uimenu(obj.Fig,'Label','Montage');
 %First Order Menu-----------------------------------------------------Event
 obj.MenuEvent=uimenu(obj.Fig,'Label','Event');
 obj.MenuFastEvent=uimenu(obj.MenuEvent,'Label','Fast Event','Callback',@(src,evt) WinFastEvents(obj));
-obj.MenuEventDelete=uimenu(obj.MenuEvent,'Label','Delete','Callback',@(src,evt) deleteSelected(obj));
-obj.MenuEventDelete=uimenu(obj.MenuEvent,'Label','Group Delete','Callback',@(src,evt) groupDeleteSelected(obj));
-
+obj.MenuRepeatSelect=uimenu(obj.MenuEvent,'Label','Repeat Selection','Callback',@(src,evt) EventRepeatSelection(obj));
 obj.MenuAdvanceEvents=uimenu(obj.MenuEvent,'Label','Advance','Separator','on');
 obj.MenuAdvanceEventsCalculate=uimenu(obj.MenuAdvanceEvents,'Label','Detect',...
     'Callback',@(src,evt) AdvanceEvents(obj,src));

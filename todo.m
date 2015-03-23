@@ -134,11 +134,11 @@ Adjustable Height of Event note and transparent background
 
 % Display events
 
-Import filter
+% Import filter
 
 Enlarge events when you select
 
-Group change event
+% Group change event
 
 Zoom in and out at both spatial and time scale
 
@@ -158,3 +158,5 @@ Reorder DataSets
 Export/Import Montage from plain text and mat file (with matrix transformation)
 
 Auto Scan Montage in db/Montage folder
+
+Generate selection according to the annotation

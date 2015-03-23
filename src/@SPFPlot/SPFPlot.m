@@ -27,6 +27,8 @@ classdef SPFPlot < BioSigPlot
                 mix=SV';
                 demix=SV;
                 weg=e;
+            elseif strcmpi(method,'tpca')
+                
             elseif strcmpi(method,'ica')
                 
                 prompt='Number of ICA:';

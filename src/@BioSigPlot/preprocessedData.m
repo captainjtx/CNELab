@@ -27,7 +27,7 @@
 function d=preprocessedData(obj,n)
 
 % t=ceil(obj.Time*obj.SRate+1):min(ceil((obj.Time+obj.WinLength)*obj.SRate),size(obj.Data{1},1));
-d=double(obj.Data{n})*(obj.Montage{n}(obj.MontageRef(n)).mat*obj.ChanOrderMat{n})';
+d=double(obj.Data{n})*(obj.Montage{n}(obj.MontageRef(n)).mat)';
 
 fs=obj.SRate;
 ext=2*obj.SRate;

@@ -16,7 +16,7 @@ else
 end
 
 
-for i=1:size(obj.Evts,1)
+for i=1:size(EventsList,1)
     Events.stamp(i)=EventsList{i,1};
     Events.text{i}=EventsList{i,2};
     Events.color(i,:)=EventsList{i,3};

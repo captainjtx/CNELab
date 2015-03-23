@@ -15,8 +15,8 @@ channel=[];
 
 if ~isempty(obj.Selection)
     for i=1:size(obj.Selection,2)
-        startInd=max(1,round(obj.Selection(1,i)*fs));
-        endInd=min(size(obj.Data{1},1),round(obj.Selection(2,i)*fs));
+        startInd=max(1,obj.Selection(1,i));
+        endInd=min(size(obj.Data{1},1),obj.Selection(2,i));
         selection=cat(2,selection,startInd:endInd);
     end
 else

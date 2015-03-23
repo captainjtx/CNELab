@@ -35,7 +35,7 @@ if isempty(obj.MouseMode)
             %Single Event Selection
             if ~isempty(obj.EventLines)
                 for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
-                    if ishandle(obj.EventLines(i))&&obj.EventLines(i)
+                    if ishandle(obj.EventLines(i))
                         XData=get(obj.EventLines(i),'XData');
                         eventIndex=XData(1);
                         prox_t=max(5,min(obj.WinLength*obj.SRate/50,50));
@@ -54,7 +54,7 @@ if isempty(obj.MouseMode)
             %Cancel region selection
             if ~isempty(obj.Selection)
                 for i=1:size(obj.Selection,2)
-                    if time>=obj.Selection(1,i)&&time<=obj.Selection(2,i)
+                    if time>=obj.Selection(1,i)/obj.SRate&&time<=obj.Selection(2,i)/obj.SRate
                         obj.Selection(:,i)=[];
                         redrawSelection(obj);
                         return
@@ -65,7 +65,7 @@ if isempty(obj.MouseMode)
             %Event Line selection
             if ~isempty(obj.EventLines)
                 for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
-                    if ishandle(obj.EventLines(i))&&obj.EventLines(i)
+                    if ishandle(obj.EventLines(i))
                         XData=get(obj.EventLines(i),'XData');
                         eventIndex=XData(1);
                         if abs(t-eventIndex)<50
@@ -138,7 +138,7 @@ elseif strcmpi(obj.MouseMode,'Select')
             %Cancel region selection
             if ~isempty(obj.Selection)
                 for i=1:size(obj.Selection,2)
-                    if time>=obj.Selection(1,i)&&time<=obj.Selection(2,i)
+                    if time>=obj.Selection(1,i)/obj.SRate&&time<=obj.Selection(2,i)/obj.SRate
                         obj.Selection(:,i)=[];
                         redrawSelection(obj);
                         return
@@ -152,7 +152,7 @@ elseif strcmpi(obj.MouseMode,'Select')
         obj.SelectionStart=[];%Cancel first click
         i=1;
         while i<=size(obj.Selection,2)
-            if time<=obj.Selection(2,i) && time>=obj.Selection(1,i)
+            if time<=obj.Selection(2,i)/obj.SRate && time>=obj.Selection(1,i)/obj.SRate
                 obj.Selection(:,i)=[];
             else
                 i=i+1;
@@ -161,9 +161,9 @@ elseif strcmpi(obj.MouseMode,'Select')
         redrawSelection(obj);
     else
         if isempty(obj.SelectionStart)
-            obj.SelectionStart=time;
+            obj.SelectionStart=round(time*obj.SRate);
         else %Second click
-            tempSelection=sort([obj.SelectionStart;time]);
+            tempSelection=sort([obj.SelectionStart;round(time*obj.SRate)]);
             for i=1:size(obj.Selection,2)
                 if tempSelection(1,1)<=obj.Selection(2,i) && tempSelection(2,1)>=obj.Selection(1,i)
                     tempSelection(:,1)=[min([tempSelection(1,1) obj.Selection(1,i)]) max([tempSelection(2,1) obj.Selection(2,i)])];
@@ -171,7 +171,7 @@ elseif strcmpi(obj.MouseMode,'Select')
                     tempSelection(:,end+1)=obj.Selection(:,i); %#ok<AGROW>
                 end
             end
-            obj.Selection=round(100*sortrows(tempSelection',1)')/100;
+            obj.Selection=sortrows(tempSelection',1)';
             
             
             obj.SelectionStart=[];

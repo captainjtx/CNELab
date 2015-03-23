@@ -6,6 +6,8 @@ switch src
         method='PCA';
     case obj.BtnICA
         method='ICA';
+    case obj.BtnTPCA
+        method='TPCA';
 end
 
 channames{1}=chanNames;

@@ -102,6 +102,7 @@ classdef BioSigPlot < hgsetget
         MenuColors
         MenuSampleRate
         MenuVideoStartEnd
+        MenuFigurePosition
         
         MenuChannel
         MenuChannelNumber
@@ -116,9 +117,9 @@ classdef BioSigPlot < hgsetget
         MontageOptMenu
         
         MenuEvent
-        MenuEventDelete
         MenuEventsWindow
         MenuFastEvent
+        MenuRepeatSelect
         MenuEventsDisplay
         
         MenuDisplay
@@ -344,7 +345,6 @@ classdef BioSigPlot < hgsetget
         Commands                    %(Read-Only)List of all commands to be on this state
     end
     properties (Access = protected,Hidden) %State Properties. No utilities for users
-        ChanOrderMat
         IsSelecting
         SelectionStart
         SelRect
@@ -421,7 +421,7 @@ classdef BioSigPlot < hgsetget
             obj.VideoLineTime=0;
             obj.IsSelecting=0;
             obj.SelectionStart=[];
-            obj.Selection_=zeros(2,0);
+            obj.Selection_=ones(2,0);
             obj.ChanSelect2Display_=cell(1,obj.DataNumber);
             obj.ChanSelect2Edit_=cell(1,obj.DataNumber);
             
@@ -1059,11 +1059,16 @@ classdef BioSigPlot < hgsetget
                 obj.ChanColors_{i}=ones(size(obj.Montage_{i}(j).mat,1),1)*obj.LineDefaultColors(1,:);
                 if isfield(obj.Montage_{i}(j),'groupnames')
                     if ~isempty(obj.Montage_{i}(j).groupnames)
-                        [C,ia,ic] = unique(obj.Montage_{i}(j).groupnames);
+%                         [C,ia,ic] = unique(obj.Montage_{i}(j).groupnames);
+                        gname=obj.Montage_{i}(j).groupnames;
+                        tab=tabulate(gname);
+                        [tmp,order]=sort([tab{:,2}],'descend');
+                        unique_name=tab(:,1);
+                        unique_name=unique_name(order);
                         
-                        c=zeros(length(obj.Montage_{i}(j).groupnames),3);
+                        c=zeros(length(gname),3);
                         for k=1:size(c,1)
-                            ind=rem(ic(k),size(obj.LineDefaultColors,1));
+                            ind=rem(find(strcmp(gname{k},unique_name)),size(obj.LineDefaultColors,1));
                             if ~ind
                                 ind=size(obj.LineDefaultColors,1);
                             end
@@ -2174,13 +2179,12 @@ classdef BioSigPlot < hgsetget
             if length(col)~=1||col~=0
                set(obj,'ChanColors',obj.applyPanelVal(obj.ChanColors_,col));
             end
-            
         end
     end
     
     methods
-        deleteSelected(obj)
-        groupDeleteSelected(obj)
+        modifySelecetdEvent(obj,opt)
+        groupModifySelectedEvent(obj,opt)
         openText(obj,src,axenum,count)
         addNewEvent(obj,newEvent)
         updateSelectedFastEvent(obj,x)
@@ -2207,6 +2211,8 @@ classdef BioSigPlot < hgsetget
         ReadMontage(obj)
         ImportFilter(obj)
         NewMontage(obj)
+        MnuFigurePosition(obj)
+        EventRepeatSelection(obj)
     end
     
     properties

@@ -1,8 +1,8 @@
 function KeyPress(obj,src,evt)
 
 dd=obj.DisplayedData;
-time=obj.MouseTime;
-[nchan,ndata,yvalue]=getMouseInfo(obj);
+% time=obj.MouseTime;
+% [nchan,ndata,yvalue]=getMouseInfo(obj);
 
 %**************************************************************************
 %Exit the special mouse mode except for "Pan" (which needs another click on the icon)
@@ -12,9 +12,13 @@ if strcmpi(evt.Key,'escape')
         obj.MouseMode=[];
     else
         obj.MouseMode=[];
-        obj.ChanSelect2Edit=[];
-        obj.SelectedEvent=[];
-        obj.Selection=[];
+        if ~isempty(obj.SelectedEvent)
+            obj.SelectedEvent=[];
+        elseif ~isempty(obj.ChanSelect2Edit)
+            obj.ChanSelect2Edit=[];
+        elseif ~isempty(obj.Selection)
+            obj.Selection=[];
+        end
     end
     return
 end

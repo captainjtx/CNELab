@@ -77,7 +77,7 @@ else
         set(obj.Fig,'pointer','crosshair');
         if ~isempty(obj.EventLines)&&~obj.DragMode
             for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
-                if ishandle(obj.EventLines(i))&&obj.EventLines(i)
+                if ishandle(obj.EventLines(i))
                     XData=get(obj.EventLines(i),'XData');
                     eventIndex=XData(1);
                     if abs(mouseIndex-eventIndex)<50
@@ -101,7 +101,7 @@ else
     elseif strcmpi(obj.MouseMode,'Select')
         set(obj.Fig,'pointer','ibeam');
         if ~isempty(obj.SelectionStart)
-            t=sort([obj.SelectionStart time]-obj.Time)*obj.SRate;
+            t=sort([obj.SelectionStart/obj.SRate time]-obj.Time);
             epsilon=1.e-10;
             for i=1:length(obj.Axes)
                 p=get(obj.Axes(i),'YLim');

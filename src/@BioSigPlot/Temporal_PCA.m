@@ -78,6 +78,7 @@ for d=1:size(data,2)
     
     data_a=permute(data_a,[1 3 2]);
     
+    
     correlation=0;
     for i=1:size(data_a,2)
         correlation=data_a(:,i)*data_a(:,i)'+correlation;
@@ -117,9 +118,18 @@ for i=1:size(data,2)
     obj.PreprocData{dataset(i)}(sample,channel(i))=data(:,i);
 end
 
-obj.redrawChangeTime;
+obj.redrawChangeBlock('time');
 
-obj.Selection=selection/obj.SRate;
+obj.Selection=selection;
+
+
+%**************************************************************************
+%Plot the raw data and recon data
+
+for i=1:length(data)
+    
+    
+end
 
 
 end

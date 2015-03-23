@@ -4,7 +4,7 @@ for i=1:length(obj.Axes)
     h=findobj(obj.Axes(i),'Type','rectangle');
     delete(h);
     
-    DrawSelect(obj.Axes(i),obj.Selection,obj.Time,obj.WinLength);
+    DrawSelect(obj.Axes(i),obj.Selection/obj.SRate,obj.Time,obj.WinLength);
     obj.SelRect(i)=rectangle('Parent',obj.Axes(i),'Position',[-1 0 .0001 .0001],...
         'EdgeColor','none','FaceColor',[.85 1 .85]); % Current Selection Rectangle
     

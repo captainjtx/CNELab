@@ -67,7 +67,7 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
             
             channelLines{i}=lhs;
         end
-        plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.ChanSelect2Edit{i},obj.ChanSelectColor,obj.Gain{i});
+        plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.ChanSelect2Edit{i},obj.ChanSelectColor,obj.Gain{i},obj.ChanColors{i});
     end
 else
     
@@ -92,7 +92,7 @@ else
             obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
         channelLines{i}=lhs;
     end
-    plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.ChanSelect2Edit{i},obj.ChanSelectColor,obj.Gain{i});
+    plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.ChanSelect2Edit{i},obj.ChanSelectColor,obj.Gain{i},obj.ChanColors{i});
     
     plotXTicks(obj.Axes,obj.Time,obj.WinLength,obj.SRate)
 end
@@ -210,7 +210,7 @@ end
 end
 
 %**************************************************************************
-function plotYTicks(axe,ChanNames,ChanSelect2Edit,ChanSelectColor,gain)
+function plotYTicks(axe,ChanNames,ChanSelect2Edit,ChanSelectColor,gain,colors)
 % Write channels names on Y Ticks
 %  axe :  axes to plot
 % ChanNames : cell of channel names that will be writted
@@ -236,7 +236,7 @@ for i=1:n
         if ismember(i,ChanSelect2Edit)
             YLabelColor=ChanSelectColor;
         else
-            YLabelColor=[0 0 0];
+            YLabelColor=colors(i,:);
         end
         h=text(.002,p+.004,ChanNames{i},'Parent',axe,'HorizontalAlignment','left',...
             'VerticalAlignment','bottom','FontWeight','bold','units','normalized',...
