@@ -6,7 +6,7 @@ if ~isempty(evt.Modifier)
             if strcmpi(evt.Key,'d')||strcmpi(evt.Key,'backspace')
                 %delete the drag selected event
                 if ~isempty(obj.SelectedEvent)
-                    deleteSelected(obj);
+                    modifySelectedEvent(obj,'delete');
                     return
                 end
             end
