@@ -51,6 +51,10 @@ for i=1:length(dd)
     cds.Data.VideoName=obj.VideoFile;
     cds.Data.TimeStamps=linspace(0,obj.DataTime,size(obj.Data{1},1))+obj.StartTime;
     cds.Data.FileName=obj.FileNames{dd(i)};
+    
+    cds.Data.Video.StartTime=obj.VideoStartTime;
+    cds.Data.Video.TimeFrame=obj.VideoTimeFrame;
+    
     cds.Montage.ChannelNames=obj.MontageChanNames{dd(i)}(chan);
     cds.Montage.Name=obj.Montage{dd(i)}(obj.MontageRef(dd(i))).name;
     cds.Montage.GroupNames=obj.Montage{dd(i)}(obj.MontageRef(dd(i))).groupnames;
