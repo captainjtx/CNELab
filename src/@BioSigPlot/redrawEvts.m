@@ -19,6 +19,9 @@ for i=1:size(obj.EventTexts,1)*size(obj.EventTexts,2)
 end
 
 if isempty(evts)
+    obj.EventLines=[];
+    obj.EventTexts=[];
+    obj.EventDisplayIndex=[];
     return
 end
 
@@ -32,7 +35,7 @@ for i=1:length(obj.Axes)
     if ~isempty(Elines)
         EventLines(i,:)=Elines;
         EventTexts(i,:)=Etexts;
-        EventIndex(i,:)=Eindex;
+        EventIndex(i,:)=obj.Evts2Display(Eindex);
     end
 end
 

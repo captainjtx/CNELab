@@ -1268,6 +1268,9 @@ classdef BioSigPlot < hgsetget
                 set(obj.MenuEventsDisplay,'Checked','off');
             end
             
+            %Update EventDisplayIndex
+            
+            
             obj.synchEvts();
         end
         function obj = set.SelectedEvent_(obj,val)
