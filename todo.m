@@ -160,3 +160,5 @@ Export/Import Montage from plain text and mat file (with matrix transformation)
 Auto Scan Montage in db/Montage folder
 
 Generate selection according to the annotation
+
+Gain change display bug

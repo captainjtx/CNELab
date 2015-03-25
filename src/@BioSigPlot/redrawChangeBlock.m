@@ -100,7 +100,7 @@ time_labels=startTime:delta:time+WinLength;
 set(axe,'XTick',(time_labels-time)*fs);
 
 for i=1:length(time_labels)
-    h=findobj(axe,'-regexp','DisplayName',['XTick',num2str(i)]);
+    h=findobj(axe,'DisplayName',['XTick',num2str(i)]);
     t=time_labels(i);
     p=(t-time)/WinLength;
     set(h,'Position',[p+0.002,0.002],'String',num2str(t));
@@ -120,11 +120,11 @@ for i=1:n
     if p<.99 && p>0
         count=count+1;
         
-        h=findobj(axe,'-regexp','DisplayName',['ChanName' num2str(count)]);
+        h=findobj(axe,'DisplayName',['ChanName' num2str(count)]);
         
         set(h,'String',ChanNames{i},'Color',colors(i,:));
         
-        h=findobj(axe,'-regexp','DisplayName',['YGauge' num2str(count)]);
+        h=findobj(axe,'DisplayName',['YGauge' num2str(count)]);
         set(h,'String',num2str(1/gain(i),'%0.3g'));
 
     end

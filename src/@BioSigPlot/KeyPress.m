@@ -14,7 +14,7 @@ if strcmpi(evt.Key,'escape')
         obj.MouseMode=[];
         if ~isempty(obj.SelectedEvent)
             obj.SelectedEvent=[];
-        elseif ~isempty(obj.ChanSelect2Edit)
+        elseif obj.IsChannelSelected
             obj.ChanSelect2Edit=[];
         elseif ~isempty(obj.Selection)
             obj.Selection=[];

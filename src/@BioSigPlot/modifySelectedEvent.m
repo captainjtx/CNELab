@@ -33,23 +33,7 @@ if strcmpi(opt,'delete')
     EventTexts(:,deletedInd)=[];
     EventIndex(:,deletedInd)=[];
     
-%     evts=obj.Evts_;
-%     t=obj.Time;
-%     dt=obj.WinLength;
-%     
-%     for k=1:length(obj.Axes)
-%         count=0;
-%         tmp=[];
-%         for i=1:size(evts,1)
-%             if evts{i,1}>=t && evts{i,1}<=t+dt
-%                 count=count+1;
-%                 tmp(count)=i;
-%             end
-%         end
-%         if ~isempty(tmp)
-%             EventIndex(k,:)=tmp;
-%         end
-%     end
+
     obj.EventLines=EventLines;
     obj.EventTexts=EventTexts;
     obj.EventDisplayIndex=EventIndex;
