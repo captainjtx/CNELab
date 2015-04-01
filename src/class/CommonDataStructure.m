@@ -138,8 +138,25 @@ classdef CommonDataStructure < handle
             save(fnames,'-struct','cds','-mat');
         end
         
-        
-        
+        function success=extractTimeFrameFromData(obj,videoChannel)
+            success=false;
+            if ischar(videoChannel)
+                videoChannel=find(ismember(obj.Montage.ChannelNames,videoChannel));
+            end
+            
+            if ~isempty(videoChannel)
+                
+                [frame,ind]=unique(obj.Data.Data(:,videoChannel));
+                
+                frame(frame<1)=[];
+                ind(frame<1)=[];
+                
+                time=ind/obj.Data.SampleRate;
+                obj.Data.Video.TimeFrame=cat(2,reshape(time,length(time),1),reshape(frame,length(frame),1));
+                obj.Data.Video.StartTime=0;
+                success=true;
+            end
+        end
     end
     methods (Static=true)
         function FilterIndex=dataStructureCheck(filename)
@@ -646,26 +663,6 @@ classdef CommonDataStructure < handle
             obj.import();
             
             obj.export();
-        end
-        
-        function success=extractTimeFrameFromData(obj,videoChannel)
-            success=false;
-            if ischar(videoChannel)
-                videoChannel=find(ismember(obj.Montage.ChannelNames,videoChannel));
-            end
-            
-            if ~isempty(videoChannel)
-                
-                [frame,ind]=unique(obj.Data.Data(:,videoChannel));
-                
-                frame(frame<1)=[];
-                ind(frame<1)=[];
-                
-                time=ind/obj.Data.SampleRate;
-                obj.Data.Video.TimeFrame=cat(2,reshape(time,length(time),1),reshape(frame,length(frame),1));
-                obj.Data.Video.StartTime=0;
-                success=true;
-            end
         end
     end
     
