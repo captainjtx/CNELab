@@ -648,16 +648,23 @@ classdef CommonDataStructure < handle
             obj.export();
         end
         
-        function extractTimeFrameFromData(obj,videoChannel)
+        function success=extractTimeFrameFromData(obj,videoChannel)
+            success=false;
             if ischar(videoChannel)
                 videoChannel=find(ismember(obj.Montage.ChannelNames,videoChannel));
             end
             
             if ~isempty(videoChannel)
+                
                 [frame,ind]=unique(obj.Data.Data(:,videoChannel));
+                
+                frame(frame<1)=[];
+                ind(frame<1)=[];
+                
                 time=ind/obj.Data.SampleRate;
                 obj.Data.Video.TimeFrame=cat(2,reshape(time,length(time),1),reshape(frame,length(frame),1));
                 obj.Data.Video.StartTime=0;
+                success=true;
             end
         end
     end
