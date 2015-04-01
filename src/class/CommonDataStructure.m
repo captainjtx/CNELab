@@ -664,6 +664,11 @@ classdef CommonDataStructure < handle
             
             obj.export();
         end
+        
+        function cds=Import()
+            cds=CommonDataStructure;
+            cds.import();
+        end
     end
     
 end
