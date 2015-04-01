@@ -148,8 +148,9 @@ classdef CommonDataStructure < handle
                 
                 [frame,ind]=unique(obj.Data.Data(:,videoChannel));
                 
-                frame(frame<1)=[];
-                ind(frame<1)=[];
+                nv=frame<1;
+                frame(nv)=[];
+                ind(nv)=[];
                 
                 time=ind/obj.Data.SampleRate;
                 obj.Data.Video.TimeFrame=cat(2,reshape(time,length(time),1),reshape(frame,length(frame),1));
