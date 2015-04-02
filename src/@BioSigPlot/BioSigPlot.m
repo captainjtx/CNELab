@@ -1454,7 +1454,7 @@ classdef BioSigPlot < hgsetget
             tmp=ones(1,obj.DataNumber);
             
             if length(val)==1
-                tmp=min(val*ones(obj.DataNumber,1),obj.MontageChanNumber);
+                tmp=min(val*ones(obj.DataNumber,1),obj.MontageChanNumber-obj.DispChans+1);
             elseif isempty(val)
                 tmp=ones(1,obj.DataNumber);
             else
@@ -1469,7 +1469,7 @@ classdef BioSigPlot < hgsetget
             
             tmp=round(tmp);
             for i=1:length(tmp)
-                tmp(i)=max(1,min(tmp(i),obj.MontageChanNumber(i)));
+                tmp(i)=max(1,min(tmp(i),obj.MontageChanNumber(i)-obj.DispChans(i)+1));
             end
             obj.FirstDispChans_=reshape(tmp,length(tmp),1);
         end
