@@ -164,3 +164,7 @@ Generate selection according to the annotation
 Gain change display bug
 
 Modify setup, automatic remove old cnelab and ignore .git folders
+
+Dynamic change redraw selection
+
+Delete R of ECG detection bug
