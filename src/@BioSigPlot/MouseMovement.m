@@ -125,10 +125,8 @@ else
         updateSelectedFastEvent(obj,mouseIndex);
         
     elseif strcmpi(obj.MouseMode,'VideoAdjust')
-        set(obj.Fig,'pointer','cross')
-        for i=1:length(obj.LineVideo)
-            set(obj.LineVideo(i),'XData',[mouseIndex,mouseIndex]);
-        end
+        set(obj.Fig,'pointer','cross');
+        obj.VideoLineTime=time;
         
         updateVideo(obj);
         
