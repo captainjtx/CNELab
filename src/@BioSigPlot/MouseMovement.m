@@ -74,18 +74,26 @@ if ndata==0
     end
 else
     if isempty(obj.MouseMode)
+        
         set(obj.Fig,'pointer','crosshair');
-        if ~isempty(obj.EventLines)&&~obj.DragMode
-            for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
-                if ishandle(obj.EventLines(i))
-                    XData=get(obj.EventLines(i),'XData');
-                    eventIndex=XData(1);
-                    if abs(mouseIndex-eventIndex)<50
-                        set(obj.Fig,'pointer','hand');
+        
+        videoIndex=get(obj.LineVideo(1),'XData');
+        if abs(mouseIndex-videoIndex(1))<50
+            set(obj.Fig,'pointer','hand');
+        else
+            if ~isempty(obj.EventLines)&&~obj.DragMode
+                for i=1:size(obj.EventLines,1)*size(obj.EventLines,2)
+                    if ishandle(obj.EventLines(i))
+                        XData=get(obj.EventLines(i),'XData');
+                        eventIndex=XData(1);
+                        if abs(mouseIndex-eventIndex)<50
+                            set(obj.Fig,'pointer','hand');
+                        end
                     end
                 end
             end
         end
+        
         updateUponText(obj,mouseIndex,yvalue);
         if obj.DragMode&&~isempty(obj.SelectedEvent)
             obj.DragMode=2;
@@ -115,6 +123,13 @@ else
         set(obj.Fig,'pointer','cross')
         updateUponText(obj,mouseIndex,yvalue);
         updateSelectedFastEvent(obj,mouseIndex);
+        
+    elseif strcmpi(obj.MouseMode,'VideoAdjust')
+        set(obj.Fig,'pointer','cross')
+        for i=1:length(obj.LineVideo)
+            set(obj.LineVideo(i),'XData',[mouseIndex,mouseIndex]);
+        end
+        
     end
     
     updateInfoPanel(obj,time,ndata,nchan);

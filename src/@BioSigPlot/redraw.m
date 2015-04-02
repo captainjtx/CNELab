@@ -1,25 +1,3 @@
-%123456789012345678901234567890123456789012345678901234567890123456789012
-%
-%     BioSigPlot Copyright (C) 2013 Samuel Boudet, Faculté Libre de Médecine,
-%     samuel.boudet@gmail.com
-%
-%     This file is part of BioSigPlot
-%
-%     BioSigPlot is free software: you can redistribute it and/or modify
-%     it under the terms of the GNU General Public License as published by
-%     the Free Software Foundation, either version 3 of the License, or
-%     (at your option) any later version.
-%
-%     BioSigPlot is distributed in the hope that it will be useful,
-%     but WITHOUT ANY WARRANTY; without even the implied warranty of
-%     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-%     GNU General Public License for more details.
-%
-%     You should have received a copy of the GNU General Public License
-%     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-%
-% V0.1.1 Beta - 13/02/2013 - Initial Version
-
 function redraw(obj)
 
 channelLines=cell(obj.DataNumber,1);
@@ -70,8 +48,6 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.ChanSelect2Edit{i},obj.ChanSelectColor,obj.Gain{i},obj.ChanColors{i});
     end
 else
-    
-    
     n=str2double(obj.DataView(4));
     Nchan=obj.MontageChanNumber(n);
     
@@ -112,8 +88,10 @@ if ~isempty(obj.LineVideo)
 end
 for i=1:length(obj.Axes)
     obj.LineVideo(i)=line([inf inf],[0 1000],'parent',obj.Axes(i),...
-        'Color',[1 0 0],'LineStyle','-.','LineWidth',1.5);
-%     drawnow;
+        'Color',[1 0 0],'LineStyle','-.','LineWidth',1.5,'ButtonDownFcn',@(src,evt) LineVideoButtonDown(obj,src));
+    
+    
+    %     drawnow;
     obj.LineMeasurer(i)=line([inf inf],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]);
     uistack(obj.LineVideo(i));
 end
@@ -232,7 +210,7 @@ count=0;
 for i=1:n
     p=(n-i+1-lim(1))/(lim(2)-lim(1));
     if p<.99 && p>0
-         count=count+1;
+        count=count+1;
         if ismember(i,ChanSelect2Edit)
             YLabelColor=ChanSelectColor;
         else
@@ -241,13 +219,13 @@ for i=1:n
         h=text(.002,p+.004,ChanNames{i},'Parent',axe,'HorizontalAlignment','left',...
             'VerticalAlignment','bottom','FontWeight','bold','units','normalized',...
             'color',YLabelColor,'DisplayName',['ChanName' num2str(count)]);
-%         drawnow;
+        %         drawnow;
         uistack(h,'bottom');
         
         h=text(0.97,p,num2str(1/gain(i),'%0.3g'),'Parent',axe,'HorizontalAlignment','left',...
             'VerticalAlignment','middle','FontWeight','bold','units','normalized',...
             'DisplayName',['YGauge' num2str(count)],'Color',[1 0 1]);
-%         drawnow;
+        %         drawnow;
         uistack(h,'top');
     end
 end
@@ -262,4 +240,10 @@ end
 
 %==========================================================================
 %**************************************************************************
+
+function LineVideoButtonDown(obj,src)
+
+obj.MouseMode='VideoAdjust';
+
+end
 

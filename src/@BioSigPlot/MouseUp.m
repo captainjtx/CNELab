@@ -35,6 +35,8 @@ if isempty(obj.MouseMode)
             end
         end
     end
+elseif strcmpi(obj.MouseMode,'VideoAdjust')
+    obj.MouseMode=[];
 end
 
 obj.DragMode=0;

@@ -65,8 +65,8 @@ elseif strcmp(obj.DataView,'Vertical')
         
         if i~=n
             obj.AxesAdjustPanels(i)=uipanel(obj.MainPanel,'units','pixels','BorderType','etchedout',...
-                                             'ButtonDownFcn',@(src,evt) AxesAdjustPanelClick(obj,src),...
-                                             'Position',[0,position(2)+Height,MainPos(3),obj.AxesAdjustWidth]);
+                'ButtonDownFcn',@(src,evt) AxesAdjustPanelClick(obj,src),...
+                'Position',[0,position(2)+Height,MainPos(3),obj.AxesAdjustWidth]);
             obj.AxesResizeMode(i)=false;
         end
     end
