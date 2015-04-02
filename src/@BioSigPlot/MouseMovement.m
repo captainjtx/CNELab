@@ -130,6 +130,8 @@ else
             set(obj.LineVideo(i),'XData',[mouseIndex,mouseIndex]);
         end
         
+        updateVideo(obj);
+        
     end
     
     updateInfoPanel(obj,time,ndata,nchan);

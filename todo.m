@@ -168,3 +168,5 @@ Modify setup, automatic remove old cnelab and ignore .git folders
 Dynamic change redraw selection
 
 Delete R of ECG detection bug
+
+Slider does not go with window scroll 
