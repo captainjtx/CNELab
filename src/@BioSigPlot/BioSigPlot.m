@@ -262,7 +262,6 @@ classdef BioSigPlot < hgsetget
         PSDOverlap
         
         FileDir
-        
     end
     properties (Access=protected,Hidden)%Storage of public properties
         Version_
@@ -2221,7 +2220,6 @@ classdef BioSigPlot < hgsetget
         
         VideoTimeFrame
         VideoStampFrame
-        
         VideoLineTime
         
         VideoTimer
@@ -2258,6 +2256,7 @@ classdef BioSigPlot < hgsetget
         
         PSDFreqLow
         PSDFreqHigh
+        
     end
     events
         SelectedFastEvtChange
