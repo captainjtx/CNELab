@@ -170,3 +170,5 @@ Dynamic change redraw selection
 Delete R of ECG detection bug
 
 Slider does not go with window scroll 
+
+!! fasten updateVideo and add frame by frame change

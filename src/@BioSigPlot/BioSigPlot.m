@@ -325,8 +325,6 @@ classdef BioSigPlot < hgsetget
         
         FileNames_
         
-        VideoTimeFrame_
-        
         SelectedEvent_
         
         FastEvts_
@@ -635,7 +633,7 @@ classdef BioSigPlot < hgsetget
                         'STFTOverlap','Title','Version','PSDWindowLength',...
                         'PSDOverlap','ControlPanelDisplay',...
                         'LockLayout','ToolbarDisplay','DisplayGauge','XGrid','YGrid',...
-                        'VideoTimerPeriod','VideoTimeFrame','BadChannels','AxesBackgroundColor',...
+                        'VideoTimerPeriod','BadChannels','AxesBackgroundColor',...
                         'DefaultLineColor','Units','TimeUnit','FileNames','AdvanceEventsFcn'}))
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                 else
@@ -762,9 +760,6 @@ classdef BioSigPlot < hgsetget
         
         function obj = set.FileNames(obj,val), set(obj,'FileNames',val); end
         function val = get.FileNames(obj), val=obj.FileNames_; end
-        
-        function obj = set.VideoTimeFrame(obj,val), set(obj,'VideoTimeFrame',val);end
-        function val = get.VideoTimeFrame(obj), val=obj.VideoTimeFrame_; end
         
         function obj = set.BadChannels(obj,val), set(obj,'BadChannels',val); end
         function val = get.BadChannels(obj), val=obj.BadChannels_; end
@@ -1531,17 +1526,15 @@ classdef BioSigPlot < hgsetget
         end
         %==================================================================
         %******************************************************************
-        function obj=set.VideoTimeFrame_(obj,val)
+        function obj=set.VideoTimeFrame(obj,val)
             if ~isempty(val)
-                xq=1:max(val(:,2));
-                t=interp1(val(:,2),val(:,1),xq);
-                tmp=zeros(length(t),2);
-                tmp(:,1)=reshape(t,length(t),1);
-                tmp(:,2)=reshape(xq,length(xq),1);
                 
-                obj.VideoTimeFrame_=tmp;
+                obj.VideoTimeFrame=val;
+                
+                obj.VideoStampFrame=round(interp1(val(:,1),val(:,2),(1:size(obj.Data{1},1))/obj.SRate));
             end
         end
+        
         %==================================================================
         %******************************************************************
         function obj = set.VideoLineTime(obj,val)
@@ -2227,6 +2220,7 @@ classdef BioSigPlot < hgsetget
         VideoFile              %File path of video
         
         VideoTimeFrame
+        VideoStampFrame
         
         VideoLineTime
         
