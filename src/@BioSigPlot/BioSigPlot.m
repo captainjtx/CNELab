@@ -1533,7 +1533,7 @@ classdef BioSigPlot < hgsetget
                 
                 obj.VideoTimeFrame=val;
                 
-                obj.VideoStampFrame=round(interp1(val(:,1),val(:,2),(1:size(obj.Data{1},1))/obj.SRate));
+                obj.VideoStampFrame=round(interp1(val(:,1),val(:,2),(1:size(obj.Data{1},1))/obj.SRate,'pchip'));
             end
         end
         
