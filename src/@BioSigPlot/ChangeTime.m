@@ -36,6 +36,7 @@ else
 end
 t=max(0,min(timemax,t));
 obj.Time=t;
+updateVideo(obj);
 end
 
 function MovebyEvent(obj,src)

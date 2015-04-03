@@ -13,6 +13,7 @@ classdef VideoWindow  < handle
         FrameRate
         TotalFrame
         
+        NotifyVideoChangeTime
     end
     properties(Dependent)
         PlaySpeed
@@ -21,7 +22,7 @@ classdef VideoWindow  < handle
     end
     methods
         function obj=VideoWindow(file,varargin)
-            
+            obj.NotifyVideoChangeTime=true;
             if nargin==1
                 obj.ActxOpt='WMP';
             else
@@ -122,7 +123,9 @@ classdef VideoWindow  < handle
         
         function positionChange_Callback(obj,varargin)
             %             disp('position change')
-            notify(obj,'VideoChangeTime')
+            if obj.NotifyVideoChangeTime
+                notify(obj,'VideoChangeTime')
+            end
         end
         %------------------------------------------------------------------
         function val=get.TotalFrame(obj)

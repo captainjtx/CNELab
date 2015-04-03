@@ -1141,12 +1141,15 @@ classdef BioSigPlot < hgsetget
                 m=val;
             end
             
+            prevTime=obj.Time_;
             obj.Time_=min(max(val,0),m);
             set(obj.EdtTime,'String',obj.Time_);
             
-            obj.VideoLineTime=obj.Time;
-            
-            updateVideo(obj);
+            if ~isempty(prevTime)
+                obj.VideoLineTime=obj.Time+obj.VideoLineTime-prevTime;
+            else
+                obj.VideoLineTime=obj.Time;
+            end
             
         end
         

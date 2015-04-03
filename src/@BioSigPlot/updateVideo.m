@@ -2,12 +2,15 @@ function updateVideo(obj)
 
 if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
     if ~strcmpi(obj.WinVideo.Status,'Playing')
-        
+        obj.WinVideo.NotifyVideoChangeTime=false;
         if ~isempty(obj.VideoTimeFrame)
             %Assume the media player will play the vide in a constant frame
             %rate, which is the case for VLC and WMP activex by our
             %observation. Need to verify !
-            obj.WinVideo.CurrentPositionRatio=obj.VideoStampFrame(max(1,floor(obj.VideoLineTime*obj.SRate)))/max(obj.VideoTimeFrame(:,2));
+            
+            obj.WinVideo.CurrentPositionRatio=obj.VideoStampFrame...
+                (min(max(1,floor(obj.VideoLineTime*obj.SRate)),length(obj.VideoStampFrame)))...
+                /max(obj.VideoTimeFrame(:,2));
         else
             %If no timeframe if present, will try to align the video by
             %video start and end time. Assume that the video's playblack
@@ -27,6 +30,6 @@ if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
         end
     end
 end
-
+obj.WinVideo.NotifyVideoChangeTime=true;
 end
 

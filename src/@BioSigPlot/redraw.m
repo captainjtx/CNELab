@@ -87,13 +87,16 @@ if ~isempty(obj.LineVideo)
     delete(obj.LineMeasurer(ishandle(obj.LineMeasurer)));
 end
 for i=1:length(obj.Axes)
-    obj.LineVideo(i)=line([inf inf],[0 1000],'parent',obj.Axes(i),...
+    yl=get(obj.Axes(i),'YLim');
+    xl=get(obj.Axes(i),'XLim');
+    obj.LineVideo(i)=line([xl(1)-1,xl(1)-1],yl,'parent',obj.Axes(i),...
         'Color',[1 0 0],'LineStyle','-.','LineWidth',1.5,'ButtonDownFcn',@(src,evt) LineVideoButtonDown(obj,src));
     
     
     %     drawnow;
-    obj.LineMeasurer(i)=line([inf inf],[0 1000],'parent',obj.Axes(i),'Color',[1 0 0]);
-    uistack(obj.LineVideo(i));
+    obj.LineMeasurer(i)=line([xl(1)-1,xl(1)-1],yl,'parent',obj.Axes(i),'Color',[1 0 0]);
+
+    uistack(obj.LineVideo(i),'top');
 end
 
 % obj.EvtContextMenu.update(obj);
