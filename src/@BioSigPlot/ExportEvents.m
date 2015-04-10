@@ -66,6 +66,9 @@ end
 function writeheader(filename)
 
 fid=fopen(filename,'w');
-fprintf(fid,'%s\n%s\n','%Rows commented by % will be ignored','%Time(Second),Event,Color(RGB),Code');
+fprintf(fid,'%s\n%s\n%s\n%s\n','%Rows commented by % will be ignored',...
+    '%File needs to be comma(,) delimited',...
+    '%The format should be as follows, {Color} and {Code} columns are not necessary for event file import:',...
+    '%Time(Second),Event,Color(RGB),Code');
 fclose(fid);
 end
