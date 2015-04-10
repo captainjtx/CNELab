@@ -12,39 +12,61 @@ if strcmpi(choice,'Cancel')
     return
 end
 
-[FileName,FilePath]=uigetfile({'*.mat;*.evt','Event Files (*.mat;*.evt)';...
+[FileName,FilePath,FilterIndex]=uigetfile({'*.txt;*.csv;*.mat;*.evt','Event Files (*.txt;*.mat;*.evt)';...
+    '*.txt;*csv','Text File (*.txt;*csv)';
     '*.mat','Matlab Mat File (*.mat)';
     '*.evt','Event File (*.evt)'},...
     'select your events file',...
     obj.FileDir);
 if FileName~=0
-    Events=load(fullfile(FilePath,FileName),'-mat');
     
-    if isfield(Events,'stamp')&&isfield(Events,'text')
-        NewEventList=cell(length(Events.stamp),4);
-        
-        for i=1:length(Events.stamp)
-            NewEventList{i,1}=Events.stamp(i);
-            NewEventList{i,2}=Events.text{i};
-            if ~isfield(Events,'color')
-                NewEventList{i,3}=[0 0 0];
-            else
-                NewEventList{i,3}=Events.color(i,:);
-            end
+    if FilterIndex==1
+        [pathstr, name, ext] = fileparts(FileName);
+        if strcmpi(ext,'.txt')||strcmpi(ext,'.csv')
+            FilterIndex=2;
+        elseif strcmpi(ext,'.mat')
+            FilterIndex=3;
+        elseif strcmpi(ext,'.evt')
+            FilterIndex=4;
+        end
+    end
+    
+    filename=fullfile(FilePath,FileName);
+    
+    switch FilterIndex
+        case 2
+            fileID = fopen(filename);
+            C = textscan(fileID,'%s%s%s%s',...
+                'Delimiter',',','TreatAsEmpty',{'NA','na'},'CommentStyle','%');
+            fclose(fileID);
             
-            if ~isfield(Events,'code')
-                NewEventList{i,4}=0;
-            else
-                NewEventList{i,4}=Events.code(i);
+            time=cellfun(@str2double,C{1},'UniformOutput',false);
+            time=reshape(time,length(time),1);
+            
+            text=C{2};
+            text=reshape(text,length(text),1);
+            
+            col=[];
+            code=[];
+            if length(C)>=3
+                col=cellfun(@str2num,C{3},'UniformOutput',false);
+                col=reshape(col,length(col),1);
             end
-        end
-        
-        if ~isfield(Events,'color')
-            NewEventList=obj.assignEventColor(NewEventList);
-        end
-    else
+            if length(C)>=4
+                code=cellfun(@str2double,C{4},'UniformOutput',false);
+                code=reshape(code,length(code),1);
+            end
+            NewEventList=cat(2,time,text,col,code);
+        case 3
+            NewEventList=ReadEventFromMatFile(filename);
+        case 4
+            NewEventList=ReadEventFromMatFile(filename);
+    end
+    
+    if isempty(NewEventList)
         return
     end
+    
     if iscell(NewEventList)
         if size(NewEventList,2)==4
             switch choice
@@ -58,5 +80,36 @@ if FileName~=0
             end
         end
     end
+end
+end
+
+function NewEventList=ReadEventFromMatFile(filename)
+Events=load(filename,'-mat');
+
+if isfield(Events,'stamp')&&isfield(Events,'text')
+    NewEventList=cell(length(Events.stamp),4);
+    
+    for i=1:length(Events.stamp)
+        NewEventList{i,1}=Events.stamp(i);
+        NewEventList{i,2}=Events.text{i};
+        if ~isfield(Events,'color')
+            NewEventList{i,3}=[0 0 0];
+        else
+            NewEventList{i,3}=Events.color(i,:);
+        end
+        
+        if ~isfield(Events,'code')
+            NewEventList{i,4}=0;
+        else
+            NewEventList{i,4}=Events.code(i);
+        end
+    end
+    
+    if ~isfield(Events,'color')
+        NewEventList=obj.assignEventColor(NewEventList);
+    end
+else
+    NewEventList=[];
+    return
 end
 end

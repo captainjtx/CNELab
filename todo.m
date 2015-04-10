@@ -171,4 +171,10 @@ Delete R of ECG detection bug
 
 Slider does not go with window scroll 
 
-!! fasten updateVideo and add frame by frame change
+% !! fasten updateVideo and add frame by frame change
+
+% Automatically detect the opengl options
+
+% Read annotations in text file
+
+Bug of event lines

@@ -23,13 +23,49 @@ for i=1:size(EventsList,1)
     Events.code(i)=EventsList{i,4};
 end
 if ~isempty(Events)
-    [FileName,FilePath]=uiputfile({'*.mat;*.evt','Event Files (*.mat;*.evt)';...
-        '*.mat','Matlab Mat file (*.mat)';
+    [FileName,FilePath,FilterIndex]=uiputfile({'*.txt;*.csv;*.mat;*.evt','Event Files (*.txt;*.csv;*.mat;*.evt)';...
+        '*.txt','Text File(*.txt)';
+        '*.csv','Comma Separate File(*.csv)';
+        '*.mat','Matlab Mat File (*.mat)';
         '*.evt','Event File (*.evt)'}...
         ,'save your Events',fullfile(obj.FileDir,'untitled'));
     if FileName~=0
-        save(fullfile(FilePath,FileName),'-struct','Events','-mat');
+        
+        if FilterIndex==1
+            [pathstr, name, ext] = fileparts(FileName);
+            if strcmpi(ext,'.txt')
+                FilterIndex=2;
+            elseif strcmpi(ext,'.csv')
+                FilterIndex=3;
+            elseif strcmpi(ext,'.mat')
+                FilterIndex=4;
+            elseif strcmpi(ext,'.evt')
+                FilterIndex=5;
+            end
+        end
+        
+        filename=fullfile(FilePath,FileName);
+        
+        switch FilterIndex
+            case 2
+                writeheader(filename);
+                cell2csv(filename,EventsList,',','a');
+            case 3
+                writeheader(filename);
+                cell2csv(filename,EventsList,',','a');
+            case 4
+                save(filename,'-struct','Events','-mat');
+            case 5
+                save(filename,'-struct','Events','-mat');
+        end
         obj.IsEvtsSaved=true;
     end
 end
+end
+
+function writeheader(filename)
+
+fid=fopen(filename,'w');
+fprintf(fid,'%s\n%s\n','%Rows commented by % will be ignored','%Time(Second),Event,Color(RGB),Code');
+fclose(fid);
 end
