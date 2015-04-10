@@ -22,7 +22,14 @@ if isempty(obj.MouseMode)
         obj.EditMode=0;
         EventList=obj.Evts_;
         for i=1:size(obj.EventDisplayIndex,2)
-            EventList{obj.EventDisplayIndex(1,i),2}=get(obj.EventTexts(1,i),'String');
+            
+            oldtext=EventList{obj.EventDisplayIndex(1,i),2};
+            ind=~strcmp(oldtext,get(obj.EventTexts(:,i),'String'));
+            ind_num=find(ind);
+            if isempty(ind_num)
+                ind_num=1;
+            end
+            EventList{obj.EventDisplayIndex(1,i),2}=get(obj.EventTexts(ind_num(1),i),'String');
         end
         obj.Evts=EventList;
         return
