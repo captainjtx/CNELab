@@ -32,7 +32,7 @@ for i=1:length(obj.AxesAdjustPanels)
         slider_down_pos=get(obj.Sliders(i),'Position');
         slider_up_pos=get(obj.Sliders(i+1),'Position');
         
-        adjustwidth=obj.AdjustWidth/2;
+        adjustwidth=obj.AxesAdjustWidth;
         v=min(max(v,0.001+axe_down_pos(2)),axe_up_pos(2)+axe_up_pos(4)-adjustwidth-0.001*pos3(4));
         
         set(obj.Axes(i),'Position',[0,axe_down_pos(2),axe_down_pos(3),v-axe_down_pos(2)]);

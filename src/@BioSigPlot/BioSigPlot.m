@@ -1923,7 +1923,7 @@ classdef BioSigPlot < hgsetget
         end
         
         function w=AxesAdjustWidth(obj)
-            w=5;
+            w=10;
         end
         
         function resizeAxes(obj,MainPos)
