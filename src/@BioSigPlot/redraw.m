@@ -223,13 +223,13 @@ for i=1:n
             'VerticalAlignment','bottom','FontWeight','bold','units','normalized',...
             'color',YLabelColor,'DisplayName',['ChanName' num2str(count)]);
         %         drawnow;
-        uistack(h,'bottom');
+%         uistack(h,'bottom');
         
         h=text(0.97,p,num2str(1/gain(i),'%0.3g'),'Parent',axe,'HorizontalAlignment','left',...
             'VerticalAlignment','middle','FontWeight','bold','units','normalized',...
             'DisplayName',['YGauge' num2str(count)],'Color',[1 0 1]);
         %         drawnow;
-        uistack(h,'top');
+%         uistack(h,'top');
     end
 end
 
