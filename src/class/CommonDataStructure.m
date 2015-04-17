@@ -141,6 +141,9 @@ classdef CommonDataStructure < handle
         function success=extractTimeFrameFromData(obj,varargin)
             success=false;
             
+            if isempty(obj.Data.SampleRate)
+                error('Sample rate missing!');
+            end
             if nargin==1
                 %try to automatically detect the videochannel
                 videoChannel=[];
