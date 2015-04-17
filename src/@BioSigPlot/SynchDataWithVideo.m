@@ -26,8 +26,10 @@ if abs(t)>obj.DataTime
     error('Data time exceeds video length');
 end
 if t<0
-    obj.WinVideo.CurrentPosition=-obj.VideoStartTime;
-    t=0;
+    obj.VideoLineTime=0;
+%     set(obj,'Time',0);
+    updateVideo(obj);
+    return
 end
 
 obj.VideoLineTime=t;

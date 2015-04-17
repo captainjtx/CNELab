@@ -138,8 +138,30 @@ classdef CommonDataStructure < handle
             save(fnames,'-struct','cds','-mat');
         end
         
-        function success=extractTimeFrameFromData(obj,videoChannel)
+        function success=extractTimeFrameFromData(obj,varargin)
             success=false;
+            
+            if nargin==1
+                %try to automatically detect the videochannel
+                videoChannel=[];
+                for i=1:size(obj.Data.Data,2)
+                    [frame,ind]=unique(obj.Data.Data(:,i));
+                    nv=frame<1;
+                    frame(nv)=[];
+                    
+                    if sum(diff(frame)==1)>(0.8*length(frame))
+                        videoChannel=i;
+                        break
+                    end
+                end
+                
+                if isempty(videoChannel)
+                    error('Can not find the timeframe channel for video!');
+                end
+            else
+                videoChannel=varargin{1};
+            end
+            
             if ischar(videoChannel)
                 videoChannel=find(ismember(obj.Montage.ChannelNames,videoChannel));
             end
