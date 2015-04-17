@@ -1,4 +1,8 @@
 function SynchDataWithVideo(obj)
+
+%The video must end before the data ends, otherwise we can not konw the
+%total number of the video frame, all estimations wiil not hold
+
 if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
     frame=obj.WinVideo.CurrentFrameNumber;
     if ~isempty(obj.VideoTimeFrame)
@@ -21,7 +25,7 @@ else
     t=obj.VideoLineTime+obj.VideoTimerPeriod*obj.PlaySpeed;
 end
 %stop if exceeds data length
-if abs(t)>obj.DataTime
+if t>obj.DataTime
     PausePlay(obj);
     error('Data time exceeds video length');
 end

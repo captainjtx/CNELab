@@ -178,3 +178,5 @@ Slider does not go with window scroll
 % Read annotations in text file
 
 Bug of event lines
+
+implement next and previous frame in wmplayer/vlc arrow press callback
