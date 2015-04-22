@@ -1205,13 +1205,13 @@ classdef BioSigPlot < hgsetget
                 set(obj.MenuXGrid,'Checked','on');
                 
                 if ~isempty(obj.Axes)
-                    set(obj.Axes(obj.DisplayedData(ishandle(obj.Axes(obj.DisplayedData)))),'XGrid','on','XMinorGrid','on');
+                    set(obj.Axes,'XGrid','on','XMinorGrid','on');
                 end
                 
             else
                 set(obj.MenuXGrid,'Checked','off');
                 if ~isempty(obj.Axes)
-                    set(obj.Axes(obj.DisplayedData(ishandle(obj.Axes(obj.DisplayedData)))),'XGrid','off','XMinorGrid','off');
+                    set(obj.Axes,'XGrid','off','XMinorGrid','off');
                 end
             end
         end
@@ -1226,12 +1226,12 @@ classdef BioSigPlot < hgsetget
             if obj.YGrid_
                 set(obj.MenuYGrid,'Checked','on');
                 if ~isempty(obj.Axes)
-                    set(obj.Axes(obj.DisplayedData(ishandle(obj.Axes(obj.DisplayedData)))),'YGrid','on','YMinorGrid','on');
+                    set(obj.Axes,'YGrid','on','YMinorGrid','on');
                 end
             else
                 set(obj.MenuYGrid,'Checked','off');
                 if ~isempty(obj.Axes)
-                    set(obj.Axes(obj.DisplayedData(ishandle(obj.Axes(obj.DisplayedData)))),'YGrid','off','YMinorGrid','off');
+                    set(obj.Axes,'YGrid','off','YMinorGrid','off');
                 end
             end
         end
