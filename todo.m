@@ -95,7 +95,7 @@ Play the signal as sound
 
 detrend
 
-j+k navigation in separate data
+% j+k navigation in separate data
 
 update the event color dynamically by changing the event name
 
@@ -105,7 +105,7 @@ Change into stream based processing (filtering/scrolling)
 
 Auto scan for video import
 
-Make Video Line Dragable
+% Make Video Line Dragable
 
 Ticks outside
 
@@ -180,3 +180,4 @@ Slider does not go with window scroll
 Bug of event lines
 
 implement next and previous frame in wmplayer/vlc arrow press callback
+Differentiate left click and right click in video

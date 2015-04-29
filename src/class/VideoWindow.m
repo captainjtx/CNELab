@@ -38,9 +38,6 @@ classdef VideoWindow  < handle
                 obj.File=['file://localhost/' file];
                 figPos=[400,400];
             end
-            
-            
-            
             %Create Matlab Figure Container
             obj.Fig=figure('MenuBar','none','position',[200 100 figPos],...
                 'NumberTitle','off','Name',obj.ActxOpt,...
