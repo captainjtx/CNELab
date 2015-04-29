@@ -118,7 +118,7 @@ New Montage File
 
 % Permanently store spatial filter result
 
-Add old cnelab version detection and deletion features
+% Add old cnelab version detection and deletion features
 
 Startup Resize Bug
 
