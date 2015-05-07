@@ -109,7 +109,7 @@ Auto scan for video import
 
 Ticks outside
 
-Read data chunck by chunk, cutomize chunck size and sample rate for data review
+% Read data chunck by chunk, cutomize chunck size and sample rate for data review
 
 % Add Common Average Filter
 
@@ -181,3 +181,6 @@ Bug of event lines
 
 implement next and previous frame in wmplayer/vlc arrow press callback
 Differentiate left click and right click in video
+
+
+Can not save selected data

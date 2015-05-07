@@ -1,11 +1,8 @@
-<<<<<<< HEAD
 %Socket test
 
 message='a=START_SAVE&FILE_PATH=c:\test\traj1\&FILE_NAME=-01900.map';
-=======
+
 %%
-message='a=START_SAVE&FILE_PATH=c:\test\traj1\&FILE_NAME=-03700.map';
->>>>>>> 8f5b6e78acfb898784ebad6e72dd8daa4570ef35
 output_port=8000;
 number_of_retries=50;
 
