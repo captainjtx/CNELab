@@ -27,7 +27,7 @@ obj.makeToolbar();
 obj.makeMenu();
 
 if isempty(regexp(computer,'WIN','ONCE'))
-    set(obj.MenuImportVideo,'Enable','off');
+    set(obj.MenuLoadVideo,'Enable','off');
     set(obj.TogVideo,'Enable','off');
 end
 

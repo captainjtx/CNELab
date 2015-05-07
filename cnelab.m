@@ -2,7 +2,7 @@ function cnelab()
 
 cds=[];
 while(1)
-    tmp=CommonDataStructure.multiImport();
+    tmp=CommonDataStructure.multiload();
     if ~isempty(tmp)
         cds=[cds,tmp];
     end

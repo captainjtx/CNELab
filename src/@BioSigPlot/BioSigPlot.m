@@ -76,24 +76,23 @@ classdef BioSigPlot < hgsetget
         MenuFile
         MenuNew
         MenuNewMontage
-        MenuExport
-        MenuExportFigure
-        MenuExportFigureMirror
-        MenuExportFigureAdvanced
-        MenuExportEvents
-        MenuExportData
-        MenuExportMontage
-        
-        MenuImport
-        MenuImportDataSet
-        MenuImportEvents
-        MenuImportMontage
-        MenuImportVideo
-        MenuImportFilter
-        MenuCopy
-        
         MenuSave
-        MenuSaveAs
+        MenuSaveFigure
+        MenuSaveFigureMirror
+        MenuSaveFigureAdvanced
+        MenuSaveEvents
+        MenuSaveData
+        MenuSaveMontage
+        
+        MenuLoad
+        MenuLoadDataSet
+        MenuLoadEvents
+        MenuLoadMontage
+        MenuLoadVideo
+        MenuLoadFilter
+        
+        MenuExport
+        MenuExportData
         
         MenuSettings
         MenuCommands
@@ -486,7 +485,7 @@ classdef BioSigPlot < hgsetget
                     'warning','yes','no',default);
                 switch choice
                     case 'yes'
-                        ExportEvents(obj);
+                        SaveEvents(obj);
                     case 'no'
                 end
                 
@@ -1827,12 +1826,12 @@ classdef BioSigPlot < hgsetget
         MouseMovement(obj)
         %==================================================================
         %******************************************************************
-        %Callback for Event File Import
-        ImportEvents(obj)
+        %Callback for Event File Load
+        LoadEvents(obj)
         %==================================================================
         %******************************************************************
-        %Callback for Event File Export
-        ExportEvents(obj)
+        %Callback for Event File Save
+        SaveEvents(obj)
         %==================================================================
         %******************************************************************
         %Callback for number of channels per page limitaion
@@ -1844,8 +1843,8 @@ classdef BioSigPlot < hgsetget
         MnuWidth2Display(obj)
         %==================================================================
         %******************************************************************
-        %Callback for Video Import
-        ImportVideo(obj)
+        %Callback for Video Load
+        LoadVideo(obj)
         %==================================================================
         %******************************************************************
         %Callback for gain change
@@ -1886,7 +1885,7 @@ classdef BioSigPlot < hgsetget
         end
         %==================================================================
         %******************************************************************
-        function ExportToFigure(obj)
+        function SaveToFigure(obj)
             f=figure('Name','Mirror figure','Position',get(obj.Fig,'Position'));
             %             for i=1:length(obj.Axes)
             %                 set(obj.Axes(i),'YTick',[]);
@@ -1894,12 +1893,12 @@ classdef BioSigPlot < hgsetget
             %             end
             copyobj(obj.Axes(:),f);
         end
-        function ExportToWindow(obj)
-            ExportWindow(obj);
+        function SaveToWindow(obj)
+            SaveWindow(obj);
         end
         %==================================================================
         %******************************************************************
-        ImportDataSet(obj)
+        LoadDataSet(obj)
         %==================================================================
         %******************************************************************
         
@@ -2176,14 +2175,15 @@ classdef BioSigPlot < hgsetget
         updateSelectedFastEvent(obj,x)
         Time_Freq_Map(obj,src)
         filterCheck(obj)
-        ExportData(obj)
+        SaveData(obj)
+        ExportDataToWorkspace(obj)
         d=preprocessedAllData(obj,n,chan,selection)
         ChangeTime(obj,src)
         redrawChangeBlock(obj,opt)
         showGauge(obj)
         maskChannel(obj,src)
         MnuChanGain(obj,src)
-        ImportMontage(obj)
+        LoadMontage(obj)
         remakeMontageMenu(obj)
         ChangeMontage(obj,src,data,mtgref)
         scanFilterBank(obj)
@@ -2191,11 +2191,11 @@ classdef BioSigPlot < hgsetget
         SPF_Analysis(obj,src)
         SynchDataWithVideo(obj)
         Mean_Reference_Filter(obj)
-        ExportMontage(obj)
+        SaveMontage(obj)
         Temporal_PCA(obj)
         Auto_Remove_ECG_Artifact(obj)
         ReadMontage(obj)
-        ImportFilter(obj)
+        LoadFilter(obj)
         NewMontage(obj)
         MnuFigurePosition(obj)
         EventRepeatSelection(obj)

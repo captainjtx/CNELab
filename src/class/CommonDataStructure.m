@@ -20,7 +20,7 @@ classdef CommonDataStructure < handle
                 obj.PatientInfo=cds.PatientInfo;
             else
                 d=varargin{1};
-                obj.assign(d);
+                obj.copy(d);
             end
         end
         
@@ -30,7 +30,7 @@ classdef CommonDataStructure < handle
             end
         end
         
-        function assign(obj,s)
+        function copy(obj,s)
             
             if isfield(s,'Data')
                 obj.Data=s.Data;
@@ -45,7 +45,7 @@ classdef CommonDataStructure < handle
             end
             
         end
-        function y=import(obj,varargin)
+        function y=load(obj,varargin)
             y=0;
             if nargin==2
                 filename=varargin{1};
@@ -78,24 +78,28 @@ classdef CommonDataStructure < handle
             
             switch FilterIndex
                 case 0
-                    obj.assign(CommonDataStructure.readFromMAT(filename));
+                    obj.copy(CommonDataStructure.readFromMAT(filename));
                 case 2
-                    obj.assign(CommonDataStructure.readFromCDS(filename));
+                    obj.copy(CommonDataStructure.readFromCDS(filename));
                     
                 case 3
-                    obj.assign(CommonDataStructure.readFromOldCDS(filename));
+                    obj.copy(CommonDataStructure.readFromOldCDS(filename));
                     
                 case 4
-                    obj.assign(CommonDataStructure.readFromMEDF(filename));
+                    obj.copy(CommonDataStructure.readFromMEDF(filename));
                 case 5
-                    obj.assign(CommonDataStructure.readFromFIF(filename));
+                    obj.copy(CommonDataStructure.readFromFIF(filename));
                 case 6
-                    obj.assign(CommonDataStructure.readFromEDF(filename));
+                    obj.copy(CommonDataStructure.readFromEDF(filename));
                     
             end
             obj.Data.FileName=filename;
         end
-        function export(obj,varargin)
+        
+        function export2workspace(obj,varname)
+            assignin('base',varname,obj);
+        end
+        function save(obj,varargin)
             
             cds.Data=obj.Data;
             cds.Montage=obj.Montage;
@@ -113,7 +117,7 @@ classdef CommonDataStructure < handle
                     elseif strcmpi(varargin{i},'Title')
                         title=varargin{i+1};
                     else
-                        msgbox('Invalid argument-value pair!','CommonDataStructure.export','error');
+                        msgbox('Invalid argument-value pair!','CommonDataStructure.save','error');
                         return
                     end
                 end
@@ -227,7 +231,7 @@ classdef CommonDataStructure < handle
                 
                 %check if it is raw data file
                 if length(field)>1
-                    msgbox('The file contain more than one field, try to import the first one...','CommonDataStructure','warn');
+                    msgbox('The file contain more than one field, try to load the first one...','CommonDataStructure','warn');
                 end
                 if ismatrix(s.(field{1}))
                     FilterIndex=0;
@@ -567,7 +571,7 @@ classdef CommonDataStructure < handle
             st=load(filename,'-mat');
             field=fieldnames(st);
             if length(field)>1
-                msgbox('The file contain more than one field, try to import the first one...','CommonDataStructure','warn');
+                msgbox('The file contain more than one field, try to load the first one...','CommonDataStructure','warn');
             end
             
             data=st.(field{1});
@@ -626,7 +630,7 @@ classdef CommonDataStructure < handle
             
         end
         
-        function cds=multiImport()
+        function cds=multiload()
             [FileName,FilePath,FilterIndex]=uigetfile({...
                 '*.mat;*.cds;*.cds.old;*.medf;*.fif;*.edf',...
                 'Supported formats (*.mat;*.cds;*.cds.old;*.medf;*.fif;*.edf)';...
@@ -664,17 +668,17 @@ classdef CommonDataStructure < handle
                 filename=fullfile(FilePath,FileName{i});
                 switch FilterIndex(i)
                     case 0
-                        cds{i}.assign(CommonDataStructure.readFromMAT(filename));
+                        cds{i}.copy(CommonDataStructure.readFromMAT(filename));
                     case 2
-                        cds{i}.assign(CommonDataStructure.readFromCDS(filename));
+                        cds{i}.copy(CommonDataStructure.readFromCDS(filename));
                     case 3
-                        cds{i}.assign(CommonDataStructure.readFromOldCDS(filename));
+                        cds{i}.copy(CommonDataStructure.readFromOldCDS(filename));
                     case 4
-                        cds{i}.assign(CommonDataStructure.readFromMEDF(filename));
+                        cds{i}.copy(CommonDataStructure.readFromMEDF(filename));
                     case 5
-                        cds{i}.assign(CommonDataStructure.readFromFIF(filename));
+                        cds{i}.copy(CommonDataStructure.readFromFIF(filename));
                     case 6
-                        cds{i}.assign(CommonDataStructure.readFromEDF(filename));
+                        cds{i}.copy(CommonDataStructure.readFromEDF(filename));
                 end
                 cds{i}.Data.FileName=filename;
             end
@@ -686,14 +690,14 @@ classdef CommonDataStructure < handle
             obj=CommonDataStructure();
             assignin('base','obj',obj);
             
-            obj.import();
+            obj.load();
             
-            obj.export();
+            obj.save();
         end
         
-        function cds=Import()
+        function cds=Load()
             cds=CommonDataStructure;
-            cds.import();
+            cds.load();
         end
     end
     

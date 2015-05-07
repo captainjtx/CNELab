@@ -6,26 +6,24 @@ obj.MenuFile=uimenu(obj.Fig,'Label','File');
 obj.MenuNew=uimenu(obj.MenuFile,'Label','New');
 obj.MenuNewMontage=uimenu(obj.MenuNew,'Label','Montage','Callback',@(src,evt) obj.NewMontage);
 
-obj.MenuImport=uimenu(obj.MenuFile,'Label','Import');
-obj.MenuImportDataSet=uimenu(obj.MenuImport,'Label','Data','Callback',@(src,evt) obj.ImportDataSet);
-obj.MenuImportEvents=uimenu(obj.MenuImport,'Label','Events','Callback',@(src,evt) obj.ImportEvents);
-obj.MenuImportMontage=uimenu(obj.MenuImport,'Label','Montage','Callback',@(src,evt) obj.ImportMontage);
-obj.MenuImportFilter=uimenu(obj.MenuImport,'Label','Filter','Callback',@(src,evt) obj.ImportFilter);
-obj.MenuImportVideo=uimenu(obj.MenuImport,'Label','Video','Callback',@(src,evt) obj.ImportVideo);
-
-obj.MenuExport=uimenu(obj.MenuFile,'Label','Export');
-obj.MenuExportData=uimenu(obj.MenuExport,'Label','Selected Data','Callback',@(src,evt) obj.ExportData);
-obj.MenuExportEvents=uimenu(obj.MenuExport,'Label','Events','Callback',@(src,evt) obj.ExportEvents);
-obj.MenuExportMontage=uimenu(obj.MenuExport,'Label','Montage','Callback',@(src,evt) obj.ExportMontage);
-obj.MenuExportFigure=uimenu(obj.MenuExport,'Label','Figure');
-obj.MenuExportFigureMirror=uimenu(obj.MenuExportFigure,'Label','Mirror','Callback',@(src,evt) obj.ExportToFigure,'Accelerator','p');
-obj.MenuExportFigureAdvanced=uimenu(obj.MenuExportFigure,'Label','Advanced','Callback',@(src,evt) obj.ExportToWindow);
-
-
-obj.MenuCopy=uimenu(obj.MenuFile,'Label','Copy','Enable','off');
+obj.MenuLoad=uimenu(obj.MenuFile,'Label','Load');
+obj.MenuLoadDataSet=uimenu(obj.MenuLoad,'Label','Data','Callback',@(src,evt) obj.LoadDataSet);
+obj.MenuLoadEvents=uimenu(obj.MenuLoad,'Label','Events','Callback',@(src,evt) obj.LoadEvents);
+obj.MenuLoadMontage=uimenu(obj.MenuLoad,'Label','Montage','Callback',@(src,evt) obj.LoadMontage);
+obj.MenuLoadFilter=uimenu(obj.MenuLoad,'Label','Filter','Callback',@(src,evt) obj.LoadFilter);
+obj.MenuLoadVideo=uimenu(obj.MenuLoad,'Label','Video','Callback',@(src,evt) obj.LoadVideo);
 
 obj.MenuSave=uimenu(obj.MenuFile,'Label','Save');
-obj.MenuSaveAs=uimenu(obj.MenuFile,'Label','Save As');
+obj.MenuSaveData=uimenu(obj.MenuSave,'Label','Selected Data','Callback',@(src,evt) obj.SaveData);
+obj.MenuSaveEvents=uimenu(obj.MenuSave,'Label','Events','Callback',@(src,evt) obj.SaveEvents);
+obj.MenuSaveMontage=uimenu(obj.MenuSave,'Label','Montage','Callback',@(src,evt) obj.SaveMontage);
+obj.MenuSaveFigure=uimenu(obj.MenuSave,'Label','Figure');
+obj.MenuSaveFigureMirror=uimenu(obj.MenuSaveFigure,'Label','Mirror','Callback',@(src,evt) obj.SaveToFigure,'Accelerator','p');
+obj.MenuSaveFigureAdvanced=uimenu(obj.MenuSaveFigure,'Label','Advanced','Callback',@(src,evt) obj.SaveToWindow);
+
+obj.MenuExport=uimenu(obj.MenuFile,'Label','Export');
+obj.MenuExportData=uimenu(obj.MenuExport,'Label','Selected Data','Callback',@(src,evt) obj.ExportDataToWorkspace);
+
 %**************************************************************************
 %First Order Menu--------------------------------------------------Settings
 obj.MenuSettings=uimenu(obj.Fig,'Label','Settings');
