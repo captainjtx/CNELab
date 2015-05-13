@@ -156,7 +156,7 @@ classdef CommonDataStructure < handle
                     nv=frame<1;
                     frame(nv)=[];
                     
-                    if sum(diff(frame)==1)>(0.8*length(frame))
+                    if sum(diff(frame)==1)>(0.5*length(frame))
                         videoChannel=i;
                         break
                     end
@@ -175,15 +175,36 @@ classdef CommonDataStructure < handle
             
             if ~isempty(videoChannel)
                 
-                [frame,ind]=unique(obj.Data.Data(:,videoChannel));
+                %find the recording segments
+                frames=obj.Data.Data(:,videoChannel);
                 
-                nv=frame<1;
-                frame(nv)=[];
-                ind(nv)=[];
+                %eliminate the zeros due to UDP
+                ind=find(frames>=1);
+                frames(frames<1)=[];
+                
+                [tmp,I]=max(frames);
+                
+                frames=frames(1:I);
+                ind=ind(1:I);
+                
+                dframe=find(abs(diff(frames))>5);
+                
+                if ~isempty(dframe)                    
+                    frames=frames(max(dframe)+1:end);
+                    ind=ind(max(dframe)+1:end);
+                end
+                %eliminate duplicated frames
+                [frames,newind]=unique(frames);
+                ind=ind(newind);
                 
                 time=ind/obj.Data.SampleRate;
-                obj.Data.Video.TimeFrame=cat(2,reshape(time,length(time),1),reshape(frame,length(frame),1));
+                obj.Data.Video.TimeFrame=cat(2,reshape(time,length(time),1),reshape(frames,length(frames),1));
                 obj.Data.Video.StartTime=0;
+                
+                figure('Name',['Extracted Time-Frame Plot on Channel ',num2str(videoChannel)]);
+                plot(time,frames);
+                xlabel('Time(S)');
+                ylabel('Frame Number');
                 success=true;
             end
         end

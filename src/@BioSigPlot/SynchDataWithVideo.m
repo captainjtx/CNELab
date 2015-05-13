@@ -1,14 +1,20 @@
 function SynchDataWithVideo(obj)
-
-%The video must end before the data ends, otherwise we can not konw the
-%total number of the video frame, all estimations wiil not hold
-
 if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
     frame=obj.WinVideo.CurrentFrameNumber;
     if ~isempty(obj.VideoTimeFrame)
         if isempty(frame)
+            %Estimate Current Frame
+            %The TotalFrameNumber get from VideoReader seems to be
+            %inaccurate, Video must be stopped before the recording to get
+            %the exact number of frames recorded !
+            
             dp=ceil(size(obj.VideoTimeFrame,1)*obj.WinVideo.CurrentPositionRatio);
             dp=min(max(1,dp),size(obj.VideoTimeFrame,1));
+            
+            
+%             dp=ceil(obj.WinVideo.TotalFrameNumber*obj.WinVideo.CurrentPositionRatio);
+%             dp=min(max(1,dp),size(obj.VideoTimeFrame,1));
+            
             t=obj.VideoTimeFrame(dp,1)+obj.VideoStartTime;
         else
             dp=min(max(1,frame),size(obj.VideoTimeFrame,1));

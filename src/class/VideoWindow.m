@@ -13,6 +13,8 @@ classdef VideoWindow  < handle
         FrameRate
         TotalFrame
         
+        TotalFrameNumber
+        
         NotifyVideoChangeTime
     end
     properties(Dependent)
@@ -28,6 +30,9 @@ classdef VideoWindow  < handle
             else
                 obj.ActxOpt=varargin{1};
             end
+            
+            videoobj=VideoReader(file);
+            obj.TotalFrameNumber=videoobj.NumberOfFrames;
             
             if strcmpi(obj.ActxOpt,'WMP')
                 obj.ActxName='WMPlayer.OCX.7';

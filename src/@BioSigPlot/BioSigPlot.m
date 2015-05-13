@@ -179,7 +179,7 @@ classdef BioSigPlot < hgsetget
         
         WinEvts
         WinFastEvts
-        WinVideo
+        
         
         VideoListener
         
@@ -377,6 +377,7 @@ classdef BioSigPlot < hgsetget
         PSDFig
         IconPlay
         IconPause
+        WinVideo
     end
     
     methods
