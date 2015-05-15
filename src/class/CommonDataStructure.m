@@ -180,7 +180,7 @@ classdef CommonDataStructure < handle
                 
                 %eliminate the zeros due to UDP
                 ind=find(frames>=1);
-                frames(frames<1)=[];
+                frames=frames(ind);
                 
                 [tmp,I]=max(frames);
                 
