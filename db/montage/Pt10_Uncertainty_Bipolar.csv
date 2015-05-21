@@ -1,0 +1,28 @@
+F3-C3,F3-C3,EEG
+C3-P3,-P3,EEG
+P3-O1,P3-O1,EEG
+Fz-Cz,Fz-Cz,EEG
+Cz-Pz,Cz-Pz,EEG
+F4-C4,F4-C4,EEG
+C4-P4,C4-P4,EEG
+P4-O2,P4-O2,EEG
+L EOG-M2,L EOG-M2,EOG
+R EOG-M2,R EOG-M2,EOG
+CHIN EMG Bipolar,CHIN EMG-CHIN REF,EMG
+ECG Bipolar,L ECG-R ECG,ECG
+Bicep Bipolar,Bicep-Bi Ref,EMG
+Tricep Bipolar,Tricep-Tri Ref,EMG
+EDC Bipolar,EDC-EDC ref,EMG
+FDC Bipolar,FDC-FDC ref,EMG
+Vast Med Bipolar,Vast Med-VMref,EMG
+Ant Tib Bipolar,Ant Tib-AT ref,EMG
+LFP Bipolar1,E0-E1,LFP
+LFP Bipolar2,E1-E2,LFP
+LFP Bipolar3,E2-E3,LFP
+UL Ax,UL Ax-A2,ACC
+LL Bx,LL Bx-A2,ACC
+UL Ay,UL Ay-A2,ACC
+LL By,LL By-A2,ACC
+UL Az,UL Az-A2,ACC
+LL Bz,LL Bz-A2,ACC
+Mcc-AO,Mcc-AO,DC
