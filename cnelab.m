@@ -82,9 +82,9 @@ for i=1:length(cds)
 end
 
 for i=1:length(cds)
-    if ~isempty(cds{i}.Data.Video.NumberOfFrame)
+    if isfield(cds{i}.Data.Video,'NumberOfFrame')
         NumberOfFrame=cds{i}.Data.Video.NumberOfFrame;
-    end 
+    end
 end
 
 if isempty(NumberOfFrame)
@@ -193,19 +193,19 @@ bsp.Evts=evts;
 montage=cell(length(fnames),1);
 if length(fnames)==1
     if isdir(fullfile(fpaths{1},'montage'))
-        montage{1}=CommonDataStructure.scanMontageFile(ChanNames,fullfile(fpaths{1},'montage'));
+        montage{1}=CommonDataStructure.scanMontageFile(bsp.ChanNames,fullfile(fpaths{1},'montage'));
     end
 else
     for i=1:length(fnames)
-        if isdir(fullfile(fpaths{1},'montage',fnames{i}))
-            montage{i}=CommonDataStructure.scanMontageFile(ChanNames,fullfile(fpaths{1},'montage',fnames{i}));
+        if isdir(fullfile(fpaths{i},'montage',fnames{i}))
+            montage{i}=CommonDataStructure.scanMontageFile(bsp.ChanNames,fullfile(fpaths{i},'montage',fnames{i}));
         end
     end
 end
 
 for i=1:length(fnames)
     for j=1:length(montage{i})
-        num=length(bsp.Montage_{i});
+        num=length(bsp.Montage{i});
         bsp.Montage_{i}(num+1).name=montage{i}{j}.name;
         bsp.Montage_{i}(num+1).channames=montage{i}{j}.channames;
         bsp.Montage_{i}(num+1).mat=montage{i}{j}.mat;

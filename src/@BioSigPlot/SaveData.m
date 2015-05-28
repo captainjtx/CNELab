@@ -16,6 +16,7 @@ for i=1:length(dd)
     
     cds.Data.Video.StartTime=obj.VideoStartTime;
     cds.Data.Video.TimeFrame=obj.VideoTimeFrame;
+    cds.Data.Video.NumberOfFrame=obj.NumberOfFrame;
     
     cds.Montage.ChannelNames=chanNames(dataset==dd(i));
     cds.Montage.Name=obj.Montage{dd(i)}(obj.MontageRef(dd(i))).name;

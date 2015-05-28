@@ -724,7 +724,6 @@ classdef CommonDataStructure < handle
         end
         
         function mtg=scanMontageFile(OriginalChanNames,FilePath,FileName)
-            mtg=[];
             if nargin==2
                 fn=dir(FilePath);
                 count=1;
@@ -756,8 +755,8 @@ classdef CommonDataStructure < handle
             mtg=cell(length(montage),1);
             for i=1:length(montage)
                 [pathstr, name, ext] = fileparts(FileName{i});
-                
-                [montage_channames,mat,groupnames]=parseMontage(montage{i},OriginalChanNames);
+
+                [montage_channames,mat,groupnames]=parseMontage(montage{i},OriginalChanNames{i});
                 
                 mtg{i}.name=name;
                 mtg{i}.channames=montage_channames;

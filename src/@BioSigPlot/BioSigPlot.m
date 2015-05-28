@@ -312,7 +312,6 @@ classdef BioSigPlot < hgsetget
         MouseMode_
         PlaySpeed_
         VideoTimerPeriod_
-        Montage_
 
         YBorder_
         Selection_
@@ -2265,6 +2264,7 @@ classdef BioSigPlot < hgsetget
         PSDFreqLow
         PSDFreqHigh
         
+        Montage_
     end
     events
         SelectedFastEvtChange
