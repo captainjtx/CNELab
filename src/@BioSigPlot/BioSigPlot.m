@@ -2228,6 +2228,7 @@ classdef BioSigPlot < hgsetget
         VideoTimeFrame
         VideoStampFrame
         VideoLineTime
+        NumberOfFrame
         
         VideoTimer
         

@@ -31,5 +31,4 @@ if isfield(montage,'name')
     montage_channames=montage.name;
 end
 
-end
 

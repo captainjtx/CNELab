@@ -274,6 +274,7 @@ classdef CommonDataStructure < handle
             s.Data.Units=[];
             s.Data.Video.StartTime=[];
             s.Data.Video.TimeFrame=[];
+            s.Data.Video.NumberOfFrame=[];
             s.Data.PreFilter='';
             s.Data.DownSample=[];
             s.Data.SampleRate=[];
@@ -283,6 +284,7 @@ classdef CommonDataStructure < handle
             %obj.Montage construction
             s.Montage.ChannelNames=[];
             s.Montage.GroupNames=[];
+            s.Montage.SystemNames=[];
             s.Montage.HeadboxType=[];
             s.Montage.Amplifier=[];
             s.Montage.Name=[];
@@ -719,6 +721,51 @@ classdef CommonDataStructure < handle
         function cds=Load()
             cds=CommonDataStructure;
             cds.load();
+        end
+        
+        function mtg=scanMontageFile(OriginalChanNames,FilePath,FileName)
+            mtg=[];
+            if nargin==2
+                fn=dir(FilePath);
+                count=1;
+                for i=1:length(fn)
+                    if ~fn(i).isdir
+                        FileName{count}=fn(i).name;
+                        count=count+1;
+                    end
+                end
+            end
+            
+            montage=cell(1,length(FileName));
+            
+            for i=1:length(FileName)
+                filename=fullfile(FilePath,FileName{i});
+                
+                [pathstr, name, ext] = fileparts(FileName{i});
+                
+                if strcmpi(ext,'.txt')||strcmpi(ext,'.csv')||strcmpi(ext,'.mtg')
+                    montage{i}=ReadMontage(filename);
+                elseif strcmpi(ext,'.mat')
+                    %Format
+                    %mtg.mat;mtg.group;mtg.name
+                    %mat is column wise projection matrix
+                    montage{i}=load(filename,'-mat');
+                end
+            end
+            
+            mtg=cell(length(montage),1);
+            for i=1:length(montage)
+                [pathstr, name, ext] = fileparts(FileName{i});
+                
+                [montage_channames,mat,groupnames]=parseMontage(montage{i},OriginalChanNames);
+                
+                mtg{i}.name=name;
+                mtg{i}.channames=montage_channames;
+                mtg{i}.mat=mat;
+                mtg{i}.groupnames=groupnames;
+                
+            end
+            
         end
     end
     

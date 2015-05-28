@@ -33,11 +33,13 @@ end
 data=cell(1,length(cds));
 FileNames=cell(1,length(cds));
 fnames=cell(1,length(cds));
+fpaths=cell(1,length(cds));
+
 for i=1:length(cds)
     data{i}=cds{i}.Data.Data;
     
     FileNames{i}=cds{i}.Data.FileName;
-    fnames{i}=fileparts(cds{i}.Data.FileName);
+    [fpaths{i},fnames{i}]=fileparts(cds{i}.Data.FileName);
 end
 
 %==========================================================================
@@ -68,7 +70,7 @@ end
 %**************************************************************************
 VideoStartTime=0;
 VideoTimeFrame=[];
-
+NumberOfFrame=[];
 for i=1:length(cds)
     if ~isempty(cds{i}.Data.Video.StartTime)
         VideoStartTime=cds{i}.Data.Video.StartTime;
@@ -76,6 +78,18 @@ for i=1:length(cds)
     
     if ~isempty(cds{i}.Data.Video.TimeFrame)
         VideoTimeFrame=cds{i}.Data.Video.TimeFrame;
+    end
+end
+
+for i=1:length(cds)
+    if ~isempty(cds{i}.Data.Video.NumberOfFrame)
+        NumberOfFrame=cds{i}.Data.Video.NumberOfFrame;
+    end 
+end
+
+if isempty(NumberOfFrame)
+    if ~isempty(VideoTimeFrame)
+        NumberOfFrame=max(VideoTimeFrame(:,2));
     end
 end
 
@@ -110,6 +124,7 @@ bsp=BioSigPlot(data,'Title',fnames,...
                     'GroupNames',GroupNames,...
                     'VideoStartTime',VideoStartTime,...
                     'VideoTimeFrame',VideoTimeFrame,...
+                    'NumberOfFrame',NumberOfFrame,...
                     'Units',Units,...
                     'FileNames',FileNames,...
                     'StartTime',StartTime);
@@ -173,8 +188,31 @@ if ~isempty(evts)
     imerge=unique(cat(1,itime,itxt));
     evts=evts(imerge,:);
 end
-%==========================================================================
 bsp.Evts=evts;
+%scan for montage file folder==============================================
+montage=cell(length(fnames),1);
+if length(fnames)==1
+    if isdir(fullfile(fpaths{1},'montage'))
+        montage{1}=CommonDataStructure.scanMontageFile(ChanNames,fullfile(fpaths{1},'montage'));
+    end
+else
+    for i=1:length(fnames)
+        if isdir(fullfile(fpaths{1},'montage',fnames{i}))
+            montage{i}=CommonDataStructure.scanMontageFile(ChanNames,fullfile(fpaths{1},'montage',fnames{i}));
+        end
+    end
+end
+
+for i=1:length(fnames)
+    for j=1:length(montage{i})
+        num=length(bsp.Montage_{i});
+        bsp.Montage_{i}(num+1).name=montage{i}{j}.name;
+        bsp.Montage_{i}(num+1).channames=montage{i}{j}.channames;
+        bsp.Montage_{i}(num+1).mat=montage{i}{j}.mat;
+        bsp.Montage_{i}(num+1).groupnames=montage{i}{j}.groupnames;
+    end
+end
+remakeMontageMenu(bsp);
 %==========================================================================
 assignin('base','bsp',bsp);
 set(bsp.Fig,'Visible','on')

@@ -31,8 +31,9 @@ classdef VideoWindow  < handle
                 obj.ActxOpt=varargin{1};
             end
             
-            videoobj=VideoReader(file);
-            obj.TotalFrameNumber=videoobj.NumberOfFrames;
+%             videoobj=VideoReader(file);
+%             lastFrame = read(videoobj, inf);
+%             obj.TotalFrameNumber=videoobj.NumberOfFrames;
             
             if strcmpi(obj.ActxOpt,'WMP')
                 obj.ActxName='WMPlayer.OCX.7';

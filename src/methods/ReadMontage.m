@@ -17,5 +17,8 @@ if length(C)>2
     mtg.group=C{3};
 end
 
+if length(C)>3
+    mtg.system=C{4};
+end
 end
 

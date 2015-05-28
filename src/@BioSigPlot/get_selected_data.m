@@ -1,4 +1,4 @@
-function [data,chanNames,dataset,channel,sample]=get_selected_data(obj)
+function [data,chanNames,dataset,channel,sample,evts]=get_selected_data(obj)
 %This function returns the selected data and the corresponding channel
 %names
 
@@ -7,20 +7,54 @@ function [data,chanNames,dataset,channel,sample]=get_selected_data(obj)
 %|end_1,end_2,...|
 
 dd=obj.DisplayedData;
-fs=obj.SRate;
 data=[];
 selection=[];
 dataset=[];
 channel=[];
+events=[];
+evts=[];
+
+fs=obj.SRate;
+
+if ~isempty(obj.Evts_)
+    
+    EventsList=obj.Evts_(obj.Evts2Display,:);
+    
+    if ~isempty(EventsList)
+        EventsList=sortrows(EventsList,1);
+    end
+    
+    events=EventsList(:,1:2);
+end
 
 if ~isempty(obj.Selection)
-    for i=1:size(obj.Selection,2)
-        startInd=max(1,obj.Selection(1,i));
-        endInd=min(size(obj.Data{1},1),obj.Selection(2,i));
+    [tmp,ind]=sort(obj.Selection(1,:));
+    SelectionSort=obj.Selection(:,ind);
+    interval=0;
+    for i=1:size(SelectionSort,2)
+        startInd=max(1,SelectionSort(1,i));
+        endInd=min(size(obj.Data{1},1),SelectionSort(2,i));
+        
+        if ~isempty(events)
+            if i==1
+                interval=startInd/fs;
+            else
+                interval=interval+(startInd-SelectionSort(2,i-1))/fs;
+            end
+            
+            ind=find(round([events{:,1}]*fs)>=startInd&round([events{:,1}]*fs)<=endInd);
+            for k=1:length(ind)
+                evts=cat(1,evts,{events{ind(k),1}-interval,events{ind(k),2}});
+            end
+        end
+        
+        
         selection=cat(2,selection,startInd:endInd);
     end
+      
 else
     selection=1:size(obj.Data{1},1);
+    evts=events;
 end
 sample=selection;
 chanNames={};
