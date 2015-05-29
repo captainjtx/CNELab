@@ -30,10 +30,8 @@ obj.MenuSettings=uimenu(obj.Fig,'Label','Settings');
 obj.MenuCommands=uimenu(obj.MenuSettings,'Label','Command List',...
     'Callback',@(src,evts) listdlg('ListString',obj.Commands,'ListSize',[700 500],'PromptString','List of commands'));
 obj.MenuConfigurationState=uimenu(obj.MenuSettings,'Label','Configuration file','Callback',@(src,evt) ConfigWindow(obj));
-obj.MenuPlaySpeed=uimenu(obj.MenuSettings,'Label','Play speed','Callback',@(src,evt) MnuPlay(obj));
 obj.MenuColor=uimenu(obj.MenuSettings,'Label','Color');
 obj.MenuSampleRate=uimenu(obj.MenuSettings,'Label','Sample Rate','Callback',@(src,evt) MnuSampleRate(obj),'Accelerator','r');
-obj.MenuVideoStartEnd=uimenu(obj.MenuSettings,'Label','Video Start End','Callback',@(src,evt) MnuVideoStartEnd(obj));
 %Second Order Menu of Color
 obj.MenuColorCanvas=uimenu(obj.MenuColor,'Label','Canvas','Accelerator','b',...
     'Callback',@(src,evt) set(obj,'AxesBackgroundColor',uisetcolor(obj.AxesBackgroundColor,'AxesBackground Color')));
@@ -41,6 +39,11 @@ obj.MenuColorLines=uimenu(obj.MenuColor,'Label','Lines','Accelerator','l',...
     'Callback',@(src,evt) MnuLineColor(obj));
 obj.MenuFigurePosition=uimenu(obj.MenuSettings,'Label','Figue Position',...
     'Callback',@(src,evts) MnuFigurePosition(obj));
+
+obj.MenuVideo=uimenu(obj.MenuSettings,'Label','Video');
+obj.MenuPlaySpeed=uimenu(obj.MenuVideo,'Label','Speed','Callback',@(src,evt) MnuPlay(obj));
+obj.MenuVideoStartEnd=uimenu(obj.MenuVideo,'Label','Start&End','Callback',@(src,evt) MnuVideoStartEnd(obj));
+obj.MenuVideoOnTop=uimenu(obj.MenuVideo,'Label','Stay On Top','Callback',@(src,evt) MnuVideoOnTop(obj),'checked','on');
 %**************************************************************************
 %First Order Menu------------------------------------------------------Data
 obj.MenuChannel=uimenu(obj.Fig,'Label','Data');
@@ -95,7 +98,6 @@ obj.MenuControlPanel=uimenu(obj.Menupanels,'Label','Control',...
     'Callback',@(src,evt) set(obj,'ControlPanelDisplay',~obj.ControlPanelDisplay));
 obj.MenuLockLayout=uimenu(obj.Menupanels,'Label','Lock Layout',...
     'Callback',@(src,evt) set(obj,'LockLayout',~obj.LockLayout));
-
 
 %First Order Menu-------------------------------------------------------App
 obj.MenuApp=uimenu(obj.Fig,'Label','Apps');

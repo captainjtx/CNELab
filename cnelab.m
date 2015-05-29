@@ -213,6 +213,30 @@ for i=1:length(fnames)
     end
 end
 remakeMontageMenu(bsp);
+%scan for video============================================================
+%check if this is a right system 
+%video feature is only supported in windows system as activex is required
+%currently only one video is supported
+if ~isempty(regexp(computer,'WIN','ONCE'))
+    for i=1:length(cds)
+        if ~isempty(cds{i}.Data.VideoName)
+            videofile=[];
+           if exist(cds{i}.Data.VideoName,'file')==2
+               videofile=cds{i}.Data.VideoName;
+           elseif exist(fullfile(fpaths{i},cds{i}.Data.VideoName),'file')==2
+               videofile=fullfile(fpaths{i},cds{i}.Data.VideoName);
+           end
+           if ~isempty(videofile)
+               bsp.WinVideo=VideoWindow(videofile,bsp.VideoActxOpt); %VLC or WMPlayer
+               addlistener(bsp.WinVideo,'VideoChangeTime',@(src,evt) SynchDataWithVideo(bsp));
+               addlistener(bsp.WinVideo,'VideoChangeState',@(src,ect) SynchVideoState(bsp));
+               addlistener(bsp.WinVideo,'VideoClosed',@(src,evt) StopPlay(bsp));
+               
+               bsp.VideoFile=videofile;
+           end
+        end
+    end
+end
 %==========================================================================
 assignin('base','bsp',bsp);
 set(bsp.Fig,'Visible','on')

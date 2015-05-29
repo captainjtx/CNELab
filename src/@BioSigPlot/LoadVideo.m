@@ -9,6 +9,8 @@ if FileName~=0
     addlistener(obj.WinVideo,'VideoChangeTime',@(src,evt) SynchDataWithVideo(obj));
     addlistener(obj.WinVideo,'VideoChangeState',@(src,ect) SynchVideoState(obj));
     addlistener(obj.WinVideo,'VideoClosed',@(src,evt) StopPlay(obj));
+    
+    obj.VideoFile=FileName;
 end
 
 end

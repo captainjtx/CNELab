@@ -102,6 +102,8 @@ classdef BioSigPlot < hgsetget
         MenuSampleRate
         MenuVideoStartEnd
         MenuFigurePosition
+        MenuVideo
+        MenuVideoOnTop
         
         MenuChannel
         MenuChannelNumber
@@ -1722,66 +1724,18 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         %********************Interface Action Methods *********************
         %******************************************************************
-        
-        
-        function SynchVideoState(obj)
-            if strcmpi(obj.WinVideo.Status,'Playing')
-                set(obj.TogPlay,'CData',obj.IconPause,'ClickedCallback',@(src,evt) PausePlay(obj),'State','on');
-                if strcmpi(obj.VideoTimer.Running,'off')
-                    start(obj.VideoTimer);
-                end
-            else
-                set(obj.TogPlay,'CData',obj.IconPlay,'ClickedCallback',@(src,evt) StartPlay(obj),'State','off');
-                if strcmpi(obj.VideoTimer.Running,'on')
-                    stop(obj.VideoTimer);
-                end
-            end
-            
-            obj.PlaySpeed=obj.WinVideo.PlaySpeed;
-        end
-        
-        function StartPlay(obj)
-            set(obj.TogPlay,'CData',obj.IconPause,'ClickedCallback',@(src,evt) PausePlay(obj),'State','on');
-            if strcmpi(obj.VideoTimer.Running,'off')
-                start(obj.VideoTimer);
-            end
-            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
-                obj.WinVideo.play;
-            end
-        end
-        
-        function PausePlay(obj)
-            set(obj.TogPlay,'CData',obj.IconPlay,'ClickedCallback',@(src,evt) StartPlay(obj),'State','off');
-            if strcmpi(obj.VideoTimer.Running,'on')
-                stop(obj.VideoTimer);
-            end
-            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
-                obj.WinVideo.pause;
-            end
-        end
-        function StopPlay(obj)
-            set(obj.TogPlay,'CData',obj.IconPlay,'ClickedCallback',@(src,evt) StartPlay(obj),'State','off');
-            if strcmpi(obj.VideoTimer.Running,'on')
-                stop(obj.VideoTimer);
-            end
-            %             obj.VideoLineTime=0;
-        end
-        function PlayFaster(obj)
-            obj.PlaySpeed=obj.PlaySpeed+1;
-            if obj.PlaySpeed==0
-                obj.PlaySpeed=1;
-            end
-        end
-        
-        function PlaySlower(obj)
-            obj.PlaySpeed=obj.PlaySpeed/2;
-        end
-        %==================================================================
-        %******************************************************************
+
         function WinVideoFcn(obj)
             if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
                 %Bring Video Figure To The Front If Exists
                 figure(obj.WinVideo.Fig)
+            else
+                if ~isempty(obj.VideoFile)&& exist(obj.VideoFile,'file')==2
+                    obj.WinVideo=VideoWindow(obj.VideoFile,obj.VideoActxOpt); %VLC or WMPlayer
+                    addlistener(obj.WinVideo,'VideoChangeTime',@(src,evt) SynchDataWithVideo(obj));
+                    addlistener(obj.WinVideo,'VideoChangeState',@(src,ect) SynchVideoState(obj));
+                    addlistener(obj.WinVideo,'VideoClosed',@(src,evt) StopPlay(obj));
+                end
             end
         end
         %==================================================================
@@ -1856,7 +1810,20 @@ classdef BioSigPlot < hgsetget
         %==================================================================
         moveSelectedEvents(obj,step)
         %==================================================================
-        
+        function MnuVideoOnTop(obj)
+            if strcmpi(get(obj.MenuVideoOnTop,'checked'),'on')
+                set(obj.MenuVideoOnTop,'checked','off');
+                ontop=false;
+            else
+                set(obj.MenuVideoOnTop,'checked','on');
+                ontop=true;
+            end
+            
+            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+                obj.WinVideo.IsOnTop=ontop;
+            end
+            
+        end
         function MnuPlay(obj)
             %**************************************************************
             % Dialog box to change the speed for play
@@ -2202,6 +2169,60 @@ classdef BioSigPlot < hgsetget
         updateVideo(obj)
     end
     
+    methods
+        function StartPlay(obj)
+            set(obj.TogPlay,'CData',obj.IconPause,'ClickedCallback',@(src,evt) PausePlay(obj),'State','on');
+            if strcmpi(obj.VideoTimer.Running,'off')
+                start(obj.VideoTimer);
+            end
+            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+                obj.WinVideo.play;
+            end
+        end
+        
+        function PausePlay(obj)
+            set(obj.TogPlay,'CData',obj.IconPlay,'ClickedCallback',@(src,evt) StartPlay(obj),'State','off');
+            if strcmpi(obj.VideoTimer.Running,'on')
+                stop(obj.VideoTimer);
+            end
+            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+                obj.WinVideo.pause;
+            end
+        end
+        function StopPlay(obj)
+            set(obj.TogPlay,'CData',obj.IconPlay,'ClickedCallback',@(src,evt) StartPlay(obj),'State','off');
+            if strcmpi(obj.VideoTimer.Running,'on')
+                stop(obj.VideoTimer);
+            end
+            %             obj.VideoLineTime=0;
+        end
+        function PlayFaster(obj)
+            obj.PlaySpeed=obj.PlaySpeed+1;
+            if obj.PlaySpeed==0
+                obj.PlaySpeed=1;
+            end
+        end
+        
+        function PlaySlower(obj)
+            obj.PlaySpeed=obj.PlaySpeed/2;
+        end
+        
+        function SynchVideoState(obj)
+            if strcmpi(obj.WinVideo.Status,'Playing')
+                set(obj.TogPlay,'CData',obj.IconPause,'ClickedCallback',@(src,evt) PausePlay(obj),'State','on');
+                if strcmpi(obj.VideoTimer.Running,'off')
+                    start(obj.VideoTimer);
+                end
+            else
+                set(obj.TogPlay,'CData',obj.IconPlay,'ClickedCallback',@(src,evt) StartPlay(obj),'State','off');
+                if strcmpi(obj.VideoTimer.Running,'on')
+                    stop(obj.VideoTimer);
+                end
+            end
+            
+            obj.PlaySpeed=obj.WinVideo.PlaySpeed;
+        end
+    end
     properties
         EventDisplayIndex       %Indx of displayed events
         EventLines              %Event lines displayed

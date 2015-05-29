@@ -16,15 +16,20 @@ classdef VideoWindow  < handle
         TotalFrameNumber
         
         NotifyVideoChangeTime
+        
+       
     end
     properties(Dependent)
         PlaySpeed
         CurrentPosition %Current position in second
         CurrentPositionRatio %Current position of ratio, from 0 to 1
+        IsOnTop
     end
     methods
         function obj=VideoWindow(file,varargin)
             obj.NotifyVideoChangeTime=true;
+            
+            
             if nargin==1
                 obj.ActxOpt='WMP';
             else
@@ -78,6 +83,8 @@ classdef VideoWindow  < handle
                     'MediaPlayerTimeChanged', @obj.positionChange_Callback});
                 obj.Actx.playlist.add(obj.File);
             end
+            
+            obj.IsOnTop=true;
         end
         
         function delete(obj)
@@ -210,6 +217,10 @@ classdef VideoWindow  < handle
             elseif strcmpi(obj.ActxOpt,'VLC')
                 obj.Actx.input.rate=val;
             end
+        end
+
+        function set.IsOnTop(obj,val)
+            WinOnTop( obj.Fig, val );
         end
        
         function val=get.Status(obj)

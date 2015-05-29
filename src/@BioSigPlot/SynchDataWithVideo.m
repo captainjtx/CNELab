@@ -9,7 +9,7 @@ if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
             %the exact number of frames recorded !
             
             dp=ceil(obj.NumberOfFrame*obj.WinVideo.CurrentPositionRatio);
-            dp=min(max(1,dp),obj.NumberOfFrame);
+            dp=min(max(1,dp),size(obj.VideoTimeFrame,1));
             
             
 %             dp=ceil(obj.WinVideo.TotalFrameNumber*obj.WinVideo.CurrentPositionRatio);
@@ -17,7 +17,7 @@ if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
             
             t=obj.VideoTimeFrame(dp,1)+obj.VideoStartTime;
         else
-            dp=min(max(1,frame),obj.NumberOfFrame);
+            dp=min(max(1,frame),size(obj.VideoTimeFrame,1));
             t=obj.VideoTimeFrame(dp,1)+obj.VideoStartTime;
         end
     else
