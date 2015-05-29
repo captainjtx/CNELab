@@ -32,7 +32,7 @@ if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
             end
         end
     end
+    obj.WinVideo.NotifyVideoChangeTime=true;
 end
-obj.WinVideo.NotifyVideoChangeTime=true;
 end
 
