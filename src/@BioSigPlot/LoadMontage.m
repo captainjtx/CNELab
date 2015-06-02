@@ -41,7 +41,7 @@ end
 
 OriginalChanNames=obj.Montage{tmp}(obj.MontageRef(tmp)).channames;
 
-montage=CommonDataStructure.scanMontageFile(OriginalChanNames,FilePath,FileName);
+montage=CommonDataStructure.scanMontageFile({OriginalChanNames},FilePath,FileName);
 
 for i=1:length(montage)
     num=length(obj.Montage_{tmp});

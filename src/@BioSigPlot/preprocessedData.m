@@ -98,6 +98,12 @@ else
         
     elseif isfield(CustomFilters{fcum-2},'iir')
         
+        iir=CustomFilters{fcum-2}.iir;
+        for i=1:length(iir)
+            a=iir(i).a;
+            b=iir(i).b;
+            data=filter_symmetric(b,a,data,fs,0,'iir');
+        end
     end
 end
 
