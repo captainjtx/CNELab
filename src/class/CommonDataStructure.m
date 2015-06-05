@@ -289,6 +289,7 @@ classdef CommonDataStructure < handle
             s.Montage.Amplifier=[];
             s.Montage.Name=[];
             s.Montage.Notes=[];
+            s.Montage.MaskChanNames=[]; 
             
             %obj.PatientInfo construction
             s.PatientInfo.Case=[];

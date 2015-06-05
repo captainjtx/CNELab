@@ -49,10 +49,7 @@ obj.MenuVideoOnTop=uimenu(obj.MenuVideo,'Label','Stay On Top','Callback',@(src,e
 obj.MenuChannel=uimenu(obj.Fig,'Label','Data');
 obj.MenuChannelNumber=uimenu(obj.MenuChannel,'Label','Channels/Page','Callback',@(src,evt) MnuChan2Display(obj));
 obj.MenuChannelWidth=uimenu(obj.MenuChannel,'Label','Time/Page','Callback',@(src,evt) MnuWidth2Display(obj));
-obj.MenuMask=uimenu(obj.MenuChannel,'Label','Mask','Callback',@(src,evt) maskChannel(obj,src));
-obj.MenuClearMask=uimenu(obj.MenuChannel,'Label','UnMask','Callback',@(src,evt) maskChannel(obj,src));
 obj.MenuGain=uimenu(obj.MenuChannel,'Label','Gain','Callback',@(src,evt) MnuChanGain(obj,src));
-obj.MenuAutoScale=uimenu(obj.MenuChannel,'Label','Auto Scale','Callback',@(src,evt) ChangeGain(obj,src));
 obj.MenuDetrend=uimenu(obj.MenuChannel,'Label','Detrend','Callback',@(src,evt) DetrendData(obj,src));
 
 %First Order Menu---------------------------------------------------Montage

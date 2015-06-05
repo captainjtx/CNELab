@@ -108,10 +108,7 @@ classdef BioSigPlot < hgsetget
         MenuChannel
         MenuChannelNumber
         MenuChannelWidth
-        MenuMask
-        MenuClearMask
         MenuGain
-        MenuAutoScale
         MenuDetrend
         
         MenuMontage

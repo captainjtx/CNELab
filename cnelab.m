@@ -237,6 +237,12 @@ if ~isempty(regexp(computer,'WIN','ONCE'))
         end
     end
 end
+%put mask==================================================================
+for i=1:length(cds)
+    if isfield(cds{i}.Montage,'MaskChanNames')&&~isempty(cds{i}.Montage.MaskChanNames)
+        bsp.Mask{i}=~ismember(ChanNames{i},cds{i}.Montage.MaskChanNames);
+    end
+end
 %==========================================================================
 assignin('base','bsp',bsp);
 set(bsp.Fig,'Visible','on')

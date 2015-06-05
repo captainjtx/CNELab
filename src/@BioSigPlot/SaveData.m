@@ -21,6 +21,8 @@ for i=1:length(dd)
     cds.Montage.ChannelNames=chanNames(dataset==dd(i));
     cds.Montage.Name=obj.Montage{dd(i)}(obj.MontageRef(dd(i))).name;
     cds.Montage.GroupNames=obj.Montage{dd(i)}(obj.MontageRef(dd(i))).groupnames;
+    cds.Montage.MaskChanNames=obj.MontageChanNames{dd(i)}(obj.Mask{dd(i)}==0);
+    
     cds.save('title',['DataSet-',num2str(dd(i))]);
 end
 

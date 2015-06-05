@@ -1,7 +1,7 @@
 
 function ChangeGain(obj,src)
 
-if isempty(src)||ismember(src,[obj.MenuAutoScale,obj.BtnAutoScale])
+if isempty(src)||src==obj.BtnAutoScale
     %Automatic scaling
     data=obj.PreprocData;
     if isempty(data)
