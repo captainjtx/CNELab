@@ -726,6 +726,7 @@ classdef CommonDataStructure < handle
         
         function mtg=scanMontageFile(OriginalChanNames,FilePath,FileName)
             if nargin==2
+                FileName={};
                 fn=dir(FilePath);
                 count=1;
                 for i=1:length(fn)
