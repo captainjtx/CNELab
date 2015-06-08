@@ -1,4 +1,4 @@
-function [data,chanNames,dataset,channel,sample,evts]=get_selected_data(obj)
+function [data,chanNames,dataset,channel,sample,evts,groupnames]=get_selected_data(obj)
 %This function returns the selected data and the corresponding channel
 %names
 
@@ -58,6 +58,7 @@ else
 end
 sample=selection;
 chanNames={};
+groupnames={};
 for i=1:length(dd)
     if ~obj.IsChannelSelected
         chan=1:obj.MontageChanNumber(dd(i));
@@ -71,6 +72,7 @@ for i=1:length(dd)
     data=cat(2,data,d);
     
     chanNames=cat(1,chanNames,obj.MontageChanNames{dd(i)}(chan));
+    groupnames=cat(1,groupnames,obj.Montage{dd(i)}(obj.MontageRef(dd(i))).groupnames(chan));
 end
 
 end
