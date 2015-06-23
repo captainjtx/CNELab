@@ -1,9 +1,9 @@
 %Socket test
 
-message='a=START_SAVE&FILE_PATH=c:\test\traj1\&FILE_NAME=-01900.map';
-
+% message='a=START_SAVE&FILE_PATH=c:\test\traj1\&FILE_NAME=-01900.map';
+message='GET TIME\r\n';
 %%
-output_port=8000;
+output_port=5000;
 number_of_retries=50;
 
 import java.net.ServerSocket
