@@ -14,6 +14,7 @@ classdef CommonDataStructure < handle
         %alias for the elements of common data structures
         dat %Data.Data
         fs  %Data.SampleRate
+        vtf %Data.Video.TimeFrame
     end
     
     methods
@@ -23,6 +24,9 @@ classdef CommonDataStructure < handle
         
         function obj = set.fs(obj,val), obj.Data.SampleRate=val; end
         function val = get.fs(obj),     val=obj.Data.SampleRate; end
+        
+        function obj = set.vtf(obj,val), obj.Data.Video.TimeFrame=val; end
+        function val = get.vtf(obj),     val=obj.Data.VideoTimeFrame; end
     end
     
     methods
