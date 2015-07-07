@@ -10,6 +10,21 @@ classdef CommonDataStructure < handle
         PatientInfo
     end
     
+    properties (Dependent)
+        %alias for the elements of common data structures
+        dat %Data.Data
+        fs  %Data.SampleRate
+    end
+    
+    methods
+        
+        function obj = set.dat(obj,val), obj.Data.Data=val; end
+        function val = get.dat(obj),     val=obj.Data.Data; end
+        
+        function obj = set.fs(obj,val), obj.Data.SampleRate=val; end
+        function val = get.fs(obj),     val=obj.Data.SampleRate; end
+    end
+    
     methods
         function obj=CommonDataStructure(varargin)
             if nargin==0
