@@ -26,7 +26,7 @@ classdef CommonDataStructure < handle
         function val = get.fs(obj),     val=obj.Data.SampleRate; end
         
         function obj = set.vtf(obj,val), obj.Data.Video.TimeFrame=val; end
-        function val = get.vtf(obj),     val=obj.Data.VideoTimeFrame; end
+        function val = get.vtf(obj),     val=obj.Data.Video.TimeFrame; end
     end
     
     methods
