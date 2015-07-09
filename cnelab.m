@@ -233,6 +233,7 @@ if ~isempty(regexp(computer,'WIN','ONCE'))
                addlistener(bsp.WinVideo,'VideoClosed',@(src,evt) StopPlay(bsp));
                
                bsp.VideoFile=videofile;
+               break;
            end
         end
     end

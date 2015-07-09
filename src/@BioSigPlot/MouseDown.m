@@ -1,10 +1,4 @@
 function MouseDown(obj)
-t=floor((obj.MouseTime-obj.Time)*obj.SRate);
-
-[nchan,ndata,yvalue]=getMouseInfo(obj); %#ok<ASGLU>
-time=obj.MouseTime;
-Modifier=get(obj.Fig,'CurrentModifier');
-obj.PrevMouseTime=time;
 
 if obj.UponText||obj.UponAdjustPanel
     
@@ -14,6 +8,15 @@ if obj.UponText||obj.UponAdjustPanel
     %     end
     return
 end
+
+t=floor((obj.MouseTime-obj.Time)*obj.SRate);
+
+[nchan,ndata,yvalue]=getMouseInfo(obj); %#ok<ASGLU>
+time=obj.MouseTime;
+Modifier=get(obj.Fig,'CurrentModifier');
+obj.PrevMouseTime=time;
+
+
 if isempty(obj.MouseMode)
     %**********************************************************************
     set(obj.Fig,'pointer','hand');

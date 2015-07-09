@@ -28,8 +28,51 @@ if size(data,2)<15
 else
     dataview='Horizontal';
 end
+if strcmpi(method,'pca')
+    var=data'*data;
+    [V,D]=eig(var);
     
-obj.SPFObj=SPFPlot(data,method,'SRate',obj.SRate,...
+    [e,ID]=sort(diag(D),'descend');
+    
+    SV=V(:,ID);
+    
+    subspaceData=data*SV;
+    reconData=data;
+    
+    mix=SV';
+    demix=SV;
+    weg=e;
+elseif strcmpi(method,'tpca')
+    
+elseif strcmpi(method,'ica')
+    
+    prompt='Number of ICA:';
+    
+    title='ICA';
+    
+    
+    answer=inputdlg(prompt,title,1,{num2str(size(data,2))});
+    
+    if isempty(answer)
+        return
+    else
+        tmp=str2double(answer{1});
+        if isempty(tmp)||isnan(tmp)
+            tmp=size(data,2);
+        end
+        
+        [icasig, A, W] = fastica(data','verbose', 'off', 'displayMode', 'off','numOfIC', tmp);
+        reconData=data;
+        subspaceData=icasig';
+        
+        mix=A';
+        demix=W';
+        
+        weg=[];
+    end
+end
+obj.SPFObj=SPFPlot(method,data,subspaceData,reconData,mix,demix,weg,...
+    'SRate',obj.SRate,...
     'WinLength',min(size(data,1)/obj.SRate,15),...
     'DataView',dataview,...
     'Gain',mean(obj.Gain_{obj.DisplayedData(1)}),...

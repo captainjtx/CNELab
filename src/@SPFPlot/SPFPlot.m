@@ -11,52 +11,7 @@ classdef SPFPlot < BioSigPlot
         SPWeightFig
     end
     methods
-        function obj=SPFPlot(data,method,varargin)
-            
-            if strcmpi(method,'pca')
-                var=data'*data;
-                [V,D]=eig(var);
-                
-                [e,ID]=sort(diag(D),'descend');
-                
-                SV=V(:,ID);
-                
-                subspaceData=data*SV;
-                reconData=data;
-                
-                mix=SV';
-                demix=SV;
-                weg=e;
-            elseif strcmpi(method,'tpca')
-                
-            elseif strcmpi(method,'ica')
-                
-                prompt='Number of ICA:';
-                
-                title='ICA';
-                
-                
-                answer=inputdlg(prompt,title,1,{num2str(size(data,2))});
-                
-                if isempty(answer)
-%                     obj=[];
-                    return
-                end
-                tmp=str2double(answer{1});
-                if isempty(tmp)||isnan(tmp)
-                    tmp=size(data,2);
-                end
-                
-                [icasig, A, W] = fastica(data','verbose', 'off', 'displayMode', 'off','numOfIC', tmp);
-                reconData=data;
-                subspaceData=icasig';
-                
-                mix=A';
-                demix=W';
-                
-                weg=[];
-            end
-            
+        function obj=SPFPlot(method,data,subspaceData,reconData,mix,demix,weg,varargin)
             obj@BioSigPlot({data,subspaceData,reconData},varargin{:});
             
             obj.MixMat=mix;
@@ -67,13 +22,10 @@ classdef SPFPlot < BioSigPlot
             set(obj.BtnMaskChannel,'ClickedCallback',@(src,evt)maskSubspaceChannel(obj,src));
             set(obj.BtnUnMaskChannel,'ClickedCallback',@(src,evt)maskSubspaceChannel(obj,src));
             
-            set(obj.MenuClearMask,'Callback',@(src,evt)maskSubspaceChannel(obj,src));
-            set(obj.MenuMask,'Callback',@(src,evt)maskSubspaceChannel(obj,src));
-            
             if ~isempty(obj.Weight)
                 obj.SPWeightFig=figure('Name','Subspce Weight Plot','NumberTitle','off');
                 
-                plot(e,'--rs','LineWidth',2,...
+                plot(weg,'--rs','LineWidth',2,...
                     'MarkerEdgeColor','k',...
                     'MarkerFaceColor','g',...
                     'MarkerSize',10)
