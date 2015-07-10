@@ -67,7 +67,8 @@ nR=round(obj.TPCA_Seg_After*obj.SRate/1000);
 i_label((i_label+nR)>size(obj.Data{1},1))=[];
 i_label((i_label-nL)<1)=[];
 
-[data,chanNames,dataset,channel,sample]=get_selected_data(obj);
+omitMask=true;
+[data,chanNames,dataset,channel,sample]=get_selected_data(obj,omitMask);
 
 selection=[reshape(i_label-nL,1,length(i_label));reshape(i_label+nR,1,length(i_label))];
 
