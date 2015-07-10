@@ -1,6 +1,7 @@
 function SPF_Analysis(obj,src)
 %Subspace Projection Filter
-[data,chanNames,dataset,channel,sample]=get_selected_data(obj);
+omitMask=true;
+[data,chanNames,dataset,channel,sample]=get_selected_data(obj,omitMask);
 switch src
     case obj.BtnPCA
         method='PCA';

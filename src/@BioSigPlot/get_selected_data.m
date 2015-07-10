@@ -1,4 +1,4 @@
-function [data,chanNames,dataset,channel,sample,evts,groupnames]=get_selected_data(obj)
+function [data,chanNames,dataset,channel,sample,evts,groupnames]=get_selected_data(obj,varargin)
 %This function returns the selected data and the corresponding channel
 %names
 
@@ -15,6 +15,11 @@ events=[];
 evts=[];
 
 fs=obj.SRate;
+
+omitMask=false;
+if nargin>1
+    omitMask=varargin{1};
+end
 
 if ~isempty(obj.Evts_)
     
@@ -48,7 +53,6 @@ if ~isempty(obj.Selection)
             end
         end
         
-        
         selection=cat(2,selection,startInd:endInd);
     end
       
@@ -65,6 +69,11 @@ for i=1:length(dd)
     else
         chan=obj.ChanSelect2Edit{dd(i)};
         chan=sort(chan);
+    end
+    
+    if omitMask
+       %Omit the mask channels
+        chan=intersect(find(obj.Mask{dd(i)}~=0),chan);
     end
     d=obj.PreprocData{dd(i)}(selection,chan);
     dataset=cat(2,dataset,dd(i)*ones(1,size(d,2)));

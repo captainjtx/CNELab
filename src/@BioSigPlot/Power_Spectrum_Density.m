@@ -51,7 +51,8 @@ end
 %==========================================================================
 fs=obj.SRate;
 
-[data,chanNames]=get_selected_data(obj);
+omitMask=true;
+[data,chanNames]=get_selected_data(obj,omitMask);
 
 wd=round(obj.PSDWindowLength);
 ov=round(obj.PSDOverlap);

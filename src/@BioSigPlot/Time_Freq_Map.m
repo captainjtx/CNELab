@@ -52,7 +52,8 @@ end
 %==========================================================================
 fs=obj.SRate;
 
-[data,chanNames]=get_selected_data(obj);
+omitMask=true;
+[data,chanNames]=get_selected_data(obj,omitMask);
 
 wd=obj.STFTWindowLength;
 ov=obj.STFTOverlap;
