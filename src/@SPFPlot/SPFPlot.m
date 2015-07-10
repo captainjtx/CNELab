@@ -42,9 +42,9 @@ classdef SPFPlot < BioSigPlot
         
         function maskSubspaceChannel(obj,src)
             
-            if ismember(src,[obj.MenuClearMask,obj.BtnUnMaskChannel])
+            if src==obj.BtnUnMaskChannel
                 mask=1;
-            elseif ismember(src,[obj.MenuMask,obj.BtnMaskChannel])
+            elseif src==obj.BtnMaskChannel
                 mask=0;
             end
             pmt=obj.Mask_;

@@ -94,7 +94,7 @@ for i=1:size(fdata,2)
     obj.PreprocData{dataset(i)}(sample,channel(i))=fdata(:,i);
 end
 
-obj.redrawChangeTime;
+obj.redrawChangeBlock('time');
 
 end
 
