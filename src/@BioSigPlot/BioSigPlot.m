@@ -90,6 +90,7 @@ classdef BioSigPlot < hgsetget
         MenuLoadMontage
         MenuLoadVideo
         MenuLoadFilter
+        MenuLoadChannelPosition
         
         MenuExport
         MenuExportData
@@ -2164,6 +2165,7 @@ classdef BioSigPlot < hgsetget
         MnuFigurePosition(obj)
         EventRepeatSelection(obj)
         updateVideo(obj)
+        LoadChannelPosition(obj)
     end
     
     methods
