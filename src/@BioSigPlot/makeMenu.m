@@ -12,6 +12,7 @@ obj.MenuLoadEvents=uimenu(obj.MenuLoad,'Label','Events','Callback',@(src,evt) ob
 obj.MenuLoadMontage=uimenu(obj.MenuLoad,'Label','Montage','Callback',@(src,evt) obj.LoadMontage);
 obj.MenuLoadFilter=uimenu(obj.MenuLoad,'Label','Filter','Callback',@(src,evt) obj.LoadFilter);
 obj.MenuLoadVideo=uimenu(obj.MenuLoad,'Label','Video','Callback',@(src,evt) obj.LoadVideo);
+obj.MenuLoadChannelPosition=uimenu(obj.MenuLoad,'Label','Position','Callback',@(src,evt) obj.LoadChannelPosition);
 
 obj.MenuSave=uimenu(obj.MenuFile,'Label','Save');
 obj.MenuSaveData=uimenu(obj.MenuSave,'Label','Data(sel)','Callback',@(src,evt) obj.SaveData,'Accelerator','s');

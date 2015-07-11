@@ -15,6 +15,11 @@ classdef CommonDataStructure < handle
         dat %Data.Data
         fs  %Data.SampleRate
         vtf %Data.Video.TimeFrame
+        nextf%Data.NextFile
+        prevf%Data.PrevFile
+        next% next cds
+        prev% prev cds
+        file%Data.FileName
     end
     
     methods
@@ -27,6 +32,25 @@ classdef CommonDataStructure < handle
         
         function obj = set.vtf(obj,val), obj.Data.Video.TimeFrame=val; end
         function val = get.vtf(obj),     val=obj.Data.Video.TimeFrame; end
+        
+        function obj = set.nextf(obj,val), obj.Data.NextFile=val; end
+        function val = get.nextf(obj),     val=obj.Data.NextFile; end
+        
+        function obj = set.prevf(obj,val), obj.Data.PrevFile=val; end
+        function val = get.prevf(obj),     val=obj.Data.PrevFile; end
+        
+        function cds = get.next(obj)
+            [pathstr, name, ext] = fileparts(obj.file);
+            cds=obj.Load(fullfile(pathstr,obj.nextf));
+        end
+        
+        function cds = get.prev(obj)
+            [pathstr, name, ext] = fileparts(obj.file);
+            cds=obj.Load(fullfile(pathstr,obj.prevf));
+        end
+        
+        function obj = set.file(obj,val), obj.Data.FileName=val; end
+        function val = get.file(obj),     val=obj.Data.FileName; end
     end
     
     methods
@@ -299,6 +323,8 @@ classdef CommonDataStructure < handle
             s.Data.SampleRate=[];
             s.Data.FileName=[];
             s.Data.VideoName=[];
+            s.Data.NextFile=[];
+            s.Data.PrevFile=[];
             
             %obj.Montage construction
             s.Montage.ChannelNames=[];
@@ -309,6 +335,8 @@ classdef CommonDataStructure < handle
             s.Montage.Name=[];
             s.Montage.Notes=[];
             s.Montage.MaskChanNames=[]; 
+            s.Montage.ElectrodeID=[];
+            s.Montage.ChannelPosition=[];
             
             %obj.PatientInfo construction
             s.PatientInfo.Case=[];
@@ -738,9 +766,16 @@ classdef CommonDataStructure < handle
             obj.save();
         end
         
-        function cds=Load()
+        function cds=Load(varargin)
             cds=CommonDataStructure;
-            cds.load();
+            
+            if nargin==1
+                fname=varargin{1};
+                cds.load(fname);
+            else
+                cds.load();
+            end
+            
         end
         
         function mtg=scanMontageFile(OriginalChanNames,FilePath,FileName)
@@ -785,9 +820,7 @@ classdef CommonDataStructure < handle
                 mtg{i}.groupnames=groupnames;
                 
             end
-            
         end
     end
-    
 end
 

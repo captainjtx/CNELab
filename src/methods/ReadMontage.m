@@ -1,5 +1,6 @@
 function mtg=ReadMontage(filename)
-
+%Montage file formats:
+%NewName,Statements,GroupName
 fileID = fopen(filename);
 C = textscan(fileID,'%s%s%s',...
     'Delimiter',',','TreatAsEmpty',{'NA','na'},'CommentStyle','%');
