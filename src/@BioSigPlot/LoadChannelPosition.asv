@@ -47,13 +47,10 @@ for i=1:length(pos)
     [Lia,Locb]=ismember(OriginalChanNames{i},channelname);
     
     if Lia
-        pos{i}=[pos_x{Locb}, pos_y{Locb}];
-    else
-        pos{i}=[];
-    end
+        pos{i}=[pos_x{i}, ]
 end
 
 
-obj.Montage{tmp}(obj.MontageRef(tmp)).chanpos=pos;
+obj.Montage{tmp}(obj.MontageRef(tmp))
 
 end
