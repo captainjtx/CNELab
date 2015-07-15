@@ -118,6 +118,25 @@ for i=1:length(cds)
     end
 end
 %==========================================================================
+%**************************************************************************
+NextFiles=cell(1,length(cds));
+for i=1:length(cds)
+    if isfield(cds{i}.Data,'NextFile')
+        NextFiles{i}=cds{i}.Data.NextFile;
+    else
+        NextFiles{i}=[];
+    end
+end
+PrevFiles=cell(1,length(cds));
+for i=1:length(cds)
+    if isfield(cds{i}.Data,'PrevFile')
+        PrevFiles{i}=cds{i}.Data.PrevFile;
+    else
+        PrevFiles{i}=[];
+    end
+end
+%==========================================================================
+%**************************************************************************        
 bsp=BioSigPlot(data,'Title',fnames,...
                     'SRate',fs,...
                     'ChanNames',ChanNames,...
@@ -127,7 +146,9 @@ bsp=BioSigPlot(data,'Title',fnames,...
                     'NumberOfFrame',NumberOfFrame,...
                     'Units',Units,...
                     'FileNames',FileNames,...
-                    'StartTime',StartTime);
+                    'StartTime',StartTime,...
+                    'NextFiles',NextFiles,...
+                    'PrevFiles',PrevFiles);
 set(bsp.Fig,'Visible','off');
 %==========================================================================
 %**************************************************************************

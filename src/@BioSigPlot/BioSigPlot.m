@@ -2285,6 +2285,9 @@ classdef BioSigPlot < hgsetget
         PSDFreqHigh
         
         Montage_
+        
+        NextFiles
+        PrevFiles
     end
     events
         SelectedFastEvtChange
