@@ -812,7 +812,12 @@ classdef CommonDataStructure < handle
             for i=1:length(montage)
                 [pathstr, name, ext] = fileparts(FileName{i});
 
-                [montage_channames,mat,groupnames]=parseMontage(montage{i},OriginalChanNames{i});
+                if length(OriginalChanNames)==1
+                    channame=OriginalChanNames{1};
+                else
+                    channame=OriginalChanNames{i};
+                end
+                [montage_channames,mat,groupnames]=parseMontage(montage{i},channame);
                 
                 mtg{i}.name=name;
                 mtg{i}.channames=montage_channames;
