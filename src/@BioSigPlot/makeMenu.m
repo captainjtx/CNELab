@@ -45,6 +45,8 @@ obj.MenuVideo=uimenu(obj.MenuSettings,'Label','Video');
 obj.MenuPlaySpeed=uimenu(obj.MenuVideo,'Label','Speed','Callback',@(src,evt) MnuPlay(obj));
 obj.MenuVideoStartEnd=uimenu(obj.MenuVideo,'Label','Start&End','Callback',@(src,evt) MnuVideoStartEnd(obj));
 obj.MenuVideoOnTop=uimenu(obj.MenuVideo,'Label','Stay On Top','Callback',@(src,evt) MnuVideoOnTop(obj),'checked','on');
+
+obj.MenuNextPrevFile=uimenu(obj.MenuSettings,'Label','Next/Prev File','Callback',@(src,evt)MnuNextPrevFile(obj));
 %**************************************************************************
 %First Order Menu------------------------------------------------------Data
 obj.MenuChannel=uimenu(obj.Fig,'Label','Data');

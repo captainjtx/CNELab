@@ -13,8 +13,8 @@ for i=1:length(dd)
     cds.Data.VideoName=obj.VideoFile;
     cds.Data.TimeStamps=linspace(0,obj.DataTime,size(obj.Data{1},1))+obj.StartTime;
     cds.Data.FileName=obj.FileNames{dd(i)};
-    cds.Data.NextFile=obj.
-    cds.Data.PrevFile=obj.
+    cds.Data.NextFile=obj.NextFiles{dd(i)};
+    cds.Data.PrevFile=obj.PrevFiles{dd(i)};
     
     cds.Data.Video.StartTime=obj.VideoStartTime;
     cds.Data.Video.TimeFrame=obj.VideoTimeFrame;

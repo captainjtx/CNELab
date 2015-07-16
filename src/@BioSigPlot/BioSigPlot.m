@@ -111,6 +111,7 @@ classdef BioSigPlot < hgsetget
         MenuChannelWidth
         MenuGain
         MenuDetrend
+        MenuNextPrevFile
         
         MenuMontage
         MontageOptMenu
@@ -2166,6 +2167,7 @@ classdef BioSigPlot < hgsetget
         EventRepeatSelection(obj)
         updateVideo(obj)
         LoadChannelPosition(obj)
+        MnuNextPrevFile(obj)
     end
     
     methods
