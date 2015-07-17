@@ -87,7 +87,7 @@ figure(obj.PSDFig);
 set(obj.PSDFig,'visible','on')
 
 if strcmp(get(obj.MenuPSDHold,'checked'),'off')
-    clf
+%     clf
 else
     hold on
 end
