@@ -23,6 +23,13 @@ switch src
         set(src,'checked','on');
         set(obj.MenuPSD_Normal,'checked','off');
         
+    case obj.MenuPSDHold
+        if strcmp(get(src,'checked'),'on')
+            set(src,'checked','off');
+        else
+            set(src,'checked','on');
+        end
+        return
 end
 %==========================================================================
 %continue ?
@@ -76,9 +83,14 @@ freq=[obj.PSDFreqLow obj.PSDFreqHigh];
 if ~ishandle(obj.PSDFig)
     obj.PSDFig=figure('Name','Power Spectrum Density','Visible','off','NumberTitle','off');
 end
-figure(obj.PSDFig)
+figure(obj.PSDFig);
 set(obj.PSDFig,'visible','on')
-clf
+
+if strcmp(get(obj.MenuPSDHold,'checked'),'off')
+    clf
+else
+    hold on
+end
 
 switch option
     case 1

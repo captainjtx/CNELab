@@ -165,6 +165,7 @@ classdef BioSigPlot < hgsetget
         MenuPSDChannel
         MenuPSDGrid
         MenuPSDSettings
+        MenuPSDHold
         
         MenuAdvFilter
         MenuMeanRef
