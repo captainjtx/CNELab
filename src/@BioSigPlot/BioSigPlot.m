@@ -82,6 +82,7 @@ classdef BioSigPlot < hgsetget
         MenuSaveFigureAdvanced
         MenuSaveEvents
         MenuSaveData
+        MenuMergeData
         MenuSaveMontage
         
         MenuLoad
@@ -2142,7 +2143,7 @@ classdef BioSigPlot < hgsetget
         updateSelectedFastEvent(obj,x)
         Time_Freq_Map(obj,src)
         filterCheck(obj)
-        SaveData(obj)
+        SaveData(obj,src)
         ExportDataToWorkspace(obj)
         d=preprocessedAllData(obj,n,chan,selection)
         ChangeTime(obj,src)

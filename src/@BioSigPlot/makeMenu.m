@@ -15,7 +15,8 @@ obj.MenuLoadVideo=uimenu(obj.MenuLoad,'Label','Video','Callback',@(src,evt) obj.
 obj.MenuLoadChannelPosition=uimenu(obj.MenuLoad,'Label','Position','Callback',@(src,evt) obj.LoadChannelPosition);
 
 obj.MenuSave=uimenu(obj.MenuFile,'Label','Save');
-obj.MenuSaveData=uimenu(obj.MenuSave,'Label','Data(sel)','Callback',@(src,evt) obj.SaveData,'Accelerator','s');
+obj.MenuSaveData=uimenu(obj.MenuSave,'Label','Data(sel)','Callback',@(src,evt) SaveData(obj,src),'Accelerator','s');
+obj.MenuMergeData=uimenu(obj.MenuSave,'Label','Merge Data','Callback',@(src,evt) SaveData(obj,src));
 obj.MenuSaveEvents=uimenu(obj.MenuSave,'Label','Events','Callback',@(src,evt) obj.SaveEvents);
 obj.MenuSaveMontage=uimenu(obj.MenuSave,'Label','Montage','Callback',@(src,evt) obj.SaveMontage);
 obj.MenuSaveFigure=uimenu(obj.MenuSave,'Label','Figure');
