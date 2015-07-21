@@ -57,20 +57,21 @@ if strcmpi(opt,'delete')
     
     obj.SelectedEvent=[];
 elseif strcmpi(opt,'rename')
-    newName=inputdlg('Group Rename ','Event: ',1,{'Text'});
-    if ~isempty(newName)
+    oldname=obj.Evts_{groupSelectEvent(1),2};
+    newName=inputdlg('Group Rename ','Event: ',1,{oldname});
+    if ~isempty(newName)&&~strcmpi(oldname,newName)
         newName=newName{1};
         if ~isempty(obj.Evts)
             for i=1:length(groupSelectEvent)
                 obj.Evts_{groupSelectEvent(i),2}=newName;
             end
         end
-    end
-    
-    for k=1:size(obj.EventDisplayIndex,1)
-        for i=1:size(obj.EventDisplayIndex,2)
-            if any(obj.EventDisplayIndex(k,i)==groupSelectEvent)
-                set(obj.EventTexts(k,i),'String',newName);
+        
+        for k=1:size(obj.EventDisplayIndex,1)
+            for i=1:size(obj.EventDisplayIndex,2)
+                if any(obj.EventDisplayIndex(k,i)==groupSelectEvent)
+                    set(obj.EventTexts(k,i),'String',newName);
+                end
             end
         end
     end
