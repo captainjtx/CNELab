@@ -12,22 +12,19 @@ if strcmpi(choice,'Cancel')
     return
 end
 
-[FileName,FilePath,FilterIndex]=uigetfile({'*.txt;*.csv;*.mat;*.evt','Event Files (*.txt;*.mat;*.evt)';...
-    '*.txt;*csv','Text File (*.txt;*csv)';
-    '*.mat','Matlab Mat File (*.mat)';
-    '*.evt','Event File (*.evt)'},...
+[FileName,FilePath,FilterIndex]=uigetfile({'*.txt;*.csv;*.mat;*.evt','Event Files (*.txt;*.csv;*.mat;*.evt)';...
+    '*.txt;*csv;*.evt','Text File (*.txt;*csv;*.evt)';
+    '*.mat','Matlab Mat File (*.mat)'},...
     'select your events file',...
     obj.FileDir);
 if FileName~=0
     
     if FilterIndex==1
         [pathstr, name, ext] = fileparts(FileName);
-        if strcmpi(ext,'.txt')||strcmpi(ext,'.csv')
+        if strcmpi(ext,'.txt')||strcmpi(ext,'.csv')||strcmpi(ext,'.evt')
             FilterIndex=2;
         elseif strcmpi(ext,'.mat')
             FilterIndex=3;
-        elseif strcmpi(ext,'.evt')
-            FilterIndex=4;
         end
     end
     

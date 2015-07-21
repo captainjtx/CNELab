@@ -24,10 +24,10 @@ for i=1:size(EventsList,1)
 end
 if ~isempty(Events)
     [FileName,FilePath,FilterIndex]=uiputfile({'*.txt;*.csv;*.mat;*.evt','Event Files (*.txt;*.csv;*.mat;*.evt)';...
+        '*.evt','Event File (*.evt)';
         '*.txt','Text File(*.txt)';
         '*.csv','Comma Separate File(*.csv)';
-        '*.mat','Matlab Mat File (*.mat)';
-        '*.evt','Event File (*.evt)'}...
+        '*.mat','Matlab Mat File (*.mat)'}...
         ,'save your Events',fullfile(obj.FileDir,'untitled'));
     if FileName~=0
         
@@ -56,7 +56,8 @@ if ~isempty(Events)
             case 4
                 save(filename,'-struct','Events','-mat');
             case 5
-                save(filename,'-struct','Events','-mat');
+                writeheader(filename);
+                cell2csv(filename,EventsList,',','a');
         end
         obj.IsEvtsSaved=true;
     end
@@ -68,7 +69,8 @@ function writeheader(filename)
 fid=fopen(filename,'w');
 fprintf(fid,'%s\n%s\n%s\n%s\n','%Rows commented by % will be ignored',...
     '%File needs to be comma(,) delimited',...
-    '%The format should be as follows, {Color} and {Code} columns are not necessary for event file import:',...
-    '%Time(Second),Event,Color(RGB),Code');
+    '%File format: Time(s),Event,Color(RGB),Code',...
+    '%{Color} and {Code} are optional:'...
+    );
 fclose(fid);
 end
