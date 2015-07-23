@@ -7,7 +7,7 @@ for i=1:size(data,2)
     obj.PreprocData{dataset(i)}(sample,channel(i))=data(:,i);
 end
 
-obj.redrawChangeTime;
+obj.redrawChangeBlock('time');
 
 end
 

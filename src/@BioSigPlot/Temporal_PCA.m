@@ -6,6 +6,7 @@ if ~obj.IsChannelSelected
     return
 end
 
+%Assign the default value for the prompt dialog
 prompt={'Noise Event Label: ','Segment Before (ms): ','Segment After (ms): ','Noise PCA-components: '};
 title='Noise segment definition';
 if isempty(obj.TPCA_Event_Label)

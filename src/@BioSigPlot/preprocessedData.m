@@ -78,6 +78,18 @@ for i=1:size(d,2)
         
     end
 end
+
+%apply subspace filter
+if ~isempty(obj.SPFObj)&&isvalid(obj.SPFObj)&&isa(obj.SPFObj,'SPFPlot')
+    sample=obj.SPFObj.sample;
+    channel=obj.SPFObj.channel;
+    dataset=obj.SPFObj.dataset;
+    channel=channel(dataset==n);
+    
+    if ~isempty(channel)
+        d(sample,channel)=obj.SPFObj.subspacefilter(d(sample,channel));
+    end
+end
 end
 
 function data=applyCustomFilters(obj,data,fcum)

@@ -70,6 +70,12 @@ elseif strcmpi(method,'ica')
         demix=W';
         
         weg=[];
+        
+        subspacename=cell(1,tmp);
+        for i=1:tmp
+            subspacename{i}=[method,'-',num2str(i)];
+        end
+        channames{2}=subspacename;
     end
 end
 obj.SPFObj=SPFPlot(method,data,subspaceData,reconData,mix,demix,weg,...
@@ -79,11 +85,15 @@ obj.SPFObj=SPFPlot(method,data,subspaceData,reconData,mix,demix,weg,...
     'Gain',mean(obj.Gain_{obj.DisplayedData(1)}),...
     'ControlPanelDisplay','off',...
     'LockLayout','off',...
-    'DisplayGauge','off');
-% 'ChanNames',channames,...
+    'DisplayGauge','off',...
+    'ChanNames',channames);
 if isempty(obj.SPFObj)
     return
 end
+obj.SPFObj.sample=sample;
+obj.SPFObj.channel=channel;
+obj.SPFObj.dataset=dataset;
+
 addlistener(obj.SPFObj,'MaskSubspace',@(src,evt)spf_selected_data(obj,dataset,channel,sample));
 
 end

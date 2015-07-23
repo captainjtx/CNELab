@@ -25,6 +25,8 @@ if strcmpi(opt,'delete')
                 delete(obj.EventLines(k,i));
                 delete(obj.EventTexts(k,i));
                 deletedInd=[deletedInd,i];
+                %decrease the index of displayed event after deletion
+                EventIndex(:,i:end)=EventIndex(:,i:end)-1;
             end
         end
     end

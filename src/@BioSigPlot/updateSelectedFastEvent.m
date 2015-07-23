@@ -9,8 +9,11 @@ end
 for i=1:length(obj.Axes)
     yl=get(obj.Axes(i),'ylim');
     set(obj.LineMeasurer(i),'XData',[x x],'Color',newEvent{3});
-    set(obj.TxtFastEvent(i),'Position',[x yl(2)],'BackgroundColor',newEvent{3},'EdgeColor',newEvent{3},...
-        'string',newEvent{2})
+    
+    if ~isempty(obj.TxtFastEvent)&&ishandle(obj.TxtFastEvent(i))
+        set(obj.TxtFastEvent(i),'Position',[x yl(2)],'BackgroundColor',newEvent{3},'EdgeColor',newEvent{3},...
+            'string',newEvent{2})
+    end
 end
 
 end

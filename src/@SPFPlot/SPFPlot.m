@@ -9,6 +9,11 @@ classdef SPFPlot < BioSigPlot
         Weight
         
         SPWeightFig
+        
+        sample
+        channel
+        dataset
+        subspaceMask
     end
     methods
         function obj=SPFPlot(method,data,subspaceData,reconData,mix,demix,weg,varargin)
@@ -57,6 +62,8 @@ classdef SPFPlot < BioSigPlot
             obj.Mask=tmp;
             if ~all(tmp{2}==pmt{2})
                 
+                obj.subspaceMask=tmp{2};
+                
                 obj.Data{3}=obj.PreprocData{2}*diag(tmp{2})*obj.MixMat;
                 obj.PreprocData{3}=obj.Data{3};
                 
@@ -68,6 +75,14 @@ classdef SPFPlot < BioSigPlot
         end
         
     end
+    
+     methods
+         %apply subspace filter
+         function sfdata=subspacefilter(obj,data)
+             subspacedata=data*obj.DemixMat;
+             sfdata=subspacedata*diag(obj.subspaceMask)*obj.MixMat;
+         end
+     end
     
     events
         MaskSubspace

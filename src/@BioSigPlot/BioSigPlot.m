@@ -168,10 +168,11 @@ classdef BioSigPlot < hgsetget
         MenuPSDSettings
         MenuPSDHold
         
-        MenuAdvFilter
+
         MenuMeanRef
         MenuTemporalPCA
         MenuRemovePulse
+        MenuSpatialPCA
         
         PanObj
         LineVideo
@@ -512,6 +513,10 @@ classdef BioSigPlot < hgsetget
                 delete(h);
             else
                 return
+            end
+            
+            if ~isempty(obj.SPFObj)&&isvalid(obj.SPFObj)&&isa(obj.SPFObj,'SPFPlot')
+                delete(obj.SPFObj);
             end
         end % delete
         
@@ -2161,6 +2166,7 @@ classdef BioSigPlot < hgsetget
         Mean_Reference_Filter(obj)
         SaveMontage(obj)
         Temporal_PCA(obj)
+        Spatial_PCA(obj)
         Auto_Remove_ECG_Artifact(obj)
         ReadMontage(obj)
         LoadFilter(obj)
@@ -2279,6 +2285,10 @@ classdef BioSigPlot < hgsetget
         TPCA_Seg_Before
         TPCA_Seg_After
         TPCA_S
+        
+        SPCA_Event_Label
+        SPCA_Seg_Before
+        SPCA_Seg_After
         
         STFTFreqLow
         STFTFreqHigh
