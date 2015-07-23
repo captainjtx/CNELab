@@ -25,13 +25,15 @@ if isempty(obj.MouseMode)
             end
             %**********************************************************************
             %Sigle Channel Selection or move canvas
-            if abs(time-obj.PrevMouseTime)<10/obj.SRate
-                if ~obj.DragMode&&~obj.UponText
-                    obj.ChanSelect2Edit{ndata}=nchan;
+            if ~obj.UponText&&~obj.UponAdjustPanel
+                if abs(time-obj.PrevMouseTime)<10/obj.SRate
+                    if ~obj.DragMode&&~obj.UponText
+                        obj.ChanSelect2Edit{ndata}=nchan;
+                    end
+                else
+                    obj.Time=obj.Time-time+obj.PrevMouseTime;
+                    set(obj.Fig,'pointer','crosshair');
                 end
-            else
-                obj.Time=obj.Time-time+obj.PrevMouseTime;
-                set(obj.Fig,'pointer','crosshair');
             end
         end
     end
