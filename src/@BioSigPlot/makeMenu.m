@@ -19,6 +19,7 @@ obj.MenuSaveData=uimenu(obj.MenuSave,'Label','Data(sel)','Callback',@(src,evt) S
 obj.MenuMergeData=uimenu(obj.MenuSave,'Label','Merge Data','Callback',@(src,evt) SaveData(obj,src));
 obj.MenuSaveEvents=uimenu(obj.MenuSave,'Label','Events','Callback',@(src,evt) obj.SaveEvents);
 obj.MenuSaveMontage=uimenu(obj.MenuSave,'Label','Montage','Callback',@(src,evt) obj.SaveMontage);
+obj.MenuSavePosition=uimenu(obj.MenuSave,'Label','Position','Callback',@(src,evt) obj.SavePosition);
 obj.MenuSaveFigure=uimenu(obj.MenuSave,'Label','Figure');
 obj.MenuSaveFigureMirror=uimenu(obj.MenuSaveFigure,'Label','Mirror','Callback',@(src,evt) obj.SaveToFigure,'Accelerator','p');
 obj.MenuSaveFigureAdvanced=uimenu(obj.MenuSaveFigure,'Label','Advanced','Callback',@(src,evt) obj.SaveToWindow);

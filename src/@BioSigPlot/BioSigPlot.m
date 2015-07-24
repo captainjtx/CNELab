@@ -84,6 +84,7 @@ classdef BioSigPlot < hgsetget
         MenuSaveData
         MenuMergeData
         MenuSaveMontage
+        MenuSavePosition
         
         MenuLoad
         MenuLoadDataSet
@@ -2176,6 +2177,7 @@ classdef BioSigPlot < hgsetget
         updateVideo(obj)
         LoadChannelPosition(obj)
         MnuNextPrevFile(obj)
+        SavePosition(obj)
     end
     
     methods

@@ -53,7 +53,6 @@ for i=1:length(pos)
     end
 end
 
-
 obj.Montage{tmp}(obj.MontageRef(tmp)).chanpos=pos;
 
 end
