@@ -41,18 +41,21 @@ end
 [channelname,pos_x,pos_y,pos_z] = ReadPosition( fullfile(FilePath,FileName) );
 OriginalChanNames=obj.Montage{tmp}(obj.MontageRef(tmp)).channames;
 
-pos=cell(length(OriginalChanNames),1);
+pos=zeros(length(OriginalChanNames),3);
 
 for i=1:length(pos)
     [Lia,Locb]=ismember(OriginalChanNames{i},channelname);
     
     if Lia
-        pos{i}=[pos_x{Locb}, pos_y{Locb}];
+        pos(i,1:2)=[pos_x(Locb), pos_y(Locb)];
+        if ~isempty(pos_z)
+            pos(i,3)=pos_z(Locb);
+        end
     else
-        pos{i}=[];
+        pos(i,:)=nan;
     end
 end
 
-obj.Montage{tmp}(obj.MontageRef(tmp)).chanpos=pos;
+obj.Montage_{tmp}(obj.MontageRef(tmp)).position=pos;
 
 end

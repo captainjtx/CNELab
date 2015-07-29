@@ -53,13 +53,40 @@ end
 fs=obj.SRate;
 
 omitMask=true;
-[data,chanNames]=get_selected_data(obj,omitMask);
+[data,chanNames,dataset,channel,sample,evts,groupnames,chanpos]=get_selected_data(obj,omitMask);
 
-wd=obj.STFTWindowLength;
-ov=obj.STFTOverlap;
+%set default parameter*****************************************************
+wd=round(obj.STFTWindowLength);
+ov=round(obj.STFTOverlap);
+nref=round(obj.STFTNormalizePoint);
+sl=obj.STFTScaleLow;
+sh=obj.STFTScaleHigh;
+
+if isempty(wd)||wd>size(data,1)
+    wd=round(fs/3);
+    ov=round(wd*0.9);
+end
+
+if ov>wd
+    ov=round(wd*0.9);
+end
+
+if isempty(nref)||nref>size(data,1)
+    nref=round(size(data,1)/4);
+    obj.STFTNormalizePoint=nref;
+end
+
+
+
+obj.STFTWindowLength=wd;
+obj.STFTOverlap=ov;
+obj.STFTNormalizePoint=nref;
+%**************************************************************************
 
 s=[obj.STFTScaleLow obj.STFTScaleHigh];
 freq=[obj.STFTFreqLow obj.STFTFreqHigh];
+
+
 
 if ~ishandle(obj.TFMapFig)
     obj.TFMapFig=figure('Name','TFMap','Visible','off','NumberTitle','off');
@@ -70,7 +97,8 @@ clf
 
 switch option
     case 1
-        [tf,f,t]=bsp_tfmap(obj.TFMapFig,data,fs,wd,ov,s,chanNames,freq,unit);
+        [tf,f,t]=bsp_tfmap(obj.TFMapFig,data,fs,wd,ov,s,nref,chanNames,freq,unit);
+        
         if strcmpi(unit,'dB')
             imagesc(t,f,10*log10(tf));
         else
@@ -82,7 +110,7 @@ switch option
         end
         set(gca,'YLim',freq);
         set(gca,'Tag','TFMapAxes');
-        title('Time Frequency Map')
+        title('Time Frequency Map');
         colormap(jet);
         xlabel('time (s)');
         ylabel('frequency (Hz)')
@@ -90,12 +118,59 @@ switch option
         colorbar
         
     case 2
-        bsp_tfmap(obj.TFMapFig,data,fs,wd,ov,s,chanNames,freq,unit);
+        bsp_tfmap(obj.TFMapFig,data,fs,wd,ov,s,nref,chanNames,freq,unit);
     case 3
+        if isempty(sl)
+            sl=-10;
+            obj.STFTScaleLow=sl;
+        end
+        if isempty(sh)
+            sh=10;
+            obj.STFTScaleHigh=sh;
+        end
         
-end
+        
+        chanind=~isnan(chanpos(:,1))&~isnan(chanpos(:,2));
+        data=data(:,chanind);
+        channames=chanNames(chanind);
+        chanpos=chanpos(chanind,:);
+        
+        chanpos(:,1)=chanpos(:,1)-min(chanpos(:,1));
+        chanpos(:,2)=chanpos(:,2)-min(chanpos(:,2));
+        
+        dx=abs(pdist2(chanpos(:,1),chanpos(:,1)));
+        dx=min(dx(dx~=0));
+        
+        dy=abs(pdist2(chanpos(:,2),chanpos(:,2)));
+        dy=min(dy(dy~=0));
+        
+        chanpos(:,1)=chanpos(:,1)+dx/2;
+        chanpos(:,2)=chanpos(:,2)+dy*0.6;
+        
+        x_len=max(chanpos(:,1))+dx/2;
+        y_len=max(chanpos(:,2))+dy*0.6;
+        chanpos(:,1)=chanpos(:,1)/x_len;
+        chanpos(:,2)=chanpos(:,2)/y_len;
+        
+        dw=dx/(x_len+2*dx);
+        dh=dy/(y_len+2*dy);
+        ax_back = axes('Position',[0 0 1 1],'Visible','off');
+        set(ax_back,'XLim',[0,1]);
+        set(ax_back,'YLim',[0,1]);
+        
+
+        for j=1:length(channames)
+            [tf,f,t]=bsp_tfmap(obj.TFMapFig,data(:,j),fs,wd,ov,s,nref,channames,freq,unit);
+            axes(ax_back);
+            tfmap_grid(t,f,tf,chanpos(j,:),dw,dh,channames{j},sl,sh);
+        end
 
 end
+
+
+end
+
+
 function MnuTFMapSettings(obj)
 
 %**************************************************************************
@@ -105,11 +180,13 @@ fs=obj.SRate;
 
 prompt={'STFT window:','STFT overlap:',...
     'Frequency low:','Frequency high',...
-    'Lower bound of scale:','Upper bound of scale'};
+    'Lower bound of scale:','Upper bound of scale',...
+    'Normalization Points:'};
 
 def={num2str(obj.STFTWindowLength),num2str(obj.STFTOverlap),...
     num2str(obj.STFTFreqLow),num2str(obj.STFTFreqHigh),...
-    num2str(obj.STFTScaleLow),num2str(obj.STFTScaleHigh)};
+    num2str(obj.STFTScaleLow),num2str(obj.STFTScaleHigh),...
+    num2str(obj.STFTNormalizePoint)};
 
 title='Time Frequency Settings';
 
@@ -144,8 +221,8 @@ end
 fl=str2double(answer{3});
 if ~isnan(fl)
     if obj.STFTFreqLow~=fl&&fl>=0
-       needroom=true;
-       obj.STFTFreqLow=fl;
+        needroom=true;
+        obj.STFTFreqLow=fl;
     end
 end
 
@@ -177,13 +254,20 @@ if obj.STFTScaleHigh<=obj.STFTScaleLow
     obj.STFTScaleHigh=[];
 end
 
+refn=str2double(answer{7});
+if ~isnan(refn)
+    if obj.STFTNormalizePoint~=refn
+        needredraw=true;
+        obj.STFTNormalizePoint=refn;
+    end
+end
 if ishandle(obj.TFMapFig)
     if needredraw
         Time_Freq_Map(obj,obj.BtnTFMap);
         return
     end
     
-    h=findobj(obj.TFMapFig,'Tag','TFMapAxes');
+    h=findobj(obj.TFMapFig,'-regexp','Tag','TFMapAxes*');
     
     if needrescale
         set(h,'CLim',[obj.STFTScaleLow,obj.STFTScaleHigh]);
@@ -195,7 +279,7 @@ if ishandle(obj.TFMapFig)
         figure(obj.TFMapFig);
     end
 end
-    
+
 end
 
 

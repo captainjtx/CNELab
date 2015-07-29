@@ -201,6 +201,7 @@ classdef BioSigPlot < hgsetget
         Mask
         ChanNames               %Cell with channel names corresponding to raw data.
         GroupNames
+        ChanPosition
         Units                   %Units of the data
         Evts                    %List of events.
         Time                    %Current time (in TimeUnit) of the current
@@ -277,6 +278,7 @@ classdef BioSigPlot < hgsetget
         Mask_
         ChanNames_
         GroupNames_
+        ChanPosition_
         Units_
         
         Evts_
@@ -460,6 +462,7 @@ classdef BioSigPlot < hgsetget
             obj.ChanNames_=cell(1,obj.DataNumber);
             obj.GroupNames_=cell(1,obj.DataNumber);
             obj.MontageRef_=ones(obj.DataNumber,1);
+            obj.ChanPosition_=cell(1,obj.DataNumber);
             
             n=find(strcmpi('Config',g(1:2:end)))*2;
             if isempty(n), g=[{'Config' obj.DefaultConfigFile} g]; end
@@ -582,7 +585,7 @@ classdef BioSigPlot < hgsetget
                         'DataView','MontageRef','DispChans',...
                         'Filtering','FilterLow',...
                         'FilterHigh','FilterNotch1','FilterNotch2','FilterCustomIndex'...
-                        'ChanNames','GroupNames','YBorder',...
+                        'ChanNames','GroupNames','ChanPosition','YBorder',...
                         'ChanSelect2Display'}))
                    
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
@@ -590,8 +593,8 @@ classdef BioSigPlot < hgsetget
                             'MontageRef','DispChans'}))
                         NeedRemakeAxes=true;
                     end
-                    if any(strcmpi(g{i},{'Config','Montage','ChanNames','GroupNames','DataView','MontageRef'}))
-                        if any(strcmpi(g{i},{'Config','Montage','ChanNames','GroupNames'}))
+                    if any(strcmpi(g{i},{'Config','Montage','ChanNames','GroupNames','ChanPosition','DataView','MontageRef'}))
+                        if any(strcmpi(g{i},{'Config','Montage','ChanNames','GroupNames','ChanPosition'}))
                             NeedRemakeMontage=true;
                         end
                         NeedResetView=true;
@@ -701,6 +704,8 @@ classdef BioSigPlot < hgsetget
         function val = get.ChanNames(obj), val=obj.ChanNames_; end
         function obj = set.GroupNames(obj,val), set(obj,'GroupNames',val); end
         function val = get.GroupNames(obj), val=obj.GroupNames_; end
+        function obj = set.ChanPosition(obj,val), set(obj,'ChanPosition',val); end
+        function val = get.ChanPosition(obj), val=obj.ChanPosition_; end
         function obj = set.Units(obj,val), set(obj,'Units',val); end
         function val = get.Units(obj), val=obj.Units_; end
         function obj = set.Evts(obj,val), set(obj,'Evts',val); end
@@ -2296,6 +2301,7 @@ classdef BioSigPlot < hgsetget
         STFTFreqHigh
         STFTScaleLow
         STFTScaleHigh
+        STFTNormalizePoint
         
         PSDFreqLow
         PSDFreqHigh

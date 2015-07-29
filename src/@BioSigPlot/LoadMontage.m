@@ -49,6 +49,7 @@ for i=1:length(montage)
     obj.Montage_{tmp}(num+1).channames=montage{i}.channames;
     obj.Montage_{tmp}(num+1).mat=montage{i}.mat*obj.Montage_{tmp}(obj.MontageRef(tmp)).mat;
     obj.Montage_{tmp}(num+1).groupnames=montage{i}.groupnames;
+    obj.Montage_{tmp}(num+1).position=[];
 end
 
 remakeMontage(obj);

@@ -1,6 +1,6 @@
 function SaveData(obj,src)
 
-[data,chanNames,dataset,channel,sample,evts,groupnames]=get_selected_data(obj);
+[data,chanNames,dataset,channel,sample,evts,groupnames,pos]=get_selected_data(obj);
 dd=unique(dataset);
 
 switch src
@@ -26,6 +26,7 @@ switch src
             cds.Montage.Name=obj.Montage{dd(i)}(obj.MontageRef(dd(i))).name;
             cds.Montage.GroupNames=groupnames;
             cds.Montage.MaskChanNames=obj.MontageChanNames{dd(i)}(obj.Mask{dd(i)}==0);
+            cds.Montage.ChannelPosition=pos(dataset==dd(i),:);
             
             cds.save('title',['DataSet-',num2str(dd(i))]);
         end
@@ -56,6 +57,7 @@ switch src
         cds.Montage.ChannelNames=chanNames;
         cds.Montage.Name=obj.Montage{dd(1)}(obj.MontageRef(dd(1))).name;
         cds.Montage.GroupNames=groupnames;
+        cds.Montage.ChannelPosition=pos;
         
          maskchan=obj.MontageChanNames{dd(1)}(obj.Mask{dd(1)}==0);
         for i=2:length(dd)

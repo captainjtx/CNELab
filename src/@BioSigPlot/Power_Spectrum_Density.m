@@ -64,7 +64,7 @@ omitMask=true;
 wd=round(obj.PSDWindowLength);
 ov=round(obj.PSDOverlap);
 if isempty(wd)||wd>size(data,1)
-    wd=round(size(data,1)/8);
+    wd=round(fs);
     ov=round(wd*0.5);
 end
 
