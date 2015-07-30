@@ -33,8 +33,8 @@ end
 
 obj.WinEvts=EventWindow(obj);
 
-obj.TFMapFig=figure('Name','TFMap','Visible','off','NumberTitle','off');
-obj.PSDFig=figure('Name','Power Spectrum Density','Visible','off','NumberTitle','off');
+% obj.TFMapFig=figure('Name','TFMap','Visible','off','NumberTitle','off');
+% obj.PSDFig=figure('Name','Power Spectrum Density','Visible','off','NumberTitle','off');
 
 end
 function makeEventPanel(obj)

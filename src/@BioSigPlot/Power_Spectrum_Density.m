@@ -34,7 +34,7 @@ end
 %==========================================================================
 %continue ?
 
-if ~ishandle(obj.PSDFig)
+if isempty(obj.PSDFig)||~ishandle(obj.PSDFig)
     if ismember(src,[obj.MenuPSDAverage,obj.MenuPSDChannel,obj.MenuPSDGrid,...
         obj.MenuPSD_Normal,obj.MenuPSD_DB])
         return
@@ -80,7 +80,7 @@ nfft=wd;
 
 freq=[obj.PSDFreqLow obj.PSDFreqHigh];
 
-if ~ishandle(obj.PSDFig)
+if isempty(obj.PSDFig)||~ishandle(obj.PSDFig)
     obj.PSDFig=figure('Name','Power Spectrum Density','Visible','off','NumberTitle','off');
 end
 figure(obj.PSDFig);

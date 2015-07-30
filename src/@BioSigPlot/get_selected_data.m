@@ -6,6 +6,8 @@ function [data,chanNames,dataset,channel,sample,evts,groupnames,pos]=get_selecte
 %|sta_1,sta_2,...|
 %|end_1,end_2,...|
 
+%get_selected_data(obj,omitMask,cat_output)
+
 dd=obj.DisplayedData;
 data=[];
 selection=[];
@@ -17,6 +19,7 @@ evts=[];
 fs=obj.SRate;
 
 omitMask=false;
+
 if nargin>1
     omitMask=varargin{1};
 end
@@ -81,7 +84,7 @@ for i=1:length(dd)
     channel=cat(2,channel,reshape(chan,1,length(chan)));
     data=cat(2,data,d);
     
-    chanNames=cat(2,chanNames,obj.MontageChanNames{dd(i)}(chan));
+    chanNames=cat(1,chanNames,obj.MontageChanNames{dd(i)}(chan));
     if ~isempty(obj.Montage{dd(i)}(obj.MontageRef(dd(i))).groupnames)
         groupnames=cat(1,groupnames,obj.Montage{dd(i)}(obj.MontageRef(dd(i))).groupnames(chan));
     end

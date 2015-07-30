@@ -148,6 +148,14 @@ classdef BioSigPlot < hgsetget
         MenuAdvanceEventsQRS
         
         MenuTFMap
+        MenuTFMapNormal
+        MenuTFMapNormalNone
+        MenuTFMapNormalWithin
+        MenuTFMapNormalBaseline
+        MenuTFMapDataSel
+        MenuTFMapInteractive
+        MenuTFMapEvent
+        MenuTFMapEventAverage
         MenuTFMap_Unit
         MenuTFMap_Normal
         MenuTFMap_DB
@@ -2310,6 +2318,12 @@ classdef BioSigPlot < hgsetget
         
         NextFiles
         PrevFiles
+        
+        TFMapBeforeOnset%ms
+        TFMapAfterOnset%ms
+        TFMapEvent
+        TFMapRestStart
+        TFMapRestEnd
     end
     events
         SelectedFastEvtChange

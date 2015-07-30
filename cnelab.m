@@ -69,7 +69,7 @@ end
 
 ChanPosition=cell(1,length(cds));
 for i=1:length(cds)
-    if ~isempty(cds{i}.Montage.ChannelPosition)
+    if isfield(cds{i}.Montage,'ChannelPosition')&&~isempty(cds{i}.Montage.ChannelPosition)
         ChanPosition{i}=cds{i}.Montage.ChannelPosition;
     else
         ChanPosition{i}=[];

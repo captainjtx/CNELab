@@ -30,7 +30,7 @@ for i=1:size(selection,2)
     if selection(2,i)>=t && selection(1,i)<=t+dt
         p=(selection(:,i)-t)*xlim(2)/dt;
         p(1)=max(0,p(1));
-        rectangle('Parent',axe,'Position',[p(1) 0 p(2)-p(1)+0.0000001 2000],'EdgeColor','none','FaceColor',[.85 1 .85]);
+        rectangle('Parent',axe,'Position',[p(1) ylim(1) p(2)-p(1)+0.0000001 ylim(2)-ylim(1)],'EdgeColor','none','FaceColor',[.85 1 .85]);
     end
 end
 end

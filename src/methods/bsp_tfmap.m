@@ -1,4 +1,4 @@
-function [tfm,f,t]=bsp_tfmap(fig,eeg,fs,wd,ov,s,nref,channames,freq,unit)
+function [tfm,f,t]=bsp_tfmap(fig,eeg,baseline,fs,wd,ov,s,nref,channames,freq,unit)
 
 nf=2^nextpow2(wd);
 win=hanning(wd);
@@ -12,9 +12,13 @@ for i=1:size(eeg,2)
     
     tf=abs(tf);
     
-    if ~isempty(nref)
-        rf=mean(tf(:,1:round(nref/(wd-ov))),2);
+    if ~isempty(baseline)
+        rtf=spectrogram(baseline(:,i),win,ov,nf,fs);
+        rf=mean(abs(rtf),2);
         tf=tf./repmat(rf,1,size(tf,2));
+    elseif ~isempty(nref)
+        rf=mean(tf(:,1:round(nref/(wd-ov))),2);
+        tf=tf./repmat(abs(rf),1,size(tf,2));
     end
     tfm=tfm+tf;
     if nargout==0

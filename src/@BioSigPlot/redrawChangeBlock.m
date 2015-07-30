@@ -46,7 +46,7 @@ for i=1:length(dd)
 end
 
 highlightSelectedChannel(obj);
-
+redrawSelection(obj);
 end
 
 function updateChannelLines(channellines,t,data,gain,mask,posY,ChanSelect2Display,FirstDispChan,DispChans)
