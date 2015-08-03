@@ -286,7 +286,7 @@ switch option
                 else
                     [tfm,f,t]=bsp_tfmap(obj.TFMapFig,data(:,j),baseline,fs,wd,ov,s,nref,channames,freq,unit);
                 end
-                tfmap_grid(t,f,tfm,chanpos(j,:),dw,dh,channames{j},sl,sh);
+                tfmap_grid(t,f,tfm,chanpos(j,:),dw,dh,channames{j},sl,sh,freq);
             end
 
 end

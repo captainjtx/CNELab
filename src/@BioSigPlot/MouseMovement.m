@@ -47,7 +47,7 @@ for i=1:length(obj.AxesAdjustPanels)
 end
 
 obj.UponAdjustPanel=false;
-
+obj.UponAxesAdjustPanel=zeros(length(obj.AxesAdjustPanels),1);
 if ndata==0
     set(obj.Fig,'pointer','arrow');
     if strcmpi(get(obj.AdjustPanel,'Visible'),'on')
@@ -67,7 +67,9 @@ if ndata==0
             region(2)=region(2)+MainPos(2);
             if pos(1)>region(1)&&pos(1)<region(1)+region(3)&&pos(2)>region(2)&&pos(2)<region(2)+region(4)
                 set(obj.Fig,'pointer','top');
-                obj.UponAdjustPanel=true;
+                tmp=zeros(length(obj.AxesAdjustPanels),1);
+                tmp(i)=1;
+                obj.UponAxesAdjustPanel=tmp;
                 return
             end
         end

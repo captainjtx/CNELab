@@ -2286,6 +2286,7 @@ classdef BioSigPlot < hgsetget
         
         PrevMouseTime
         UponAdjustPanel
+        UponAxesAdjustPanel
         
         EventSummaryIndex
         EventSummaryNumber

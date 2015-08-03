@@ -26,7 +26,11 @@ switch src
             cds.Montage.Name=obj.Montage{dd(i)}(obj.MontageRef(dd(i))).name;
             cds.Montage.GroupNames=groupnames;
             cds.Montage.MaskChanNames=obj.MontageChanNames{dd(i)}(obj.Mask{dd(i)}==0);
-            cds.Montage.ChannelPosition=pos(dataset==dd(i),:);
+            if ~isempty(pos)
+                cds.Montage.ChannelPosition=pos(dataset==dd(i),:);
+            else
+                cds.Montage.ChannelPosition=[];
+            end
             
             cds.save('title',['DataSet-',num2str(dd(i))]);
         end

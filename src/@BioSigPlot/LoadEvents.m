@@ -55,9 +55,9 @@ if FileName~=0
             end
             NewEventList=cat(2,time,text,col,code);
         case 3
-            NewEventList=ReadEventFromMatFile(filename);
+            NewEventList=ReadEventFromMatFile(obj,filename);
         case 4
-            NewEventList=ReadEventFromMatFile(filename);
+            NewEventList=ReadEventFromMatFile(obj,filename);
     end
     
     if isempty(NewEventList)
@@ -80,7 +80,7 @@ if FileName~=0
 end
 end
 
-function NewEventList=ReadEventFromMatFile(filename)
+function NewEventList=ReadEventFromMatFile(obj,filename)
 Events=load(filename,'-mat');
 
 if isfield(Events,'stamp')&&isfield(Events,'text')

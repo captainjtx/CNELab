@@ -1,5 +1,10 @@
 function MouseDown(obj)
 
+if any(obj.UponAxesAdjustPanel)
+    obj.AxesResizeMode(obj.UponAxesAdjustPanel)=true;
+    return
+end
+
 if obj.UponText||obj.UponAdjustPanel
     
     %     if strcmpi(get(obj.Fig,'SelectionType'),'open')

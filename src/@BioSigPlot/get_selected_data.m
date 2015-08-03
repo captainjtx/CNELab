@@ -84,7 +84,7 @@ for i=1:length(dd)
     channel=cat(2,channel,reshape(chan,1,length(chan)));
     data=cat(2,data,d);
     
-    chanNames=cat(1,chanNames,obj.MontageChanNames{dd(i)}(chan));
+    chanNames=cat(1,chanNames,reshape(obj.MontageChanNames{dd(i)}(chan),length(obj.MontageChanNames{dd(i)}(chan)),1));
     if ~isempty(obj.Montage{dd(i)}(obj.MontageRef(dd(i))).groupnames)
         groupnames=cat(1,groupnames,obj.Montage{dd(i)}(obj.MontageRef(dd(i))).groupnames(chan));
     end

@@ -95,10 +95,10 @@ end
 end
 
 function AxesAdjustPanelClick(obj,src)
-for i=1:length(obj.AxesAdjustPanels)
-    if src==obj.AxesAdjustPanels(i)
-        obj.AxesResizeMode(i)=true;
-    end
-end
+% for i=1:length(obj.AxesAdjustPanels)
+%     if src==obj.AxesAdjustPanels(i)
+%         obj.AxesResizeMode(i)=true;
+%     end
+% end
 end
 

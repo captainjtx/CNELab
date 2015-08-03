@@ -1,4 +1,4 @@
-function tfmap_grid(t,f,tf,pos,dw,dh,channame,sl,sh)
+function tfmap_grid(t,f,tf,pos,dw,dh,channame,sl,sh,freq)
 %TFMAP_GRID Summary of this function goes here
 %   Detailed explanation goes here
 %Orign of postion is top left corner
@@ -16,5 +16,6 @@ axis xy;
 axis off;
 
 set(h,'Tag',['TFMapAxes-' channame]);
+set(h,'YLim',freq);
 end
 
