@@ -163,6 +163,8 @@ classdef BioSigPlot < hgsetget
         MenuTFMapAverage
         MenuTFMapChannel
         MenuTFMapGrid
+        MenuTFMapDisplay
+        MenuTFMapDisplayOnset
         MenuTFMapSettings
         
         
@@ -557,6 +559,10 @@ classdef BioSigPlot < hgsetget
             l=cell2mat(cellfun(@size,DATA,'UniformOutput',false)');
             if ~all(l(1,1)==l(:,1))
                 error('All data must have the same number of time samples');
+            end
+            
+            for i=1:length(DATA)
+                DATA{i}=double(DATA{i});
             end
             
         end

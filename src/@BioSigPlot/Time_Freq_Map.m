@@ -30,7 +30,7 @@ switch src
         set(src,'checked','on');
         set(obj.MenuTFMapEvent,'checked','off');
         set(obj.MenuTFMapEventAverage,'checked','off');
-        return
+        
     case obj.MenuTFMapEvent
         set(src,'checked','on');
         set(obj.MenuTFMapInteractive,'checked','off');
@@ -47,7 +47,7 @@ switch src
         set(src,'checked','on');
         set(obj.MenuTFMapNormalWithin,'checked','off');
         set(obj.MenuTFMapNormalBaseline,'checked','off');
-        return
+        
     case obj.MenuTFMapNormalWithin
         set(src,'checked','on');
         set(obj.MenuTFMapNormalBaseline,'checked','off');
@@ -60,6 +60,15 @@ switch src
         set(obj.MenuTFMapNormalNone,'checked','off');
         MenuTFMapNormalBaseline(obj);
         return
+    case obj.MenuTFMapDisplayOnset
+        if strcmpi(get(src,'checked'),'on')
+            set(src,'checked','off');
+        else
+            set(src,'checked','on');
+        end
+        
+        MenuTFMapDisplayOnset(obj);
+        return
 end
 %==========================================================================
 %continue ?
@@ -67,7 +76,8 @@ if isempty(obj.TFMapFig)||~ishandle(obj.TFMapFig)
     if ismember(src,[obj.MenuTFMapAverage,obj.MenuTFMapChannel,obj.MenuTFMapGrid,...
             obj.MenuTFMap_Normal,obj.MenuTFMap_DB,...
             obj.MenuTFMapInteractive,obj.MenuTFMapEvent,obj.MenuTFMapEventAverage,...
-            obj.MenuTFMapNormalNone,obj.MenuTFMapNormalWithin,obj.MenuTFMapNormalBaseline])
+            obj.MenuTFMapNormalNone,obj.MenuTFMapNormalWithin,obj.MenuTFMapNormalBaseline,...
+            obj.MenuTFMapDisplayOnset])
         return
     end
 end
@@ -233,6 +243,10 @@ switch option
                 obj.STFTScaleHigh=sh;
             end
             
+            if isempty(chanpos)
+                errordlg('No channel position in the data !');
+                return
+            end
             
             chanind=~isnan(chanpos(:,1))&~isnan(chanpos(:,2));
             data=data(:,chanind);
@@ -288,10 +302,8 @@ switch option
                 end
                 tfmap_grid(t,f,tfm,chanpos(j,:),dw,dh,channames{j},sl,sh,freq);
             end
-
+            MenuTFMapDisplayOnset(obj);
 end
-
-
 end
 
 
@@ -376,7 +388,7 @@ if obj.STFTScaleHigh<=obj.STFTScaleLow
     obj.STFTScaleHigh=[];
 end
 
-if ishandle(obj.TFMapFig)
+if ~isempty(obj.TFMapFig)&&ishandle(obj.TFMapFig)
     if needredraw
         Time_Freq_Map(obj,obj.BtnTFMap);
         return
@@ -391,6 +403,7 @@ if ishandle(obj.TFMapFig)
     
     if needroom
         set(h,'YLim',[fl,fh]);
+        MenuTFMapDisplayOnset(obj);
         figure(obj.TFMapFig);
     end
 end
@@ -431,9 +444,9 @@ else
         obj.TFMapAfterOnset=1000;
     end
 end
-if ishandle(obj.TFMapFig)
-    Time_Freq_Map(obj,obj.BtnTFMap);
-end
+% if ishandle(obj.TFMapFig)
+%     Time_Freq_Map(obj,obj.BtnTFMap);
+% end
 
 end
 function MenuTFMapEventAverage(obj)
@@ -481,9 +494,9 @@ else
     end
 end
 
-if ishandle(obj.TFMapFig)
-    Time_Freq_Map(obj,obj.BtnTFMap);
-end
+% if ishandle(obj.TFMapFig)
+%     Time_Freq_Map(obj,obj.BtnTFMap);
+% end
 
 end
 
@@ -494,6 +507,9 @@ if isempty(obj.TFMapEvent)
     obj.TFMapEvent='';
 end
 
+if isempty(obj.STFTNormalizePoint)
+    obj.STFTNormalizePoint=obj.TFMapBeforeOnset/3;
+end
 def={num2str(obj.STFTNormalizePoint/obj.SRate*1000)};
 
 title='Normalization Settings';
@@ -512,9 +528,9 @@ if ~isnan(refn)
     end
 end
 
-if ishandle(obj.TFMapFig)
-    Time_Freq_Map(obj,obj.BtnTFMap);
-end
+% if ishandle(obj.TFMapFig)
+%     Time_Freq_Map(obj,obj.BtnTFMap);
+% end
 
 end
 
@@ -552,4 +568,26 @@ else
     obj.TFMapRestEnd=answer{2};
 end
 
+end
+
+function MenuTFMapDisplayOnset(obj)
+
+tonset=obj.TFMapBeforeOnset/1000;
+if ~isempty(obj.TFMapFig)&&ishandle(obj.TFMapFig)
+    
+    h=findobj(obj.TFMapFig,'-regexp','Tag','TFMapAxes*');
+    if strcmpi(get(obj.MenuTFMapDisplayOnset,'checked'),'on')
+        for i=1:length(h)
+            tmp=findobj(h(i),'Type','line');
+            delete(tmp);
+             line([tonset,tonset],[obj.STFTFreqLow,obj.STFTFreqHigh],'LineStyle',':',...
+                 'color','k','linewidth',0.1,'Parent',h(i))
+        end
+    else
+       for i=1:length(h)
+           tmp=findobj(h(i),'Type','line');
+           delete(tmp);
+       end
+    end
+end
 end
