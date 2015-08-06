@@ -55,8 +55,8 @@ classdef TFMapWindow < handle
     methods
         function obj=TFMapWindow(bsp)
             obj.bsp=bsp;
+            obj.fs=bsp.SRate;
             varinitial(obj);
-            
             
             buildfig(obj);
         end
@@ -68,7 +68,7 @@ classdef TFMapWindow < handle
             obj.event='';
             obj.unit='dB';
             obj.normalization=1;%none
-            obj.normalization_start='';
+            obj.normalization_start='';%always string
             obj.normalization_end='';
             obj.display_onset=1;
             obj.max_freq=obj.fs/2;
@@ -89,33 +89,34 @@ classdef TFMapWindow < handle
             uicontrol('Parent',hp_method,'Style','text','String','Method: ','units','normalized','Position',[0.01,0,0.4,0.9],...
                 'HorizontalAlignment','left');
             obj.method_popup=uicontrol('Parent',hp_method,'Style','popup',...
-                'String',{'Channel','Average','Grid'},'units','normalized','Position',[0.4,0,0.59,0.92]);
+                'String',{'Channel','Average','Grid'},'units','normalized','Position',[0.4,0,0.59,0.92],'value',obj.method);
             
             hp_data=uipanel('Parent',hp,'Title','','Units','normalized','Position',[0,0.78,1,0.15]);
             uicontrol('Parent',hp_data,'Style','text','String','Input Data: ','units','normalized','Position',[0.01,0.6,0.4,0.35],...
                 'HorizontalAlignment','left');
             obj.data_popup=uicontrol('Parent',hp_data,'Style','popup',...
                 'String',{'Selection','Single Event','Average Event'},'units','normalized','position',[0.4,0.6,0.59,0.35],...
-                'Callback',@(src,evts) DataPopUpCallback(obj,src));
+                'Callback',@(src,evts) DataPopUpCallback(obj,src),'value',obj.data_input);
+            
             obj.event_text=uicontrol('Parent',hp_data,'Style','text','string','Event: ','units','normalized','position',[0.01,0.3,0.35,0.3],...
                 'HorizontalAlignment','left','visible','off');
             obj.ms_before_text=uicontrol('Parent',hp_data,'Style','text','string','Before (ms): ','units','normalized','position',[0.4,0.3,0.3,0.3],...
                 'HorizontalAlignment','left','visible','off');
             obj.ms_after_text=uicontrol('Parent',hp_data,'Style','text','string','After (ms): ','units','normalized','position',[0.7,0.3,0.3,0.3],...
                 'HorizontalAlignment','left','visible','off');
-            obj.event_edit=uicontrol('Parent',hp_data,'Style','Edit','string','','units','normalized','position',[0.01,0.05,0.35,0.3],...
+            obj.event_edit=uicontrol('Parent',hp_data,'Style','Edit','string',obj.event,'units','normalized','position',[0.01,0.05,0.35,0.3],...
                 'HorizontalAlignment','left','visible','off');
-            obj.ms_before_edit=uicontrol('Parent',hp_data,'Style','Edit','string','','units','normalized','position',[0.4,0.05,0.29,0.3],...
+            obj.ms_before_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_before),'units','normalized','position',[0.4,0.05,0.29,0.3],...
                 'HorizontalAlignment','left','visible','off');
-            obj.ms_after_edit=uicontrol('Parent',hp_data,'Style','Edit','string','','units','normalized','position',[0.7,0.05,0.29,0.3],...
+            obj.ms_after_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_after),'units','normalized','position',[0.7,0.05,0.29,0.3],...
                 'HorizontalAlignment','left','visible','off');
             
             hp_mag=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.73,1,0.04]);
             uicontrol('Parent',hp_mag,'style','text','units','normalized','string','Unit: ','position',[0.01,0,0.3,1],...
                 'HorizontalAlignment','left');
-            obj.unit_mag_radio=uicontrol('Parent',hp_mag,'Style','radiobutton','units','normalized','string','dB','position',[0.4,0,0.29,1],...
+            obj.unit_mag_radio=uicontrol('Parent',hp_mag,'Style','radiobutton','units','normalized','string','Mag','position',[0.4,0,0.29,1],...
                 'HorizontalAlignment','left','callback',@(src,evts) UnitRadioCallback(obj,src),'value',1);
-            obj.unit_db_radio=uicontrol('Parent',hp_mag,'Style','radiobutton','units','normalized','string','Mag','position',[0.7,0,0.29,1],...
+            obj.unit_db_radio=uicontrol('Parent',hp_mag,'Style','radiobutton','units','normalized','string','dB','position',[0.7,0,0.29,1],...
                 'HorizontalAlignment','left','callback',@(src,evts) UnitRadioCallback(obj,src));
             
             hp_scale=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.57,1,0.15]);
@@ -123,7 +124,7 @@ classdef TFMapWindow < handle
                 'position',[0.01,0.6,0.4,0.35],'HorizontalAlignment','left');
             obj.normalization_popup=uicontrol('Parent',hp_scale,'style','popup','units','normalized',...
                 'string',{'None','Within Segment','External Baseline'},'callback',@(src,evts) NormalizationCallback(obj,src),...
-                'position',[0.4,0.6,0.59,0.35]);
+                'position',[0.4,0.6,0.59,0.35],'value',obj.normalization);
             
             obj.scale_start_text=uicontrol('Parent',hp_scale,'style','text','units','normalized',...
                 'string','Start (ms): ','position',[0.01,0.3,0.4,0.3],'HorizontalAlignment','left',...
@@ -132,18 +133,18 @@ classdef TFMapWindow < handle
                 'string','End (ms): ','position',[0.5,0.3,0.4,0.3],'HorizontalAlignment','left',...
                 'visible','off');
             obj.scale_start_edit=uicontrol('parent',hp_scale,'style','edit','units','normalized',...
-                'string','','position',[0.01,0.05,0.4,0.3],'HorizontalAlignment','left','visible','off');
+                'string',obj.normalization_start,'position',[0.01,0.05,0.4,0.3],'HorizontalAlignment','left','visible','off');
             obj.scale_end_edit=uicontrol('parent',hp_scale,'style','edit','units','normalized',...
-                'string','','position',[0.5,0.05,0.4,0.3],'HorizontalAlignment','left','visible','off');
+                'string',obj.normalization_end,'position',[0.5,0.05,0.4,0.3],'HorizontalAlignment','left','visible','off');
             
             hp_stft=uipanel('parent',hp,'title','','units','normalized','position',[0,0.46,1,0.1]);
             uicontrol('parent',hp_stft,'style','text','string','STFT Window (sample): ','units','normalized',...
                 'position',[0,0.6,0.5,0.3]);
-            obj.stft_winlen_edit=uicontrol('parent',hp_stft,'style','edit','string','',...
+            obj.stft_winlen_edit=uicontrol('parent',hp_stft,'style','edit','string',num2str(obj.stft_winlen),...
                 'units','normalized','position',[0.05,0.1,0.4,0.46],'HorizontalAlignment','center');
             uicontrol('parent',hp_stft,'style','text','string','STFT Overlap (sample): ',...
                 'units','normalized','position',[0.5,0.6,0.5,0.3]);
-            obj.stft_overlap_edit=uicontrol('parent',hp_stft,'style','edit','string','',...
+            obj.stft_overlap_edit=uicontrol('parent',hp_stft,'style','edit','string',num2str(obj.stft_overlap),...
                 'units','normalized','position',[0.55,0.1,0.4,0.46],'HorizontalAlignment','center');
             
             hp_freq=uipanel('parent',hp,'title','Frequency','units','normalized','position',[0,0,0.35,0.45]);
@@ -153,14 +154,16 @@ classdef TFMapWindow < handle
             uicontrol('parent',hp_freq,'style','text','string','Max','units','normalized',...
                 'position',[0.5,0.8,0.5,0.2]);
             
-            obj.min_freq_edit=uicontrol('parent',hp_freq,'style','edit','string','','units','normalized',...
-                'position',[0.05,0.8,0.4,0.1],'horizontalalignment','center');
+            obj.min_freq_edit=uicontrol('parent',hp_freq,'style','edit','string',num2str(obj.min_freq),'units','normalized',...
+                'position',[0.05,0.8,0.4,0.1],'horizontalalignment','center','callback',@(src,evts) FreqCallback(obj,src));
             obj.min_freq_slider=uicontrol('parent',hp_freq,'style','slider','units','normalized',...
-                'position',[0.15,0.05,0.2,0.7]);
-            obj.max_freq_edit=uicontrol('parent',hp_freq,'style','edit','string','','units','normalized',...
-                'position',[0.55,0.8,0.4,0.1],'horizontalalignment','center');
+                'position',[0.15,0.05,0.2,0.7],'callback',@(src,evts) FreqCallback(obj,src),...
+                'min',0,'max',obj.fs/2,'sliderstep',[0.005,0.02],'value',obj.min_freq);
+            obj.max_freq_edit=uicontrol('parent',hp_freq,'style','edit','string',num2str(obj.max_freq),'units','normalized',...
+                'position',[0.55,0.8,0.4,0.1],'horizontalalignment','center','callback',@(src,evts) FreqCallback(obj,src));
             obj.max_freq_slider=uicontrol('parent',hp_freq,'style','slider','units','normalized',...
-                'position',[0.65,0.05,0.2,0.7]);
+                'position',[0.65,0.05,0.2,0.7],'callback',@(src,evts) FreqCallback(obj,src),...
+                'min',0,'max',obj.fs/2,'sliderstep',[0.005,0.02],'value',obj.max_freq);
             
             hp_clim=uipanel('parent',hp,'title','Power Limit','units','normalized','position',[0.36,0,0.35,0.45]);
             
@@ -168,18 +171,27 @@ classdef TFMapWindow < handle
                 'position',[0,0.8,0.5,0.2]);
             uicontrol('parent',hp_clim,'style','text','string','Max','units','normalized',...
                 'position',[0.5,0.8,0.5,0.2]);
-            obj.min_clim_edit=uicontrol('parent',hp_clim,'style','edit','string','','units','normalized',...
-                'position',[0.05,0.8,0.4,0.1],'horizontalalignment','center');
+            obj.min_clim_edit=uicontrol('parent',hp_clim,'style','edit','string',num2str(obj.min_clim),'units','normalized',...
+                'position',[0.05,0.8,0.4,0.1],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
             obj.min_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
-                'position',[0.15,0.05,0.2,0.7]);
-            obj.max_clim_edit=uicontrol('parent',hp_clim,'style','edit','string','','units','normalized',...
-                'position',[0.55,0.8,0.4,0.1],'horizontalalignment','center');
-            obj.min_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
-                'position',[0.65,0.05,0.2,0.7]);
+                'position',[0.15,0.05,0.2,0.7],'callback',@(src,evts) ClimCallback(obj,src),...
+                'min',-15,'max',15,'value',obj.min_clim,'sliderstep',[0.1,0.2]);
+            obj.max_clim_edit=uicontrol('parent',hp_clim,'style','edit','string',num2str(obj.max_clim),'units','normalized',...
+                'position',[0.55,0.8,0.4,0.1],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
+            obj.max_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
+                'position',[0.65,0.05,0.2,0.7],'callback',@(src,evts) ClimCallback(obj,src),...
+                'min',-15,'max',15,'value',obj.max_clim,'sliderstep',[0.1,0.2]);
             
             hp_display=uipanel('parent',hp,'title','Display','units','normalized','position',[0.72,0,0.28,0.45]);
-            obj.onset_radio=uicontrol('parent',hp_display,'style','radiobutton','string','onset','value',1,...
+            obj.onset_radio=uicontrol('parent',hp_display,'style','radiobutton','string','onset','value',obj.display_onset,...
                 'units','normalized','position',[0.1,0.9,0.9,0.1]);
+            
+            DataPopUpCallback(obj,obj.data_popup);
+            if strcmpi(obj.unit,'dB')
+                UnitRadioCallback(obj,obj.unit_db_radio);
+            else
+                UnitRadioCallback(obj,obj.unit_mag_radio);
+            end
         end
         function OnClose(obj)
             h = obj.fig;
@@ -249,6 +261,24 @@ classdef TFMapWindow < handle
                     set(obj.scale_end_text,'string','End (event): ')
                     set(obj.scale_start_edit,'visible','on');
                     set(obj.scale_end_edit,'visible','on');
+            end
+        end
+        
+        function FreqCallback(obj,src)
+            switch src
+                case obj.max_freq_edit
+                case obj.min_freq_edit
+                case obj.max_freq_slider
+                case obj.min_freq_slider
+            end
+        end
+        
+        function ClimCallback(obj,src)
+            switch src
+                case obj.max_clim_edit
+                case obj.min_clim_edit
+                case obj.max_clim_slider
+                case obj.min_clim_slider
             end
         end
         
