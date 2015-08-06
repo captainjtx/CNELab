@@ -166,7 +166,7 @@ classdef BioSigPlot < hgsetget
         MenuTFMapDisplay
         MenuTFMapDisplayOnset
         MenuTFMapSettings
-        
+        MenuTFMapSpatial
         
         MenuPSD
         MenuPSD_Unit

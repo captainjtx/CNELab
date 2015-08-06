@@ -2,62 +2,69 @@ function Time_Freq_Map(obj,src)
 %control the menu check====================================================
 switch src
     case obj.MenuTFMapSettings
-        MnuTFMapSettings(obj);
+        if strcmpi(get(obj.MenuTFMapSpatial,'checked'),'off')
+            MnuTFMapSettings(obj);
+        else
+            MnuSpatialMapSettings(obj);
+        end
         return
     case obj.MenuTFMapAverage
         set(src,'checked','on');
         set(obj.MenuTFMapChannel,'checked','off');
         set(obj.MenuTFMapGrid,'checked','off');
+        set(obj.MenuTFMapSpatial,'checked','off');
+        return
     case obj.MenuTFMapChannel
         set(src,'checked','on');
         set(obj.MenuTFMapAverage,'checked','off');
         set(obj.MenuTFMapGrid,'checked','off');
+        set(obj.MenuTFMapSpatial,'checked','off');
+        return
     case obj.MenuTFMapGrid
         set(src,'checked','on');
         set(obj.MenuTFMapAverage,'checked','off');
         set(obj.MenuTFMapChannel,'checked','off');
+        set(obj.MenuTFMapSpatial,'checked','off');
+        return
+    case obj.MenuTFMapSpatial
+        set(src,'checked','on');
+        set(obj.MenuTFMapAverage,'checked','off');
+        set(obj.MenuTFMapChannel,'checked','off');
+        set(obj.MenuTFMapGrid,'checked','off');
+        RestMenuTFMapDisplay(obj);
+        return
     case obj.MenuTFMap_Normal
         set(src,'checked','on');
         set(obj.MenuTFMap_DB,'checked','off');
         obj.STFTScaleLow=[];
         obj.STFTScaleHigh=[];
+        return
     case obj.MenuTFMap_DB
         set(src,'checked','on');
         set(obj.MenuTFMap_Normal,'checked','off');
         obj.STFTScaleLow=[];
         obj.STFTScaleHigh=[];
+        return
     case obj.MenuTFMapInteractive
         set(src,'checked','on');
         set(obj.MenuTFMapEvent,'checked','off');
         set(obj.MenuTFMapEventAverage,'checked','off');
-        
+        return
     case obj.MenuTFMapEvent
-        set(src,'checked','on');
-        set(obj.MenuTFMapInteractive,'checked','off');
-        set(obj.MenuTFMapEventAverage,'checked','off');
         MenuTFMapEvent(obj);
         return
     case obj.MenuTFMapEventAverage
-        set(src,'checked','on')
-        set(obj.MenuTFMapInteractive,'checked','off');
-        set(obj.MenuTFMapEvent,'checked','off');
         MenuTFMapEventAverage(obj);
         return
     case obj.MenuTFMapNormalNone
         set(src,'checked','on');
         set(obj.MenuTFMapNormalWithin,'checked','off');
         set(obj.MenuTFMapNormalBaseline,'checked','off');
-        
+        return
     case obj.MenuTFMapNormalWithin
-        set(src,'checked','on');
-        set(obj.MenuTFMapNormalBaseline,'checked','off');
-        set(obj.MenuTFMapNormalNone,'checked','off');
         MenuTFMapNormalWithin(obj);
         return
     case obj.MenuTFMapNormalBaseline
-        set(src,'checked','on');
-        set(obj.MenuTFMapNormalWithin,'checked','off');
-        set(obj.MenuTFMapNormalNone,'checked','off');
         MenuTFMapNormalBaseline(obj);
         return
     case obj.MenuTFMapDisplayOnset
@@ -69,18 +76,19 @@ switch src
         
         MenuTFMapDisplayOnset(obj);
         return
+    
 end
 %==========================================================================
 %continue ?
-if isempty(obj.TFMapFig)||~ishandle(obj.TFMapFig)
-    if ismember(src,[obj.MenuTFMapAverage,obj.MenuTFMapChannel,obj.MenuTFMapGrid,...
-            obj.MenuTFMap_Normal,obj.MenuTFMap_DB,...
-            obj.MenuTFMapInteractive,obj.MenuTFMapEvent,obj.MenuTFMapEventAverage,...
-            obj.MenuTFMapNormalNone,obj.MenuTFMapNormalWithin,obj.MenuTFMapNormalBaseline,...
-            obj.MenuTFMapDisplayOnset])
-        return
-    end
-end
+% if isempty(obj.TFMapFig)||~ishandle(obj.TFMapFig)
+%     if ismember(src,[obj.MenuTFMapAverage,obj.MenuTFMapChannel,obj.MenuTFMapGrid,...
+%             obj.MenuTFMapSpatial,obj.MenuTFMap_Normal,obj.MenuTFMap_DB,...
+%             obj.MenuTFMapInteractive,obj.MenuTFMapEvent,obj.MenuTFMapEventAverage,...
+%             obj.MenuTFMapNormalNone,obj.MenuTFMapNormalWithin,obj.MenuTFMapNormalBaseline,...
+%             obj.MenuTFMapDisplayOnset])
+%         return
+%     end
+% end
 %==========================================================================
 if strcmpi(get(obj.MenuTFMapAverage,'checked'),'on')
     option=1;
@@ -305,8 +313,25 @@ switch option
             MenuTFMapDisplayOnset(obj);
 end
 end
+function RestMenuTFMapDisplay(obj)
+delete(get(obj.MenuTFMapDisplay,'Children'));
+if strcmpi(get(obj.MenuTFMapSpatial,'checked'),'on')
+    obj.MenuTFMapDisplayScale=uimenu(obj.MenuTFMapDisplay,'Label','Normalize to (-1,1)','checked','on');
+    obj.MenuTFMapDisplayMissing=uimenu(obj.MenuTFMapDisplay,'Label','Missing Channel','checked','off',...
+        'Callback',@(src,evt) MnuTFMapDisplayMissing(obj));
+else
+    obj.MenuTFMapDisplayOnset=uimenu(obj.MenuTFMapDisplay,'Label','Onset',...
+    'Callback', @(src,evt) Time_Freq_Map(obj,src),'checked','on');
+end
+end
 
+function MnuTFMapDisplayMissing(obj)
 
+end
+function MnuSpatialMapSettings(obj)
+figure()
+
+end
 function MnuTFMapSettings(obj)
 
 %**************************************************************************
@@ -425,6 +450,10 @@ if isempty(answer)
     return
 end
 
+set(obj.MenuTFMapEvent,'checked','on');
+set(obj.MenuTFMapInteractive,'checked','off');
+set(obj.MenuTFMapEventAverage,'checked','off');
+
 msbefore=str2double(answer{1});
 
 if ~isnan(msbefore)
@@ -468,6 +497,9 @@ if isempty(answer)
     return
 end
 
+set(obj.MenuTFMapEventAverage,'checked','on')
+set(obj.MenuTFMapInteractive,'checked','off');
+set(obj.MenuTFMapEvent,'checked','off');
 if ~ismember(answer{1},obj.Evts(:,2));
     errordlg(['Cannot find ' answer{1} ' in the events !']);
 else
@@ -521,6 +553,9 @@ if isempty(answer)
     return
 end
 
+set(obj.MenuTFMapNormalWithin,'checked','on');
+set(obj.MenuTFMapNormalBaseline,'checked','off');
+set(obj.MenuTFMapNormalNone,'checked','off');
 refn=round(str2double(answer{1})*obj.SRate/1000);
 if ~isnan(refn)
     if obj.STFTNormalizePoint~=refn
@@ -555,7 +590,9 @@ answer=inputdlg(prompt,title,1,def);
 if isempty(answer)
     return
 end
-
+set(obj.MenuTFMapNormalBaseline,'checked','on');
+set(obj.MenuTFMapNormalWithin,'checked','off');
+set(obj.MenuTFMapNormalNone,'checked','off');
 if ~ismember(answer{1},obj.Evts(:,2));
     errordlg(['Cannot find ' answer{1} ' in the events !']);
 else
