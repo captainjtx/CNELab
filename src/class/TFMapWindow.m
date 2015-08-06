@@ -31,23 +31,52 @@ classdef TFMapWindow < handle
         max_clim_slider
         min_clim_slider
         onset_radio
-        
+    end
+    properties
+        fs
         method
         data_input
         ms_before
         ms_after
         event
         unit
+        normalization
         normalization_start
         normalization_end
+        display_onset
+        stft_winlen
+        stft_overlap
+        max_freq
+        min_freq
+        max_clim
+        min_clim
     end
     
     methods
         function obj=TFMapWindow(bsp)
             obj.bsp=bsp;
+            varinitial(obj);
+            
             
             buildfig(obj);
-            
+        end
+        function varinitial(obj)
+            obj.method=1;
+            obj.data_input=1;%selection
+            obj.ms_before=1000;
+            obj.ms_after=1000;
+            obj.event='';
+            obj.unit='dB';
+            obj.normalization=1;%none
+            obj.normalization_start='';
+            obj.normalization_end='';
+            obj.display_onset=1;
+            obj.max_freq=obj.fs/2;
+            obj.min_freq=0;
+            obj.max_clim=10;
+            obj.min_clim=-10;
+            obj.stft_winlen=round(obj.fs/3);
+            obj.stft_overlap=round(obj.stft_winlen*0.9);
         end
         function buildfig(obj)
             obj.fig=figure('MenuBar','none','Name','Time-Frequency Map','units','pixels',...
