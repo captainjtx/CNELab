@@ -103,6 +103,8 @@ obj.MenuLockLayout=uimenu(obj.Menupanels,'Label','Lock Layout',...
 
 %First Order Menu-------------------------------------------------------App
 obj.MenuApp=uimenu(obj.Fig,'Label','Apps');
+%**************TFMap*******************************************************
+obj.MenuTFMap=uimenu(obj.MenuApp,'Label','TFMap','callback',@(src,evt)obj.TFMapWin.buildfig(obj.TFMapWin));
 
 obj.MenuPSD=uimenu(obj.MenuApp,'Label','Power Spectrum Density');
 obj.MenuPSD_Unit=uimenu(obj.MenuPSD,'Label','Unit');
@@ -135,49 +137,7 @@ obj.MenuTemporalPCA=uimenu(obj.MenuApp,'Label','Temporal PCA',...
     'Callback', @(src,evt) Temporal_PCA(obj));
 obj.MenuSpatialPCA=uimenu(obj.MenuApp,'Label','Spatial PCA',...
     'Callback', @(src,evt)Spatial_PCA(obj));
-%**************TFMap*******************************************************
-obj.MenuTFMap=uimenu(obj.Fig,'Label','TFMap','Separator','on');
 
-obj.MenuTFMapLayout=uimenu(obj.MenuTFMap,'Label','Map');
-obj.MenuTFMapAverage=uimenu(obj.MenuTFMapLayout,'Label','Average',...
-    'Callback', @(src,evt) Time_Freq_Map(obj,src),'checked','on');
-obj.MenuTFMapChannel=uimenu(obj.MenuTFMapLayout,'Label','Channel',...
-    'Callback', @(src,evt) Time_Freq_Map(obj,src),'checked','off');
-obj.MenuTFMapGrid=uimenu(obj.MenuTFMapLayout,'Label','Grid',...
-    'Callback', @(src,evt) Time_Freq_Map(obj,src),'checked','off');
-obj.MenuTFMapSpatial=uimenu(obj.MenuTFMapLayout,'Label','ERD/ERS',...
-    'Callback',@ (src,evt) Time_Freq_Map(obj,src),'checked','off');
-
-obj.MenuTFMapDataSel=uimenu(obj.MenuTFMap,'Label','Data Sel');
-obj.MenuTFMapInteractive=uimenu(obj.MenuTFMapDataSel,'Label','Interactive','checked','on',...
-    'Callback', @(src,evt) Time_Freq_Map(obj,src));
-obj.MenuTFMapEvent=uimenu(obj.MenuTFMapDataSel,'Label','Event','checked','off',...
-    'Callback', @(src,evt) Time_Freq_Map(obj,src));
-obj.MenuTFMapEventAverage=uimenu(obj.MenuTFMapDataSel,'Label','Event Average','checked','off',...
-    'Callback', @(src,evt) Time_Freq_Map(obj,src));
-
-obj.MenuTFMapNormal=uimenu(obj.MenuTFMap,'Label','Normalization');
-obj.MenuTFMapNormalNone=uimenu(obj.MenuTFMapNormal,'Label','None',...
-    'Callback',@(src,evt) Time_Freq_Map(obj,src),'checked','on');
-obj.MenuTFMapNormalWithin=uimenu(obj.MenuTFMapNormal,'Label','Within Segment',...
-    'Callback',@(src,evt) Time_Freq_Map(obj,src),'checked','off');
-obj.MenuTFMapNormalBaseline=uimenu(obj.MenuTFMapNormal,'Label','External Baseline',...
-    'Callback',@(src,evt) Time_Freq_Map(obj,src),'checked','off');
-
-
-obj.MenuTFMap_Unit=uimenu(obj.MenuTFMap,'Label','Unit');
-obj.MenuTFMap_Normal=uimenu(obj.MenuTFMap_Unit,'Label','Magnitude',...
-    'Callback', @(src,evt) Time_Freq_Map(obj,src),'checked','off');
-obj.MenuTFMap_DB=uimenu(obj.MenuTFMap_Unit,'Label','dB',...
-    'Callback', @(src,evt) Time_Freq_Map(obj,src),'checked','on');
-
-
-obj.MenuTFMapDisplay=uimenu(obj.MenuTFMap,'Label','Display');
-obj.MenuTFMapDisplayOnset=uimenu(obj.MenuTFMapDisplay,'Label','Onset',...
-    'Callback', @(src,evt) Time_Freq_Map(obj,src),'checked','on');
-
-obj.MenuTFMapSettings=uimenu(obj.MenuTFMap,'Label','Settings','Separator','on',...
-    'Callback', @(src,evt) Time_Freq_Map(obj,src));
 
 end
 

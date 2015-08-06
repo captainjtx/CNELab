@@ -1,118 +1,18 @@
 function Time_Freq_Map(obj,src)
-%control the menu check====================================================
-switch src
-    case obj.MenuTFMapSettings
-        if strcmpi(get(obj.MenuTFMapSpatial,'checked'),'off')
-            MnuTFMapSettings(obj);
-        else
-            MnuSpatialMapSettings(obj);
-        end
-        return
-    case obj.MenuTFMapAverage
-        set(src,'checked','on');
-        set(obj.MenuTFMapChannel,'checked','off');
-        set(obj.MenuTFMapGrid,'checked','off');
-        set(obj.MenuTFMapSpatial,'checked','off');
-        return
-    case obj.MenuTFMapChannel
-        set(src,'checked','on');
-        set(obj.MenuTFMapAverage,'checked','off');
-        set(obj.MenuTFMapGrid,'checked','off');
-        set(obj.MenuTFMapSpatial,'checked','off');
-        return
-    case obj.MenuTFMapGrid
-        set(src,'checked','on');
-        set(obj.MenuTFMapAverage,'checked','off');
-        set(obj.MenuTFMapChannel,'checked','off');
-        set(obj.MenuTFMapSpatial,'checked','off');
-        return
-    case obj.MenuTFMapSpatial
-        set(src,'checked','on');
-        set(obj.MenuTFMapAverage,'checked','off');
-        set(obj.MenuTFMapChannel,'checked','off');
-        set(obj.MenuTFMapGrid,'checked','off');
-        RestMenuTFMapDisplay(obj);
-        return
-    case obj.MenuTFMap_Normal
-        set(src,'checked','on');
-        set(obj.MenuTFMap_DB,'checked','off');
-        obj.STFTScaleLow=[];
-        obj.STFTScaleHigh=[];
-        return
-    case obj.MenuTFMap_DB
-        set(src,'checked','on');
-        set(obj.MenuTFMap_Normal,'checked','off');
-        obj.STFTScaleLow=[];
-        obj.STFTScaleHigh=[];
-        return
-    case obj.MenuTFMapInteractive
-        set(src,'checked','on');
-        set(obj.MenuTFMapEvent,'checked','off');
-        set(obj.MenuTFMapEventAverage,'checked','off');
-        return
-    case obj.MenuTFMapEvent
-        MenuTFMapEvent(obj);
-        return
-    case obj.MenuTFMapEventAverage
-        MenuTFMapEventAverage(obj);
-        return
-    case obj.MenuTFMapNormalNone
-        set(src,'checked','on');
-        set(obj.MenuTFMapNormalWithin,'checked','off');
-        set(obj.MenuTFMapNormalBaseline,'checked','off');
-        return
-    case obj.MenuTFMapNormalWithin
-        MenuTFMapNormalWithin(obj);
-        return
-    case obj.MenuTFMapNormalBaseline
-        MenuTFMapNormalBaseline(obj);
-        return
-    case obj.MenuTFMapDisplayOnset
-        if strcmpi(get(src,'checked'),'on')
-            set(src,'checked','off');
-        else
-            set(src,'checked','on');
-        end
-        
-        MenuTFMapDisplayOnset(obj);
-        return
-    
-end
-%==========================================================================
-%continue ?
-% if isempty(obj.TFMapFig)||~ishandle(obj.TFMapFig)
-%     if ismember(src,[obj.MenuTFMapAverage,obj.MenuTFMapChannel,obj.MenuTFMapGrid,...
-%             obj.MenuTFMapSpatial,obj.MenuTFMap_Normal,obj.MenuTFMap_DB,...
-%             obj.MenuTFMapInteractive,obj.MenuTFMapEvent,obj.MenuTFMapEventAverage,...
-%             obj.MenuTFMapNormalNone,obj.MenuTFMapNormalWithin,obj.MenuTFMapNormalBaseline,...
-%             obj.MenuTFMapDisplayOnset])
-%         return
-%     end
-% end
-%==========================================================================
-if strcmpi(get(obj.MenuTFMapAverage,'checked'),'on')
-    option=1;
-elseif strcmpi(get(obj.MenuTFMapChannel,'checked'),'on')
-    option=2;
-elseif strcmpi(get(obj.MenuTFMapGrid,'checked'),'on')
-    option=3;
-end
 
-if strcmpi(get(obj.MenuTFMap_Normal,'checked'),'on')
-    unit='normal';
-else
-    unit='dB';
-end
+option=obj.TFMapWin.method;
+
+unit=obj.TFMapWin.unit;
 %==========================================================================
 fs=obj.SRate;
-nL=round(obj.TFMapBeforeOnset*fs/1000);
-nR=round(obj.TFMapAfterOnset*fs/1000);
+nL=round(obj.TFMapWin.ms_before*fs/1000);
+nR=round(obj.TFMapWin.ms_after*fs/1000);
 
 %Data selection************************************************************
-if strcmpi(get(obj.MenuTFMapInteractive,'checked'),'on')
+if obj.TFMapWin.data_input==1
     omitMask=true;
     [data,chanNames,dataset,channel,sample,evts,groupnames,chanpos]=get_selected_data(obj,omitMask);
-elseif strcmpi(get(obj.MenuTFMapEvent,'checked'),'on')
+elseif obj.TFMapWin.data_input==2
     if isempty(obj.SelectedEvent)
         errordlg('No event selection !');
         return
@@ -131,11 +31,11 @@ elseif strcmpi(get(obj.MenuTFMapEvent,'checked'),'on')
     obj.Selection=[reshape(i_label-nL,1,length(i_label));reshape(i_label+nR,1,length(i_label))];
     omitMask=true;
     [data,chanNames,dataset,channel,sample,evts,groupnames,chanpos]=get_selected_data(obj,omitMask);
-elseif strcmpi(get(obj.MenuTFMapEventAverage,'checked'),'on')
+elseif obj.TFMapWin.data_input==3
     t_evt=[obj.Evts{:,1}];
-    t_label=t_evt(strcmpi(obj.Evts(:,2),obj.TFMapEvent));
+    t_label=t_evt(strcmpi(obj.Evts(:,2),obj.TFMapWin.event));
     if isempty(t_label)
-        errordlg(['Event: ',obj.TFMapEvent,' not found !']);
+        errordlg(['Event: ',obj.TFMapWin.event,' not found !']);
         return
     end
     i_event=round(t_label*obj.SRate);
@@ -149,14 +49,12 @@ elseif strcmpi(get(obj.MenuTFMapEventAverage,'checked'),'on')
     %need to change the data
 end
 %**************************************************************************
-
-
 %set default parameter*****************************************************
-wd=round(obj.STFTWindowLength);
-ov=round(obj.STFTOverlap);
-nref=round(obj.STFTNormalizePoint);
-sl=obj.STFTScaleLow;
-sh=obj.STFTScaleHigh;
+wd=round(obj.TFMapWin.stft_winlen);
+ov=round(obj.TFMapWin.stft_overlap);
+nref=[obj.TFMapWin.normalization_start,obj.TFMapWin.normalization_end];
+sl=obj.TFMapWin.min_clim;
+sh=obj.TFMapWin.max_clim;
 
 if isempty(wd)||wd>size(data,1)
     wd=round(fs/3);
@@ -311,320 +209,5 @@ switch option
                 tfmap_grid(t,f,tfm,chanpos(j,:),dw,dh,channames{j},sl,sh,freq);
             end
             MenuTFMapDisplayOnset(obj);
-end
-end
-function RestMenuTFMapDisplay(obj)
-delete(get(obj.MenuTFMapDisplay,'Children'));
-if strcmpi(get(obj.MenuTFMapSpatial,'checked'),'on')
-    obj.MenuTFMapDisplayScale=uimenu(obj.MenuTFMapDisplay,'Label','Normalize to (-1,1)','checked','on');
-    obj.MenuTFMapDisplayMissing=uimenu(obj.MenuTFMapDisplay,'Label','Missing Channel','checked','off',...
-        'Callback',@(src,evt) MnuTFMapDisplayMissing(obj));
-else
-    obj.MenuTFMapDisplayOnset=uimenu(obj.MenuTFMapDisplay,'Label','Onset',...
-    'Callback', @(src,evt) Time_Freq_Map(obj,src),'checked','on');
-end
-end
-
-function MnuTFMapDisplayMissing(obj)
-
-end
-function MnuSpatialMapSettings(obj)
-figure()
-
-end
-function MnuTFMapSettings(obj)
-
-%**************************************************************************
-% Dialog box to change the settings of Time frequency map
-%**************************************************************************
-fs=obj.SRate;
-
-prompt={'STFT window:','STFT overlap:',...
-    'Frequency low:','Frequency high',...
-    'Lower bound of scale:','Upper bound of scale'};
-
-def={num2str(obj.STFTWindowLength),num2str(obj.STFTOverlap),...
-    num2str(obj.STFTFreqLow),num2str(obj.STFTFreqHigh),...
-    num2str(obj.STFTScaleLow),num2str(obj.STFTScaleHigh)};
-
-title='Time Frequency Settings';
-
-
-answer=inputdlg(prompt,title,1,def);
-
-if isempty(answer)
-    return
-end
-
-wo=str2double(answer{1});
-
-needredraw=false;
-needrescale=false;
-needroom=false;
-
-if ~isnan(wo)
-    if obj.STFTWindowLength~=wo
-        needredraw=true;
-        obj.STFTWindowLength=wo;
-    end
-end
-
-ov=str2double(answer{2});
-if ~isnan(ov)
-    if obj.STFTOverlap~=ov
-        needredraw=true;
-        obj.STFTOverlap=ov;
-    end
-end
-
-fl=str2double(answer{3});
-if ~isnan(fl)
-    if obj.STFTFreqLow~=fl&&fl>=0
-        needroom=true;
-        obj.STFTFreqLow=fl;
-    end
-end
-
-fh=str2double(answer{4});
-if ~isnan(fh)
-    if obj.STFTFreqHigh~=fh&&fh<=fs/2
-        needroom=true;
-        obj.STFTFreqHigh=fh;
-    end
-end
-sl=str2double(answer{5});
-if ~isnan(sl)
-    if isempty(obj.STFTScaleLow)||obj.STFTScaleLow~=sl
-        needrescale=true;
-        obj.STFTScaleLow=sl;
-    end
-end
-
-sh=str2double(answer{6});
-if ~isnan(sh)
-    if isempty(obj.STFTScaleHigh)||obj.STFTScaleHigh~=sh
-        needrescale=true;
-        obj.STFTScaleHigh=sh;
-    end
-end
-
-if obj.STFTScaleHigh<=obj.STFTScaleLow
-    obj.STFTScaleLow=[];
-    obj.STFTScaleHigh=[];
-end
-
-if ~isempty(obj.TFMapFig)&&ishandle(obj.TFMapFig)
-    if needredraw
-        Time_Freq_Map(obj,obj.BtnTFMap);
-        return
-    end
-    
-    h=findobj(obj.TFMapFig,'-regexp','Tag','TFMapAxes*');
-    
-    if needrescale
-        set(h,'CLim',[obj.STFTScaleLow,obj.STFTScaleHigh]);
-        figure(obj.TFMapFig);
-    end
-    
-    if needroom
-        set(h,'YLim',[fl,fh]);
-        MenuTFMapDisplayOnset(obj);
-        figure(obj.TFMapFig);
-    end
-end
-
-end
-
-function MenuTFMapEvent(obj)
-
-prompt={'Before onset(ms):','After onset(ms):'};
-
-def={num2str(obj.TFMapBeforeOnset),num2str(obj.TFMapAfterOnset)};
-
-title='Data Selection (Event) Settings';
-
-
-answer=inputdlg(prompt,title,1,def);
-
-if isempty(answer)
-    return
-end
-
-set(obj.MenuTFMapEvent,'checked','on');
-set(obj.MenuTFMapInteractive,'checked','off');
-set(obj.MenuTFMapEventAverage,'checked','off');
-
-msbefore=str2double(answer{1});
-
-if ~isnan(msbefore)
-    obj.TFMapBeforeOnset=msbefore;
-else
-    if isempty(obj.TFMapBeforeOnset)
-        obj.TFMapBeforeOnset=1000;
-    end
-end
-
-msafter=str2double(answer{2});
-
-if ~isnan(msafter)
-    obj.TFMapAfterOnset=msafter;
-else
-    if isempty(obj.TFMapAfterOnset)
-        obj.TFMapAfterOnset=1000;
-    end
-end
-% if ishandle(obj.TFMapFig)
-%     Time_Freq_Map(obj,obj.BtnTFMap);
-% end
-
-end
-function MenuTFMapEventAverage(obj)
-
-prompt={'Event:','Before onset(ms):','After onset(ms):'};
-
-if isempty(obj.TFMapEvent)
-    obj.TFMapEvent='';
-end
-
-def={obj.TFMapEvent,num2str(obj.TFMapBeforeOnset),num2str(obj.TFMapAfterOnset)};
-
-title='Data Selection (Event Average) Settings';
-
-
-answer=inputdlg(prompt,title,1,def);
-
-if isempty(answer)
-    return
-end
-
-set(obj.MenuTFMapEventAverage,'checked','on')
-set(obj.MenuTFMapInteractive,'checked','off');
-set(obj.MenuTFMapEvent,'checked','off');
-if ~ismember(answer{1},obj.Evts(:,2));
-    errordlg(['Cannot find ' answer{1} ' in the events !']);
-else
-    obj.TFMapEvent=answer{1};
-end
-
-msbefore=str2double(answer{2});
-
-if ~isnan(msbefore)
-    obj.TFMapBeforeOnset=msbefore;
-else
-    if isempty(obj.TFMapBeforeOnset)
-        obj.TFMapBeforeOnset=1000;
-    end
-end
-
-msafter=str2double(answer{3});
-
-if ~isnan(msafter)
-    obj.TFMapAfterOnset=msafter;
-else
-    if isempty(obj.TFMapAfterOnset)
-        obj.TFMapAfterOnset=1000;
-    end
-end
-
-% if ishandle(obj.TFMapFig)
-%     Time_Freq_Map(obj,obj.BtnTFMap);
-% end
-
-end
-
-function MenuTFMapNormalWithin(obj)
-prompt={'From 0 to (?) milliseconds: '};
-
-if isempty(obj.TFMapEvent)
-    obj.TFMapEvent='';
-end
-
-if isempty(obj.STFTNormalizePoint)
-    obj.STFTNormalizePoint=obj.TFMapBeforeOnset/3;
-end
-def={num2str(obj.STFTNormalizePoint/obj.SRate*1000)};
-
-title='Normalization Settings';
-
-
-answer=inputdlg(prompt,title,1,def);
-
-if isempty(answer)
-    return
-end
-
-set(obj.MenuTFMapNormalWithin,'checked','on');
-set(obj.MenuTFMapNormalBaseline,'checked','off');
-set(obj.MenuTFMapNormalNone,'checked','off');
-refn=round(str2double(answer{1})*obj.SRate/1000);
-if ~isnan(refn)
-    if obj.STFTNormalizePoint~=refn
-        obj.STFTNormalizePoint=refn;
-    end
-end
-
-% if ishandle(obj.TFMapFig)
-%     Time_Freq_Map(obj,obj.BtnTFMap);
-% end
-
-end
-
-function MenuTFMapNormalBaseline(obj)
-
-prompt={'Event of Rest-Start: ','Event of Rest-End: '};
-
-if isempty(obj.TFMapRestStart)
-    obj.TFMapRestStart='';
-end
-
-if isempty(obj.TFMapRestEnd)
-    obj.TFMapRestEnd='';
-end
-def={obj.TFMapRestStart,obj.TFMapRestEnd};
-
-title='Normalization Settings';
-
-
-answer=inputdlg(prompt,title,1,def);
-
-if isempty(answer)
-    return
-end
-set(obj.MenuTFMapNormalBaseline,'checked','on');
-set(obj.MenuTFMapNormalWithin,'checked','off');
-set(obj.MenuTFMapNormalNone,'checked','off');
-if ~ismember(answer{1},obj.Evts(:,2));
-    errordlg(['Cannot find ' answer{1} ' in the events !']);
-else
-    obj.TFMapRestStart=answer{1};
-end
-
-if ~ismember(answer{2},obj.Evts(:,2));
-    errordlg(['Cannot find ' answer{2} ' in the events !']);
-else
-    obj.TFMapRestEnd=answer{2};
-end
-
-end
-
-function MenuTFMapDisplayOnset(obj)
-
-tonset=obj.TFMapBeforeOnset/1000;
-if ~isempty(obj.TFMapFig)&&ishandle(obj.TFMapFig)
-    
-    h=findobj(obj.TFMapFig,'-regexp','Tag','TFMapAxes*');
-    if strcmpi(get(obj.MenuTFMapDisplayOnset,'checked'),'on')
-        for i=1:length(h)
-            tmp=findobj(h(i),'Type','line');
-            delete(tmp);
-             line([tonset,tonset],[obj.STFTFreqLow,obj.STFTFreqHigh],'LineStyle',':',...
-                 'color','k','linewidth',0.1,'Parent',h(i))
-        end
-    else
-       for i=1:length(h)
-           tmp=findobj(h(i),'Type','line');
-           delete(tmp);
-       end
-    end
 end
 end

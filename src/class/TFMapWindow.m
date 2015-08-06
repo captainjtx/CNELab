@@ -58,7 +58,7 @@ classdef TFMapWindow < handle
             obj.fs=bsp.SRate;
             varinitial(obj);
             
-            buildfig(obj);
+%             buildfig(obj);
         end
         function varinitial(obj)
             obj.method=1;
@@ -89,7 +89,8 @@ classdef TFMapWindow < handle
             uicontrol('Parent',hp_method,'Style','text','String','Method: ','units','normalized','Position',[0.01,0,0.4,0.9],...
                 'HorizontalAlignment','left');
             obj.method_popup=uicontrol('Parent',hp_method,'Style','popup',...
-                'String',{'Channel','Average','Grid'},'units','normalized','Position',[0.4,0,0.59,0.92],'value',obj.method);
+                'String',{'Average','Channel','Grid'},'units','normalized','Position',[0.4,0,0.59,0.92],'value',obj.method,...
+                'callback',@(src,evts) MethodCallback(obj,src));
             
             hp_data=uipanel('Parent',hp,'Title','','Units','normalized','Position',[0,0.78,1,0.15]);
             uicontrol('Parent',hp_data,'Style','text','String','Input Data: ','units','normalized','Position',[0.01,0.6,0.4,0.35],...
@@ -105,11 +106,11 @@ classdef TFMapWindow < handle
             obj.ms_after_text=uicontrol('Parent',hp_data,'Style','text','string','After (ms): ','units','normalized','position',[0.7,0.3,0.3,0.3],...
                 'HorizontalAlignment','left','visible','off');
             obj.event_edit=uicontrol('Parent',hp_data,'Style','Edit','string',obj.event,'units','normalized','position',[0.01,0.05,0.35,0.3],...
-                'HorizontalAlignment','left','visible','off');
+                'HorizontalAlignment','left','visible','off','callback',@(src,evts) EventEditCallback(obj,src));
             obj.ms_before_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_before),'units','normalized','position',[0.4,0.05,0.29,0.3],...
-                'HorizontalAlignment','left','visible','off');
+                'HorizontalAlignment','left','visible','off','callback',@(src,evts) MsBeforeCallback(obj,src));
             obj.ms_after_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_after),'units','normalized','position',[0.7,0.05,0.29,0.3],...
-                'HorizontalAlignment','left','visible','off');
+                'HorizontalAlignment','left','visible','off','callback',@(src,evts) MSAfterCallback(obj,src));
             
             hp_mag=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.73,1,0.04]);
             uicontrol('Parent',hp_mag,'style','text','units','normalized','string','Unit: ','position',[0.01,0,0.3,1],...
@@ -141,11 +142,13 @@ classdef TFMapWindow < handle
             uicontrol('parent',hp_stft,'style','text','string','STFT Window (sample): ','units','normalized',...
                 'position',[0,0.6,0.5,0.3]);
             obj.stft_winlen_edit=uicontrol('parent',hp_stft,'style','edit','string',num2str(obj.stft_winlen),...
-                'units','normalized','position',[0.05,0.1,0.4,0.46],'HorizontalAlignment','center');
+                'units','normalized','position',[0.05,0.1,0.4,0.46],'HorizontalAlignment','center',...
+                'callback',@(src,evts) STFTWinlenCallback(obj,src));
             uicontrol('parent',hp_stft,'style','text','string','STFT Overlap (sample): ',...
                 'units','normalized','position',[0.5,0.6,0.5,0.3]);
             obj.stft_overlap_edit=uicontrol('parent',hp_stft,'style','edit','string',num2str(obj.stft_overlap),...
-                'units','normalized','position',[0.55,0.1,0.4,0.46],'HorizontalAlignment','center');
+                'units','normalized','position',[0.55,0.1,0.4,0.46],'HorizontalAlignment','center',...
+                'callback',@(src,evts) STFTOverlapCallback(obj,src));
             
             hp_freq=uipanel('parent',hp,'title','Frequency','units','normalized','position',[0,0,0.35,0.45]);
             
@@ -184,7 +187,7 @@ classdef TFMapWindow < handle
             
             hp_display=uipanel('parent',hp,'title','Display','units','normalized','position',[0.72,0,0.28,0.45]);
             obj.onset_radio=uicontrol('parent',hp_display,'style','radiobutton','string','onset','value',obj.display_onset,...
-                'units','normalized','position',[0.1,0.9,0.9,0.1]);
+                'units','normalized','position',[0.1,0.9,0.9,0.1],'callback',@(src,evts) DisplayOnsetCallback(obj,src));
             
             DataPopUpCallback(obj,obj.data_popup);
             if strcmpi(obj.unit,'dB')
@@ -201,7 +204,11 @@ classdef TFMapWindow < handle
                 return
             end
         end
+        function MethodCallback(obj,src)
+            obj.method=get(src,'value');
+        end
         function DataPopUpCallback(obj,src)
+            obj.data_input=get(src,'value');
             switch get(src,'value')
                 case 1
                     %Selection
@@ -230,6 +237,34 @@ classdef TFMapWindow < handle
             end
         end
         
+        function MsBeforeCallback(obj,src)
+            obj.ms_before=str2double(get(src,'string'));
+            if isnan(obj.ms_before)
+                obj.ms_before=1000;
+                set(src,'string',num2str(obj.ms_before));
+            end
+        end
+        function MsAfterCallaback(obj,src)
+            obj.ms_after=str2double(get(src,'string'));
+            if isnan(obj.ms_after)
+                obj.ms_after=1000;
+                set(src,'string',num2str(obj.ms_after));
+            end
+        end
+        function STFTWinlenCallback(obj,src)
+            obj.stft_winlen=str2double(get(src,'string'));
+            if isnan(obj.stft_winlen)
+                obj.stft_winlen=round(obj.fs/3);
+                set(src,'string',num2str(obj.stft_winlen));
+            end
+        end
+        function STFTOverlapCallback(obj,src)
+            obj.stft_overlap=str2double(get(src,'string'));
+            if isnan(obj.stft_overlap)
+                obj.stft_overlap=round(obj.stft_winlen*0.9);
+                set(src,'string',num2str(obj.stft_overlap));
+            end
+        end
         function UnitRadioCallback(obj,src)
             if src==obj.unit_db_radio
                 set(src,'value',1);
@@ -241,6 +276,7 @@ classdef TFMapWindow < handle
         end
         
         function NormalizationCallback(obj,src)
+            obj.normalization=get(src,'value');
             switch get(src,'value')
                 case 1
                     set(obj.scale_start_text,'visible','off');
@@ -271,6 +307,11 @@ classdef TFMapWindow < handle
                 case obj.max_freq_slider
                 case obj.min_freq_slider
             end
+            h=findobj(obj.bsp.TFMapFig,'-regexp','Tag','TFMapAxes*');
+            
+            set(h,'YLim',[obj.min_freq,obj.max_freq]);
+            DisplayOnsetCallback(obj,obj.onset_radio);
+            figure(obj.bsp.TFMapFig);
         end
         
         function ClimCallback(obj,src)
@@ -279,6 +320,34 @@ classdef TFMapWindow < handle
                 case obj.min_clim_edit
                 case obj.max_clim_slider
                 case obj.min_clim_slider
+            end
+            
+            h=findobj(obj.bsp.TFMapFig,'-regexp','Tag','TFMapAxes*');
+            
+            set(h,'CLim',[obj.min_clim,obj.max_clim]);
+            figure(obj.bsp.TFMapFig);
+        end
+        
+        function DisplayOnsetCallback(obj,src)
+            obj.display_onset=get(src,'value');
+            
+            tonset=obj.ms_before/1000;
+            if ~isempty(obj.bsp.TFMapFig)&&ishandle(obj.bsp.TFMapFig)
+                
+                h=findobj(obj.bsp.TFMapFig,'-regexp','Tag','TFMapAxes*');
+                if obj.display_onset
+                    for i=1:length(h)
+                        tmp=findobj(h(i),'Type','line');
+                        delete(tmp);
+                        line([tonset,tonset],[obj.min_freq,obj.max_freq],'LineStyle',':',...
+                            'color','k','linewidth',0.1,'Parent',h(i))
+                    end
+                else
+                    for i=1:length(h)
+                        tmp=findobj(h(i),'Type','line');
+                        delete(tmp);
+                    end
+                end
             end
         end
         

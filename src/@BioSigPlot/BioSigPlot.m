@@ -148,25 +148,6 @@ classdef BioSigPlot < hgsetget
         MenuAdvanceEventsQRS
         
         MenuTFMap
-        MenuTFMapNormal
-        MenuTFMapNormalNone
-        MenuTFMapNormalWithin
-        MenuTFMapNormalBaseline
-        MenuTFMapDataSel
-        MenuTFMapInteractive
-        MenuTFMapEvent
-        MenuTFMapEventAverage
-        MenuTFMap_Unit
-        MenuTFMap_Normal
-        MenuTFMap_DB
-        MenuTFMapLayout
-        MenuTFMapAverage
-        MenuTFMapChannel
-        MenuTFMapGrid
-        MenuTFMapDisplay
-        MenuTFMapDisplayOnset
-        MenuTFMapSettings
-        MenuTFMapSpatial
         
         MenuPSD
         MenuPSD_Unit
@@ -270,9 +251,6 @@ classdef BioSigPlot < hgsetget
         
         Evts2Display
         
-        STFTWindowLength
-        STFTOverlap
-        
         PSDWindowLength
         PSDOverlap
         
@@ -345,9 +323,6 @@ classdef BioSigPlot < hgsetget
         SelectedFastEvt_
         AdvanceEventsFcn_
         
-        STFTWindowLength_
-        STFTOverlap_
-        
         PSDWindowLength_
         PSDOverlap_
     end
@@ -394,6 +369,7 @@ classdef BioSigPlot < hgsetget
         IconPlay
         IconPause
         WinVideo
+        TFMapWin
     end
     
     methods
@@ -419,6 +395,7 @@ classdef BioSigPlot < hgsetget
             redraw(obj);
             redrawEvts(obj);
             
+            obj.TFMapWin=TFMapWindow(obj);
             obj.IsInitialize=false;
             
 %             set(obj.Fig,'Visible','on')
@@ -653,8 +630,7 @@ classdef BioSigPlot < hgsetget
                     NeedDrawSelect=true;
                 elseif any(strcmpi(g{i},{'PlaySpeed','FastEvts','SelectedFastEvt',...
                         'EventDefaultColors','EventsWindowDisplay','AdvanceEventsFcn',...
-                        'AdvanceEventDefaultColor','MouseMode','STFTWindowLength',...
-                        'STFTOverlap','Title','Version','PSDWindowLength',...
+                        'AdvanceEventDefaultColor','MouseMode','Title','Version','PSDWindowLength',...
                         'PSDOverlap','ControlPanelDisplay',...
                         'LockLayout','ToolbarDisplay','DisplayGauge','XGrid','YGrid',...
                         'VideoTimerPeriod','BadChannels','AxesBackgroundColor',...
@@ -847,12 +823,6 @@ classdef BioSigPlot < hgsetget
         function obj = set.AdvanceEventsFcn(obj,val), set(obj,'AdvanceEventsFcn',val); end
         function val = get.AdvanceEventsFcn(obj), val=obj.AdvanceEventsFcn_; end
         
-        function obj = set.STFTWindowLength(obj,val), set(obj,'STFTWindowLength',val); end
-        function val = get.STFTWindowLength(obj), val=obj.STFTWindowLength_; end
-        
-        function obj = set.STFTOverlap(obj,val), set(obj,'STFTOverlap',val); end
-        function val = get.STFTOverlap(obj), val=obj.STFTOverlap_; end
-        
         function obj = set.PSDWindowLength(obj,val), set(obj,'PSDWindowLength',val); end
         function val = get.PSDWindowLength(obj), val=obj.PSDWindowLength_; end
         
@@ -968,8 +938,6 @@ classdef BioSigPlot < hgsetget
         
         function obj = set.SRate_(obj,val)
             obj.SRate_=val;
-            obj.STFTFreqLow=0;
-            obj.STFTFreqHigh=val/2;
             
             obj.PSDFreqLow=0;
             obj.PSDFreqHigh=val/2;
@@ -2312,12 +2280,6 @@ classdef BioSigPlot < hgsetget
         SPCA_Seg_Before
         SPCA_Seg_After
         
-        STFTFreqLow
-        STFTFreqHigh
-        STFTScaleLow
-        STFTScaleHigh
-        STFTNormalizePoint
-        
         PSDFreqLow
         PSDFreqHigh
         
@@ -2325,12 +2287,6 @@ classdef BioSigPlot < hgsetget
         
         NextFiles
         PrevFiles
-        
-        TFMapBeforeOnset%ms
-        TFMapAfterOnset%ms
-        TFMapEvent
-        TFMapRestStart
-        TFMapRestEnd
     end
     events
         SelectedFastEvtChange
