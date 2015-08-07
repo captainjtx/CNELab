@@ -17,11 +17,11 @@ for i=1:size(eeg,2)
         rf=mean(abs(rtf),2);
         tf=tf./repmat(rf,1,size(tf,2));
     elseif ~isempty(nref)
-        rf=mean(tf(:,1:round(nref/(wd-ov))),2);
+        rf=mean(tf(:,max(1,round(nref(1)/(wd-ov))):round(nref(2)/(wd-ov))),2);
         tf=tf./repmat(abs(rf),1,size(tf,2));
     end
     tfm=tfm+tf;
-    if nargout==0
+    if nargout<3
         if ishandle(fig)
             figure(fig);
             

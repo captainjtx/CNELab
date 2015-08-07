@@ -52,7 +52,7 @@ end
 %set default parameter*****************************************************
 wd=round(obj.TFMapWin.stft_winlen);
 ov=round(obj.TFMapWin.stft_overlap);
-nref=[obj.TFMapWin.normalization_start,obj.TFMapWin.normalization_end];
+
 sl=obj.TFMapWin.min_clim;
 sh=obj.TFMapWin.max_clim;
 
@@ -64,19 +64,12 @@ end
 if ov>wd
     ov=round(wd*0.9);
 end
-
-if isempty(nref)||nref>size(data,1)
-    nref=round(fs/2);
-    obj.STFTNormalizePoint=nref;
-end
-
-obj.STFTWindowLength=wd;
-obj.STFTOverlap=ov;
-obj.STFTNormalizePoint=nref;
+obj.TFMapWin.stft_winlen=wd;
+obj.TFMapWin.stft_overlap=ov;
 %**************************************************************************
 
-s=[obj.STFTScaleLow obj.STFTScaleHigh];
-freq=[obj.STFTFreqLow obj.STFTFreqHigh];
+s=[obj.TFMapWin.min_clim obj.TFMapWin.max_clim];
+freq=[obj.TFMapWin.min_freq obj.TFMapWin.max_freq];
 
 if isempty(obj.TFMapFig)||~ishandle(obj.TFMapFig)
     obj.TFMapFig=figure('Name','TFMap','Visible','off','NumberTitle','off');
@@ -86,23 +79,35 @@ set(gcf,'visible','on')
 clf
 
 %Normalizatin**************************************************************
-if strcmpi(get(obj.MenuTFMapNormalNone,'checked'),'on')
+if obj.TFMapWin.normalization==1
     nref=[];
     baseline=[];
-elseif strcmpi(get(obj.MenuTFMapNormalWithin,'checked'),'on')
-    nref=obj.STFTNormalizePoint;
+elseif obj.TFMapWin.normalization==2
+    nref=[obj.TFMapWin.normalization_start,obj.TFMapWin.normalization_end];
+    
+    if nref(2)>=round(size(data,1)/fs*1000)
+        nref(2)=round(size(data,1)/fs*1000);
+    end
+    if nref(1)>=nref(2)
+        nref(1)=0;
+    end
+    if nref(1)<0;
+        nref(1)=0;
+    end  
     baseline=[];
-elseif strcmpi(get(obj.MenuTFMapNormalBaseline,'checked'),'on')
+    obj.TFMapWin.normalization_start=nref(1);
+    obj.TFMapWin.normalization_end=nref(2);
+elseif obj.TFMapWin.normalization==3
     nref=[];
     
     t_evt=[obj.Evts{:,1}];
-    t_label=t_evt(strcmpi(obj.Evts(:,2),obj.TFMapRestStart));
+    t_label=t_evt(strcmpi(obj.Evts(:,2),obj.TFMapWin.normalization_start));
     i_label=round(t_label*obj.SRate);
     i_label=min(max(1,i_label),size(obj.Data{1},1));
 
     baseline_start=i_label;
 
-    t_label=t_evt(strcmpi(obj.Evts(:,2),obj.TFMapRestEnd));
+    t_label=t_evt(strcmpi(obj.Evts(:,2),obj.TFMapWin.normalization_end));
     i_label=round(t_label*obj.SRate);
     i_label=min(max(1,i_label),size(obj.Data{1},1));
     
@@ -125,6 +130,8 @@ switch option
             imagesc(t,f,tf);
         end
         
+        obj.TFMapWin.clim_slider_max=max(max(abs(tf)));
+        obj.TFMapWin.clim_slider_min=-max(max(abs(tf)));
         if ~isempty(s)
             set(gca,'CLim',s);
         end
@@ -138,17 +145,10 @@ switch option
         colorbar
         
     case 2
-        bsp_tfmap(obj.TFMapFig,data,baseline,fs,wd,ov,s,nref,chanNames,freq,unit);
+        tf=bsp_tfmap(obj.TFMapFig,data,baseline,fs,wd,ov,s,nref,chanNames,freq,unit);
+        obj.TFMapWin.clim_slider_max=max(max(abs(tf)));
+        obj.TFMapWin.clim_slider_min=-max(max(abs(tf)));
     case 3
-            if isempty(sl)
-                sl=-10;
-                obj.STFTScaleLow=sl;
-            end
-            if isempty(sh)
-                sh=10;
-                obj.STFTScaleHigh=sh;
-            end
-            
             if isempty(chanpos)
                 errordlg('No channel position in the data !');
                 return
@@ -187,7 +187,7 @@ switch option
             set(ax_back,'XLim',[0,1]);
             set(ax_back,'YLim',[0,1]);
             
-            
+            tmp=-inf;
             for j=1:length(channames)
                 axes(ax_back);
                 if strcmpi(get(obj.MenuTFMapEventAverage,'checked'),'on')
@@ -207,7 +207,12 @@ switch option
                     [tfm,f,t]=bsp_tfmap(obj.TFMapFig,data(:,j),baseline,fs,wd,ov,s,nref,channames,freq,unit);
                 end
                 tfmap_grid(t,f,tfm,chanpos(j,:),dw,dh,channames{j},sl,sh,freq);
+                
+                tmp=max(max(max(abs(tfm))),tmp);
             end
-            MenuTFMapDisplayOnset(obj);
+            obj.TFMapWin.clim_slider_max=tmp;
+            obj.TFMapWin.clim_slider_min=-tmp;
+            
+            obj.TFMapWin.DisplayOnsetCallback([]);
 end
 end

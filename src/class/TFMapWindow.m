@@ -3,11 +3,12 @@ classdef TFMapWindow < handle
     %   Detailed explanation goes here
     
     properties
+        valid
         bsp
         fig
         method_popup
         data_popup
-        event_edit
+        event_popup
         ms_before_edit
         ms_after_edit
         event_text
@@ -20,6 +21,8 @@ classdef TFMapWindow < handle
         scale_end_text
         scale_start_edit
         scale_end_edit
+        scale_start_popup
+        scale_end_popup
         stft_winlen_edit
         stft_overlap_edit
         max_freq_edit
@@ -31,9 +34,35 @@ classdef TFMapWindow < handle
         max_clim_slider
         min_clim_slider
         onset_radio
+        
     end
     properties
         fs
+        
+        method_
+        data_input_
+        ms_before_
+        ms_after_
+        event_
+        unit_
+        normalization_
+        normalization_start_
+        normalization_end_
+        normalization_start_event_
+        normalization_end_event_
+        display_onset_
+        stft_winlen_
+        stft_overlap_
+        max_freq_
+        min_freq_
+        max_clim_
+        min_clim_
+        clim_slider_max_
+        clim_slider_min_
+        event_list_
+    end
+    
+    properties (Dependent)
         method
         data_input
         ms_before
@@ -42,7 +71,9 @@ classdef TFMapWindow < handle
         unit
         normalization
         normalization_start
+        normalization_start_event
         normalization_end
+        normalization_end_event
         display_onset
         stft_winlen
         stft_overlap
@@ -50,6 +81,281 @@ classdef TFMapWindow < handle
         min_freq
         max_clim
         min_clim
+        clim_slider_max
+        clim_slider_min
+        event_list
+    end
+    methods
+        function val=get.method(obj)
+            val=obj.method_;
+        end
+        function set.method(obj,val)
+            obj.method_=val;
+            if obj.valid
+                set(obj.method_popup,'value',val);
+            end
+        end
+        function val=get.data_input(obj)
+            val=obj.data_input_;
+        end
+        function set.data_input(obj,val)
+            obj.data_input_=val;
+            if obj.valid
+                set(obj.data_popup,'value',val);
+            end
+        end
+        function val=get.ms_before(obj)
+            val=obj.ms_before_;
+        end
+        function set.ms_before(obj,val)
+            obj.ms_before_=val;
+            if obj.valid
+                set(obj.ms_before_edit,'string',num2str(val));
+            end
+        end
+        function val=get.ms_after(obj)
+            val=obj.ms_after_;
+        end
+        function set.ms_after(obj,val)
+            obj.ms_after_=val;
+            if obj.valid
+                set(obj.ms_after_edit,'string',num2str(val));
+            end
+        end
+        function val=get.event(obj)
+            val=obj.event_;
+        end
+        function set.event(obj,val)
+            if obj.valid
+                [ia,ib]=ismember(val,obj.event_list);
+                if ia
+                    set(obj.event_popup,'value',ib);
+                else
+                    set(obj.event_popup,'value',1);
+                    val=obj.event_list{1};
+                end
+            end
+            obj.event_=val;
+        end
+        function val=get.unit(obj)
+            val=obj.unit_;
+        end
+        function set.unit(obj,val)
+            if strcmpi(val,'dB')
+                if obj.valid
+                    UnitRadioCallback(obj,obj.unit_db_radio);
+                end
+                obj.unit_='dB';
+            else
+                if obj.valid
+                    UnitRadioCallback(obj,obj.unit_mag_radio);
+                end
+                obj.unit_='Mag';
+            end
+        end
+        function val=get.normalization(obj)
+            val=obj.normalization_;
+        end
+        function set.normalization(obj,val)
+            if obj.valid
+                set(obj.normalization_popup,'value',val);
+            end
+            obj.normalization_=val;
+        end
+        function val=get.normalization_start(obj)
+            val=obj.normalization_start_;
+        end
+        function set.normalization_start(obj,val)
+            if obj.valid
+                if obj.normalization==2
+                    set(obj.scale_start_edit,'string',num2str(val));
+                elseif obj.normalization==3
+                    set(obj.scale_start_edit,'string',val);
+                end
+            end
+            
+            obj.normalization_start_=val;
+        end
+        
+        function val=get.normalization_end(obj)
+            val=obj.normalization_end_;
+        end
+        function set.normalization_end(obj,val)
+            obj.normalization_end_=val;
+            if obj.valid
+                if obj.normalization==2
+                    set(obj.scale_end_edit,'string',num2str(val));
+                elseif obj.normalization==3
+                    set(obj.scale_end_edit,'string',val);
+                end
+            end
+        end
+        
+        function val=get.display_onset(obj)
+            val=obj.display_onset_;
+        end
+        function set.display_onset(obj,val)
+            obj.display_onset_=val;
+            if obj.valid
+                set(obj.onset_radio,'value',val);
+            end
+        end
+        
+        function val=get.stft_winlen(obj)
+            val=obj.stft_winlen_;
+        end
+        function set.stft_winlen(obj,val)
+            obj.stft_winlen_=val;
+            if obj.valid
+                set(obj.stft_winlen_edit,'string',num2str(val));
+            end
+        end
+        function val=get.stft_overlap(obj)
+            val=obj.stft_overlap_;
+        end
+        function set.stft_overlap(obj,val)
+            obj.stft_overlap_=val;
+            if obj.valid
+                set(obj.stft_overlap_edit,'string',num2str(val));
+            end
+        end
+        
+        function val=get.max_freq(obj)
+            val=obj.max_freq_;
+        end
+        function set.max_freq(obj,val)
+            if val>obj.fs/2
+                val=obj.fs/2;
+            elseif val<1
+                val=1;
+            end
+            if obj.min_freq>=val
+                obj.min_freq=val-1;
+            end
+            if obj.valid
+                set(obj.max_freq_edit,'string',num2str(val));
+                set(obj.max_freq_slider,'value',val);
+            end
+            obj.max_freq_=val;
+        end
+        
+        function val=get.min_freq(obj)
+            val=obj.min_freq_;
+        end
+        function set.min_freq(obj,val)
+            if val<0
+                val=0;
+            elseif val>(obj.fs/2-1)
+                val=obj.fs/2-1;
+            end
+            
+            if obj.max_freq<=val
+                obj.max_freq=val+1;
+            end
+            if obj.valid
+                set(obj.min_freq_edit,'string',num2str(val));
+                set(obj.min_freq_slider,'value',val);
+            end
+            obj.min_freq_=val;
+        end
+        
+        function val=get.clim_slider_min(obj)
+            val=obj.clim_slider_min_;
+        end
+        function set.clim_slider_min(obj,val)
+            obj.clim_slider_min_=val;
+            if obj.valid
+                set(obj.max_clim_slider,'min',val);
+                set(obj.min_clim_slider,'min',val);
+            end
+        end
+        
+        function val=get.clim_slider_max(obj)
+            val=obj.clim_slider_max_;
+        end
+        function set.clim_slider_max(obj,val)
+            obj.clim_slider_max_=val;
+            if obj.valid
+                set(obj.max_clim_slider,'max',val);
+                set(obj.min_clim_slider,'max',val);
+            end
+        end
+        function val=get.max_clim(obj)
+            val=obj.max_clim_;
+        end
+        function set.max_clim(obj,val)
+            if val>obj.clim_slider_max
+                val=obj.clim_slider_max;
+            elseif val<obj.clim_slider_min
+                val=obj.clim_slider_min;
+            end
+            if obj.min_clim>=val
+                obj.min_clim=val-1;
+            end
+            if obj.valid
+                set(obj.max_clim_edit,'string',num2str(val));
+                set(obj.max_clim_slider,'value',val);
+            end
+            obj.max_clim_=val;
+        end
+        
+        function val=get.min_clim(obj)
+            val=obj.min_clim_;
+        end
+        function set.min_clim(obj,val)
+            if val>obj.clim_slider_max
+                val=obj.clim_slider_max;
+            elseif val<obj.clim_slider_min
+                val=obj.clim_slider_min;
+            end
+            
+            if obj.max_clim<=val
+                obj.max_clim=val+1;
+            end
+            if obj.valid
+                set(obj.min_clim_edit,'string',num2str(val));
+                set(obj.min_clim_slider,'value',val);
+            end
+            obj.min_clim_=val;
+        end
+        
+        function val=get.event_list(obj)
+            val=obj.event_list_;
+        end
+        
+        function set.event_list(obj,val)
+            obj.event_list_=val;
+            
+            if obj.valid
+                set(obj.event_popup,'value',1);
+                set(obj.scale_start_popup,'value',1);
+                set(obj.scale_end_popup,'value',1);
+                set(obj.event_popup,'string',val);
+                set(obj.scale_start_popup,'string',val);
+                set(obj.scale_end_popup,'string',val);
+            end
+            
+            [ia,ib]=ismember(obj.event,val);
+            if ia
+                if obj.valid
+                    set(obj.event_popup,'value',ib);
+                end
+            else
+                obj.event=val{1};
+            end
+            
+            [ia,ib]=ismember(obj.normalization_start,val);
+            if ia
+                if obj.valid
+                    set(obj.event_popup,'value',ib);
+                end
+            else
+                obj.event=val{1};
+            end
+                
+
+        end
+        
     end
     
     methods
@@ -58,27 +364,31 @@ classdef TFMapWindow < handle
             obj.fs=bsp.SRate;
             varinitial(obj);
             
-%             buildfig(obj);
+            %             buildfig(obj);
         end
         function varinitial(obj)
-            obj.method=1;
-            obj.data_input=1;%selection
-            obj.ms_before=1000;
-            obj.ms_after=1000;
-            obj.event='';
-            obj.unit='dB';
-            obj.normalization=1;%none
-            obj.normalization_start='';%always string
-            obj.normalization_end='';
-            obj.display_onset=1;
-            obj.max_freq=obj.fs/2;
-            obj.min_freq=0;
-            obj.max_clim=10;
-            obj.min_clim=-10;
-            obj.stft_winlen=round(obj.fs/3);
-            obj.stft_overlap=round(obj.stft_winlen*0.9);
+            obj.valid=0;
+            obj.method_=1;
+            obj.data_input_=1;%selection
+            obj.ms_before_=1000;
+            obj.ms_after_=1000;
+            obj.event_='';
+            obj.unit_='dB';
+            obj.normalization_=1;%none
+            obj.normalization_start_='';
+            obj.normalization_end_='';
+            obj.display_onset_=1;
+            obj.max_freq_=obj.fs/2;
+            obj.min_freq_=0;
+            obj.clim_slider_max_=15;
+            obj.clim_slider_min_=-15;
+            obj.max_clim_=10;
+            obj.min_clim_=-10;
+            obj.stft_winlen_=round(obj.fs/3);
+            obj.stft_overlap_=round(obj.stft_winlen*0.9);
         end
         function buildfig(obj)
+            obj.valid=1;
             obj.fig=figure('MenuBar','none','Name','Time-Frequency Map','units','pixels',...
                 'Position',[500 100 300 600],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
                 'Resize','off');
@@ -105,8 +415,8 @@ classdef TFMapWindow < handle
                 'HorizontalAlignment','left','visible','off');
             obj.ms_after_text=uicontrol('Parent',hp_data,'Style','text','string','After (ms): ','units','normalized','position',[0.7,0.3,0.3,0.3],...
                 'HorizontalAlignment','left','visible','off');
-            obj.event_edit=uicontrol('Parent',hp_data,'Style','Edit','string',obj.event,'units','normalized','position',[0.01,0.05,0.35,0.3],...
-                'HorizontalAlignment','left','visible','off','callback',@(src,evts) EventEditCallback(obj,src));
+            obj.event_popup=uicontrol('Parent',hp_data,'Style','popup','string',obj.event_list,'units','normalized','position',[0.01,0.05,0.35,0.3],...
+                'visible','off','callback',@(src,evts) EventCallback(obj,src));
             obj.ms_before_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_before),'units','normalized','position',[0.4,0.05,0.29,0.3],...
                 'HorizontalAlignment','left','visible','off','callback',@(src,evts) MsBeforeCallback(obj,src));
             obj.ms_after_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_after),'units','normalized','position',[0.7,0.05,0.29,0.3],...
@@ -135,8 +445,13 @@ classdef TFMapWindow < handle
                 'visible','off');
             obj.scale_start_edit=uicontrol('parent',hp_scale,'style','edit','units','normalized',...
                 'string',obj.normalization_start,'position',[0.01,0.05,0.4,0.3],'HorizontalAlignment','left','visible','off');
+            obj.scale_start_popup=uicontrol('parent',hp_scale,'style','popup','units','normalized',...
+                'string',obj.event_list,'position',[0.01,0.05,0.4,0.3],'visible','off');
+            
             obj.scale_end_edit=uicontrol('parent',hp_scale,'style','edit','units','normalized',...
                 'string',obj.normalization_end,'position',[0.5,0.05,0.4,0.3],'HorizontalAlignment','left','visible','off');
+            obj.scale_end_popup=uicontrol('parent',hp_scale,'style','popup','units','normalized',...
+                'string',obj.event_list,'position',[0.5,0.05,0.4,0.3],'visible','off');
             
             hp_stft=uipanel('parent',hp,'title','','units','normalized','position',[0,0.46,1,0.1]);
             uicontrol('parent',hp_stft,'style','text','string','STFT Window (sample): ','units','normalized',...
@@ -178,12 +493,12 @@ classdef TFMapWindow < handle
                 'position',[0.05,0.8,0.4,0.1],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
             obj.min_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
                 'position',[0.15,0.05,0.2,0.7],'callback',@(src,evts) ClimCallback(obj,src),...
-                'min',-15,'max',15,'value',obj.min_clim,'sliderstep',[0.1,0.2]);
+                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.min_clim,'sliderstep',[0.1,0.2]);
             obj.max_clim_edit=uicontrol('parent',hp_clim,'style','edit','string',num2str(obj.max_clim),'units','normalized',...
                 'position',[0.55,0.8,0.4,0.1],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
             obj.max_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
                 'position',[0.65,0.05,0.2,0.7],'callback',@(src,evts) ClimCallback(obj,src),...
-                'min',-15,'max',15,'value',obj.max_clim,'sliderstep',[0.1,0.2]);
+                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.max_clim,'sliderstep',[0.1,0.2]);
             
             hp_display=uipanel('parent',hp,'title','Display','units','normalized','position',[0.72,0,0.28,0.45]);
             obj.onset_radio=uicontrol('parent',hp_display,'style','radiobutton','string','onset','value',obj.display_onset,...
@@ -197,6 +512,7 @@ classdef TFMapWindow < handle
             end
         end
         function OnClose(obj)
+            obj.valid=0;
             h = obj.fig;
             if ishandle(h)
                 delete(h);
@@ -251,6 +567,7 @@ classdef TFMapWindow < handle
                 set(src,'string',num2str(obj.ms_after));
             end
         end
+        
         function STFTWinlenCallback(obj,src)
             obj.stft_winlen=str2double(get(src,'string'));
             if isnan(obj.stft_winlen)
@@ -303,33 +620,47 @@ classdef TFMapWindow < handle
         function FreqCallback(obj,src)
             switch src
                 case obj.max_freq_edit
+                    obj.max_freq=round(str2double(get(src,'string'))*10)/10;
                 case obj.min_freq_edit
+                    obj.min_freq=round(str2double(get(src,'string'))*10)/10;
                 case obj.max_freq_slider
+                    obj.max_freq=round(get(src,'value')*10)/10;
                 case obj.min_freq_slider
+                    obj.min_freq=round(get(src,'value')*10)/10;
             end
-            h=findobj(obj.bsp.TFMapFig,'-regexp','Tag','TFMapAxes*');
-            
-            set(h,'YLim',[obj.min_freq,obj.max_freq]);
-            DisplayOnsetCallback(obj,obj.onset_radio);
-            figure(obj.bsp.TFMapFig);
+            if ~isempty(obj.bsp.TFMapFig)&&ishandle(obj.bsp.TFMapFig)
+                h=findobj(obj.bsp.TFMapFig,'-regexp','Tag','TFMapAxes*');
+                
+                set(h,'YLim',[obj.min_freq,obj.max_freq]);
+                DisplayOnsetCallback(obj,obj.onset_radio);
+                figure(obj.bsp.TFMapFig);
+            end
         end
         
         function ClimCallback(obj,src)
             switch src
-                case obj.max_clim_edit
-                case obj.min_clim_edit
                 case obj.max_clim_slider
+                    obj.max_clim=get(src,'value');
                 case obj.min_clim_slider
+                    obj.min_clim=get(src,'value');
+                case obj.max_clim_edit
+                    obj.max_clim=str2double(get(src,'string'));
+                case obj.min_clim_edit
+                    obj.min_clim=str2double(get(src,'string'));
             end
             
-            h=findobj(obj.bsp.TFMapFig,'-regexp','Tag','TFMapAxes*');
-            
-            set(h,'CLim',[obj.min_clim,obj.max_clim]);
-            figure(obj.bsp.TFMapFig);
+            if ~isempty(obj.bsp.TFMapFig)&&ishandle(obj.bsp.TFMapFig)
+                h=findobj(obj.bsp.TFMapFig,'-regexp','Tag','TFMapAxes*');
+                
+                set(h,'CLim',[obj.min_clim,obj.max_clim]);
+                figure(obj.bsp.TFMapFig);
+            end
         end
         
         function DisplayOnsetCallback(obj,src)
-            obj.display_onset=get(src,'value');
+            if src==obj.onset_radio
+                obj.display_onset=get(src,'value');
+            end
             
             tonset=obj.ms_before/1000;
             if ~isempty(obj.bsp.TFMapFig)&&ishandle(obj.bsp.TFMapFig)
