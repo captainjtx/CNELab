@@ -486,6 +486,10 @@ classdef BioSigPlot < hgsetget
                 
             end
             
+            if obj.TFMapWin.valid
+                delete(obj.TFMapWin.fig);
+            end
+            
             if isa(obj.WinFastEvts,'FastEventWindow') && isvalid(obj.WinFastEvts)
                 delete(obj.WinFastEvts);
             end
@@ -985,6 +989,8 @@ classdef BioSigPlot < hgsetget
                 [obj.EventSummaryIndex,obj.EventSummaryNumber]=...
                     EventWindow.findIndexOfEvent(evts(:,2),[evts{:,1}]);
             end
+            
+            notify(obj,'EventListChange');
             
         end
         
@@ -2290,5 +2296,6 @@ classdef BioSigPlot < hgsetget
     end
     events
         SelectedFastEvtChange
+        EventListChange
     end
 end

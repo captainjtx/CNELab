@@ -34,7 +34,6 @@ classdef TFMapWindow < handle
         max_clim_slider
         min_clim_slider
         onset_radio
-        
     end
     properties
         fs
@@ -167,14 +166,24 @@ classdef TFMapWindow < handle
         end
         function set.normalization_start(obj,val)
             if obj.valid
-                if obj.normalization==2
-                    set(obj.scale_start_edit,'string',num2str(val));
-                elseif obj.normalization==3
-                    set(obj.scale_start_edit,'string',val);
-                end
+                set(obj.scale_start_edit,'string',num2str(val));
             end
             
             obj.normalization_start_=val;
+        end
+        
+        function val=get.normalization_start_event(obj)
+            val=obj.normalization_start_event_;
+        end
+        
+        function set.normalization_start_event(obj,val)
+            if obj.valid
+                ind=find(ismember(val,obj.event_list));
+                if isempty(ind)
+                    ind=1;
+                end
+                set(obj.scale_start_popup,'value',ind);
+            end
         end
         
         function val=get.normalization_end(obj)
@@ -188,6 +197,20 @@ classdef TFMapWindow < handle
                 elseif obj.normalization==3
                     set(obj.scale_end_edit,'string',val);
                 end
+            end
+        end
+        
+        function val=get.normalization_end_event(obj)
+            val=obj.normalization_end_event_;
+        end
+        
+        function set.normalization_end_event(obj,val)
+            if obj.valid
+                ind=find(ismember(val,obj.event_list));
+                if isempty(ind)
+                    ind=1;
+                end
+                set(obj.scale_end_popup,'value',ind);
             end
         end
         
@@ -264,6 +287,9 @@ classdef TFMapWindow < handle
         end
         function set.clim_slider_min(obj,val)
             obj.clim_slider_min_=val;
+            if obj.min_clim<val
+                obj.min_clim=val;
+            end
             if obj.valid
                 set(obj.max_clim_slider,'min',val);
                 set(obj.min_clim_slider,'min',val);
@@ -275,6 +301,9 @@ classdef TFMapWindow < handle
         end
         function set.clim_slider_max(obj,val)
             obj.clim_slider_max_=val;
+            if obj.max_clim>val
+                obj.max_clim=val;
+            end
             if obj.valid
                 set(obj.max_clim_slider,'max',val);
                 set(obj.min_clim_slider,'max',val);
@@ -362,9 +391,15 @@ classdef TFMapWindow < handle
         function obj=TFMapWindow(bsp)
             obj.bsp=bsp;
             obj.fs=bsp.SRate;
+            if ~isempty(bsp.Evts)
+                obj.event_list_=unique(bsp.Evts(:,2));
+            end
             varinitial(obj);
-            
+            addlistener(bsp,'EventListChange',@(src,evts)UpdateEventList(obj));
             %             buildfig(obj);
+        end
+        function UpdateEventList(obj)
+            obj.event_list=unique(obj.bsp.Evts(:,2));
         end
         function varinitial(obj)
             obj.valid=0;
@@ -377,6 +412,8 @@ classdef TFMapWindow < handle
             obj.normalization_=1;%none
             obj.normalization_start_='';
             obj.normalization_end_='';
+            obj.normalization_start_event_='';
+            obj.normalization_end_event_='';
             obj.display_onset_=1;
             obj.max_freq_=obj.fs/2;
             obj.min_freq_=0;
@@ -384,7 +421,7 @@ classdef TFMapWindow < handle
             obj.clim_slider_min_=-15;
             obj.max_clim_=10;
             obj.min_clim_=-10;
-            obj.stft_winlen_=round(obj.fs/3);
+            obj.stft_winlen_=2^nextpow2(round(obj.fs/4));
             obj.stft_overlap_=round(obj.stft_winlen*0.9);
         end
         function buildfig(obj)
@@ -420,7 +457,7 @@ classdef TFMapWindow < handle
             obj.ms_before_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_before),'units','normalized','position',[0.4,0.05,0.29,0.3],...
                 'HorizontalAlignment','left','visible','off','callback',@(src,evts) MsBeforeCallback(obj,src));
             obj.ms_after_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_after),'units','normalized','position',[0.7,0.05,0.29,0.3],...
-                'HorizontalAlignment','left','visible','off','callback',@(src,evts) MSAfterCallback(obj,src));
+                'HorizontalAlignment','left','visible','off','callback',@(src,evts) MsAfterCallback(obj,src));
             
             hp_mag=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.73,1,0.04]);
             uicontrol('Parent',hp_mag,'style','text','units','normalized','string','Unit: ','position',[0.01,0,0.3,1],...
@@ -438,20 +475,24 @@ classdef TFMapWindow < handle
                 'position',[0.4,0.6,0.59,0.35],'value',obj.normalization);
             
             obj.scale_start_text=uicontrol('Parent',hp_scale,'style','text','units','normalized',...
-                'string','Start (ms): ','position',[0.01,0.3,0.4,0.3],'HorizontalAlignment','left',...
+                'string','Start (ms): ','position',[0.05,0.3,0.4,0.3],'HorizontalAlignment','center',...
                 'visible','off');
             obj.scale_end_text=uicontrol('Parent',hp_scale,'style','text','units','normalized',...
-                'string','End (ms): ','position',[0.5,0.3,0.4,0.3],'HorizontalAlignment','left',...
+                'string','End (ms): ','position',[0.55,0.3,0.4,0.3],'HorizontalAlignment','center',...
                 'visible','off');
             obj.scale_start_edit=uicontrol('parent',hp_scale,'style','edit','units','normalized',...
-                'string',obj.normalization_start,'position',[0.01,0.05,0.4,0.3],'HorizontalAlignment','left','visible','off');
+                'string',obj.normalization_start,'position',[0.05,0.05,0.4,0.3],'HorizontalAlignment','center','visible','off',...
+                'callback',@(src,evt)NormalizationStartEndCallback(obj,src));
             obj.scale_start_popup=uicontrol('parent',hp_scale,'style','popup','units','normalized',...
-                'string',obj.event_list,'position',[0.01,0.05,0.4,0.3],'visible','off');
+                'string',obj.event_list,'position',[0.05,0.05,0.4,0.3],'visible','off',...
+                'callback',@(src,evt)NormalizationStartEndCallback(obj,src));
             
             obj.scale_end_edit=uicontrol('parent',hp_scale,'style','edit','units','normalized',...
-                'string',obj.normalization_end,'position',[0.5,0.05,0.4,0.3],'HorizontalAlignment','left','visible','off');
+                'string',obj.normalization_end,'position',[0.55,0.05,0.4,0.3],'HorizontalAlignment','center','visible','off',...
+                'callback',@(src,evt)NormalizationStartEndCallback(obj,src));
             obj.scale_end_popup=uicontrol('parent',hp_scale,'style','popup','units','normalized',...
-                'string',obj.event_list,'position',[0.5,0.05,0.4,0.3],'visible','off');
+                'string',obj.event_list,'position',[0.55,0.05,0.4,0.3],'visible','off',...
+                'callback',@(src,evt)NormalizationStartEndCallback(obj,src));
             
             hp_stft=uipanel('parent',hp,'title','','units','normalized','position',[0,0.46,1,0.1]);
             uicontrol('parent',hp_stft,'style','text','string','STFT Window (sample): ','units','normalized',...
@@ -493,23 +534,28 @@ classdef TFMapWindow < handle
                 'position',[0.05,0.8,0.4,0.1],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
             obj.min_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
                 'position',[0.15,0.05,0.2,0.7],'callback',@(src,evts) ClimCallback(obj,src),...
-                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.min_clim,'sliderstep',[0.1,0.2]);
+                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.min_clim,'sliderstep',[0.01,0.05]);
             obj.max_clim_edit=uicontrol('parent',hp_clim,'style','edit','string',num2str(obj.max_clim),'units','normalized',...
                 'position',[0.55,0.8,0.4,0.1],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
             obj.max_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
                 'position',[0.65,0.05,0.2,0.7],'callback',@(src,evts) ClimCallback(obj,src),...
-                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.max_clim,'sliderstep',[0.1,0.2]);
+                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.max_clim,'sliderstep',[0.01,0.05]);
             
             hp_display=uipanel('parent',hp,'title','Display','units','normalized','position',[0.72,0,0.28,0.45]);
             obj.onset_radio=uicontrol('parent',hp_display,'style','radiobutton','string','onset','value',obj.display_onset,...
                 'units','normalized','position',[0.1,0.9,0.9,0.1],'callback',@(src,evts) DisplayOnsetCallback(obj,src));
             
             DataPopUpCallback(obj,obj.data_popup);
+            NormalizationCallback(obj,obj.normalization_popup);
             if strcmpi(obj.unit,'dB')
                 UnitRadioCallback(obj,obj.unit_db_radio);
             else
                 UnitRadioCallback(obj,obj.unit_mag_radio);
             end
+            
+            obj.event=obj.event_;
+            obj.normalization_start_event=obj.normalization_start_event_;
+            obj.normalization_end_event=obj.normalization_end_event_;
         end
         function OnClose(obj)
             obj.valid=0;
@@ -531,7 +577,7 @@ classdef TFMapWindow < handle
                     set(obj.event_text,'visible','off');
                     set(obj.ms_before_text,'visible','off');
                     set(obj.ms_after_text,'visible','off');
-                    set(obj.event_edit,'visible','off');
+                    set(obj.event_popup,'visible','off');
                     set(obj.ms_before_edit,'visible','off');
                     set(obj.ms_after_edit,'visible','off');
                 case 2
@@ -539,7 +585,7 @@ classdef TFMapWindow < handle
                     set(obj.event_text,'visible','on');
                     set(obj.ms_before_text,'visible','on');
                     set(obj.ms_after_text,'visible','on');
-                    set(obj.event_edit,'visible','on','enable','off');
+                    set(obj.event_popup,'visible','on','enable','off');
                     set(obj.ms_before_edit,'visible','on');
                     set(obj.ms_after_edit,'visible','on');
                 case 3
@@ -547,7 +593,7 @@ classdef TFMapWindow < handle
                     set(obj.event_text,'visible','on');
                     set(obj.ms_before_text,'visible','on');
                     set(obj.ms_after_text,'visible','on');
-                    set(obj.event_edit,'visible','on','enable','on');
+                    set(obj.event_popup,'visible','on','enable','on');
                     set(obj.ms_before_edit,'visible','on');
                     set(obj.ms_after_edit,'visible','on');
             end
@@ -560,7 +606,7 @@ classdef TFMapWindow < handle
                 set(src,'string',num2str(obj.ms_before));
             end
         end
-        function MsAfterCallaback(obj,src)
+        function MsAfterCallback(obj,src)
             obj.ms_after=str2double(get(src,'string'));
             if isnan(obj.ms_after)
                 obj.ms_after=1000;
@@ -600,6 +646,9 @@ classdef TFMapWindow < handle
                     set(obj.scale_end_text,'visible','off');
                     set(obj.scale_start_edit,'visible','off');
                     set(obj.scale_end_edit,'visible','off');
+                    set(obj.scale_start_popup,'visible','off');
+                    set(obj.scale_end_popup,'visible','off');
+                    obj.unit='dB';
                 case 2
                     set(obj.scale_start_text,'visible','on');
                     set(obj.scale_start_text,'string','Start (ms): ')
@@ -607,13 +656,19 @@ classdef TFMapWindow < handle
                     set(obj.scale_end_text,'string','End (ms): ')
                     set(obj.scale_start_edit,'visible','on');
                     set(obj.scale_end_edit,'visible','on');
+                    set(obj.scale_start_popup,'visible','off');
+                    set(obj.scale_end_popup,'visible','off');
+                    obj.unit='Mag';
                 case 3
                     set(obj.scale_start_text,'visible','on');
                     set(obj.scale_start_text,'string','Start (event): ')
                     set(obj.scale_end_text,'visible','on');
                     set(obj.scale_end_text,'string','End (event): ')
-                    set(obj.scale_start_edit,'visible','on');
-                    set(obj.scale_end_edit,'visible','on');
+                    set(obj.scale_start_edit,'visible','off');
+                    set(obj.scale_end_edit,'visible','off');
+                    set(obj.scale_start_popup,'visible','on');
+                    set(obj.scale_end_popup,'visible','on');
+                    obj.unit='Mag';
             end
         end
         
@@ -633,7 +688,7 @@ classdef TFMapWindow < handle
                 
                 set(h,'YLim',[obj.min_freq,obj.max_freq]);
                 DisplayOnsetCallback(obj,obj.onset_radio);
-                figure(obj.bsp.TFMapFig);
+%                 figure(obj.bsp.TFMapFig);
             end
         end
         
@@ -652,14 +707,16 @@ classdef TFMapWindow < handle
             if ~isempty(obj.bsp.TFMapFig)&&ishandle(obj.bsp.TFMapFig)
                 h=findobj(obj.bsp.TFMapFig,'-regexp','Tag','TFMapAxes*');
                 
-                set(h,'CLim',[obj.min_clim,obj.max_clim]);
-                figure(obj.bsp.TFMapFig);
+                if obj.min_clim<obj.max_clim
+                    set(h,'CLim',[obj.min_clim,obj.max_clim]);
+                end
+%                 figure(obj.bsp.TFMapFig);
             end
         end
         
         function DisplayOnsetCallback(obj,src)
             if src==obj.onset_radio
-                obj.display_onset=get(src,'value');
+                obj.display_onset_=get(src,'value');
             end
             
             tonset=obj.ms_before/1000;
@@ -681,7 +738,22 @@ classdef TFMapWindow < handle
                 end
             end
         end
+        function NormalizationStartEndCallback(obj,src)
+            switch src
+                case obj.scale_start_edit
+                    obj.normalization_start=str2double(get(src,'string'));
+                case obj.scale_end_edit
+                    obj.normalization_end=str2double(get(src,'string'));
+                case obj.scale_start_popup
+                    obj.normalization_start_event_=obj.event_list{get(src,'value')};
+                case obj.scale_end_popup
+                    obj.normalization_end_event_=obj.event_list{get(src,'value')};
+            end
+        end
         
+        function EventCallback(obj,src)
+            obj.event_=obj.event_list{get(src,'value')};
+        end
     end
     
 end

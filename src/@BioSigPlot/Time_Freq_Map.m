@@ -69,9 +69,18 @@ obj.TFMapWin.stft_overlap=ov;
 %**************************************************************************
 
 s=[obj.TFMapWin.min_clim obj.TFMapWin.max_clim];
-freq=[obj.TFMapWin.min_freq obj.TFMapWin.max_freq];
+if s(1)>=s(2)
+    s(1)=s(2)-abs(s(2))*0.1;
+    obj.TFMapWin.min_clim=s(1);
+end
 
-if isempty(obj.TFMapFig)||~ishandle(obj.TFMapFig)
+freq=[obj.TFMapWin.min_freq obj.TFMapWin.max_freq];
+if freq(1)>=freq(2)
+    freq(1)=freq(2)-1;
+    obj.TFMapWin.min_freq=freq(1);
+end
+
+if isempty(obj.TFMapFig)||~ishandle(obj.TFMapFig)||~strcmpi(get(obj.TFMapFig,'name'),'TFMap')
     obj.TFMapFig=figure('Name','TFMap','Visible','off','NumberTitle','off');
 end
 figure(obj.TFMapFig)
@@ -101,13 +110,13 @@ elseif obj.TFMapWin.normalization==3
     nref=[];
     
     t_evt=[obj.Evts{:,1}];
-    t_label=t_evt(strcmpi(obj.Evts(:,2),obj.TFMapWin.normalization_start));
+    t_label=t_evt(strcmpi(obj.Evts(:,2),obj.TFMapWin.normalization_start_event));
     i_label=round(t_label*obj.SRate);
     i_label=min(max(1,i_label),size(obj.Data{1},1));
 
     baseline_start=i_label;
 
-    t_label=t_evt(strcmpi(obj.Evts(:,2),obj.TFMapWin.normalization_end));
+    t_label=t_evt(strcmpi(obj.Evts(:,2),obj.TFMapWin.normalization_end_event));
     i_label=round(t_label*obj.SRate);
     i_label=min(max(1,i_label),size(obj.Data{1},1));
     
@@ -146,8 +155,9 @@ switch option
         
     case 2
         tf=bsp_tfmap(obj.TFMapFig,data,baseline,fs,wd,ov,s,nref,chanNames,freq,unit);
-        obj.TFMapWin.clim_slider_max=max(max(abs(tf)));
-        obj.TFMapWin.clim_slider_min=-max(max(abs(tf)));
+        cmax=max(max(abs(tf)));
+        obj.TFMapWin.clim_slider_max=cmax*2;
+        obj.TFMapWin.clim_slider_min=-cmax*2;
     case 3
             if isempty(chanpos)
                 errordlg('No channel position in the data !');
@@ -183,14 +193,11 @@ switch option
             
             dw=dx/(x_len+2*dx);
             dh=dy/(y_len+2*dy);
-            ax_back = axes('Position',[0 0 1 1],'Visible','off');
-            set(ax_back,'XLim',[0,1]);
-            set(ax_back,'YLim',[0,1]);
+            axe = axes('Parent',obj.TFMapFig,'units','normalized','Position',[0 0 1 1],'XLim',[0,1],'YLim',[0,1],'visible','off');
             
-            tmp=-inf;
+            cmax=-inf;
             for j=1:length(channames)
-                axes(ax_back);
-                if strcmpi(get(obj.MenuTFMapEventAverage,'checked'),'on')
+                if obj.TFMapWin.data_input==3
                     tfm=0;
                     tmp=obj.Selection_;
                     for i=1:length(i_event)
@@ -206,12 +213,14 @@ switch option
                 else
                     [tfm,f,t]=bsp_tfmap(obj.TFMapFig,data(:,j),baseline,fs,wd,ov,s,nref,channames,freq,unit);
                 end
-                tfmap_grid(t,f,tfm,chanpos(j,:),dw,dh,channames{j},sl,sh,freq);
+                tfmap_grid(obj.TFMapFig,axe,t,f,tfm,chanpos(j,:),dw,dh,channames{j},sl,sh,freq);
                 
-                tmp=max(max(max(abs(tfm))),tmp);
+                if ~isempty(tfm)
+                    cmax=max(max(max(abs(tfm))),cmax);
+                end
             end
-            obj.TFMapWin.clim_slider_max=tmp;
-            obj.TFMapWin.clim_slider_min=-tmp;
+            obj.TFMapWin.clim_slider_max=cmax*2;
+            obj.TFMapWin.clim_slider_min=-cmax*2;
             
             obj.TFMapWin.DisplayOnsetCallback([]);
 end
