@@ -396,6 +396,7 @@ classdef TFMapWindow < handle
             end
             varinitial(obj);
             addlistener(bsp,'EventListChange',@(src,evts)UpdateEventList(obj));
+            addlistener(bsp,'SelectedEventChange',@(src,evts)UpdateEventSelected(obj));
             %             buildfig(obj);
         end
         function UpdateEventList(obj)
@@ -459,7 +460,7 @@ classdef TFMapWindow < handle
             obj.ms_after_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_after),'units','normalized','position',[0.7,0.05,0.29,0.3],...
                 'HorizontalAlignment','left','visible','off','callback',@(src,evts) MsAfterCallback(obj,src));
             
-            hp_mag=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.73,1,0.04]);
+            hp_mag=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.46,1,0.04]);
             uicontrol('Parent',hp_mag,'style','text','units','normalized','string','Unit: ','position',[0.01,0,0.3,1],...
                 'HorizontalAlignment','left');
             obj.unit_mag_radio=uicontrol('Parent',hp_mag,'Style','radiobutton','units','normalized','string','Mag','position',[0.4,0,0.29,1],...
@@ -467,7 +468,7 @@ classdef TFMapWindow < handle
             obj.unit_db_radio=uicontrol('Parent',hp_mag,'Style','radiobutton','units','normalized','string','dB','position',[0.7,0,0.29,1],...
                 'HorizontalAlignment','left','callback',@(src,evts) UnitRadioCallback(obj,src));
             
-            hp_scale=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.57,1,0.15]);
+            hp_scale=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.62,1,0.15]);
             uicontrol('Parent',hp_scale,'style','text','units','normalized','string','Normalization: ',...
                 'position',[0.01,0.6,0.4,0.35],'HorizontalAlignment','left');
             obj.normalization_popup=uicontrol('Parent',hp_scale,'style','popup','units','normalized',...
@@ -494,7 +495,7 @@ classdef TFMapWindow < handle
                 'string',obj.event_list,'position',[0.55,0.05,0.4,0.3],'visible','off',...
                 'callback',@(src,evt)NormalizationStartEndCallback(obj,src));
             
-            hp_stft=uipanel('parent',hp,'title','','units','normalized','position',[0,0.46,1,0.1]);
+            hp_stft=uipanel('parent',hp,'title','','units','normalized','position',[0,0.51,1,0.1]);
             uicontrol('parent',hp_stft,'style','text','string','STFT Window (sample): ','units','normalized',...
                 'position',[0,0.6,0.5,0.3]);
             obj.stft_winlen_edit=uicontrol('parent',hp_stft,'style','edit','string',num2str(obj.stft_winlen),...
@@ -753,6 +754,12 @@ classdef TFMapWindow < handle
         
         function EventCallback(obj,src)
             obj.event_=obj.event_list{get(src,'value')};
+        end
+        
+        function UpdateEventSelected(obj)
+            if ~isempty(obj.bsp.SelectedEvent)
+                obj.event=obj.bsp.Evts{obj.bsp.SelectedEvent(1),2};
+            end
         end
     end
     

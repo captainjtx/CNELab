@@ -1266,6 +1266,8 @@ classdef BioSigPlot < hgsetget
                 set(obj.EventInfo,'String',[num2str(obj.EventSummaryIndex(loc(1))),'|',num2str(obj.EventSummaryNumber(loc(1)))]);
             end
             
+            notify(obj,'SelectedEventChange');
+            
         end
         function obj = set.AdvanceEventsDisplay_(obj,val)
             if ischar(val)
@@ -2297,5 +2299,6 @@ classdef BioSigPlot < hgsetget
     events
         SelectedFastEvtChange
         EventListChange
+        SelectedEventChange
     end
 end
