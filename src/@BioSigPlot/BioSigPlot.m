@@ -492,6 +492,10 @@ classdef BioSigPlot < hgsetget
                 delete(obj.TFMapWin.fig);
             end
             
+            if obj.SpatialMapWin.valid
+                delete(obj.SpatialMapWin.fig);
+            end
+            
             if isa(obj.WinFastEvts,'FastEventWindow') && isvalid(obj.WinFastEvts)
                 delete(obj.WinFastEvts);
             end
@@ -515,6 +519,8 @@ classdef BioSigPlot < hgsetget
             if ~isempty(obj.SPFObj)&&isvalid(obj.SPFObj)&&isa(obj.SPFObj,'SPFPlot')
                 delete(obj.SPFObj);
             end
+            
+            
         end % delete
         
         %*****************************************************************

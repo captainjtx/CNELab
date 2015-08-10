@@ -30,7 +30,17 @@ classdef SpatialMapWindow < handle
         min_freq_slider
         max_clim_slider
         min_clim_slider
-        
+        erd_radio
+        ers_radio
+        erd_edit
+        ers_edit
+        erd_slider
+        ers_slider
+        threshold_edit
+        threshold_slider
+        compute_btn
+        scale_by_max_radio
+        display_mask_radio
     end
     properties
         fs
@@ -53,6 +63,15 @@ classdef SpatialMapWindow < handle
         clim_slider_max_
         clim_slider_min_
         event_list_
+        
+        erd_t_
+        ers_t_
+        
+        threshold_
+        
+        scale_by_max_
+        
+        display_mask_channel_
     end
     
     properties (Dependent)
@@ -74,6 +93,17 @@ classdef SpatialMapWindow < handle
         clim_slider_max
         clim_slider_min
         event_list
+        
+        erd_t
+        ers_t
+        
+        threshold
+        
+        scale_by_max
+        
+        display_mask_channel
+        
+        
     end
     methods
 
@@ -352,7 +382,6 @@ classdef SpatialMapWindow < handle
             obj.normalization_end_='';
             obj.normalization_start_event_='';
             obj.normalization_end_event_='';
-            obj.display_onset_=1;
             obj.max_freq_=obj.fs/2;
             obj.min_freq_=0;
             obj.clim_slider_max_=15;
@@ -434,7 +463,24 @@ classdef SpatialMapWindow < handle
                 'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) FreqCallback(obj,src),...
                 'min',0,'max',obj.fs/2,'sliderstep',[0.005,0.02],'value',obj.max_freq);
             
-            hp_clim=uipanel('parent',hp,'title','Power Limit','units','normalized','position',[0,0.43,1,0.12]);
+            hp_erds=uipanel('parent',hp,'title','ERD/ERS T-Test','units','normalized','position',[0,0.43,1,0.12]);
+            
+            obj.erd_radio=uicontrol('parent',hp_erds,'style','radiobutton','string','ERD','units','normalized',...
+                'position',[0,0.6,0.18,0.3]);
+            obj.ers_radio=uicontrol('parent',hp_erds,'style','radiobutton','string','ERS','units','normalized',...
+                'position',[0,0.1,0.18,0.3]);
+            obj.erd_edit=uicontrol('parent',hp_erds,'style','edit','string',num2str(obj.min_clim),'units','normalized',...
+                'position',[0.2,0.55,0.15,0.4],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
+            obj.erd_slider=uicontrol('parent',hp_erds,'style','slider','units','normalized',...
+                'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
+                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.min_clim,'sliderstep',[0.01,0.05]);
+            obj.ers_edit=uicontrol('parent',hp_erds,'style','edit','string',num2str(obj.max_clim),'units','normalized',...
+                'position',[0.2,0.05,0.15,0.4],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
+            obj.ers_slider=uicontrol('parent',hp_erds,'style','slider','units','normalized',...
+                'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
+                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.max_clim,'sliderstep',[0.01,0.05]);
+            
+            hp_clim=uipanel('parent',hp,'title','Scale','units','normalized','position',[0,0.3,1,0.12]);
             
             uicontrol('parent',hp_clim,'style','text','string','Min','units','normalized',...
                 'position',[0,0.6,0.1,0.3]);
@@ -451,23 +497,23 @@ classdef SpatialMapWindow < handle
                 'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
                 'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.max_clim,'sliderstep',[0.01,0.05]);
             
-            hp_erds=uipanel('parent',hp,'title','ERD/ERS','units','normalized','position',[0,0.3,1,0.12]);
             
-            uicontrol('parent',hp_erds,'style','text','string','Min','units','normalized',...
-                'position',[0,0.6,0.1,0.3]);
-            uicontrol('parent',hp_clim,'style','text','string','Max','units','normalized',...
-                'position',[0,0.1,0.1,0.3]);
-            obj.min_clim_edit=uicontrol('parent',hp_clim,'style','edit','string',num2str(obj.min_clim),'units','normalized',...
-                'position',[0.15,0.55,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
-            obj.min_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
-                'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
-                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.min_clim,'sliderstep',[0.01,0.05]);
-            obj.max_clim_edit=uicontrol('parent',hp_clim,'style','edit','string',num2str(obj.max_clim),'units','normalized',...
-                'position',[0.15,0.05,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
-            obj.max_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
-                'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
-                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.max_clim,'sliderstep',[0.01,0.05]);
+            hp_threshold=uipanel('parent',hp,'title','Threshold','units','normalized','position',[0,0.23,1,0.06]);
             
+            uicontrol('parent',hp_threshold,'style','text','string','Ratio','units','normalized',...
+                'position',[0,0.2,0.1,0.6]);
+            obj.threshold_edit=uicontrol('parent',hp_threshold,'style','edit','string',num2str(obj.min_clim),'units','normalized',...
+                'position',[0.15,0.1,0.2,0.8],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
+            obj.threshold_slider=uicontrol('parent',hp_threshold,'style','slider','units','normalized',...
+                'position',[0.4,0.2,0.55,0.6],'callback',@(src,evts) ClimCallback(obj,src),...
+                'min',0,'max',1,'value',0,'sliderstep',[0.01,0.05]);
+            
+            hp_display=uipanel('parent',hp,'title','Display','units','normalized','position',[0,0.06,1,0.16]);
+            
+            obj.scale_by_max_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Scale By Maximum','units','normalized','position',[0,0.75,0.45,0.25]);
+            obj.display_mask_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Dispaly Mask Channels','units','normalized','position',[0,0.5,0.45,0.25]);
+            
+            obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.005,0.2,0.05]);
             DataPopUpCallback(obj,obj.data_popup);
             NormalizationCallback(obj,obj.normalization_popup);
             
