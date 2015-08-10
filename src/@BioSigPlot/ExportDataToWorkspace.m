@@ -8,7 +8,7 @@ if ~isempty(obj.Selection)
     for i=1:size(obj.Selection,2)
         startInd=max(1,obj.Selection(1,i));
         endInd=min(size(obj.Data{1},1),obj.Selection(2,i));
-        selection=cat(1,selection,startInd:endInd);
+        selection=cat(2,selection,startInd:endInd);
     end
 else
     selection=1:size(obj.Data{1},1);

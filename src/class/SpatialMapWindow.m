@@ -13,8 +13,8 @@ classdef SpatialMapWindow < handle
         event_text
         ms_before_text
         ms_after_text
-        unit_mag_radio
-        unit_db_radio
+        
+        
         normalization_popup
         scale_start_text
         scale_end_text
@@ -30,7 +30,7 @@ classdef SpatialMapWindow < handle
         min_freq_slider
         max_clim_slider
         min_clim_slider
-        onset_radio
+        
     end
     properties
         fs
@@ -39,13 +39,13 @@ classdef SpatialMapWindow < handle
         ms_before_
         ms_after_
         event_
-        unit_
+        
         normalization_
         normalization_start_
         normalization_end_
         normalization_start_event_
         normalization_end_event_
-        display_onset_
+        
         max_freq_
         min_freq_
         max_clim_
@@ -60,13 +60,13 @@ classdef SpatialMapWindow < handle
         ms_before
         ms_after
         event
-        unit
+        
         normalization
         normalization_start
         normalization_start_event
         normalization_end
         normalization_end_event
-        display_onset
+        
         max_freq
         min_freq
         max_clim
@@ -119,22 +119,7 @@ classdef SpatialMapWindow < handle
             end
             obj.event_=val;
         end
-        function val=get.unit(obj)
-            val=obj.unit_;
-        end
-        function set.unit(obj,val)
-            if strcmpi(val,'dB')
-                if obj.valid
-                    UnitRadioCallback(obj,obj.unit_db_radio);
-                end
-                obj.unit_='dB';
-            else
-                if obj.valid
-                    UnitRadioCallback(obj,obj.unit_mag_radio);
-                end
-                obj.unit_='Mag';
-            end
-        end
+
         function val=get.normalization(obj)
             val=obj.normalization_;
         end
@@ -196,17 +181,6 @@ classdef SpatialMapWindow < handle
                 set(obj.scale_end_popup,'value',ind);
             end
         end
-        
-        function val=get.display_onset(obj)
-            val=obj.display_onset_;
-        end
-        function set.display_onset(obj,val)
-            obj.display_onset_=val;
-            if obj.valid
-                set(obj.onset_radio,'value',val);
-            end
-        end
-        
         
         function val=get.max_freq(obj)
             val=obj.max_freq_;
@@ -373,7 +347,6 @@ classdef SpatialMapWindow < handle
             obj.ms_before_=1000;
             obj.ms_after_=1000;
             obj.event_='';
-            obj.unit_='dB';
             obj.normalization_=1;%none
             obj.normalization_start_='';
             obj.normalization_end_='';
@@ -395,7 +368,7 @@ classdef SpatialMapWindow < handle
             
             hp=uipanel('units','normalized','Position',[0,0,1,1]);
             
-            hp_data=uipanel('Parent',hp,'Title','','Units','normalized','Position',[0,0.78,1,0.15]);
+            hp_data=uipanel('Parent',hp,'Title','','Units','normalized','Position',[0,0.85,1,0.15]);
             uicontrol('Parent',hp_data,'Style','text','String','Input Data: ','units','normalized','Position',[0.01,0.6,0.4,0.35],...
                 'HorizontalAlignment','left');
             obj.data_popup=uicontrol('Parent',hp_data,'Style','popup',...
@@ -415,15 +388,7 @@ classdef SpatialMapWindow < handle
             obj.ms_after_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_after),'units','normalized','position',[0.7,0.05,0.29,0.3],...
                 'HorizontalAlignment','left','visible','off','callback',@(src,evts) MsAfterCallback(obj,src));
             
-            hp_mag=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.46,1,0.04]);
-            uicontrol('Parent',hp_mag,'style','text','units','normalized','string','Unit: ','position',[0.01,0,0.3,1],...
-                'HorizontalAlignment','left');
-            obj.unit_mag_radio=uicontrol('Parent',hp_mag,'Style','radiobutton','units','normalized','string','Mag','position',[0.4,0,0.29,1],...
-                'HorizontalAlignment','left','callback',@(src,evts) UnitRadioCallback(obj,src),'value',1);
-            obj.unit_db_radio=uicontrol('Parent',hp_mag,'Style','radiobutton','units','normalized','string','dB','position',[0.7,0,0.29,1],...
-                'HorizontalAlignment','left','callback',@(src,evts) UnitRadioCallback(obj,src));
-            
-            hp_scale=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.62,1,0.15]);
+            hp_scale=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.69,1,0.15]);
             uicontrol('Parent',hp_scale,'style','text','units','normalized','string','Normalization: ',...
                 'position',[0.01,0.6,0.4,0.35],'HorizontalAlignment','left');
             obj.normalization_popup=uicontrol('Parent',hp_scale,'style','popup','units','normalized',...
@@ -451,52 +416,60 @@ classdef SpatialMapWindow < handle
                 'callback',@(src,evt)NormalizationStartEndCallback(obj,src));
             
             
-            hp_freq=uipanel('parent',hp,'title','Frequency','units','normalized','position',[0,0,0.35,0.45]);
+            hp_freq=uipanel('parent',hp,'title','Frequency','units','normalized','position',[0,0.56,1,0.12]);
             
             uicontrol('parent',hp_freq,'style','text','string','Min','units','normalized',...
-                'position',[0,0.8,0.5,0.2]);
+                'position',[0,0.6,0.1,0.3]);
             uicontrol('parent',hp_freq,'style','text','string','Max','units','normalized',...
-                'position',[0.5,0.8,0.5,0.2]);
+                'position',[0,0.1,0.1,0.3]);
             
             obj.min_freq_edit=uicontrol('parent',hp_freq,'style','edit','string',num2str(obj.min_freq),'units','normalized',...
-                'position',[0.05,0.8,0.4,0.1],'horizontalalignment','center','callback',@(src,evts) FreqCallback(obj,src));
+                'position',[0.15,0.55,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) FreqCallback(obj,src));
             obj.min_freq_slider=uicontrol('parent',hp_freq,'style','slider','units','normalized',...
-                'position',[0.15,0.05,0.2,0.7],'callback',@(src,evts) FreqCallback(obj,src),...
+                'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) FreqCallback(obj,src),...
                 'min',0,'max',obj.fs/2,'sliderstep',[0.005,0.02],'value',obj.min_freq);
             obj.max_freq_edit=uicontrol('parent',hp_freq,'style','edit','string',num2str(obj.max_freq),'units','normalized',...
-                'position',[0.55,0.8,0.4,0.1],'horizontalalignment','center','callback',@(src,evts) FreqCallback(obj,src));
+                'position',[0.15,0.05,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) FreqCallback(obj,src));
             obj.max_freq_slider=uicontrol('parent',hp_freq,'style','slider','units','normalized',...
-                'position',[0.65,0.05,0.2,0.7],'callback',@(src,evts) FreqCallback(obj,src),...
+                'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) FreqCallback(obj,src),...
                 'min',0,'max',obj.fs/2,'sliderstep',[0.005,0.02],'value',obj.max_freq);
             
-            hp_clim=uipanel('parent',hp,'title','Power Limit','units','normalized','position',[0.36,0,0.35,0.45]);
+            hp_clim=uipanel('parent',hp,'title','Power Limit','units','normalized','position',[0,0.43,1,0.12]);
             
             uicontrol('parent',hp_clim,'style','text','string','Min','units','normalized',...
-                'position',[0,0.8,0.5,0.2]);
+                'position',[0,0.6,0.1,0.3]);
             uicontrol('parent',hp_clim,'style','text','string','Max','units','normalized',...
-                'position',[0.5,0.8,0.5,0.2]);
+                'position',[0,0.1,0.1,0.3]);
             obj.min_clim_edit=uicontrol('parent',hp_clim,'style','edit','string',num2str(obj.min_clim),'units','normalized',...
-                'position',[0.05,0.8,0.4,0.1],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
+                'position',[0.15,0.55,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
             obj.min_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
-                'position',[0.15,0.05,0.2,0.7],'callback',@(src,evts) ClimCallback(obj,src),...
+                'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
                 'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.min_clim,'sliderstep',[0.01,0.05]);
             obj.max_clim_edit=uicontrol('parent',hp_clim,'style','edit','string',num2str(obj.max_clim),'units','normalized',...
-                'position',[0.55,0.8,0.4,0.1],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
+                'position',[0.15,0.05,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
             obj.max_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
-                'position',[0.65,0.05,0.2,0.7],'callback',@(src,evts) ClimCallback(obj,src),...
+                'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
                 'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.max_clim,'sliderstep',[0.01,0.05]);
             
-            hp_display=uipanel('parent',hp,'title','Display','units','normalized','position',[0.72,0,0.28,0.45]);
-            obj.onset_radio=uicontrol('parent',hp_display,'style','radiobutton','string','onset','value',obj.display_onset,...
-                'units','normalized','position',[0.1,0.9,0.9,0.1],'callback',@(src,evts) DisplayOnsetCallback(obj,src));
+            hp_erds=uipanel('parent',hp,'title','ERD/ERS','units','normalized','position',[0,0.3,1,0.12]);
+            
+            uicontrol('parent',hp_erds,'style','text','string','Min','units','normalized',...
+                'position',[0,0.6,0.1,0.3]);
+            uicontrol('parent',hp_clim,'style','text','string','Max','units','normalized',...
+                'position',[0,0.1,0.1,0.3]);
+            obj.min_clim_edit=uicontrol('parent',hp_clim,'style','edit','string',num2str(obj.min_clim),'units','normalized',...
+                'position',[0.15,0.55,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
+            obj.min_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
+                'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
+                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.min_clim,'sliderstep',[0.01,0.05]);
+            obj.max_clim_edit=uicontrol('parent',hp_clim,'style','edit','string',num2str(obj.max_clim),'units','normalized',...
+                'position',[0.15,0.05,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
+            obj.max_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
+                'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
+                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.max_clim,'sliderstep',[0.01,0.05]);
             
             DataPopUpCallback(obj,obj.data_popup);
             NormalizationCallback(obj,obj.normalization_popup);
-            if strcmpi(obj.unit,'dB')
-                UnitRadioCallback(obj,obj.unit_db_radio);
-            else
-                UnitRadioCallback(obj,obj.unit_mag_radio);
-            end
             
             obj.event=obj.event_;
             obj.normalization_start_event=obj.normalization_start_event_;
@@ -557,17 +530,6 @@ classdef SpatialMapWindow < handle
             end
         end
         
-
-        function UnitRadioCallback(obj,src)
-            if src==obj.unit_db_radio
-                set(src,'value',1);
-                set(obj.unit_mag_radio,'value',0);
-            else
-                set(src,'value',1);
-                set(obj.unit_db_radio,'value',0);
-            end
-        end
-        
         function NormalizationCallback(obj,src)
             obj.normalization=get(src,'value');
             switch get(src,'value')
@@ -578,7 +540,6 @@ classdef SpatialMapWindow < handle
                     set(obj.scale_end_edit,'visible','off');
                     set(obj.scale_start_popup,'visible','off');
                     set(obj.scale_end_popup,'visible','off');
-                    obj.unit='dB';
                 case 2
                     set(obj.scale_start_text,'visible','on');
                     set(obj.scale_start_text,'string','Start (ms): ')
@@ -588,7 +549,6 @@ classdef SpatialMapWindow < handle
                     set(obj.scale_end_edit,'visible','on');
                     set(obj.scale_start_popup,'visible','off');
                     set(obj.scale_end_popup,'visible','off');
-                    obj.unit='Mag';
                 case 3
                     set(obj.scale_start_text,'visible','on');
                     set(obj.scale_start_text,'string','Start (event): ')
@@ -598,7 +558,6 @@ classdef SpatialMapWindow < handle
                     set(obj.scale_end_edit,'visible','off');
                     set(obj.scale_start_popup,'visible','on');
                     set(obj.scale_end_popup,'visible','on');
-                    obj.unit='Mag';
             end
         end
         
@@ -644,30 +603,6 @@ classdef SpatialMapWindow < handle
             end
         end
         
-        function DisplayOnsetCallback(obj,src)
-            if src==obj.onset_radio
-                obj.display_onset_=get(src,'value');
-            end
-            
-            tonset=obj.ms_before/1000;
-            if ~isempty(obj.bsp.TFMapFig)&&ishandle(obj.bsp.TFMapFig)
-                
-                h=findobj(obj.bsp.TFMapFig,'-regexp','Tag','TFMapAxes*');
-                if obj.display_onset
-                    for i=1:length(h)
-                        tmp=findobj(h(i),'Type','line');
-                        delete(tmp);
-                        line([tonset,tonset],[obj.min_freq,obj.max_freq],'LineStyle',':',...
-                            'color','k','linewidth',0.1,'Parent',h(i))
-                    end
-                else
-                    for i=1:length(h)
-                        tmp=findobj(h(i),'Type','line');
-                        delete(tmp);
-                    end
-                end
-            end
-        end
         function NormalizationStartEndCallback(obj,src)
             switch src
                 case obj.scale_start_edit
