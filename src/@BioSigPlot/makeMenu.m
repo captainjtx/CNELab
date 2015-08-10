@@ -105,6 +105,7 @@ obj.MenuLockLayout=uimenu(obj.Menupanels,'Label','Lock Layout',...
 obj.MenuApp=uimenu(obj.Fig,'Label','Apps');
 %**************TFMap*******************************************************
 obj.MenuTFMap=uimenu(obj.MenuApp,'Label','Time Frequency Map','callback',@(src,evt)obj.TFMapWin.buildfig());
+obj.MenuSpatialMap=uimenu(obj.MenuApp,'Label','Spatial Spectral Map','callback',@(src,evt) obj.SpatialMapWin.buildfig());
 
 obj.MenuPSD=uimenu(obj.MenuApp,'Label','Power Spectrum Density');
 obj.MenuPSD_Unit=uimenu(obj.MenuPSD,'Label','Unit');

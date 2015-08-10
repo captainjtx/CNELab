@@ -148,7 +148,7 @@ classdef BioSigPlot < hgsetget
         MenuAdvanceEventsQRS
         
         MenuTFMap
-        
+        MenuSpatialMap
         MenuPSD
         MenuPSD_Unit
         MenuPSD_Normal
@@ -370,6 +370,7 @@ classdef BioSigPlot < hgsetget
         IconPause
         WinVideo
         TFMapWin
+        SpatialMapWin
     end
     
     methods
@@ -396,6 +397,7 @@ classdef BioSigPlot < hgsetget
             redrawEvts(obj);
             
             obj.TFMapWin=TFMapWindow(obj);
+            obj.SpatialMapWin=SpatialMapWindow(obj);
             obj.IsInitialize=false;
             
 %             set(obj.Fig,'Visible','on')
