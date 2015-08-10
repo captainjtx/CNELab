@@ -1,4 +1,4 @@
-function h=tfmap_grid(fig,axe,t,f,tf,pos,dw,dh,channame,sl,sh,freq)
+function h=tfmap_grid(fig,axe,t,f,tf,pos,dw,dh,channame,sl,sh,freq,unit)
 %TFMAP_GRID Summary of this function goes here
 %   Detailed explanation goes here
 %Orign of postion is top left corner
@@ -10,7 +10,11 @@ text(x+dw/2,y+dh+0.008,channame,...
 
 h=axes('parent',fig,'units','normalized','Position',[x,y,dw,dh],'Visible','off');
 
-imagesc('XData',t,'YData',f,'CData',10*log10(tf),'Parent',h);
+if strcmpi(unit,'dB')
+    imagesc('XData',t,'YData',f,'CData',10*log10(tf),'Parent',h);
+else
+    imagesc('XData',t,'YData',f,'CData',tf-1,'Parent',h);
+end
 set(h,'CLim',[sl sh]);
 set(h,'XLim',[min(t) max(t)]);
 set(h,'YLim',freq);

@@ -213,14 +213,25 @@ switch option
                 else
                     [tfm,f,t]=bsp_tfmap(obj.TFMapFig,data(:,j),baseline,fs,wd,ov,s,nref,channames,freq,unit);
                 end
-                tfmap_grid(obj.TFMapFig,axe,t,f,tfm,chanpos(j,:),dw,dh,channames{j},sl,sh,freq);
+                    
+                tfmap_grid(obj.TFMapFig,axe,t,f,tfm,chanpos(j,:),dw,dh,channames{j},sl,sh,freq,unit);
+                
                 
                 if ~isempty(tfm)
-                    cmax=max(max(max(abs(tfm))),cmax);
+                    if strcmpi(unit,'dB')
+                        cmax=max(max(max(abs(10*log10(tfm)))),cmax);
+                    else
+                        cmax=max(max(max(abs(tfm-1))),cmax);
+                    end
                 end
             end
-            obj.TFMapWin.clim_slider_max=cmax*2;
-            obj.TFMapWin.clim_slider_min=-cmax*2;
+            if strcmpi(unit,'dB')
+                obj.TFMapWin.clim_slider_max=cmax*1.5;
+                obj.TFMapWin.clim_slider_min=-cmax*1.5;
+            else
+                obj.TFMapWin.clim_slider_max=cmax*1.5;
+                obj.TFMapWin.clim_slider_min=-1;
+            end
             
             obj.TFMapWin.DisplayOnsetCallback([]);
 end

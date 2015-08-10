@@ -426,6 +426,10 @@ classdef TFMapWindow < handle
             obj.stft_overlap_=round(obj.stft_winlen*0.9);
         end
         function buildfig(obj)
+            if obj.valid
+                figure(obj.fig);
+                return
+            end
             obj.valid=1;
             obj.fig=figure('MenuBar','none','Name','Time-Frequency Map','units','pixels',...
                 'Position',[500 100 300 600],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
@@ -633,9 +637,11 @@ classdef TFMapWindow < handle
             if src==obj.unit_db_radio
                 set(src,'value',1);
                 set(obj.unit_mag_radio,'value',0);
+                obj.unit_='dB';
             else
                 set(src,'value',1);
                 set(obj.unit_db_radio,'value',0);
+                obj.unit_='Mag';
             end
         end
         
@@ -649,7 +655,6 @@ classdef TFMapWindow < handle
                     set(obj.scale_end_edit,'visible','off');
                     set(obj.scale_start_popup,'visible','off');
                     set(obj.scale_end_popup,'visible','off');
-                    obj.unit='dB';
                 case 2
                     set(obj.scale_start_text,'visible','on');
                     set(obj.scale_start_text,'string','Start (ms): ')
@@ -659,7 +664,6 @@ classdef TFMapWindow < handle
                     set(obj.scale_end_edit,'visible','on');
                     set(obj.scale_start_popup,'visible','off');
                     set(obj.scale_end_popup,'visible','off');
-                    obj.unit='Mag';
                 case 3
                     set(obj.scale_start_text,'visible','on');
                     set(obj.scale_start_text,'string','Start (event): ')
@@ -669,7 +673,6 @@ classdef TFMapWindow < handle
                     set(obj.scale_end_edit,'visible','off');
                     set(obj.scale_start_popup,'visible','on');
                     set(obj.scale_end_popup,'visible','on');
-                    obj.unit='Mag';
             end
         end
         
