@@ -192,9 +192,9 @@ classdef TFMapWindow < handle
         function set.normalization_end(obj,val)
             obj.normalization_end_=val;
             if obj.valid
-                if obj.normalization==2
+                if obj.normalization==2||obj.normalization==3
                     set(obj.scale_end_edit,'string',num2str(val));
-                elseif obj.normalization==3
+                elseif obj.normalization==4
                     set(obj.scale_end_edit,'string',val);
                 end
             end
@@ -476,7 +476,7 @@ classdef TFMapWindow < handle
             uicontrol('Parent',hp_scale,'style','text','units','normalized','string','Normalization: ',...
                 'position',[0.01,0.6,0.4,0.35],'HorizontalAlignment','left');
             obj.normalization_popup=uicontrol('Parent',hp_scale,'style','popup','units','normalized',...
-                'string',{'None','Within Segment','External Baseline'},'callback',@(src,evts) NormalizationCallback(obj,src),...
+                'string',{'None','Individual Within Segment','Average Within Sgement','External Baseline'},'callback',@(src,evts) NormalizationCallback(obj,src),...
                 'position',[0.4,0.6,0.59,0.35],'value',obj.normalization);
             
             obj.scale_start_text=uicontrol('Parent',hp_scale,'style','text','units','normalized',...
@@ -665,6 +665,15 @@ classdef TFMapWindow < handle
                     set(obj.scale_start_popup,'visible','off');
                     set(obj.scale_end_popup,'visible','off');
                 case 3
+                    set(obj.scale_start_text,'visible','on');
+                    set(obj.scale_start_text,'string','Start (ms): ')
+                    set(obj.scale_end_text,'visible','on');
+                    set(obj.scale_end_text,'string','End (ms): ')
+                    set(obj.scale_start_edit,'visible','on');
+                    set(obj.scale_end_edit,'visible','on');
+                    set(obj.scale_start_popup,'visible','off');
+                    set(obj.scale_end_popup,'visible','off');
+                case 4
                     set(obj.scale_start_text,'visible','on');
                     set(obj.scale_start_text,'string','Start (event): ')
                     set(obj.scale_end_text,'visible','on');

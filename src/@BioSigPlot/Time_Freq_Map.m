@@ -91,7 +91,7 @@ clf
 if obj.TFMapWin.normalization==1
     nref=[];
     baseline=[];
-elseif obj.TFMapWin.normalization==2
+elseif obj.TFMapWin.normalization==2||obj.TFMapWin.normalization==3
     nref=[obj.TFMapWin.normalization_start,obj.TFMapWin.normalization_end];
     
     if nref(2)>=round(size(data,1)/fs*1000)
@@ -106,7 +106,7 @@ elseif obj.TFMapWin.normalization==2
     baseline=[];
     obj.TFMapWin.normalization_start=nref(1);
     obj.TFMapWin.normalization_end=nref(2);
-elseif obj.TFMapWin.normalization==3
+elseif obj.TFMapWin.normalization==4
     nref=[];
     
     t_evt=[obj.Evts{:,1}];
@@ -196,20 +196,41 @@ switch option
             axe = axes('Parent',obj.TFMapFig,'units','normalized','Position',[0 0 1 1],'XLim',[0,1],'YLim',[0,1],'visible','off');
             
             cmax=-inf;
+            nref_tmp=nref;
             for j=1:length(channames)
                 if obj.TFMapWin.data_input==3
                     tfm=0;
                     tmp=obj.Selection_;
+                    %compute the baseline spectrum
+                    if obj.TFMapWin.normalization==3
+                        rtfm=0;
+                        for i=1:length(i_event)
+                            obj.Selection_=[i_event(i)-nL+nref(1);i_event(i)-nL+nref(2)];
+                            bdata=get_selected_data(obj,omitMask);
+                            bdata=bdata(:,chanind);
+                            bdata=bdata(:,j);
+                            [rtf,f,t]=bsp_tfmap(obj.TFMapFig,bdata,baseline,fs,wd,ov,s,[],channames,freq,unit);
+                            rtfm=rtfm+abs(rtf);
+                        end
+                        
+                        rtfm=rtfm/length(i_event);
+                        nref_tmp=[];
+                    end
+                    %******************************************************
                     for i=1:length(i_event)
+                        
                         obj.Selection_=[i_event(i)-nL;i_event(i)+nR];
                         data=get_selected_data(obj,omitMask);
                         data=data(:,chanind);
                         data=data(:,j);
-                        [tf,f,t]=bsp_tfmap(obj.TFMapFig,data,baseline,fs,wd,ov,s,nref,channames,freq,unit);
+                        [tf,f,t]=bsp_tfmap(obj.TFMapFig,data,baseline,fs,wd,ov,s,nref_tmp,channames,freq,unit);
                         tfm=tfm+tf;
                     end
-                    obj.Selection_=tmp;
                     tfm=tfm/length(i_event);
+                    obj.Selection_=tmp;
+                    if obj.TFMapWin.normalization==3
+                        tfm=tfm./repmat(mean(rtfm,2),1,size(tfm,2));
+                    end
                 else
                     [tfm,f,t]=bsp_tfmap(obj.TFMapFig,data(:,j),baseline,fs,wd,ov,s,nref,channames,freq,unit);
                 end
