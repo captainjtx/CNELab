@@ -64,6 +64,8 @@ classdef SpatialMapWindow < handle
         clim_slider_min_
         event_list_
         
+        erd_
+        ers_
         erd_t_
         ers_t_
         
@@ -94,6 +96,8 @@ classdef SpatialMapWindow < handle
         clim_slider_min
         event_list
         
+        erd
+        ers
         erd_t
         ers_t
         
@@ -106,6 +110,99 @@ classdef SpatialMapWindow < handle
         
     end
     methods
+        function val=get.erd(obj)
+            val=obj.erd_;
+        end
+        function set.erd(obj,val)
+            obj.erd_=val;
+            if obj.valid
+                if ~val
+                    set(obj.erd_edit,'enable','off');
+                    set(obj.erd_slider,'enable','off');
+                else
+                    set(obj.erd_slider,'enable','on');
+                    set(obj.erd_edit,'enable','on');
+                end
+            end  
+        end
+        
+        
+        function val=get.ers(obj)
+            val=obj.ers_;
+        end
+        function set.ers(obj,val)
+            obj.ers_=val;
+            if obj.valid
+                if ~val
+                    set(obj.ers_edit,'enable','off');
+                    set(obj.ers_slider,'enable','off');
+                else
+                    set(obj.ers_slider,'enable','on');
+                    set(obj.ers_edit,'enable','on');
+                end
+            end  
+        end
+        function val=get.erd_t(obj)
+            val=obj.erd_t_;
+        end
+        function set.erd_t(obj,val)
+            old=digits(5);
+            val=vpa(val);
+            obj.erd_t_=val;
+            if obj.valid
+                set(obj.erd_edit,'string',num2str(val));
+                set(obj.erd_slider,'value',10^(val/10));
+            end
+            digits(old);
+        end
+        
+        function val=get.ers_t(obj)
+            val=obj.ers_t_;
+        end
+        function set.ers_t(obj,val)
+            old=digits(5);
+            val=vpa(val);
+            obj.ers_t_=val;
+            if obj.valid
+                set(obj.ers_edit,'string',num2str(val));
+                set(obj.ers_slider,'value',10^(val/10));
+            end
+            digits(old);
+        end
+        
+        function val=get.threshold(obj)
+            val=obj.threshold_;
+        end
+        function set.threshold(obj,val)
+            old=digits(5);
+            val=vpa(val);
+            obj.threshold_=val;
+            if obj.valid
+                set(obj.threshold_edit,'string',num2str(val));
+                set(obj.threshold_slider,'value',value);
+            end
+            digits(old);
+        end
+        
+        function val=get.scale_by_max(obj)
+            val=obj.scale_by_max_;
+        end
+        function set.scale_by_max(obj,val)
+            obj.scale_by_max_=val;
+            if obj.valid
+                set(obj.scale_by_max_radio,'value',val);
+            end
+        end
+        function val=get.display_mask_channel(obj)
+            val=obj.display_mask_channel_;
+        end
+        function set.display_mask_channel(obj,val)
+            obj.display_mask_channel_=val;
+            if obj.valid
+                set(obj.display_mask_radio,'value',val);
+            end
+        end
+            
 
         function val=get.data_input(obj)
             val=obj.data_input_;
@@ -190,9 +287,10 @@ classdef SpatialMapWindow < handle
         function set.normalization_end(obj,val)
             obj.normalization_end_=val;
             if obj.valid
-                if obj.normalization==2
+                if obj.normalization==2||obj.normalization==3
                     set(obj.scale_end_edit,'string',num2str(val));
-                elseif obj.normalization==3
+                    
+                elseif obj.normalization==4
                     set(obj.scale_end_edit,'string',val);
                 end
             end
@@ -262,6 +360,8 @@ classdef SpatialMapWindow < handle
             if obj.valid
                 set(obj.max_clim_slider,'min',val);
                 set(obj.min_clim_slider,'min',val);
+                set(obj.erd_slider,'min',val);
+                set(obj.ers_slider,'min',val);
             end
         end
         
@@ -276,6 +376,8 @@ classdef SpatialMapWindow < handle
             if obj.valid
                 set(obj.max_clim_slider,'max',val);
                 set(obj.min_clim_slider,'max',val);
+                set(obj.erd_slider,'min',val);
+                set(obj.ers_slider,'max',val);
             end
         end
         function val=get.max_clim(obj)
@@ -388,8 +490,19 @@ classdef SpatialMapWindow < handle
             obj.clim_slider_min_=-15;
             obj.max_clim_=10;
             obj.min_clim_=-10;
+            obj.erd_=1;
+            obj.ers_=1;
+            obj.erd_t_=0.5;
+            obj.ers_t_=0.5;
+            obj.threshold_=1;
+            obj.scale_by_max_=0;
+            obj.display_mask_channel_=0;
         end
         function buildfig(obj)
+            if obj.valid
+                figure(obj.fig);
+                return
+            end
             obj.valid=1;
             obj.fig=figure('MenuBar','none','Name','Spatial-Spectral Map','units','pixels',...
                 'Position',[500 100 300 600],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
@@ -421,7 +534,7 @@ classdef SpatialMapWindow < handle
             uicontrol('Parent',hp_scale,'style','text','units','normalized','string','Normalization: ',...
                 'position',[0.01,0.6,0.4,0.35],'HorizontalAlignment','left');
             obj.normalization_popup=uicontrol('Parent',hp_scale,'style','popup','units','normalized',...
-                'string',{'None','Within Segment','External Baseline'},'callback',@(src,evts) NormalizationCallback(obj,src),...
+                'string',{'None','Individual Within Segment','Average Within Sgement','External Baseline'},'callback',@(src,evts) NormalizationCallback(obj,src),...
                 'position',[0.4,0.6,0.59,0.35],'value',obj.normalization);
             
             obj.scale_start_text=uicontrol('Parent',hp_scale,'style','text','units','normalized',...
@@ -466,19 +579,19 @@ classdef SpatialMapWindow < handle
             hp_erds=uipanel('parent',hp,'title','ERD/ERS T-Test','units','normalized','position',[0,0.43,1,0.12]);
             
             obj.erd_radio=uicontrol('parent',hp_erds,'style','radiobutton','string','ERD','units','normalized',...
-                'position',[0,0.6,0.18,0.3]);
+                'position',[0,0.6,0.18,0.3],'value',obj.erd,'callback',@(src,evts) ERDSCallback(obj,src));
             obj.ers_radio=uicontrol('parent',hp_erds,'style','radiobutton','string','ERS','units','normalized',...
-                'position',[0,0.1,0.18,0.3]);
-            obj.erd_edit=uicontrol('parent',hp_erds,'style','edit','string',num2str(obj.min_clim),'units','normalized',...
-                'position',[0.2,0.55,0.15,0.4],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
+                'position',[0,0.1,0.18,0.3],'value',obj.ers,'callback',@(src,evts) ERDSCallback(obj,src));
+            obj.erd_edit=uicontrol('parent',hp_erds,'style','edit','string',num2str(obj.erd_t),'units','normalized',...
+                'position',[0.2,0.55,0.15,0.4],'horizontalalignment','center','callback',@(src,evts) ERDSCallback(obj,src));
             obj.erd_slider=uicontrol('parent',hp_erds,'style','slider','units','normalized',...
-                'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
-                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.min_clim,'sliderstep',[0.01,0.05]);
-            obj.ers_edit=uicontrol('parent',hp_erds,'style','edit','string',num2str(obj.max_clim),'units','normalized',...
-                'position',[0.2,0.05,0.15,0.4],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
+                'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) ERDSCallback(obj,src),...
+                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.erd_t,'sliderstep',[0.01,0.05]);
+            obj.ers_edit=uicontrol('parent',hp_erds,'style','edit','string',num2str(obj.ers_t),'units','normalized',...
+                'position',[0.2,0.05,0.15,0.4],'horizontalalignment','center','callback',@(src,evts) ERDSCallback(obj,src));
             obj.ers_slider=uicontrol('parent',hp_erds,'style','slider','units','normalized',...
-                'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
-                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.max_clim,'sliderstep',[0.01,0.05]);
+                'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) ERDSCallback(obj,src),...
+                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.ers_t,'sliderstep',[0.01,0.05]);
             
             hp_clim=uipanel('parent',hp,'title','Scale','units','normalized','position',[0,0.3,1,0.12]);
             
@@ -502,18 +615,23 @@ classdef SpatialMapWindow < handle
             
             uicontrol('parent',hp_threshold,'style','text','string','Ratio','units','normalized',...
                 'position',[0,0.2,0.1,0.6]);
-            obj.threshold_edit=uicontrol('parent',hp_threshold,'style','edit','string',num2str(obj.min_clim),'units','normalized',...
-                'position',[0.15,0.1,0.2,0.8],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
+            obj.threshold_edit=uicontrol('parent',hp_threshold,'style','edit','string',num2str(obj.threshold),'units','normalized',...
+                'position',[0.15,0.1,0.2,0.8],'horizontalalignment','center','callback',@(src,evts) ThresholdCallback(obj,src));
             obj.threshold_slider=uicontrol('parent',hp_threshold,'style','slider','units','normalized',...
-                'position',[0.4,0.2,0.55,0.6],'callback',@(src,evts) ClimCallback(obj,src),...
-                'min',0,'max',1,'value',0,'sliderstep',[0.01,0.05]);
-            
+                'position',[0.4,0.2,0.55,0.6],'callback',@(src,evts) ThresholdCallback(obj,src),...
+                'min',0,'max',1,'value',obj.threshold,'sliderstep',[0.01,0.05]);
+             
             hp_display=uipanel('parent',hp,'title','Display','units','normalized','position',[0,0.06,1,0.16]);
             
-            obj.scale_by_max_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Scale By Maximum','units','normalized','position',[0,0.75,0.45,0.25]);
-            obj.display_mask_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Dispaly Mask Channels','units','normalized','position',[0,0.5,0.45,0.25]);
+            obj.scale_by_max_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Scale By Maximum',...
+                'units','normalized','position',[0,0.75,0.45,0.25],'value',obj.scale_by_max,...
+                'callback',@(src,evts) ScaleByMaxCallback(obj,src));
+            obj.display_mask_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Dispaly Mask Channels',...
+                'units','normalized','position',[0,0.5,0.45,0.25],'value',obj.display_mask_channel,...
+                'callback',@(src,evts) DisplayMaskCallback(obj,src));
             
-            obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.005,0.2,0.05]);
+            obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.005,0.2,0.05],...
+                'callback',@(src,evts) ComputeCallback(obj));
             DataPopUpCallback(obj,obj.data_popup);
             NormalizationCallback(obj,obj.normalization_popup);
             
@@ -671,6 +789,32 @@ classdef SpatialMapWindow < handle
                 obj.event=obj.bsp.Evts{obj.bsp.SelectedEvent(1),2};
             end
         end
+        function ComputeCallback(obj)
+        end
+        function ERDSCallback(obj,src)
+            switch src
+                case obj.erd_radio
+                case obj.ers_radio
+                case obj.erd_edit
+                case obj.ers_edit
+                case obj.erd_slider
+                case obj.ers_slider
+            end       
+        end
+        function ThresholdCallback(obj,src)
+            switch src
+                case obj.threshold_edit
+                case obj.threshold_slider
+            end  
+        end
+        
+        function DisplayMaskCallback(obj,src)
+            
+        end
+        function ScaleByMaxCallback(obj,src)
+            
+        end
+        
     end
     
 end

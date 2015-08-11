@@ -6,6 +6,7 @@ classdef TFMapWindow < handle
         valid
         bsp
         fig
+        TFMapFig
         method_popup
         data_popup
         event_popup
@@ -34,6 +35,8 @@ classdef TFMapWindow < handle
         max_clim_slider
         min_clim_slider
         onset_radio
+        compute_btn
+        new_btn
     end
     properties
         fs
@@ -381,8 +384,8 @@ classdef TFMapWindow < handle
             else
                 obj.event=val{1};
             end
-                
-
+            
+            
         end
         
     end
@@ -394,6 +397,7 @@ classdef TFMapWindow < handle
             if ~isempty(bsp.Evts)
                 obj.event_list_=unique(bsp.Evts(:,2));
             end
+            
             varinitial(obj);
             addlistener(bsp,'EventListChange',@(src,evts)UpdateEventList(obj));
             addlistener(bsp,'SelectedEventChange',@(src,evts)UpdateEventSelected(obj));
@@ -511,45 +515,56 @@ classdef TFMapWindow < handle
                 'units','normalized','position',[0.55,0.1,0.4,0.46],'HorizontalAlignment','center',...
                 'callback',@(src,evts) STFTOverlapCallback(obj,src));
             
-            hp_freq=uipanel('parent',hp,'title','Frequency','units','normalized','position',[0,0,0.35,0.45]);
+            
+            
+            
+            hp_freq=uipanel('parent',hp,'title','Frequency','units','normalized','position',[0,0.33,1,0.12]);
             
             uicontrol('parent',hp_freq,'style','text','string','Min','units','normalized',...
-                'position',[0,0.8,0.5,0.2]);
+                'position',[0,0.6,0.1,0.3]);
             uicontrol('parent',hp_freq,'style','text','string','Max','units','normalized',...
-                'position',[0.5,0.8,0.5,0.2]);
+                'position',[0,0.1,0.1,0.3]);
             
             obj.min_freq_edit=uicontrol('parent',hp_freq,'style','edit','string',num2str(obj.min_freq),'units','normalized',...
-                'position',[0.05,0.8,0.4,0.1],'horizontalalignment','center','callback',@(src,evts) FreqCallback(obj,src));
+                'position',[0.15,0.55,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) FreqCallback(obj,src));
             obj.min_freq_slider=uicontrol('parent',hp_freq,'style','slider','units','normalized',...
-                'position',[0.15,0.05,0.2,0.7],'callback',@(src,evts) FreqCallback(obj,src),...
+                'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) FreqCallback(obj,src),...
                 'min',0,'max',obj.fs/2,'sliderstep',[0.005,0.02],'value',obj.min_freq);
             obj.max_freq_edit=uicontrol('parent',hp_freq,'style','edit','string',num2str(obj.max_freq),'units','normalized',...
-                'position',[0.55,0.8,0.4,0.1],'horizontalalignment','center','callback',@(src,evts) FreqCallback(obj,src));
+                'position',[0.15,0.05,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) FreqCallback(obj,src));
             obj.max_freq_slider=uicontrol('parent',hp_freq,'style','slider','units','normalized',...
-                'position',[0.65,0.05,0.2,0.7],'callback',@(src,evts) FreqCallback(obj,src),...
+                'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) FreqCallback(obj,src),...
                 'min',0,'max',obj.fs/2,'sliderstep',[0.005,0.02],'value',obj.max_freq);
             
-            hp_clim=uipanel('parent',hp,'title','Power Limit','units','normalized','position',[0.36,0,0.35,0.45]);
+            
+            
+            hp_clim=uipanel('parent',hp,'title','Scale','units','normalized','position',[0,0.2,1,0.12]);
             
             uicontrol('parent',hp_clim,'style','text','string','Min','units','normalized',...
-                'position',[0,0.8,0.5,0.2]);
+                'position',[0,0.6,0.1,0.3]);
             uicontrol('parent',hp_clim,'style','text','string','Max','units','normalized',...
-                'position',[0.5,0.8,0.5,0.2]);
+                'position',[0,0.1,0.1,0.3]);
             obj.min_clim_edit=uicontrol('parent',hp_clim,'style','edit','string',num2str(obj.min_clim),'units','normalized',...
-                'position',[0.05,0.8,0.4,0.1],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
+                'position',[0.15,0.55,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
             obj.min_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
-                'position',[0.15,0.05,0.2,0.7],'callback',@(src,evts) ClimCallback(obj,src),...
+                'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
                 'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.min_clim,'sliderstep',[0.01,0.05]);
             obj.max_clim_edit=uicontrol('parent',hp_clim,'style','edit','string',num2str(obj.max_clim),'units','normalized',...
-                'position',[0.55,0.8,0.4,0.1],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
+                'position',[0.15,0.05,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
             obj.max_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
-                'position',[0.65,0.05,0.2,0.7],'callback',@(src,evts) ClimCallback(obj,src),...
+                'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
                 'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.max_clim,'sliderstep',[0.01,0.05]);
             
-            hp_display=uipanel('parent',hp,'title','Display','units','normalized','position',[0.72,0,0.28,0.45]);
+            hp_display=uipanel('parent',hp,'title','Display','units','normalized','position',[0,0.06,1,0.13]);
             obj.onset_radio=uicontrol('parent',hp_display,'style','radiobutton','string','onset','value',obj.display_onset,...
-                'units','normalized','position',[0.1,0.9,0.9,0.1],'callback',@(src,evts) DisplayOnsetCallback(obj,src));
+                'units','normalized','position',[0,0.7,0.45,0.3],'callback',@(src,evts) DisplayOnsetCallback(obj,src));
             
+            
+            obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.005,0.2,0.05],...
+                'callback',@(src,evts) ComputeCallback(obj));
+            
+            obj.new_btn=uicontrol('parent',hp,'style','pushbutton','string','New','units','normalized','position',[0.01,0.005,0.2,0.05],...
+                'callback',@(src,evts) NewCallback(obj));
             DataPopUpCallback(obj,obj.data_popup);
             NormalizationCallback(obj,obj.normalization_popup);
             if strcmpi(obj.unit,'dB')
@@ -567,8 +582,11 @@ classdef TFMapWindow < handle
             h = obj.fig;
             if ishandle(h)
                 delete(h);
-            else
-                return
+            end
+            
+            h = obj.TFMapFig;
+            if ishandle(h)
+                delete(h);
             end
         end
         function MethodCallback(obj,src)
@@ -696,12 +714,12 @@ classdef TFMapWindow < handle
                 case obj.min_freq_slider
                     obj.min_freq=round(get(src,'value')*10)/10;
             end
-            if ~isempty(obj.bsp.TFMapFig)&&ishandle(obj.bsp.TFMapFig)
-                h=findobj(obj.bsp.TFMapFig,'-regexp','Tag','TFMapAxes*');
+            if ~isempty(obj.TFMapFig)&&ishandle(obj.TFMapFig)
+                h=findobj(obj.TFMapFig,'-regexp','Tag','TFMapAxes*');
                 
                 set(h,'YLim',[obj.min_freq,obj.max_freq]);
                 DisplayOnsetCallback(obj,obj.onset_radio);
-%                 figure(obj.bsp.TFMapFig);
+                %                 figure(obj.TFMapFig);
             end
         end
         
@@ -717,13 +735,13 @@ classdef TFMapWindow < handle
                     obj.min_clim=str2double(get(src,'string'));
             end
             
-            if ~isempty(obj.bsp.TFMapFig)&&ishandle(obj.bsp.TFMapFig)
-                h=findobj(obj.bsp.TFMapFig,'-regexp','Tag','TFMapAxes*');
+            if ~isempty(obj.TFMapFig)&&ishandle(obj.TFMapFig)
+                h=findobj(obj.TFMapFig,'-regexp','Tag','TFMapAxes*');
                 
                 if obj.min_clim<obj.max_clim
                     set(h,'CLim',[obj.min_clim,obj.max_clim]);
                 end
-%                 figure(obj.bsp.TFMapFig);
+                %                 figure(obj.TFMapFig);
             end
         end
         
@@ -733,9 +751,9 @@ classdef TFMapWindow < handle
             end
             
             tonset=obj.ms_before/1000;
-            if ~isempty(obj.bsp.TFMapFig)&&ishandle(obj.bsp.TFMapFig)
+            if ~isempty(obj.TFMapFig)&&ishandle(obj.TFMapFig)
                 
-                h=findobj(obj.bsp.TFMapFig,'-regexp','Tag','TFMapAxes*');
+                h=findobj(obj.TFMapFig,'-regexp','Tag','TFMapAxes*');
                 if obj.display_onset
                     for i=1:length(h)
                         tmp=findobj(h(i),'Type','line');
@@ -773,6 +791,284 @@ classdef TFMapWindow < handle
                 obj.event=obj.bsp.Evts{obj.bsp.SelectedEvent(1),2};
             end
         end
+        function NewCallback(obj)
+            if ~isempty(obj.TFMapFig)&&ishandle(obj.TFMapFig)
+                set(obj.TFMapFig,'Name','Obsolete TFMap');
+            end
+            obj.TFMapFig=figure('Name','Active TFMap','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt));
+        end
+        function ComputeCallback(obj,src)
+            
+            option=obj.method;
+            
+            unit=obj.unit;
+            %==========================================================================
+            nL=round(obj.ms_before*obj.fs/1000);
+            nR=round(obj.ms_after*obj.fs/1000);
+            
+            %Data selection************************************************************
+            if obj.data_input==1
+                omitMask=true;
+                [data,chanNames,dataset,channel,sample,evts,groupnames,chanpos]=get_selected_data(obj,omitMask);
+            elseif obj.data_input==2
+                if isempty(obj.bsp.SelectedEvent)
+                    errordlg('No event selection !');
+                    return
+                elseif length(obj.SelectedEvent)>1
+                    warndlg('More than one event selected, using the first one !');
+                end
+                i_label=round(obj.bsp.Evts{obj.bsp.SelectedEvent(1),1}*obj.fs);
+                i_label=min(max(1,i_label),size(obj.bsp.Data{1},1));
+                
+                i_label((i_label+nR)>size(obj.bsp.Data{1},1))=[];
+                i_label((i_label-nL)<1)=[];
+                if isempty(i_label)
+                    errordlg('Illegal selection!');
+                    return
+                end
+                tmp_sel=[reshape(i_label-nL,1,length(i_label));reshape(i_label+nR,1,length(i_label))];
+                omitMask=true;
+                [data,chanNames,dataset,channel,sample,evts,groupnames,chanpos]=get_selected_data(obj.bsp,omitMask,tmp_sel);
+            elseif obj.data_input==3
+                t_evt=[obj.bsp.Evts{:,1}];
+                t_label=t_evt(strcmpi(obj.bsp.Evts(:,2),obj.event));
+                if isempty(t_label)
+                    errordlg(['Event: ',obj.event,' not found !']);
+                    return
+                end
+                i_event=round(t_label*obj.fs);
+                i_event=min(max(1,i_event),size(obj.bsp.Data{1},1));
+                
+                i_event((i_event+nR)>size(obj.bsp.Data{1},1))=[];
+                i_event((i_event-nL)<1)=[];
+                
+                omitMask=true;
+                [data,chanNames,dataset,channel,sample,evts,groupnames,chanpos]=get_selected_data(obj.bsp,omitMask);
+                %need to change the data
+            end
+            %**************************************************************************
+            %set default parameter*****************************************************
+            wd=round(obj.stft_winlen);
+            ov=round(obj.stft_overlap);
+            
+            sl=obj.min_clim;
+            sh=obj.max_clim;
+            
+            if isempty(wd)||wd>size(data,1)
+                wd=round(obj.fs/3);
+                ov=round(wd*0.9);
+            end
+            
+            if ov>wd
+                ov=round(wd*0.9);
+            end
+            obj.stft_winlen=wd;
+            obj.stft_overlap=ov;
+            %**************************************************************************
+            
+            s=[obj.min_clim obj.max_clim];
+            if s(1)>=s(2)
+                s(1)=s(2)-abs(s(2))*0.1;
+                obj.min_clim=s(1);
+            end
+            
+            freq=[obj.min_freq obj.max_freq];
+            if freq(1)>=freq(2)
+                freq(1)=freq(2)-1;
+                obj.min_freq=freq(1);
+            end
+            
+            if isempty(obj.TFMapFig)||~ishandle(obj.TFMapFig)||~strcmpi(get(obj.TFMapFig,'name'),'Active TFMap')
+                obj.TFMapFig=figure('Name','Active TFMap','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt));
+            end
+            figure(obj.TFMapFig)
+            
+            clf
+            
+            %Normalizatin**************************************************************
+            if obj.normalization==1
+                nref=[];
+                baseline=[];
+            elseif obj.normalization==2||obj.normalization==3
+                nref=[obj.normalization_start,obj.normalization_end];
+                
+                if nref(2)>=round(size(data,1)/obj.fs*1000)
+                    nref(2)=round(size(data,1)/obj.fs*1000);
+                end
+                if nref(1)>=nref(2)
+                    nref(1)=0;
+                end
+                if nref(1)<0;
+                    nref(1)=0;
+                end
+                baseline=[];
+                obj.normalization_start=nref(1);
+                obj.normalization_end=nref(2);
+            elseif obj.normalization==4
+                nref=[];
+                
+                t_evt=[obj.bsp.Evts{:,1}];
+                t_label=t_evt(strcmpi(obj.bsp.Evts(:,2),obj.normalization_start_event));
+                i_label=round(t_label*obj.fs);
+                i_label=min(max(1,i_label),size(obj.bsp.Data{1},1));
+                
+                baseline_start=i_label;
+                
+                t_label=t_evt(strcmpi(obj.bsp.Evts(:,2),obj.normalization_end_event));
+                i_label=round(t_label*obj.fs);
+                i_label=min(max(1,i_label),size(obj.bsp.Data{1},1));
+                
+                baseline_end=i_label;
+                
+                tmp_sel=[reshape(baseline_start,1,length(i_label));reshape(baseline_end,1,length(i_label))];
+                omitMask=true;
+                baseline=get_selected_data(obj.bsp,omitMask,tmp_sel);
+
+            end
+            %**************************************************************************
+            switch option
+                case 1
+                    [tf,f,t]=bsp_tfmap(obj.TFMapFig,data,baseline,obj.fs,wd,ov,s,nref,chanNames,freq,unit);
+                    
+                    if strcmpi(unit,'dB')
+                        imagesc(t,f,10*log10(tf));
+                    else
+                        imagesc(t,f,tf);
+                    end
+                    
+                    obj.clim_slider_max=max(max(abs(tf)));
+                    obj.clim_slider_min=-max(max(abs(tf)));
+                    if ~isempty(s)
+                        set(gca,'CLim',s);
+                    end
+                    set(gca,'YLim',freq);
+                    set(gca,'Tag','TFMapAxes');
+                    title('Time Frequency Map');
+                    colormap(jet);
+                    xlabel('time (s)');
+                    ylabel('frequency (Hz)')
+                    axis xy;
+                    colorbar
+                    
+                case 2
+                    tf=bsp_tfmap(obj.TFMapFig,data,baseline,obj.fs,wd,ov,s,nref,chanNames,freq,unit);
+                    cmax=max(max(abs(tf)));
+                    obj.clim_slider_max=cmax*2;
+                    obj.clim_slider_min=-cmax*2;
+                case 3
+                    if isempty(chanpos)
+                        errordlg('No channel position in the data !');
+                        return
+                    end
+                    
+                    chanind=~isnan(chanpos(:,1))&~isnan(chanpos(:,2));
+                    data=data(:,chanind);
+                    channames=chanNames(chanind);
+                    chanpos=chanpos(chanind,:);
+                    
+                    chanpos(:,1)=chanpos(:,1)-min(chanpos(:,1));
+                    chanpos(:,2)=chanpos(:,2)-min(chanpos(:,2));
+                    
+                    dx=abs(pdist2(chanpos(:,1),chanpos(:,1)));
+                    dx=min(dx(dx~=0));
+                    if isempty(dx)
+                        dx=1;
+                    end
+                    
+                    dy=abs(pdist2(chanpos(:,2),chanpos(:,2)));
+                    dy=min(dy(dy~=0));
+                    if isempty(dy)
+                        dy=1;
+                    end
+                    chanpos(:,1)=chanpos(:,1)+dx/2;
+                    chanpos(:,2)=chanpos(:,2)+dy*0.6;
+                    
+                    x_len=max(chanpos(:,1))+dx/2;
+                    y_len=max(chanpos(:,2))+dy*0.6;
+                    chanpos(:,1)=chanpos(:,1)/x_len;
+                    chanpos(:,2)=chanpos(:,2)/y_len;
+                    
+                    dw=dx/(x_len+2*dx);
+                    dh=dy/(y_len+2*dy);
+                    axe = axes('Parent',obj.TFMapFig,'units','normalized','Position',[0 0 1 1],'XLim',[0,1],'YLim',[0,1],'visible','off');
+                    
+                    cmax=-inf;
+                    nref_tmp=nref;
+                    for j=1:length(channames)
+                        if obj.data_input==3
+                            tfm=0;
+                            %compute the baseline spectrum
+                            if obj.normalization==3
+                                rtfm=0;
+                                for i=1:length(i_event)
+                                    tmp_sel=[i_event(i)-nL+nref(1);i_event(i)-nL+nref(2)];
+                                    bdata=get_selected_data(obj.bsp,omitMask,tmp_sel);
+                                    bdata=bdata(:,chanind);
+                                    bdata=bdata(:,j);
+                                    [rtf,f,t]=bsp_tfmap(obj.TFMapFig,bdata,baseline,obj.fs,wd,ov,s,[],channames,freq,unit);
+                                    rtfm=rtfm+abs(rtf);
+                                end
+                                
+                                rtfm=rtfm/length(i_event);
+                                nref_tmp=[];
+                            end
+                            %******************************************************
+                            for i=1:length(i_event)
+                                
+                                tmp_sel=[i_event(i)-nL;i_event(i)+nR];
+                                data=get_selected_data(obj.bsp,omitMask,tmp_sel);
+                                data=data(:,chanind);
+                                data=data(:,j);
+                                [tf,f,t]=bsp_tfmap(obj.TFMapFig,data,baseline,obj.fs,wd,ov,s,nref_tmp,channames,freq,unit);
+                                tfm=tfm+tf;
+                            end
+                            tfm=tfm/length(i_event);
+                            if obj.normalization==3
+                                tfm=tfm./repmat(mean(rtfm,2),1,size(tfm,2));
+                            end
+                        else
+                            [tfm,f,t]=bsp_tfmap(obj.TFMapFig,data(:,j),baseline,obj.fs,wd,ov,s,nref,channames,freq,unit);
+                        end
+                        
+                        tfmap_grid(obj.TFMapFig,axe,t,f,tfm,chanpos(j,:),dw,dh,channames{j},sl,sh,freq,unit);
+                        
+                        
+                        if ~isempty(tfm)
+                            if strcmpi(unit,'dB')
+                                cmax=max(max(max(abs(10*log10(tfm)))),cmax);
+                            else
+                                cmax=max(max(max(abs(tfm-1))),cmax);
+                            end
+                        end
+                    end
+                    if strcmpi(unit,'dB')
+                        obj.clim_slider_max=cmax*1.5;
+                        obj.clim_slider_min=-cmax*1.5;
+                    else
+                        obj.clim_slider_max=cmax*1.5;
+                        obj.clim_slider_min=-1;
+                    end
+                    
+                    obj.DisplayOnsetCallback([]);
+            end
+        end
+        
+        function KeyPress(obj,src,evt)
+            if strcmpi(get(src,'Name'),'Obsolete TFMap')
+                return
+            end
+            if ~isempty(evt.Modifier)
+                if length(evt.Modifier)==1
+                    if ismember('command',evt.Modifier)||ismember('control',evt.Modifier)
+                        if strcmpi(evt.Key,'t')
+                            obj.NewCallback();
+                        end
+                        
+                    end
+                end
+            end
+        end
+        
     end
     
 end

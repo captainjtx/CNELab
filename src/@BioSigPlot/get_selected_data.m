@@ -2,7 +2,7 @@ function [data,chanNames,dataset,channel,sample,evts,groupnames,pos]=get_selecte
 %This function returns the selected data and the corresponding channel
 %names
 
-%obj.Selection format
+%bsp_selection format
 %|sta_1,sta_2,...|
 %|end_1,end_2,...|
 
@@ -15,6 +15,7 @@ dataset=[];
 channel=[];
 events=[];
 evts=[];
+bsp_selection=obj.Selection;
 
 fs=obj.SRate;
 
@@ -24,6 +25,10 @@ if nargin>1
     omitMask=varargin{1};
 end
 
+if nargin>2
+    bsp_selection=varargin{2};
+end
+    
 if ~isempty(obj.Evts_)
     
     EventsList=obj.Evts_(obj.Evts2Display,:);
@@ -35,9 +40,9 @@ if ~isempty(obj.Evts_)
     events=EventsList(:,1:2);
 end
 
-if ~isempty(obj.Selection)
-    [tmp,ind]=sort(obj.Selection(1,:));
-    SelectionSort=obj.Selection(:,ind);
+if ~isempty(bsp_selection)
+    [tmp,ind]=sort(bsp_selection(1,:));
+    SelectionSort=bsp_selection(:,ind);
     interval=0;
     for i=1:size(SelectionSort,2)
         startInd=max(1,SelectionSort(1,i));

@@ -397,6 +397,7 @@ classdef BioSigPlot < hgsetget
             redrawEvts(obj);
             
             obj.TFMapWin=TFMapWindow(obj);
+            set(obj.BtnTFMap,'ClickedCallback',@(src,evt) obj.TFMapWin.ComputeCallback(obj.BtnTFMap));
             obj.SpatialMapWin=SpatialMapWindow(obj);
             obj.IsInitialize=false;
             
@@ -489,11 +490,11 @@ classdef BioSigPlot < hgsetget
             end
             
             if obj.TFMapWin.valid
-                delete(obj.TFMapWin.fig);
+                obj.TFMapWin.OnClose();
             end
             
             if obj.SpatialMapWin.valid
-                delete(obj.SpatialMapWin.fig);
+                obj.SpatialMapWin.OnClose();
             end
             
             if isa(obj.WinFastEvts,'FastEventWindow') && isvalid(obj.WinFastEvts)
@@ -509,12 +510,6 @@ classdef BioSigPlot < hgsetget
                 delete(h);
             end
             
-            h = obj.TFMapFig;
-            if ishandle(h)
-                delete(h);
-            else
-                return
-            end
             
             if ~isempty(obj.SPFObj)&&isvalid(obj.SPFObj)&&isa(obj.SPFObj,'SPFPlot')
                 delete(obj.SPFObj);
