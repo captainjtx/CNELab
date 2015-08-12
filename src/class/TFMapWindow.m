@@ -376,13 +376,23 @@ classdef TFMapWindow < handle
                 obj.event=val{1};
             end
             
-            [ia,ib]=ismember(obj.normalization_start,val);
+            [ia,ib]=ismember(obj.normalization_start_event,val);
             if ia
                 if obj.valid
-                    set(obj.event_popup,'value',ib);
+                    set(obj.scale_start_popup,'value',ib);
                 end
             else
-                obj.event=val{1};
+                obj.normalization_start_event=val{1};
+            end
+            
+            
+            [ia,ib]=ismember(obj.normalization_end_event,val);
+            if ia
+                if obj.valid
+                    set(obj.scale_end_popup,'value',ib);
+                end
+            else
+                obj.normalization_end_event=val{1};
             end
             
             
@@ -410,13 +420,13 @@ classdef TFMapWindow < handle
             obj.valid=0;
             obj.method_=1;
             obj.data_input_=1;%selection
-            obj.ms_before_=1000;
-            obj.ms_after_=1000;
+            obj.ms_before_=1500;
+            obj.ms_after_=1500;
             obj.event_='';
             obj.unit_='dB';
             obj.normalization_=1;%none
-            obj.normalization_start_='';
-            obj.normalization_end_='';
+            obj.normalization_start_=0;
+            obj.normalization_end_=200;
             obj.normalization_start_event_='';
             obj.normalization_end_event_='';
             obj.display_onset_=1;
@@ -424,8 +434,8 @@ classdef TFMapWindow < handle
             obj.min_freq_=0;
             obj.clim_slider_max_=15;
             obj.clim_slider_min_=-15;
-            obj.max_clim_=10;
-            obj.min_clim_=-10;
+            obj.max_clim_=8;
+            obj.min_clim_=-8;
             obj.stft_winlen_=2^nextpow2(round(obj.fs/4));
             obj.stft_overlap_=round(obj.stft_winlen*0.9);
         end
@@ -623,33 +633,33 @@ classdef TFMapWindow < handle
         end
         
         function MsBeforeCallback(obj,src)
-            obj.ms_before=str2double(get(src,'string'));
-            if isnan(obj.ms_before)
-                obj.ms_before=1000;
-                set(src,'string',num2str(obj.ms_before));
+            t=str2double(get(src,'string'));
+            if isnan(t)
+                t=obj.ms_before;
             end
+           obj.ms_before=t;
         end
         function MsAfterCallback(obj,src)
-            obj.ms_after=str2double(get(src,'string'));
-            if isnan(obj.ms_after)
-                obj.ms_after=1000;
-                set(src,'string',num2str(obj.ms_after));
+            t=str2double(get(src,'string'));
+            if isnan(t)
+                t=obj.ms_after;
             end
+           obj.ms_after=t;
         end
         
         function STFTWinlenCallback(obj,src)
-            obj.stft_winlen=str2double(get(src,'string'));
-            if isnan(obj.stft_winlen)
-                obj.stft_winlen=round(obj.fs/3);
-                set(src,'string',num2str(obj.stft_winlen));
+            t=str2double(get(src,'string'));
+            if isnan(t)
+                t=obj.stft_winlen;
             end
+            obj.stft_winlen=t;
         end
         function STFTOverlapCallback(obj,src)
-            obj.stft_overlap=str2double(get(src,'string'));
-            if isnan(obj.stft_overlap)
-                obj.stft_overlap=round(obj.stft_winlen*0.9);
-                set(src,'string',num2str(obj.stft_overlap));
+            t=str2double(get(src,'string'));
+            if isnan(t)
+                t=obj.stft_overlap;
             end
+            obj.stft_overlap=t;
         end
         function UnitRadioCallback(obj,src)
             if src==obj.unit_db_radio
@@ -706,9 +716,17 @@ classdef TFMapWindow < handle
         function FreqCallback(obj,src)
             switch src
                 case obj.max_freq_edit
-                    obj.max_freq=round(str2double(get(src,'string'))*10)/10;
+                    t=str2double(get(src,'string'));
+                    if isnan(t)
+                       t=obj.max_freq; 
+                    end
+                    obj.max_freq=round(t*10)/10;
                 case obj.min_freq_edit
-                    obj.min_freq=round(str2double(get(src,'string'))*10)/10;
+                    t=str2double(get(src,'string'));
+                    if isnan(t)
+                       t=obj.min_freq; 
+                    end
+                    obj.min_freq=round(t*10)/10;
                 case obj.max_freq_slider
                     obj.max_freq=round(get(src,'value')*10)/10;
                 case obj.min_freq_slider
@@ -730,9 +748,17 @@ classdef TFMapWindow < handle
                 case obj.min_clim_slider
                     obj.min_clim=get(src,'value');
                 case obj.max_clim_edit
-                    obj.max_clim=str2double(get(src,'string'));
+                    t=str2double(get(src,'string'));
+                    if isnan(t)
+                        t=obj.max_clim;
+                    end
+                    obj.max_clim=t;
                 case obj.min_clim_edit
-                    obj.min_clim=str2double(get(src,'string'));
+                    t=str2double(get(src,'string'));
+                    if isnan(t)
+                        t=obj.min_clim;
+                    end
+                    obj.min_clim=t;
             end
             
             if ~isempty(obj.TFMapFig)&&ishandle(obj.TFMapFig)
@@ -772,9 +798,18 @@ classdef TFMapWindow < handle
         function NormalizationStartEndCallback(obj,src)
             switch src
                 case obj.scale_start_edit
-                    obj.normalization_start=str2double(get(src,'string'));
+                    t=str2double(get(src,'string'));
+                    if isnan(t)
+                       t=obj.normalization_start; 
+                    end
+                    obj.normalization_start=t;
                 case obj.scale_end_edit
-                    obj.normalization_end=str2double(get(src,'string'));
+                    
+                    t=str2double(get(src,'string'));
+                    if isnan(t)
+                       t=obj.normalization_end; 
+                    end
+                    obj.normalization_end=t;
                 case obj.scale_start_popup
                     obj.normalization_start_event_=obj.event_list{get(src,'value')};
                 case obj.scale_end_popup
@@ -814,7 +849,7 @@ classdef TFMapWindow < handle
                 if isempty(obj.bsp.SelectedEvent)
                     errordlg('No event selection !');
                     return
-                elseif length(obj.SelectedEvent)>1
+                elseif length(obj.bsp.SelectedEvent)>1
                     warndlg('More than one event selected, using the first one !');
                 end
                 i_label=round(obj.bsp.Evts{obj.bsp.SelectedEvent(1),1}*obj.fs);
@@ -851,9 +886,6 @@ classdef TFMapWindow < handle
             wd=round(obj.stft_winlen);
             ov=round(obj.stft_overlap);
             
-            sl=obj.min_clim;
-            sh=obj.max_clim;
-            
             if isempty(wd)||wd>size(data,1)
                 wd=round(obj.fs/3);
                 ov=round(wd*0.9);
@@ -871,6 +903,8 @@ classdef TFMapWindow < handle
                 s(1)=s(2)-abs(s(2))*0.1;
                 obj.min_clim=s(1);
             end
+            sl=obj.min_clim;
+            sh=obj.max_clim;
             
             freq=[obj.min_freq obj.max_freq];
             if freq(1)>=freq(2)
