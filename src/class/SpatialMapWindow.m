@@ -48,6 +48,7 @@ classdef SpatialMapWindow < handle
         act_start_slider
         act_len_slider
         auto_refresh_radio
+        color_bar_radio
     end
     properties
         fs
@@ -84,6 +85,7 @@ classdef SpatialMapWindow < handle
         act_start_
         act_len_
         auto_refresh_
+        color_bar_
     end
     
     properties (Dependent)
@@ -119,12 +121,49 @@ classdef SpatialMapWindow < handle
         act_start
         act_len
         auto_refresh
+        color_bar
         
         tfmat
         tfmat_t
         tfmat_f
+        
+        width
+        height
+        fig_w
+        fig_h
+        
+        fig_x
+        fig_y
     end
     methods
+        function val=get.fig_x(obj)
+            val=50;
+        end
+        
+        function val=get.fig_y(obj)
+            val=50;
+        end
+        function val=get.fig_w(obj)
+            if obj.color_bar
+                val=obj.width+50;
+            else
+                val=obj.width+20;
+            end
+        end
+        
+        function val=get.fig_h(obj)
+            val=obj.height+20;
+        end
+        
+        function val=get.color_bar(obj)
+            val=obj.color_bar_;
+        end
+        function set.color_bar(obj,val)
+            obj.color_bar_=val;
+            if obj.valid
+                set(obj.color_bar_radio,'value',val);
+            end
+        end
         function val=get.auto_refresh(obj)
             val=obj.auto_refresh_;
         end
@@ -557,6 +596,9 @@ classdef SpatialMapWindow < handle
             obj.act_start_=1000;
             obj.act_len_=1000;
             obj.auto_refresh_=0;
+            obj.color_bar_=0;
+            obj.width=600;
+            obj.height=500;
         end
         function buildfig(obj)
             if obj.valid
@@ -709,6 +751,9 @@ classdef SpatialMapWindow < handle
             obj.auto_refresh_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Auto Refresh',...
                 'units','normalized','position',[0,0.25,0.45,0.25],'value',obj.auto_refresh,...
                 'callback',@(src,evts) AutoRefreshCallback(obj,src));
+            obj.auto_refresh_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Color Bar',...
+                'units','normalized','position',[0,0,0.45,0.25],'value',obj.color_bar,...
+                'callback',@(src,evts) ColorBarCallback(obj,src));
             
             obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.005,0.2,0.04],...
                 'callback',@(src,evts) ComputeCallback(obj));
@@ -904,10 +949,15 @@ classdef SpatialMapWindow < handle
             end
         end
         function NewCallback(obj)
-            if ~isempty(obj.SpatialMapFig)&&ishandle(obj.SpatialMapFig)
+            if ~NoSpatialMapFig(obj)
                 set(obj.SpatialMapFig,'Name','Obsolete SpatialMap');
             end
-            obj.SpatialMapFig=figure('Name','Active SpatialMap','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt));
+            NewSpatialMapFig(obj);
+        end
+        
+        function NewSpatialMapFig(obj)
+            obj.SpatialMapFig=figure('Name','Active SpatialMap','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
+                'units','pixels','position',[obj.fig_x,obj.fig_y,obj.fig_w,obj.fig_h],'Resize','off');
         end
         function ComputeCallback(obj)
             %==========================================================================
@@ -954,8 +1004,45 @@ classdef SpatialMapWindow < handle
                 [data,chanNames,dataset,channel,sample,evts,groupnames,chanpos]=get_selected_data(obj.bsp,omitMask);
                 %need to change the data
             end
-            %**************************************************************************
+            %Channel position******************************************************************
+            if isempty(chanpos)
+                errordlg('No channel position in the data !');
+                return
+            end
             
+            chanind=~isnan(chanpos(:,1))&~isnan(chanpos(:,2));
+            data=data(:,chanind);
+            channames=chanNames(chanind);
+            chanpos=chanpos(chanind,:);
+            
+            chanpos(:,1)=chanpos(:,1)-min(chanpos(:,1));
+            chanpos(:,2)=chanpos(:,2)-min(chanpos(:,2));
+            
+            
+            dx=abs(pdist2(chanpos(:,1),chanpos(:,1)));
+            dx=min(dx(dx~=0));
+            if isempty(dx)
+                dx=1;
+            end
+            
+            dy=abs(pdist2(chanpos(:,2),chanpos(:,2)));
+            dy=min(dy(dy~=0));
+            if isempty(dy)
+                dy=1;
+            end
+            chanpos(:,1)=chanpos(:,1)+dx/2;
+            chanpos(:,2)=chanpos(:,2)+dy*0.6;
+            
+            x_len=max(chanpos(:,1))+dx/2;
+            y_len=max(chanpos(:,2))+dy*0.6;
+            
+            if x_len>y_len
+                obj.height=round(obj.width/x_len*y_len);
+            else
+                obj.width=round(obj.height/y_len*x_len);
+            end
+            chanpos(:,1)=chanpos(:,1)/x_len;
+            chanpos(:,2)=chanpos(:,2)/y_len;
             %set default parameter*****************************************************
             
             s=[obj.min_clim obj.max_clim];
@@ -972,29 +1059,35 @@ classdef SpatialMapWindow < handle
                 obj.min_freq=freq(1);
             end
             
-            if isempty(obj.SpatialMapFig)||~ishandle(obj.SpatialMapFig)||~strcmpi(get(obj.SpatialMapFig,'name'),'Active SpatialMap')
-                obj.SpatialMapFig=figure('Name','Active SpatialMap','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt));
+            if NoSpatialMapFig(obj)
+                NewSpatialMapFig(obj);
             end
             figure(obj.SpatialMapFig)
             
             clf
             
             %Normalizatin**************************************************************
-            if obj.normalization==1||obj.normalization==2
-                nref=[obj.normalization_start,obj.normalization_end];
+            if obj.normalization==1||obj.normalization==2                
+                nref=round([obj.normalization_start,obj.normalization_end]/1000*obj.fs);
                 
-                if nref(2)>=round(size(data,1)/obj.fs*1000)
-                    nref(2)=round(size(data,1)/obj.fs*1000);
+                needupdate=0;
+                if nref(2)>=size(data,1)
+                    nref(2)=size(data,1);
+                    needupdate=1;
                 end
                 if nref(1)>=nref(2)
-                    nref(1)=0;
+                    nref(1)=1;
+                    needupdate=1;
                 end
                 if nref(1)<0;
-                    nref(1)=0;
+                    nref(1)=1;
+                    needupdate=1;
                 end
                 baseline=[];
-                obj.normalization_start=nref(1);
-                obj.normalization_end=nref(2);
+                if needupdate
+                    obj.normalization_start=nref(1)*1000/obj.fs;
+                    obj.normalization_end=nref(2)*1000/obj.fs;
+                end
             elseif obj.normalization==3
                 nref=[];
                 
@@ -1016,48 +1109,13 @@ classdef SpatialMapWindow < handle
                 baseline=get_selected_data(obj.bsp,omitMask,tmp_sel);
                 
             end
-            %**************************************************************************
-            if isempty(chanpos)
-                errordlg('No channel position in the data !');
-                return
-            end
-            
-            chanind=~isnan(chanpos(:,1))&~isnan(chanpos(:,2));
-            data=data(:,chanind);
-            channames=chanNames(chanind);
-            chanpos=chanpos(chanind,:);
-            
-            chanpos(:,1)=chanpos(:,1)-min(chanpos(:,1));
-            chanpos(:,2)=chanpos(:,2)-min(chanpos(:,2));
-            
-            dx=abs(pdist2(chanpos(:,1),chanpos(:,1)));
-            dx=min(dx(dx~=0));
-            if isempty(dx)
-                dx=1;
-            end
-            
-            dy=abs(pdist2(chanpos(:,2),chanpos(:,2)));
-            dy=min(dy(dy~=0));
-            if isempty(dy)
-                dy=1;
-            end
-            chanpos(:,1)=chanpos(:,1)+dx/2;
-            chanpos(:,2)=chanpos(:,2)+dy*0.6;
-            
-            x_len=max(chanpos(:,1))+dx/2;
-            y_len=max(chanpos(:,2))+dy*0.6;
-            chanpos(:,1)=chanpos(:,1)/x_len;
-            chanpos(:,2)=chanpos(:,2)/y_len;
-            
-            dw=dx/(x_len+2*dx);
-            dh=dy/(y_len+2*dy);
-            axe = axes('Parent',obj.TFMapFig,'units','normalized','Position',[0 0 1 1],'XLim',[0,1],'YLim',[0,1],'visible','off');
-            
+            %**************************************************************
             cmax=-inf;
             nref_tmp=nref;
             obj.tfmat=cell(1,length(channames));
-            
+            wait_bar_h = waitbar(0,'STFT recaculating...');
             for j=1:length(channames)
+                waitbar(j/length(channames));
                 if obj.data_input==3
                     tfm=0;
                     %compute the baseline spectrum
@@ -1098,6 +1156,8 @@ classdef SpatialMapWindow < handle
                 
                 obj.tfmat{j}=tfm;
             end
+            close(wait_bar_h);
+            
             obj.clim_slider_max=cmax*1.5;
             obj.clim_slider_min=-cmax*1.5;
             
@@ -1194,6 +1254,30 @@ classdef SpatialMapWindow < handle
                     end
                 end
             end
+        end
+        function ColorBarCallback(obj,src)
+            obj.color_bar_=get(src,'value');
+            
+            if ~NoSpatialMapFig(obj)
+                pos=get(obj.SpatialMapFig,'position');
+                set(obj.SpatialMapFig,'position',[pos(1),pos(2),obj.fig_w,obj.fig_h]);
+                
+                h=findobj(obj.SpatialMapFig,'Tag','SpatialMapAxes');
+                if ~isempty(h)
+                    if obj.color_bar
+                        %optional color bar
+                        figure(obj.SpatialMapFig);
+                        cb=colorbar('Units','Pixels','Parent',obj.SpatialMapFig);
+                        cbpos=get(cb,'Position');
+                        set(a,'Position',[10,10,w,h]);
+                        set(cb,'Position',[w+15,10,cbpos(3),cbpos(4)]);
+                    end
+                end
+            end
+        end
+        
+        function val=NoSpatialMapFig(obj)
+            val=isempty(obj.SpatialMapFig)||~ishandle(obj.SpatialMapFig)||~strcmpi(get(obj.SpatialMapFig,'name'),'Active SpatialMap');
         end
         
     end
