@@ -924,20 +924,26 @@ classdef TFMapWindow < handle
                 nref=[];
                 baseline=[];
             elseif obj.normalization==2||obj.normalization==3
-                nref=[obj.normalization_start,obj.normalization_end];
+                nref=round([obj.normalization_start,obj.normalization_end]/1000*obj.fs);
                 
-                if nref(2)>=round(size(data,1)/obj.fs*1000)
-                    nref(2)=round(size(data,1)/obj.fs*1000);
+                needupdate=0;
+                if nref(2)>=size(data,1)
+                    nref(2)=size(data,1);
+                    needupdate=1;
                 end
                 if nref(1)>=nref(2)
-                    nref(1)=0;
+                    nref(1)=1;
+                    needupdate=1;
                 end
                 if nref(1)<0;
-                    nref(1)=0;
+                    nref(1)=1;
+                    needupdate=1;
                 end
                 baseline=[];
-                obj.normalization_start=nref(1);
-                obj.normalization_end=nref(2);
+                if needupdate
+                    obj.normalization_start=nref(1)*1000/obj.fs;
+                    obj.normalization_end=nref(2)*1000/obj.fs;
+                end
             elseif obj.normalization==4
                 nref=[];
                 
