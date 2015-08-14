@@ -1,4 +1,4 @@
-function spatialmap_grid(fig,mapv,method,extrap,pos_x,pos_y,w,h,sl,sh,colbar)
+function spatialmap_grid(fig,mapv,method,extrap,channames,pos_x,pos_y,w,h,sl,sh,colbar)
 %TFMAP_GRID Summary of this function goes here
 %   Detailed explanation goes here
 %Orign of postion is top left corner
@@ -24,10 +24,11 @@ a=axes('units','pixels','position',[10,10,w,h],'Visible','off','parent',fig,...
     'xlimmode','manual','ylimmode','manual');
 
 
-imagesc('CData',flipud(mapvq),'Parent',a,'Tag','ImageMap');
+imagesc('CData',mapvq,'Parent',a,'Tag','ImageMap');
 set(a,'XLim',[1,w]);
 set(a,'YLim',[1,h]);
 set(a,'CLim',[sl sh]);
+set(a,'YDir','reverse');
 colormap(jet);
 if colbar
     %optional color bar
@@ -39,7 +40,8 @@ end
 
 for i=1:length(mapv)
     hold on;
-    plot(a,w-col(i),row(i),'Marker','o','Color','k');
+    h=plot(a,col(i),row(i),'Marker','o','Color','k');
+    set(h,'Tag',['contact_',channames{i}]);
 end
 
 set(a,'Tag','SpatialMapAxes');

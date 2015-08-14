@@ -45,7 +45,7 @@ classdef SpatialMapWindow < handle
         threshold_slider
         compute_btn
         scale_by_max_radio
-        display_mask_radio
+%         display_mask_radio
         new_btn
         act_start_edit
         act_len_edit
@@ -84,7 +84,7 @@ classdef SpatialMapWindow < handle
         
         scale_by_max_
         
-        display_mask_channel_
+%         display_mask_channel_
         act_start_
         act_len_
         auto_refresh_
@@ -120,7 +120,7 @@ classdef SpatialMapWindow < handle
         
         scale_by_max
         
-        display_mask_channel
+%         display_mask_channel
         act_start
         act_len
         auto_refresh
@@ -330,15 +330,15 @@ classdef SpatialMapWindow < handle
                 set(obj.scale_by_max_radio,'value',val);
             end
         end
-        function val=get.display_mask_channel(obj)
-            val=obj.display_mask_channel_;
-        end
-        function set.display_mask_channel(obj,val)
-            obj.display_mask_channel_=val;
-            if obj.valid
-                set(obj.display_mask_radio,'value',val);
-            end
-        end
+%         function val=get.display_mask_channel(obj)
+%             val=obj.display_mask_channel_;
+%         end
+%         function set.display_mask_channel(obj,val)
+%             obj.display_mask_channel_=val;
+%             if obj.valid
+%                 set(obj.display_mask_radio,'value',val);
+%             end
+%         end
         
         
         function val=get.data_input(obj)
@@ -634,15 +634,15 @@ classdef SpatialMapWindow < handle
             obj.min_freq_=0;
             obj.clim_slider_max_=10;
             obj.clim_slider_min_=-10;
-            obj.max_clim_=8;
-            obj.min_clim_=-8;
+            obj.max_clim_=10;
+            obj.min_clim_=-10;
             obj.erd_=1;
             obj.ers_=1;
             obj.erd_t_=0;
             obj.ers_t_=0;
             obj.threshold_=1;
             obj.scale_by_max_=0;
-            obj.display_mask_channel_=0;
+%             obj.display_mask_channel_=0;
             obj.act_start_=obj.ms_before;
             obj.act_len_=500;
             obj.auto_refresh_=1;
@@ -804,14 +804,14 @@ classdef SpatialMapWindow < handle
             obj.scale_by_max_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Scale By Maximum',...
                 'units','normalized','position',[0,0.75,0.45,0.25],'value',obj.scale_by_max,...
                 'callback',@(src,evts) ScaleByMaxCallback(obj,src));
-            obj.display_mask_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Dispaly Mask Channels',...
-                'units','normalized','position',[0,0.5,0.45,0.25],'value',obj.display_mask_channel,...
-                'callback',@(src,evts) DisplayMaskCallback(obj,src));
+%             obj.display_mask_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Dispaly Mask Channels',...
+%                 'units','normalized','position',[0,0.5,0.45,0.25],'value',obj.display_mask_channel,...
+%                 'callback',@(src,evts) DisplayMaskCallback(obj,src));
             obj.auto_refresh_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Auto Refresh',...
-                'units','normalized','position',[0,0.25,0.45,0.25],'value',obj.auto_refresh,...
+                'units','normalized','position',[0,0.5,0.45,0.25],'value',obj.auto_refresh,...
                 'callback',@(src,evts) AutoRefreshCallback(obj,src));
             obj.color_bar_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Color Bar',...
-                'units','normalized','position',[0,0,0.45,0.25],'value',obj.color_bar,...
+                'units','normalized','position',[0,0.25,0.45,0.25],'value',obj.color_bar,...
                 'callback',@(src,evts) ColorBarCallback(obj,src));
             
             obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.005,0.2,0.04],...
@@ -1213,7 +1213,7 @@ classdef SpatialMapWindow < handle
                     %******************************************************
                     for i=1:length(i_event)
                         tmp_sel=[i_event(i)-nL;i_event(i)+nR];
-                        data=get_selected_data(obj.bsp,omitMask,tmp_sel);
+                        data=get_selected_data(obj.bsp,true,tmp_sel);
                         data=data(:,chanind);
                         data=data(:,j);
                         [tf,f,t]=bsp_tfmap(obj.SpatialMapFig,data,baseline,obj.fs,wd,ov,[sl,sh],nref_tmp,channames,freq,obj.unit);
@@ -1224,7 +1224,7 @@ classdef SpatialMapWindow < handle
                     if obj.normalization==3
                         rtfm=0;
                         for i=1:length(tmp_tfm)
-                            rtfm=rtfm+mean(tmp_tfm{i}(:,t>=nref(1)/obj.fs&t<=nref(2)/obj.fs),2);
+                            rtfm=rtfm+mean(tmp_tfm{i}(:,(t>=nref(1)/obj.fs)&(t<=nref(2)/obj.fs)),2);
                         end
                         
                         rtfm=rtfm/length(i_event);
@@ -1258,7 +1258,7 @@ classdef SpatialMapWindow < handle
                 sh=sh/obj.cmax;
             end
             spatialmap_grid(obj.SpatialMapFig,obj.map_val,obj.interp_method,...
-                obj.extrap_method,chanpos(:,1),chanpos(:,2),obj.width,obj.height,sl,sh,obj.color_bar);
+                obj.extrap_method,chanNames,chanpos(:,1),chanpos(:,2),obj.width,obj.height,sl,sh,obj.color_bar);
             
             obj.clim_slider_max=obj.cmax;
             obj.clim_slider_min=-obj.cmax;
@@ -1305,9 +1305,32 @@ classdef SpatialMapWindow < handle
             end
         end
         
-        function DisplayMaskCallback(obj,src)
-            obj.display_mask_channel_=get(src,'value');
-        end
+%         function DisplayMaskCallback(obj,src)
+%             obj.display_mask_channel_=get(src,'value');
+%             
+%             if ~NoSpatialMapFig(obj)
+%                 
+%                h=findobj(obj.SpatialMapFig,'-regexp','Tag','SpatialMapAxes');
+%                if ~isempty(h)
+%                    circles=findobj(obj.SpatialMapFig,'-regexp','Tag','contact*');
+%                    
+%                    if ~isempty(circles)
+%                        delete(circles);
+%                    end
+%                    
+%                    col=max(1,round(obj.pos_x*obj.width));
+%                    row=max(1,round(obj.pos_y*obj.height));
+%                    for i=1:length(col)
+%                        
+%                        hold on;
+%                        h=plot(h,col(i),row(i),'Marker','o','Color','k');
+%                        set(h,'Tag',['contact_',obj.tfmat_channame{i}]);
+%                    end
+%                        
+%                    
+%                end
+%             end
+%         end
         function ScaleByMaxCallback(obj,src)
             obj.scale_by_max_=get(src,'value');
             
@@ -1459,7 +1482,7 @@ classdef SpatialMapWindow < handle
                    else
                        set(h,'clim',[obj.min_clim,obj.max_clim]);
                    end
-                   set(imagehandle,'CData',single(flipud(mapvq)));
+                   set(imagehandle,'CData',single(mapvq));
                    drawnow
                end
             end

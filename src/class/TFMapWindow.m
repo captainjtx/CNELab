@@ -176,6 +176,7 @@ classdef TFMapWindow < handle
             val=obj.normalization_start_;
         end
         function set.normalization_start(obj,val)
+            val=max(0,min((obj.ms_before+obj.ms_after),val));
             if obj.valid
                 set(obj.scale_start_edit,'string',num2str(val));
             end
@@ -201,10 +202,13 @@ classdef TFMapWindow < handle
             val=obj.normalization_end_;
         end
         function set.normalization_end(obj,val)
+            val=max(obj.normalization_start+obj.stft_winlen/obj.fs*1000,val);
+            val=max(0,min((obj.ms_before+obj.ms_after),val));
             obj.normalization_end_=val;
             if obj.valid
                 if obj.normalization==2||obj.normalization==3
                     set(obj.scale_end_edit,'string',num2str(val));
+                    
                 elseif obj.normalization==4
                     set(obj.scale_end_edit,'string',val);
                 end
@@ -981,7 +985,7 @@ classdef TFMapWindow < handle
                     if strcmpi(unit,'dB')
                         imagesc(t,f,10*log10(tf));
                     else
-                        imagesc(t,f,tf);
+                        imagesc(t,f,tf-1);
                     end
                     
                     obj.clim_slider_max=max(max(abs(tf)));
@@ -1053,7 +1057,7 @@ classdef TFMapWindow < handle
                             %******************************************************
                             for i=1:length(i_event)
                                 tmp_sel=[i_event(i)-nL;i_event(i)+nR];
-                                data=get_selected_data(obj.bsp,omitMask,tmp_sel);
+                                data=get_selected_data(obj.bsp,true,tmp_sel);
                                 data=data(:,chanind);
                                 data=data(:,j);
                                 [tf,f,t]=bsp_tfmap(obj.TFMapFig,data,baseline,obj.fs,wd,ov,s,nref_tmp,channames,freq,unit);
@@ -1066,7 +1070,7 @@ classdef TFMapWindow < handle
                             if obj.normalization==3
                                 rtfm=0;
                                 for i=1:length(tmp_tfm)
-                                    rtfm=rtfm+mean(tmp_tfm{i}(:,t>=nref(1)/obj.fs&t<=nref(2)/obj.fs),2);
+                                    rtfm=rtfm+mean(tmp_tfm{i}(:,(t>=nref(1)/obj.fs)&(t<=nref(2)/obj.fs)),2);
                                 end
                                 
                                 rtfm=rtfm/length(i_event);
@@ -1076,7 +1080,14 @@ classdef TFMapWindow < handle
                             [tfm,f,t]=bsp_tfmap(obj.TFMapFig,data(:,j),baseline,obj.fs,wd,ov,s,nref,channames,freq,unit);
                         end
                         
-                        tfmap_grid(obj.TFMapFig,axe,t,f,tfm,chanpos(j,:),dw,dh,channames{j},sl,sh,freq,unit);
+                        if strcmpi(unit,'dB')
+                            %10log10(A/R)
+                            tfm=10*log10(tfm);
+                        else
+                            %(A-R)/R
+                            tfm=tfm-1;
+                        end
+                        tfmap_grid(obj.TFMapFig,axe,t,f,tfm,chanpos(j,:),dw,dh,channames{j},sl,sh,freq);
                         
                         obj.tfmat{j}=tfm;
                         obj.tfmat_t=t;
@@ -1085,18 +1096,14 @@ classdef TFMapWindow < handle
                         obj.tfmat_dataset=dataset;
                         obj.tfmat_channame=chanNames;
                         if ~isempty(tfm)
-                            if strcmpi(unit,'dB')
-                                cmax=max(max(max(abs(10*log10(tfm)))),cmax);
-                            else
-                                cmax=max(max(max(abs(tfm-1))),cmax);
-                            end
+                            cmax=max(max(max(abs(tfm))),cmax);
                         end
                     end
                     if strcmpi(unit,'dB')
-                        obj.clim_slider_max=cmax*1.5;
-                        obj.clim_slider_min=-cmax*1.5;
+                        obj.clim_slider_max=cmax;
+                        obj.clim_slider_min=-cmax;
                     else
-                        obj.clim_slider_max=cmax*1.5;
+                        obj.clim_slider_max=cmax;
                         obj.clim_slider_min=-1;
                     end
                     
