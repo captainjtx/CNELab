@@ -156,6 +156,8 @@ classdef SpatialMapWindow < handle
         
         pos_x
         pos_y
+        
+        need_recalculate
     end
     methods
         function val=get.cmax(obj)
@@ -1237,6 +1239,7 @@ classdef SpatialMapWindow < handle
                 
                 obj.tfmat{j}=tfm;
             end
+            
             obj.tfmat_t=t;
             set(obj.act_start_slider,'max',max(t*1000));
             set(obj.act_start_slider,'min',min(t*1000));
