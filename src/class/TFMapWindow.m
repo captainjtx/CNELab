@@ -87,6 +87,14 @@ classdef TFMapWindow < handle
         clim_slider_min
         event_list
     end
+    properties
+        tfmat
+        tfmat_t
+        tfmat_f
+        tfmat_channame
+        tfmat_dataset
+        tfmat_channel
+    end
     methods
         function val=get.method(obj)
             val=obj.method_;
@@ -426,7 +434,7 @@ classdef TFMapWindow < handle
             obj.unit_='dB';
             obj.normalization_=1;%none
             obj.normalization_start_=0;
-            obj.normalization_end_=200;
+            obj.normalization_end_=500;
             obj.normalization_start_event_='';
             obj.normalization_end_event_='';
             obj.display_onset_=1;
@@ -436,7 +444,7 @@ classdef TFMapWindow < handle
             obj.clim_slider_min_=-15;
             obj.max_clim_=8;
             obj.min_clim_=-8;
-            obj.stft_winlen_=2^nextpow2(round(obj.fs/4));
+            obj.stft_winlen_=round(obj.fs/3);
             obj.stft_overlap_=round(obj.stft_winlen*0.9);
         end
         function buildfig(obj)
@@ -737,7 +745,7 @@ classdef TFMapWindow < handle
                 
                 set(h,'YLim',[obj.min_freq,obj.max_freq]);
                 DisplayOnsetCallback(obj,obj.onset_radio);
-                %                 figure(obj.TFMapFig);
+%                 figure(obj.TFMapFig);
             end
         end
         
@@ -767,7 +775,7 @@ classdef TFMapWindow < handle
                 if obj.min_clim<obj.max_clim
                     set(h,'CLim',[obj.min_clim,obj.max_clim]);
                 end
-                %                 figure(obj.TFMapFig);
+%                 figure(obj.TFMapFig);
             end
         end
         
@@ -1037,34 +1045,32 @@ classdef TFMapWindow < handle
                     for j=1:length(channames)
                         if obj.data_input==3
                             tfm=0;
-                            %compute the baseline spectrum
+                            tmp_tfm=cell(1,length(i_event));
+                                                        
                             if obj.normalization==3
-                                rtfm=0;
-                                for i=1:length(i_event)
-                                    tmp_sel=[i_event(i)-nL+nref(1);i_event(i)-nL+nref(2)];
-                                    bdata=get_selected_data(obj.bsp,omitMask,tmp_sel);
-                                    bdata=bdata(:,chanind);
-                                    bdata=bdata(:,j);
-                                    [rtf,f,t]=bsp_tfmap(obj.TFMapFig,bdata,baseline,obj.fs,wd,ov,s,[],channames,freq,unit);
-                                    rtfm=rtfm+abs(rtf);
-                                end
-                                
-                                rtfm=rtfm/length(i_event);
                                 nref_tmp=[];
                             end
                             %******************************************************
                             for i=1:length(i_event)
-                                
                                 tmp_sel=[i_event(i)-nL;i_event(i)+nR];
                                 data=get_selected_data(obj.bsp,omitMask,tmp_sel);
                                 data=data(:,chanind);
                                 data=data(:,j);
                                 [tf,f,t]=bsp_tfmap(obj.TFMapFig,data,baseline,obj.fs,wd,ov,s,nref_tmp,channames,freq,unit);
+                                tmp_tfm{i}=tf;
                                 tfm=tfm+tf;
                             end
                             tfm=tfm/length(i_event);
+                            %compute the baseline spectrum
+                            
                             if obj.normalization==3
-                                tfm=tfm./repmat(mean(rtfm,2),1,size(tfm,2));
+                                rtfm=0;
+                                for i=1:length(tmp_tfm)
+                                    rtfm=rtfm+mean(tmp_tfm{i}(:,t>=nref(1)/obj.fs&t<=nref(2)/obj.fs),2);
+                                end
+                                
+                                rtfm=rtfm/length(i_event);
+                                tfm=tfm./repmat(rtfm,1,size(tfm,2));
                             end
                         else
                             [tfm,f,t]=bsp_tfmap(obj.TFMapFig,data(:,j),baseline,obj.fs,wd,ov,s,nref,channames,freq,unit);
@@ -1072,7 +1078,12 @@ classdef TFMapWindow < handle
                         
                         tfmap_grid(obj.TFMapFig,axe,t,f,tfm,chanpos(j,:),dw,dh,channames{j},sl,sh,freq,unit);
                         
-                        
+                        obj.tfmat{j}=tfm;
+                        obj.tfmat_t=t;
+                        obj.tfmat_f=f;
+                        obj.tfmat_channel=channel;
+                        obj.tfmat_dataset=dataset;
+                        obj.tfmat_channame=chanNames;
                         if ~isempty(tfm)
                             if strcmpi(unit,'dB')
                                 cmax=max(max(max(abs(10*log10(tfm)))),cmax);
