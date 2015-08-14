@@ -131,6 +131,9 @@ classdef SpatialMapWindow < handle
         
         fig_x
         fig_y
+        
+        map_val
+        cmax
     end
     properties
         
@@ -155,7 +158,30 @@ classdef SpatialMapWindow < handle
         pos_y
     end
     methods
+        function val=get.cmax(obj)
+            val=-inf;
+            if ~isempty(obj.tfmat)
+                for i=1:length(obj.tfmat)
+                   val=max(val,max(max(abs(obj.tfmat{i})))); 
+                end
+            end
+        end
+        
+        function val=get.map_val(obj)
+            fi=(obj.tfmat_f>=obj.min_freq)&(obj.tfmat_f<=obj.max_freq);
+            ti=(obj.tfmat_t>=obj.act_start/1000)&(obj.tfmat_t<=obj.act_start/1000+obj.act_len/1000);
             
+            mapv=zeros(1,length(obj.tfmat));
+            for i=1:length(obj.tfmat)
+                mapv(i)=mean(mean(obj.tfmat{i}(fi,ti)));
+            end
+            
+            if obj.scale_by_max
+                mapv=mapv/max(abs(mapv));
+            end
+            
+            val=mapv;
+        end
         function val=get.fig_x(obj)
             val=100;
         end
@@ -369,6 +395,7 @@ classdef SpatialMapWindow < handle
             val=obj.normalization_start_;
         end
         function set.normalization_start(obj,val)
+            val=max(0,min((obj.ms_before+obj.ms_after),val));
             if obj.valid
                 set(obj.scale_start_edit,'string',num2str(val));
             end
@@ -394,6 +421,8 @@ classdef SpatialMapWindow < handle
             val=obj.normalization_end_;
         end
         function set.normalization_end(obj,val)
+            val=max(obj.normalization_start+obj.stft_winlen/obj.fs*1000,val);
+            val=max(0,min((obj.ms_before+obj.ms_after),val));
             obj.normalization_end_=val;
             if obj.valid
                 if obj.normalization==2||obj.normalization==3
@@ -469,8 +498,6 @@ classdef SpatialMapWindow < handle
             if obj.valid
                 set(obj.max_clim_slider,'min',val);
                 set(obj.min_clim_slider,'min',val);
-                set(obj.erd_slider,'min',val);
-                set(obj.ers_slider,'min',val);
             end
         end
         
@@ -485,8 +512,6 @@ classdef SpatialMapWindow < handle
             if obj.valid
                 set(obj.max_clim_slider,'max',val);
                 set(obj.min_clim_slider,'max',val);
-                set(obj.erd_slider,'min',val);
-                set(obj.ers_slider,'max',val);
             end
         end
         function val=get.max_clim(obj)
@@ -605,8 +630,8 @@ classdef SpatialMapWindow < handle
             obj.normalization_end_event_='';
             obj.max_freq_=obj.fs/2;
             obj.min_freq_=0;
-            obj.clim_slider_max_=15;
-            obj.clim_slider_min_=-15;
+            obj.clim_slider_max_=10;
+            obj.clim_slider_min_=-10;
             obj.max_clim_=8;
             obj.min_clim_=-8;
             obj.erd_=1;
@@ -920,7 +945,9 @@ classdef SpatialMapWindow < handle
                 case obj.min_freq_slider
                     obj.min_freq=round(get(src,'value')*10)/10;
             end
-            UpdateFigure(obj)
+            if obj.auto_refresh
+                UpdateFigure(obj)
+            end
         end
         function ClimCallback(obj,src)
             switch src
@@ -942,11 +969,23 @@ classdef SpatialMapWindow < handle
                     obj.min_clim=t;
             end
             
-            if ~NoSpatialMapFig(obj)&&obj.auto_refresh
+            if ~obj.auto_refresh
+                return
+            end
+            
+            if ~NoSpatialMapFig(obj)
                 h=findobj(obj.SpatialMapFig,'-regexp','Tag','SpatialMapAxes');
                 
-                if obj.min_clim<obj.max_clim
-                    set(h,'CLim',[obj.min_clim,obj.max_clim]);
+                if obj.scale_by_max
+                    sl=obj.min_clim/obj.cmax;
+                    sh=obj.max_clim/obj.cmax;
+                else
+                    sl=obj.min_clim;
+                    sh=obj.max_clim;
+                end
+                
+                if sl<sh
+                    set(h,'CLim',[sl,sh]);
                 end
 %                 figure(obj.SpatialMapFig);
             end
@@ -959,6 +998,7 @@ classdef SpatialMapWindow < handle
                     if isnan(t)
                        t=obj.normalization_start; 
                     end
+                    
                     obj.normalization_start=t;
                 case obj.scale_end_edit
                     
@@ -966,7 +1006,9 @@ classdef SpatialMapWindow < handle
                     if isnan(t)
                        t=obj.normalization_end; 
                     end
+                    
                     obj.normalization_end=t;
+                    
                 case obj.scale_start_popup
                     obj.normalization_start_event_=obj.event_list{get(src,'value')};
                 case obj.scale_end_popup
@@ -1086,6 +1128,7 @@ classdef SpatialMapWindow < handle
                 s(1)=s(2)-abs(s(2))*0.1;
                 obj.min_clim=s(1);
             end
+            
             sl=obj.min_clim;
             sh=obj.max_clim;
             
@@ -1152,10 +1195,9 @@ classdef SpatialMapWindow < handle
                 
             end
             %**************************************************************
-            cmax=-inf;
             nref_tmp=nref;
             obj.tfmat=cell(1,length(channames));
-            wait_bar_h = waitbar(0,'STFT recaculating...');
+            wait_bar_h = waitbar(0,'STFT Recaculating...');
             for j=1:length(channames)
                 waitbar(j/length(channames));
                 if obj.data_input==3
@@ -1172,7 +1214,7 @@ classdef SpatialMapWindow < handle
                         data=get_selected_data(obj.bsp,omitMask,tmp_sel);
                         data=data(:,chanind);
                         data=data(:,j);
-                        [tf,f,t]=bsp_tfmap(obj.SpatialMapFig,data,baseline,obj.fs,wd,ov,s,nref_tmp,channames,freq,obj.unit);
+                        [tf,f,t]=bsp_tfmap(obj.SpatialMapFig,data,baseline,obj.fs,wd,ov,[sl,sh],nref_tmp,channames,freq,obj.unit);
                         tfm=tfm+tf;
                         tmp_tfm{i}=tf;
                     end
@@ -1187,11 +1229,10 @@ classdef SpatialMapWindow < handle
                         tfm=tfm./repmat(rtfm,1,size(tfm,2));
                     end
                 else
-                    [tfm,f,t]=bsp_tfmap(obj.SpatialMapFig,data(:,j),baseline,obj.fs,wd,ov,s,nref,channames,freq,obj.unit);
+                    [tfm,f,t]=bsp_tfmap(obj.SpatialMapFig,data(:,j),baseline,obj.fs,wd,ov,[sl,sh],nref,channames,freq,obj.unit);
                 end
-
-                if ~isempty(tfm)
-                    cmax=max(max(max(abs(10*log10(tfm)))),cmax);
+                if strcmpi(obj.unit,'dB')
+                    tfm=10*log10(tfm);
                 end
                 
                 obj.tfmat{j}=tfm;
@@ -1209,12 +1250,15 @@ classdef SpatialMapWindow < handle
             obj.pos_y=chanpos(:,2);
             close(wait_bar_h);
             
-            spatialmap_grid(obj.SpatialMapFig,t,f,obj.tfmat,obj.interp_method,...
-                obj.extrap_method,obj.act_start/1000,obj.act_len/1000,...
-                chanpos(:,1),chanpos(:,2),obj.width,obj.height,sl,sh,freq,obj.color_bar);
+            if obj.scale_by_max
+                sl=sl/obj.cmax;
+                sh=sh/obj.cmax;
+            end
+            spatialmap_grid(obj.SpatialMapFig,obj.map_val,obj.interp_method,...
+                obj.extrap_method,chanpos(:,1),chanpos(:,2),obj.width,obj.height,sl,sh,obj.color_bar);
             
-            obj.clim_slider_max=cmax*1.5;
-            obj.clim_slider_min=-cmax*1.5;
+            obj.clim_slider_max=obj.cmax;
+            obj.clim_slider_min=-obj.cmax;
         end
         
         function ERDSCallback(obj,src)
@@ -1263,6 +1307,11 @@ classdef SpatialMapWindow < handle
         end
         function ScaleByMaxCallback(obj,src)
             obj.scale_by_max_=get(src,'value');
+            
+            if ~obj.auto_refresh
+                return
+            end
+            UpdateFigure(obj);
         end
         
         function ActCallback(obj,src)
@@ -1284,7 +1333,9 @@ classdef SpatialMapWindow < handle
                 case obj.act_len_slider
                     obj.act_len=get(src,'value');
             end
-            UpdateFigure(obj);
+            if obj.auto_refresh
+                UpdateFigure(obj);
+            end
         end
         function AutoRefreshCallback(obj,src)
             obj.auto_refresh_=get(src,'value');
@@ -1308,6 +1359,10 @@ classdef SpatialMapWindow < handle
         end
         function ColorBarCallback(obj,src)
             obj.color_bar_=get(src,'value');
+            
+            if ~obj.auto_refresh
+                return
+            end
             
             if ~NoSpatialMapFig(obj)
                 pos=get(obj.SpatialMapFig,'position');
@@ -1383,15 +1438,7 @@ classdef SpatialMapWindow < handle
                if ~isempty(h)
                    col=max(1,round(obj.pos_x*obj.width));
                    row=max(1,round(obj.pos_y*obj.height));
-                   
-                   fi=(obj.tfmat_f>=obj.min_freq)&(obj.tfmat_f<=obj.max_freq);
-                   ti=(obj.tfmat_t>=obj.act_start/1000)&(obj.tfmat_t<=obj.act_start/1000+obj.act_len/1000);
-                   
-                   mapv=zeros(1,length(obj.tfmat));
-                   for i=1:length(obj.tfmat)
-                       mapv(i)=mean(mean(obj.tfmat{i}(fi,ti)));
-                   end
-                   
+                   mapv=obj.map_val;
                    if strcmpi(obj.interp_method,'natural')
                        [x,y]=meshgrid(1:obj.width,1:obj.height);
                        
@@ -1404,7 +1451,12 @@ classdef SpatialMapWindow < handle
                    end
 %                    imagesc(single(10*log10(flipud(mapvq))),'Parent',h,'Tag','Map');
                    imagehandle=findobj(h,'Tag','ImageMap');
-                   set(imagehandle,'CData',single(10*log10(flipud(mapvq))));
+                   if obj.scale_by_max
+                       set(h,'clim',[obj.min_clim/obj.cmax,obj.max_clim/obj.cmax]);
+                   else
+                       set(h,'clim',[obj.min_clim,obj.max_clim]);
+                   end
+                   set(imagehandle,'CData',single(flipud(mapvq)));
                    drawnow
                end
             end
