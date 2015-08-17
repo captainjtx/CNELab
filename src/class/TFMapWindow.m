@@ -856,7 +856,7 @@ classdef TFMapWindow < handle
             %Data selection************************************************************
             if obj.data_input==1
                 omitMask=true;
-                [data,chanNames,dataset,channel,sample,evts,groupnames,chanpos]=get_selected_data(obj,omitMask);
+                [data,chanNames,dataset,channel,sample,evts,groupnames,chanpos]=get_selected_data(obj.bsp,omitMask);
             elseif obj.data_input==2
                 if isempty(obj.bsp.SelectedEvent)
                     errordlg('No event selection !');

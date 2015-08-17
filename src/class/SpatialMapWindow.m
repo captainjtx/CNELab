@@ -1,16 +1,17 @@
 classdef SpatialMapWindow < handle
     %TFMAPWINDOW Summary of this class goes here
     %   Detailed explanation goes here
-    
     properties
         advance_menu
         stft_menu
         p_menu
         
         valid
+        add_event_valid
         SpatialMapFig
         bsp
         fig
+        add_event_fig
         data_popup
         event_popup
         ms_before_edit
@@ -53,6 +54,10 @@ classdef SpatialMapWindow < handle
         act_len_slider
         auto_refresh_radio
         color_bar_radio
+        
+        add_event_btn
+        event_list_listbox
+        event_group_listbox
     end
     properties
         
@@ -134,6 +139,8 @@ classdef SpatialMapWindow < handle
         
         map_val
         cmax
+        
+        active_ievent
     end
     properties
         
@@ -141,11 +148,6 @@ classdef SpatialMapWindow < handle
         width
         height
         tfmat
-        tfmat_t
-        tfmat_f
-        tfmat_channame
-        tfmat_dataset
-        tfmat_channel
         
         stft_winlen
         stft_overlap
@@ -158,6 +160,8 @@ classdef SpatialMapWindow < handle
         pos_y
         
         need_recalculate
+        
+        event_group
     end
     methods
         function val=get.cmax(obj)
@@ -168,14 +172,25 @@ classdef SpatialMapWindow < handle
                 end
             end
         end
-        
-        function val=get.map_val(obj)
-            fi=(obj.tfmat_f>=obj.min_freq)&(obj.tfmat_f<=obj.max_freq);
-            ti=(obj.tfmat_t>=obj.act_start/1000)&(obj.tfmat_t<=obj.act_start/1000+obj.act_len/1000);
-            
-            mapv=zeros(1,length(obj.tfmat));
+        function val=get.active_ievent(obj)
+            val=[];
             for i=1:length(obj.tfmat)
-                mapv(i)=mean(mean(obj.tfmat{i}(fi,ti)));
+                if strcmpi(obj.tfmat(i).event,obj.event)
+                    val=i;
+                    return
+                end
+            end
+        end
+        function val=get.map_val(obj)
+            
+            tf=obj.tfmat(obj.active_ievent);
+            
+            fi=(tf.f>=obj.min_freq)&(tf.f<=obj.max_freq);
+            ti=(tf.t>=obj.act_start/1000)&(tf.t<=obj.act_start/1000+obj.act_len/1000);
+            
+            mapv=zeros(1,length(tf.mat));
+            for i=1:length(tf.mat)
+                mapv(i)=mean(mean(tf.mat{i}(fi,ti)));
             end
             
             if obj.scale_by_max
@@ -225,8 +240,9 @@ classdef SpatialMapWindow < handle
             val=obj.act_start_;
         end
         function set.act_start(obj,val)
-            if ~isempty(obj.tfmat_t)
-                val=min(max(min(obj.tfmat_t*1000),val),max(obj.tfmat_t*1000));
+            tf=obj.tfmat(obj.active_ievent);
+            if ~isempty(tf)
+                val=min(max(min(tf.t*1000),val),max(tf.t*1000));
             end
                 obj.act_start_=val;
             if obj.valid
@@ -560,6 +576,10 @@ classdef SpatialMapWindow < handle
         end
         
         function set.event_list(obj,val)
+            
+            if all(strcmpi(sort(obj.event_list),sort(val)))
+                return
+            end
             obj.event_list_=val;
             
             if obj.valid
@@ -569,6 +589,13 @@ classdef SpatialMapWindow < handle
                 set(obj.event_popup,'string',val);
                 set(obj.scale_start_popup,'string',val);
                 set(obj.scale_end_popup,'string',val);
+                
+                if obj.add_event_valid
+                    set(obj.event_list_listbox,'value',1)
+                    set(obj.event_list_listbox,'string',val);
+                    set(obj.event_group_listbox,'value',1);
+                    set(obj.event_group_listbox,'string',obj.event);
+                end
             end
             
             [ia,ib]=ismember(obj.event,val);
@@ -655,6 +682,7 @@ classdef SpatialMapWindow < handle
             obj.p=0.05;
             obj.interp_method='natural';
             obj.extrap_method='linear';
+            obj.add_event_valid=0;
         end
         function buildfig(obj)
             if obj.valid
@@ -671,12 +699,14 @@ classdef SpatialMapWindow < handle
             
             hp=uipanel('units','normalized','Position',[0,0,1,1]);
             
-            hp_data=uipanel('Parent',hp,'Title','','Units','normalized','Position',[0,0.87,1,0.13]);
-            uicontrol('Parent',hp_data,'Style','text','String','Input Data: ','units','normalized','Position',[0.01,0.6,0.4,0.35],...
-                'HorizontalAlignment','left');
+            hp_data=uipanel('Parent',hp,'Title','Raw Data','Units','normalized','Position',[0,0.86,1,0.13]);
+            
             obj.data_popup=uicontrol('Parent',hp_data,'Style','popup',...
-                'String',{'Selection','Single Event','Average Event'},'units','normalized','position',[0.4,0.6,0.59,0.35],...
+                'String',{'Selection','Single Event','Average Event'},'units','normalized','position',[0.01,0.6,0.59,0.35],...
                 'Callback',@(src,evts) DataPopUpCallback(obj,src),'value',obj.data_input);
+            
+            obj.add_event_btn=uicontrol('parent',hp_data,'style','pushbutton','string','Bind','units','normalized',...
+                'position',[0.79,0.6,0.2,0.35],'callback',@(src,evts) AddEventCallback(obj,src));
             
             obj.event_text=uicontrol('Parent',hp_data,'Style','text','string','Event: ','units','normalized','position',[0.01,0.3,0.35,0.3],...
                 'HorizontalAlignment','left','visible','off');
@@ -691,12 +721,11 @@ classdef SpatialMapWindow < handle
             obj.ms_after_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_after),'units','normalized','position',[0.7,0.05,0.29,0.3],...
                 'HorizontalAlignment','left','visible','off','callback',@(src,evts) MsAfterCallback(obj,src));
             
-            hp_scale=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.73,1,0.13]);
-            uicontrol('Parent',hp_scale,'style','text','units','normalized','string','Baseline: ',...
-                'position',[0.01,0.6,0.4,0.35],'HorizontalAlignment','left');
+            hp_scale=uipanel('Parent',hp,'Title','Baseline','units','normalized','position',[0,0.73,1,0.12]);
+ 
             obj.normalization_popup=uicontrol('Parent',hp_scale,'style','popup','units','normalized',...
                 'string',{'None','Individual Within Segment','Average Within Sgement','External Baseline'},'callback',@(src,evts) NormalizationCallback(obj,src),...
-                'position',[0.4,0.6,0.59,0.35],'value',obj.normalization);
+                'position',[0.01,0.6,0.59,0.35],'value',obj.normalization);
             
             obj.scale_start_text=uicontrol('Parent',hp_scale,'style','text','units','normalized',...
                 'string','Start (ms): ','position',[0.05,0.3,0.4,0.3],'HorizontalAlignment','center',...
@@ -839,6 +868,13 @@ classdef SpatialMapWindow < handle
             if ishandle(h)
                 delete(h);
             end
+            
+            
+            h = obj.add_event_fig;
+            if ishandle(h)
+                delete(h);
+            end
+            
         end
         
         function DataPopUpCallback(obj,src)
@@ -852,6 +888,7 @@ classdef SpatialMapWindow < handle
                     set(obj.event_popup,'visible','off');
                     set(obj.ms_before_edit,'visible','off');
                     set(obj.ms_after_edit,'visible','off');
+                    set(obj.add_event_btn,'visible','off');
                 case 2
                     %Single Event
                     set(obj.event_text,'visible','on');
@@ -860,6 +897,7 @@ classdef SpatialMapWindow < handle
                     set(obj.event_popup,'visible','on','enable','off');
                     set(obj.ms_before_edit,'visible','on');
                     set(obj.ms_after_edit,'visible','on');
+                    set(obj.add_event_btn,'visible','off');
                 case 3
                     %Average Event
                     set(obj.event_text,'visible','on');
@@ -868,6 +906,7 @@ classdef SpatialMapWindow < handle
                     set(obj.event_popup,'visible','on','enable','on');
                     set(obj.ms_before_edit,'visible','on');
                     set(obj.ms_after_edit,'visible','on');
+                    set(obj.add_event_btn,'visible','on');
             end
         end
         
@@ -1035,9 +1074,17 @@ classdef SpatialMapWindow < handle
         end
         
         function NewSpatialMapFig(obj)
-            obj.SpatialMapFig=figure('Name','Active SpatialMap','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
-                'units','pixels','position',[obj.fig_x,obj.fig_y,obj.fig_w,obj.fig_h],'Resize','off',...
-                'doublebuffer','off');
+            if any(stcmpi(obj.event,obj.event_group))
+                for i=1:length(obj.event_group)
+                    obj.SpatialMapFig(i)=figure('Name',obj.event_group{i},'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
+                        'units','pixels','position',[obj.fig_x,obj.fig_y,obj.fig_w,obj.fig_h],'Resize','off',...
+                        'doublebuffer','off');
+                end
+            else
+                obj.SpatialMapFig=figure('Name','Active SpatialMap','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
+                    'units','pixels','position',[obj.fig_x,obj.fig_y,obj.fig_w,obj.fig_h],'Resize','off',...
+                    'doublebuffer','off');
+            end
         end
         function ComputeCallback(obj)
             %==========================================================================
@@ -1485,6 +1532,60 @@ classdef SpatialMapWindow < handle
                    set(imagehandle,'CData',single(mapvq));
                    drawnow
                end
+            end
+        end
+        
+        function AddEventCallback(obj,src)
+            pos=get(obj.fig,'Position');
+            h=figure('name','Bind Events','units','pixels','position',[pos(1)+pos(3),pos(2)+pos(4)-150,300,150],...
+                'NumberTitle','off','resize','off','menubar','none',...
+                'CloseRequestFcn',@(src,evts) AddEventCloseCallback(obj,src));
+            obj.event_list_listbox=uicontrol('parent',h,'style','listbox','units','normalized','position',[0,0,0.4,1],...
+                'string',obj.event_list,'value',1,'max',3,'min',1);
+            obj.event_group_listbox=uicontrol('parent',h,'style','listbox','units','normalized','position',[0.6,0,0.4,1],...
+                'string',obj.event_group,'value',1,'max',3,'min',1);
+            uicontrol('parent',h,'style','pushbutton','units','normalized','position',[0.45,0.55,0.1,0.1],...
+                'callback',@(src,evts)AddCallback(obj,src),'string','>>');
+            
+            uicontrol('parent',h,'style','pushbutton','units','normalized','position',[0.45,0.35,0.1,0.1],...
+                'callback',@(src,evts)RemoveCallback(obj,src),'string','<<');
+            obj.add_event_fig=h;
+            obj.add_event_valid=1;
+            
+        end
+        
+        function AddCallback(obj,src)
+            
+            ievent=get(obj.event_list_listbox,'value');
+            if isempty(ievent)
+                return
+            end
+            
+            obj.event_group=unique(cat(2,obj.event_group,obj.event_list(ievent)'));
+            
+            set(obj.event_group_listbox,'value',1);
+            set(obj.event_group_listbox,'string',obj.event_group);
+            
+            
+        end
+        function RemoveCallback(obj,src)
+            ievent=get(obj.event_group_listbox,'value');
+            if isempty(ievent)
+                return
+            end
+            
+            if isempty(obj.event_group)
+                return
+            end
+            obj.event_group(ievent)=[];
+            set(obj.event_group_listbox,'value',1);
+            set(obj.event_group_listbox,'string',obj.event_group);
+        end
+        
+        function AddEventCloseCallback(obj,src)
+            obj.add_event_valid=0;
+            if ishandle(src)
+                delete(src);
             end
         end
         
