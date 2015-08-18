@@ -950,6 +950,8 @@ classdef BioSigPlot < hgsetget
             
             obj.PSDFreqLow=0;
             obj.PSDFreqHigh=val/2;
+            obj.TFMapWin.fs=val;
+            obj.SpatialMapWin.fs=val;
         end
         %******************************************************************
         function val = get.Evts(obj)
