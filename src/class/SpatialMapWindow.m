@@ -98,9 +98,11 @@ classdef SpatialMapWindow < handle
         color_bar_
         link_
         symmetric_scale_
+        fs_
     end
     
     properties (Dependent)
+        fs
         data_input
         ms_before
         ms_after
@@ -149,8 +151,6 @@ classdef SpatialMapWindow < handle
         symmetric_scale
     end
     properties
-        
-        fs
         width
         height
         tfmat
@@ -170,6 +170,17 @@ classdef SpatialMapWindow < handle
         event_group
     end
     methods
+        
+        function val=get.fs(obj)
+            val=obj.fs_;
+        end
+        function set.fs(obj,val)
+            obj.fs_=val;
+            if obj.valid
+                set(obj.max_freq_slider,'max',val/2);
+                set(obj.min_freq_slider,'min',val/2);
+            end
+        end
         function val=get.symmetric_scale(obj)
             val=obj.symmetric_scale_;
         end
@@ -685,7 +696,7 @@ classdef SpatialMapWindow < handle
     methods
         function obj=SpatialMapWindow(bsp)
             obj.bsp=bsp;
-            obj.fs=bsp.SRate;
+            obj.fs_=bsp.SRate;
             if ~isempty(bsp.Evts)
                 obj.event_list_=unique(bsp.Evts(:,2));
             end

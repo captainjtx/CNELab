@@ -40,7 +40,7 @@ classdef TFMapWindow < handle
         symmetric_scale_radio
     end
     properties
-        fs
+        fs_
         
         method_
         data_input_
@@ -67,6 +67,7 @@ classdef TFMapWindow < handle
     end
     
     properties (Dependent)
+        fs
         method
         data_input
         ms_before
@@ -99,6 +100,16 @@ classdef TFMapWindow < handle
         tfmat_channel
     end
     methods
+        function val=get.fs(obj)
+            val=obj.fs_;
+        end
+        function set.fs(obj,val)
+            obj.fs_=val;
+            if obj.valid
+                set(obj.max_freq_slider,'max',val/2);
+                set(obj.min_freq_slider,'min',val/2);
+            end
+        end
         function val=get.symmetric_scale(obj)
             val=obj.symmetric_scale_;
         end
@@ -447,7 +458,7 @@ classdef TFMapWindow < handle
     methods
         function obj=TFMapWindow(bsp)
             obj.bsp=bsp;
-            obj.fs=bsp.SRate;
+            obj.fs_=bsp.SRate;
             if ~isempty(bsp.Evts)
                 obj.event_list_=unique(bsp.Evts(:,2));
             end
