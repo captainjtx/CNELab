@@ -139,6 +139,9 @@ obj.MenuTemporalPCA=uimenu(obj.MenuApp,'Label','Temporal PCA',...
 obj.MenuSpatialPCA=uimenu(obj.MenuApp,'Label','Spatial PCA',...
     'Callback', @(src,evt)Spatial_PCA(obj));
 
+obj.MenuInterpolate=uimenu(obj.MenuApp,'Label','Interpolate',...
+    'Callback',@(src,evt)Interpolate(obj));
+
 
 end
 

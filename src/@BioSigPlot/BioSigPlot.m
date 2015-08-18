@@ -166,6 +166,8 @@ classdef BioSigPlot < hgsetget
         MenuRemovePulse
         MenuSpatialPCA
         
+        MenuInterpolate
+        
         PanObj
         LineVideo
         LineMeasurer
@@ -2176,6 +2178,7 @@ classdef BioSigPlot < hgsetget
         LoadChannelPosition(obj)
         MnuNextPrevFile(obj)
         SavePosition(obj)
+        Interpolate(obj)
     end
     
     methods

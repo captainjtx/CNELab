@@ -1274,8 +1274,15 @@ classdef SpatialMapWindow < handle
             
             wd=obj.stft_winlen;
             ov=obj.stft_overlap;
+            
+            if isempty(obj.active_ievent)
+                evt={obj.event};
+            else
+                evt=obj.event_group;
+            end
             for i=1:length(obj.SpatialMapFig)
                 clf(obj.SpatialMapFig(i));
+                set(obj.SpatialMapFig(i),'Name',[evt{i} ' Active']);
             end
             
             %Normalizatin**************************************************************
@@ -1327,13 +1334,6 @@ classdef SpatialMapWindow < handle
             %**************************************************************
             nref_tmp=nref;
             wait_bar_h = waitbar(0,'STFT Recaculating...');
-            
-            
-            if isempty(obj.active_ievent)
-                evt={obj.event};
-            else
-                evt=obj.event_group;
-            end
             
             if obj.data_input==3
                 for j=1:length(channames)
