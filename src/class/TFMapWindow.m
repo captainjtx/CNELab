@@ -37,6 +37,7 @@ classdef TFMapWindow < handle
         onset_radio
         compute_btn
         new_btn
+        symmetric_scale_radio
     end
     properties
         fs
@@ -62,6 +63,7 @@ classdef TFMapWindow < handle
         clim_slider_max_
         clim_slider_min_
         event_list_
+        symmetric_scale_
     end
     
     properties (Dependent)
@@ -86,6 +88,7 @@ classdef TFMapWindow < handle
         clim_slider_max
         clim_slider_min
         event_list
+        symmetric_scale
     end
     properties
         tfmat
@@ -96,6 +99,16 @@ classdef TFMapWindow < handle
         tfmat_channel
     end
     methods
+        function val=get.symmetric_scale(obj)
+            val=obj.symmetric_scale_;
+        end
+        function set.symmetric_scale(obj,val)
+            obj.symmetric_scale_=val;
+            if obj.valid
+                set(obj.symmetric_scale_radio,'value',val);
+            end
+        end
+            
         function val=get.method(obj)
             val=obj.method_;
         end
@@ -333,12 +346,21 @@ classdef TFMapWindow < handle
             elseif val<obj.clim_slider_min
                 val=obj.clim_slider_min;
             end
-            if obj.min_clim>=val
-                obj.min_clim=val-1;
+            
+            if obj.symmetric_scale
+                val=abs(val);
+                obj.min_clim_=obj.clim_slider_max+obj.clim_slider_min-val;
+            else
+                if obj.min_clim>=val
+                    obj.min_clim_=val-1;
+                end
             end
             if obj.valid
                 set(obj.max_clim_edit,'string',num2str(val));
                 set(obj.max_clim_slider,'value',val);
+                
+                set(obj.min_clim_edit,'string',num2str(obj.min_clim_));
+                set(obj.min_clim_slider,'value',obj.min_clim_);
             end
             obj.max_clim_=val;
         end
@@ -346,6 +368,7 @@ classdef TFMapWindow < handle
         function val=get.min_clim(obj)
             val=obj.min_clim_;
         end
+
         function set.min_clim(obj,val)
             if val>obj.clim_slider_max
                 val=obj.clim_slider_max;
@@ -353,12 +376,21 @@ classdef TFMapWindow < handle
                 val=obj.clim_slider_min;
             end
             
-            if obj.max_clim<=val
-                obj.max_clim=val+1;
+            if obj.symmetric_scale
+                val=-abs(val);
+                obj.max_clim_=obj.clim_slider_max+obj.clim_slider_min-val;
+            else
+                if obj.max_clim<=val
+                    obj.max_clim_=val+1;
+                end
             end
+            
             if obj.valid
                 set(obj.min_clim_edit,'string',num2str(val));
                 set(obj.min_clim_slider,'value',val);
+                
+                set(obj.max_clim_edit,'string',num2str(obj.max_clim_));
+                set(obj.max_clim_slider,'value',obj.max_clim_);
             end
             obj.min_clim_=val;
         end
@@ -450,6 +482,7 @@ classdef TFMapWindow < handle
             obj.min_clim_=-8;
             obj.stft_winlen_=round(obj.fs/3);
             obj.stft_overlap_=round(obj.stft_winlen*0.9);
+            obj.symmetric_scale_=1;
         end
         function buildfig(obj)
             if obj.valid
@@ -578,9 +611,10 @@ classdef TFMapWindow < handle
                 'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.max_clim,'sliderstep',[0.01,0.05]);
             
             hp_display=uipanel('parent',hp,'title','Display','units','normalized','position',[0,0.06,1,0.13]);
-            obj.onset_radio=uicontrol('parent',hp_display,'style','radiobutton','string','onset','value',obj.display_onset,...
+            obj.onset_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Onset','value',obj.display_onset,...
                 'units','normalized','position',[0,0.7,0.45,0.3],'callback',@(src,evts) DisplayOnsetCallback(obj,src));
-            
+            obj.symmetric_scale_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Symmetric Scale','value',obj.symmetric_scale,...
+                'units','normalized','position',[0,0.4,0.45,0.3],'callback',@(src,evts) SymmetricScaleCallback(obj,src));
             
             obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.005,0.2,0.05],...
                 'callback',@(src,evts) ComputeCallback(obj));
@@ -1125,6 +1159,10 @@ classdef TFMapWindow < handle
                     end
                 end
             end
+        end
+        
+        function SymmetricScaleCallback(obj,src)
+            obj.symmetric_scale_=get(src,'value');
         end
         
     end

@@ -46,7 +46,7 @@ classdef SpatialMapWindow < handle
         threshold_slider
         compute_btn
         scale_by_max_radio
-%         display_mask_radio
+        %         display_mask_radio
         new_btn
         act_start_edit
         act_len_edit
@@ -58,6 +58,8 @@ classdef SpatialMapWindow < handle
         add_event_btn
         event_list_listbox
         event_group_listbox
+        link_radio
+        symmetric_scale_radio
     end
     properties
         
@@ -89,11 +91,13 @@ classdef SpatialMapWindow < handle
         
         scale_by_max_
         
-%         display_mask_channel_
+        %         display_mask_channel_
         act_start_
         act_len_
         auto_refresh_
         color_bar_
+        link_
+        symmetric_scale_
     end
     
     properties (Dependent)
@@ -125,7 +129,7 @@ classdef SpatialMapWindow < handle
         
         scale_by_max
         
-%         display_mask_channel
+        %         display_mask_channel
         act_start
         act_len
         auto_refresh
@@ -141,6 +145,8 @@ classdef SpatialMapWindow < handle
         cmax
         
         active_ievent
+        link
+        symmetric_scale
     end
     properties
         
@@ -164,40 +170,64 @@ classdef SpatialMapWindow < handle
         event_group
     end
     methods
+        function val=get.symmetric_scale(obj)
+            val=obj.symmetric_scale_;
+        end
+        function set.symmetric_scale(obj,val)
+            obj.symmetric_scale_=val;
+            if obj.valid
+                set(obj.symmetric_scale_radio,'value',val);
+            end
+        end
+            
+            
+        function val=get.link(obj)
+            val=obj.link_;
+        end
+        
+        function set.link(obj,val)
+            obj.link_=val;
+            if obj.valid
+                set(obj.link_radio,'value',val);
+            end
+        end
+        
         function val=get.cmax(obj)
             val=-inf;
-            if ~isempty(obj.tfmat)
-                for i=1:length(obj.tfmat)
-                   val=max(val,max(max(abs(obj.tfmat{i})))); 
+            if isempty(obj.active_ievent)
+                tf=obj.tfmat;
+            else
+                tf=obj.tfmat(obj.active_ievent);
+            end
+            if ~isempty(tf)
+                for i=1:length(tf.mat)
+                    val=max(val,max(max(abs(tf.mat{i}))));
                 end
             end
         end
         function val=get.active_ievent(obj)
-            val=[];
-            for i=1:length(obj.tfmat)
-                if strcmpi(obj.tfmat(i).event,obj.event)
-                    val=i;
-                    return
-                end
-            end
+            val=find(strcmpi(obj.event_group,obj.event));
         end
         function val=get.map_val(obj)
             
-            tf=obj.tfmat(obj.active_ievent);
-            
-            fi=(tf.f>=obj.min_freq)&(tf.f<=obj.max_freq);
-            ti=(tf.t>=obj.act_start/1000)&(tf.t<=obj.act_start/1000+obj.act_len/1000);
-            
-            mapv=zeros(1,length(tf.mat));
-            for i=1:length(tf.mat)
-                mapv(i)=mean(mean(tf.mat{i}(fi,ti)));
+            for k=1:length(obj.tfmat)
+                tf=obj.tfmat(k);
+                
+                fi=(tf.f>=obj.min_freq)&(tf.f<=obj.max_freq);
+                ti=(tf.t>=obj.act_start/1000)&(tf.t<=obj.act_start/1000+obj.act_len/1000);
+                
+                mapv=zeros(1,length(tf.mat));
+                for i=1:length(tf.mat)
+                    mapv(i)=mean(mean(tf.mat{i}(fi,ti)));
+                end
+                
+                if obj.scale_by_max
+                    mapv=mapv/max(abs(mapv));
+                end
+                
+                val{k}=mapv;
             end
             
-            if obj.scale_by_max
-                mapv=mapv/max(abs(mapv));
-            end
-            
-            val=mapv;
         end
         function val=get.fig_x(obj)
             val=100;
@@ -240,17 +270,20 @@ classdef SpatialMapWindow < handle
             val=obj.act_start_;
         end
         function set.act_start(obj,val)
-            tf=obj.tfmat(obj.active_ievent);
+            if isempty(obj.active_ievent)
+                tf=obj.tfmat;
+            else
+                tf=obj.tfmat(obj.active_ievent);
+            end
             if ~isempty(tf)
                 val=min(max(min(tf.t*1000),val),max(tf.t*1000));
             end
-                obj.act_start_=val;
+            obj.act_start_=val;
             if obj.valid
                 set(obj.act_start_edit,'string',num2str(val));
                 set(obj.act_start_slider,'value',val);
             end
         end
-        
         
         function val=get.act_len(obj)
             val=obj.act_len_;
@@ -346,15 +379,15 @@ classdef SpatialMapWindow < handle
                 set(obj.scale_by_max_radio,'value',val);
             end
         end
-%         function val=get.display_mask_channel(obj)
-%             val=obj.display_mask_channel_;
-%         end
-%         function set.display_mask_channel(obj,val)
-%             obj.display_mask_channel_=val;
-%             if obj.valid
-%                 set(obj.display_mask_radio,'value',val);
-%             end
-%         end
+        %         function val=get.display_mask_channel(obj)
+        %             val=obj.display_mask_channel_;
+        %         end
+        %         function set.display_mask_channel(obj,val)
+        %             obj.display_mask_channel_=val;
+        %             if obj.valid
+        %                 set(obj.display_mask_radio,'value',val);
+        %             end
+        %         end
         
         
         function val=get.data_input(obj)
@@ -541,12 +574,21 @@ classdef SpatialMapWindow < handle
             elseif val<obj.clim_slider_min
                 val=obj.clim_slider_min;
             end
-            if obj.min_clim>=val
-                obj.min_clim=val-1;
+            
+            if obj.symmetric_scale
+                val=abs(val);
+                obj.min_clim_=obj.clim_slider_max+obj.clim_slider_min-val;
+            else
+                if obj.min_clim>=val
+                    obj.min_clim_=val-1;
+                end
             end
             if obj.valid
                 set(obj.max_clim_edit,'string',num2str(val));
                 set(obj.max_clim_slider,'value',val);
+                
+                set(obj.min_clim_edit,'string',num2str(obj.min_clim_));
+                set(obj.min_clim_slider,'value',obj.min_clim_);
             end
             obj.max_clim_=val;
         end
@@ -561,12 +603,21 @@ classdef SpatialMapWindow < handle
                 val=obj.clim_slider_min;
             end
             
-            if obj.max_clim<=val
-                obj.max_clim=val+1;
+            if obj.symmetric_scale
+                val=-abs(val);
+                obj.max_clim_=obj.clim_slider_max+obj.clim_slider_min-val;
+            else
+                if obj.max_clim<=val
+                    obj.max_clim_=val+1;
+                end
             end
+            
             if obj.valid
                 set(obj.min_clim_edit,'string',num2str(val));
                 set(obj.min_clim_slider,'value',val);
+                
+                set(obj.max_clim_edit,'string',num2str(obj.max_clim_));
+                set(obj.max_clim_slider,'value',obj.max_clim_);
             end
             obj.min_clim_=val;
         end
@@ -669,7 +720,7 @@ classdef SpatialMapWindow < handle
             obj.ers_t_=0;
             obj.threshold_=1;
             obj.scale_by_max_=0;
-%             obj.display_mask_channel_=0;
+            %             obj.display_mask_channel_=0;
             obj.act_start_=obj.ms_before;
             obj.act_len_=500;
             obj.auto_refresh_=1;
@@ -683,6 +734,8 @@ classdef SpatialMapWindow < handle
             obj.interp_method='natural';
             obj.extrap_method='linear';
             obj.add_event_valid=0;
+            obj.link_=1;
+            obj.symmetric_scale_=1;
         end
         function buildfig(obj)
             if obj.valid
@@ -722,7 +775,7 @@ classdef SpatialMapWindow < handle
                 'HorizontalAlignment','left','visible','off','callback',@(src,evts) MsAfterCallback(obj,src));
             
             hp_scale=uipanel('Parent',hp,'Title','Baseline','units','normalized','position',[0,0.73,1,0.12]);
- 
+            
             obj.normalization_popup=uicontrol('Parent',hp_scale,'style','popup','units','normalized',...
                 'string',{'None','Individual Within Segment','Average Within Sgement','External Baseline'},'callback',@(src,evts) NormalizationCallback(obj,src),...
                 'position',[0.01,0.6,0.59,0.35],'value',obj.normalization);
@@ -833,15 +886,25 @@ classdef SpatialMapWindow < handle
             obj.scale_by_max_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Scale By Maximum',...
                 'units','normalized','position',[0,0.75,0.45,0.25],'value',obj.scale_by_max,...
                 'callback',@(src,evts) ScaleByMaxCallback(obj,src));
-%             obj.display_mask_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Dispaly Mask Channels',...
-%                 'units','normalized','position',[0,0.5,0.45,0.25],'value',obj.display_mask_channel,...
-%                 'callback',@(src,evts) DisplayMaskCallback(obj,src));
+            %             obj.display_mask_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Dispaly Mask Channels',...
+            %                 'units','normalized','position',[0,0.5,0.45,0.25],'value',obj.display_mask_channel,...
+            %                 'callback',@(src,evts) DisplayMaskCallback(obj,src));
             obj.auto_refresh_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Auto Refresh',...
                 'units','normalized','position',[0,0.5,0.45,0.25],'value',obj.auto_refresh,...
                 'callback',@(src,evts) AutoRefreshCallback(obj,src));
             obj.color_bar_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Color Bar',...
                 'units','normalized','position',[0,0.25,0.45,0.25],'value',obj.color_bar,...
                 'callback',@(src,evts) ColorBarCallback(obj,src));
+            
+            
+            obj.link_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Link',...
+                'units','normalized','position',[0,0,0.45,0.25],'value',obj.link,...
+                'callback',@(src,evts) LinkCallback(obj,src));
+            
+            
+            obj.symmetric_scale_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Symmetric Scale',...
+                'units','normalized','position',[0.5,0.75,0.45,0.25],'value',obj.symmetric_scale,...
+                'callback',@(src,evts) SymmetricScaleCallback(obj,src));
             
             obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.005,0.2,0.04],...
                 'callback',@(src,evts) ComputeCallback(obj));
@@ -1028,7 +1091,7 @@ classdef SpatialMapWindow < handle
                 if sl<sh
                     set(h,'CLim',[sl,sh]);
                 end
-%                 figure(obj.SpatialMapFig);
+                %                 figure(obj.SpatialMapFig);
             end
         end
         
@@ -1037,7 +1100,7 @@ classdef SpatialMapWindow < handle
                 case obj.scale_start_edit
                     t=str2double(get(src,'string'));
                     if isnan(t)
-                       t=obj.normalization_start; 
+                        t=obj.normalization_start;
                     end
                     
                     obj.normalization_start=t;
@@ -1045,7 +1108,7 @@ classdef SpatialMapWindow < handle
                     
                     t=str2double(get(src,'string'));
                     if isnan(t)
-                       t=obj.normalization_end; 
+                        t=obj.normalization_end;
                     end
                     
                     obj.normalization_end=t;
@@ -1068,25 +1131,31 @@ classdef SpatialMapWindow < handle
         end
         function NewCallback(obj)
             if ~NoSpatialMapFig(obj)
-                set(obj.SpatialMapFig,'Name','Obsolete SpatialMap');
+                for i=1:length(obj.SpatialMapFig)
+                    name=get(obj.SpatialMapFig,'Name');
+                    set(obj.SpatialMapFig(i),'Name',[name(1:end-6) 'Obsolete']);
+                    set(obj.SpatialMapFig(i),'Tag','Obsolete');
+                end
+                
             end
             NewSpatialMapFig(obj);
         end
         
         function NewSpatialMapFig(obj)
-            if any(stcmpi(obj.event,obj.event_group))
+            if any(strcmpi(obj.event,obj.event_group))
                 for i=1:length(obj.event_group)
-                    obj.SpatialMapFig(i)=figure('Name',obj.event_group{i},'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
+                    obj.SpatialMapFig(i)=figure('Name',[obj.event_group{i},' Active'],'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
                         'units','pixels','position',[obj.fig_x,obj.fig_y,obj.fig_w,obj.fig_h],'Resize','off',...
-                        'doublebuffer','off');
+                        'doublebuffer','off','Tag','Active');
                 end
             else
-                obj.SpatialMapFig=figure('Name','Active SpatialMap','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
+                obj.SpatialMapFig=figure('Name',[obj.event,' Active'],'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
                     'units','pixels','position',[obj.fig_x,obj.fig_y,obj.fig_w,obj.fig_h],'Resize','off',...
-                    'doublebuffer','off');
+                    'doublebuffer','off','Tag','Active');
             end
         end
         function ComputeCallback(obj)
+            obj.tfmat=[];
             %==========================================================================
             nL=round(obj.ms_before*obj.fs/1000);
             nR=round(obj.ms_after*obj.fs/1000);
@@ -1115,17 +1184,29 @@ classdef SpatialMapWindow < handle
                 omitMask=true;
                 [data,chanNames,dataset,channel,sample,evts,groupnames,chanpos]=get_selected_data(obj.bsp,omitMask,tmp_sel);
             elseif obj.data_input==3
+                if isempty(obj.active_ievent)
+                    evt=obj.event;
+                else
+                    evt=obj.event_group;
+                end
+                
                 t_evt=[obj.bsp.Evts{:,1}];
-                t_label=t_evt(strcmpi(obj.bsp.Evts(:,2),obj.event));
+                txt_evt=obj.bsp.Evts(:,2);
+                
+                t_label=t_evt(ismember(txt_evt,evt));
+                txt_evt=txt_evt(ismember(txt_evt,evt));
                 if isempty(t_label)
-                    errordlg(['Event: ',obj.event,' not found !']);
+                    errordlg('Event not found !');
                     return
                 end
                 i_event=round(t_label*obj.fs);
                 i_event=min(max(1,i_event),size(obj.bsp.Data{1},1));
                 
                 i_event((i_event+nR)>size(obj.bsp.Data{1},1))=[];
+                txt_evt((i_event+nR)>size(obj.bsp.Data{1},1))=[];
+                
                 i_event((i_event-nL)<1)=[];
+                txt_evt((i_event-nL)<1)=[];
                 
                 omitMask=true;
                 [data,chanNames,dataset,channel,sample,evts,groupnames,chanpos]=get_selected_data(obj.bsp,omitMask);
@@ -1193,15 +1274,15 @@ classdef SpatialMapWindow < handle
             
             wd=obj.stft_winlen;
             ov=obj.stft_overlap;
-            figure(obj.SpatialMapFig)
-            
-            clf
+            for i=1:length(obj.SpatialMapFig)
+                clf(obj.SpatialMapFig(i));
+            end
             
             %Normalizatin**************************************************************
             if obj.normalization==1
                 nref=[];
                 baseline=[];
-            elseif obj.normalization==2||obj.normalization==3               
+            elseif obj.normalization==2||obj.normalization==3
                 nref=round([obj.normalization_start,obj.normalization_end]/1000*obj.fs);
                 
                 needupdate=0;
@@ -1245,13 +1326,18 @@ classdef SpatialMapWindow < handle
             end
             %**************************************************************
             nref_tmp=nref;
-            obj.tfmat=cell(1,length(channames));
             wait_bar_h = waitbar(0,'STFT Recaculating...');
-            for j=1:length(channames)
-                waitbar(j/length(channames));
-                if obj.data_input==3
-                    tfm=0;
-                    
+            
+            
+            if isempty(obj.active_ievent)
+                evt={obj.event};
+            else
+                evt=obj.event_group;
+            end
+            
+            if obj.data_input==3
+                for j=1:length(channames)
+                    waitbar(j/length(channames));
                     tmp_tfm=cell(1,length(i_event));
                     
                     if obj.normalization==3
@@ -1264,51 +1350,88 @@ classdef SpatialMapWindow < handle
                         data=data(:,chanind);
                         data=data(:,j);
                         [tf,f,t]=bsp_tfmap(obj.SpatialMapFig,data,baseline,obj.fs,wd,ov,[sl,sh],nref_tmp,channames,freq,obj.unit);
-                        tfm=tfm+tf;
                         tmp_tfm{i}=tf;
                     end
-                    tfm=tfm/length(i_event);
-                    if obj.normalization==3
-                        rtfm=0;
-                        for i=1:length(tmp_tfm)
-                            rtfm=rtfm+mean(tmp_tfm{i}(:,(t>=nref(1)/obj.fs)&(t<=nref(2)/obj.fs)),2);
+                    
+                    
+                    for e=1:length(evt)
+                        tfm=0;
+                        
+                        event_tfm=tmp_tfm(strcmpi(txt_evt,evt{e}));
+                        
+                        for k=1:length(event_tfm)
+                            tfm=tfm+event_tfm{k};
                         end
                         
-                        rtfm=rtfm/length(i_event);
-                        tfm=tfm./repmat(rtfm,1,size(tfm,2));
+                        tfm=tfm/length(event_tfm);
+                        
+                        %use baseline from all events**********************
+                        if obj.normalization==3
+                            rtfm=0;
+                            for i=1:length(tmp_tfm)
+                                rtfm=rtfm+mean(tmp_tfm{i}(:,(t>=nref(1)/obj.fs)&(t<=nref(2)/obj.fs)),2);
+                            end
+                            
+                            rtfm=rtfm/length(tmp_tfm);
+                            tfm=tfm./repmat(rtfm,1,size(tfm,2));
+                        end
+                        %**************************************************
+                        if strcmpi(obj.unit,'dB')
+                            tfm=10*log10(tfm);
+                        end
+                        
+                    
+                        obj.tfmat(e).mat{j}=tfm;
+                        obj.tfmat(e).t=t;
+                        obj.tfmat(e).f=f;
+                        obj.tfmat(e).channel=channel;
+                        obj.tfmat(e).dataset=dataset;
+                        obj.tfmat(e).channame=chanNames;
+                        obj.tfmat(e).event=evt(e);
                     end
-                else
+                end
+            else
+                for j=1:length(channames)
+                    waitbar(j/length(channames));
                     [tfm,f,t]=bsp_tfmap(obj.SpatialMapFig,data(:,j),baseline,obj.fs,wd,ov,[sl,sh],nref,channames,freq,obj.unit);
+                    
+                    if strcmpi(obj.unit,'dB')
+                        tfm=10*log10(tfm);
+                    end
+                    
+                    obj.tfmat.mat{j}=tfm;
+                    obj.tfmat.t=t;
+                    obj.tfmat.f=f;
+                    obj.tfmat.channel=channel;
+                    obj.tfmat.dataset=dataset;
+                    obj.tfmat.channame=chanNames;
+                    obj.tfmat.event=obj.event;
                 end
-                if strcmpi(obj.unit,'dB')
-                    tfm=10*log10(tfm);
-                end
-                
-                obj.tfmat{j}=tfm;
             end
             
-            obj.tfmat_t=t;
+            close(wait_bar_h);
+            
             set(obj.act_start_slider,'max',max(t*1000));
             set(obj.act_start_slider,'min',min(t*1000));
             step=min(diff(t))/(max(t)-min(t));
             set(obj.act_start_slider,'sliderstep',[step,step*5]);
-            obj.tfmat_f=f;
-            obj.tfmat_channel=channel;
-            obj.tfmat_dataset=dataset;
-            obj.tfmat_channame=chanNames;
+            
             obj.pos_x=chanpos(:,1);
             obj.pos_y=chanpos(:,2);
-            close(wait_bar_h);
+            
             
             if obj.scale_by_max
                 sl=sl/obj.cmax;
                 sh=sh/obj.cmax;
             end
-            spatialmap_grid(obj.SpatialMapFig,obj.map_val,obj.interp_method,...
-                obj.extrap_method,chanNames,chanpos(:,1),chanpos(:,2),obj.width,obj.height,sl,sh,obj.color_bar);
             
             obj.clim_slider_max=obj.cmax;
             obj.clim_slider_min=-obj.cmax;
+            mapv=obj.map_val;
+            for e=1:length(evt)
+                spatialmap_grid(obj.SpatialMapFig(e),mapv{e},obj.interp_method,...
+                    obj.extrap_method,chanNames,chanpos(:,1),chanpos(:,2),obj.width,obj.height,sl,sh,obj.color_bar);
+            end
         end
         
         function ERDSCallback(obj,src)
@@ -1352,32 +1475,32 @@ classdef SpatialMapWindow < handle
             end
         end
         
-%         function DisplayMaskCallback(obj,src)
-%             obj.display_mask_channel_=get(src,'value');
-%             
-%             if ~NoSpatialMapFig(obj)
-%                 
-%                h=findobj(obj.SpatialMapFig,'-regexp','Tag','SpatialMapAxes');
-%                if ~isempty(h)
-%                    circles=findobj(obj.SpatialMapFig,'-regexp','Tag','contact*');
-%                    
-%                    if ~isempty(circles)
-%                        delete(circles);
-%                    end
-%                    
-%                    col=max(1,round(obj.pos_x*obj.width));
-%                    row=max(1,round(obj.pos_y*obj.height));
-%                    for i=1:length(col)
-%                        
-%                        hold on;
-%                        h=plot(h,col(i),row(i),'Marker','o','Color','k');
-%                        set(h,'Tag',['contact_',obj.tfmat_channame{i}]);
-%                    end
-%                        
-%                    
-%                end
-%             end
-%         end
+        %         function DisplayMaskCallback(obj,src)
+        %             obj.display_mask_channel_=get(src,'value');
+        %
+        %             if ~NoSpatialMapFig(obj)
+        %
+        %                h=findobj(obj.SpatialMapFig,'-regexp','Tag','SpatialMapAxes');
+        %                if ~isempty(h)
+        %                    circles=findobj(obj.SpatialMapFig,'-regexp','Tag','contact*');
+        %
+        %                    if ~isempty(circles)
+        %                        delete(circles);
+        %                    end
+        %
+        %                    col=max(1,round(obj.pos_x*obj.width));
+        %                    row=max(1,round(obj.pos_y*obj.height));
+        %                    for i=1:length(col)
+        %
+        %                        hold on;
+        %                        h=plot(h,col(i),row(i),'Marker','o','Color','k');
+        %                        set(h,'Tag',['contact_',obj.tfmat_channame{i}]);
+        %                    end
+        %
+        %
+        %                end
+        %             end
+        %         end
         function ScaleByMaxCallback(obj,src)
             obj.scale_by_max_=get(src,'value');
             
@@ -1438,25 +1561,27 @@ classdef SpatialMapWindow < handle
             end
             
             if ~NoSpatialMapFig(obj)
-                pos=get(obj.SpatialMapFig,'position');
-                set(obj.SpatialMapFig,'position',[pos(1),pos(2),obj.fig_w,obj.fig_h]);
-                
-                a=findobj(obj.SpatialMapFig,'Tag','SpatialMapAxes');
-                if ~isempty(a)
-                    if obj.color_bar
-                        %optional color bar
-                        figure(obj.SpatialMapFig);
-                        cb=colorbar('Units','Pixels');
-                        cbpos=get(cb,'Position');
-                        set(a,'Position',[10,10,obj.width,obj.height]);
-                        set(cb,'Position',[obj.width+20,10,cbpos(3),cbpos(4)]);
+                for i=1:length(obj.SpatialMapFig)
+                    pos=get(obj.SpatialMapFig(i),'position');
+                    set(obj.SpatialMapFig(i),'position',[pos(1),pos(2),obj.fig_w,obj.fig_h]);
+                    
+                    a=findobj(obj.SpatialMapFig(i),'Tag','SpatialMapAxes');
+                    if ~isempty(a)
+                        if obj.color_bar
+                            %optional color bar
+                            figure(obj.SpatialMapFig(i));
+                            cb=colorbar('Units','Pixels');
+                            cbpos=get(cb,'Position');
+                            set(a,'Position',[10,10,obj.width,obj.height]);
+                            set(cb,'Position',[obj.width+20,10,cbpos(3),cbpos(4)]);
+                        end
                     end
                 end
             end
         end
         
         function val=NoSpatialMapFig(obj)
-            val=isempty(obj.SpatialMapFig)||~ishandle(obj.SpatialMapFig)||~strcmpi(get(obj.SpatialMapFig,'name'),'Active SpatialMap');
+            val=isempty(obj.SpatialMapFig)||~all(ishandle(obj.SpatialMapFig))||~all(strcmpi(get(obj.SpatialMapFig,'Tag'),'Active'));
         end
         
         function STFTCallback(obj)
@@ -1506,37 +1631,43 @@ classdef SpatialMapWindow < handle
         
         function UpdateFigure(obj)
             if ~NoSpatialMapFig(obj)
-               h=findobj(obj.SpatialMapFig,'-regexp','Tag','SpatialMapAxes');
-               
-               if ~isempty(h)
-                   col=max(1,round(obj.pos_x*obj.width));
-                   row=max(1,round(obj.pos_y*obj.height));
-                   mapv=obj.map_val;
-                   if strcmpi(obj.interp_method,'natural')
-                       [x,y]=meshgrid(1:obj.width,1:obj.height);
-                       
-                       F= scatteredInterpolant(col,row,mapv',obj.interp_method,obj.extrap_method);
-                       % mapvq=griddata(col,row,mapv,x,y,method);
-                       
-                       mapvq=F(x,y);
-                   else
-                       return
-                   end
-%                    imagesc(single(10*log10(flipud(mapvq))),'Parent',h,'Tag','Map');
-                   imagehandle=findobj(h,'Tag','ImageMap');
-                   if obj.scale_by_max
-                       set(h,'clim',[obj.min_clim/obj.cmax,obj.max_clim/obj.cmax]);
-                   else
-                       set(h,'clim',[obj.min_clim,obj.max_clim]);
-                   end
-                   set(imagehandle,'CData',single(mapvq));
-                   drawnow
-               end
+                
+                mapv=obj.map_val;
+                for i=1:length(obj.SpatialMapFig)
+                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                    
+                    if ~isempty(h)
+                        col=max(1,round(obj.pos_x*obj.width));
+                        row=max(1,round(obj.pos_y*obj.height));
+                        if strcmpi(obj.interp_method,'natural')
+                            [x,y]=meshgrid(1:obj.width,1:obj.height);
+                            
+                            F= scatteredInterpolant(col,row,mapv{i}',obj.interp_method,obj.extrap_method);
+                            % mapvq=griddata(col,row,mapv,x,y,method);
+                            
+                            mapvq=F(x,y);
+                        else
+                            return
+                        end
+                        %                    imagesc(single(10*log10(flipud(mapvq))),'Parent',h,'Tag','Map');
+                        imagehandle=findobj(h,'Tag','ImageMap');
+                        if obj.scale_by_max
+                            set(h,'clim',[obj.min_clim/obj.cmax,obj.max_clim/obj.cmax]);
+                        else
+                            set(h,'clim',[obj.min_clim,obj.max_clim]);
+                        end
+                        set(imagehandle,'CData',single(mapvq));
+                        drawnow
+                    end
+                end
             end
         end
         
         function AddEventCallback(obj,src)
             pos=get(obj.fig,'Position');
+            if isempty(obj.event_group)
+                obj.event_group={obj.event};
+            end
             h=figure('name','Bind Events','units','pixels','position',[pos(1)+pos(3),pos(2)+pos(4)-150,300,150],...
                 'NumberTitle','off','resize','off','menubar','none',...
                 'CloseRequestFcn',@(src,evts) AddEventCloseCallback(obj,src));
@@ -1587,6 +1718,13 @@ classdef SpatialMapWindow < handle
             if ishandle(src)
                 delete(src);
             end
+        end
+        
+        function LinkCallback(obj,src)
+            obj.link_=get(src,'value');
+        end
+        function SymmetricScaleCallback(obj,src)
+            obj.symmetric_scale_=get(src,'value');
         end
         
     end

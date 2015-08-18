@@ -20,16 +20,16 @@ if strcmpi(method,'natural')
 else
     return
 end
+figure(fig)
 a=axes('units','pixels','position',[10,10,w,h],'Visible','off','parent',fig,...
     'xlimmode','manual','ylimmode','manual');
-
 
 imagesc('CData',mapvq,'Parent',a,'Tag','ImageMap');
 set(a,'XLim',[1,w]);
 set(a,'YLim',[1,h]);
 set(a,'CLim',[sl sh]);
 set(a,'YDir','reverse');
-colormap(jet);
+colormap(a,jet);
 if colbar
     %optional color bar
     cb=colorbar('Units','Pixels');
@@ -40,8 +40,7 @@ end
 
 for i=1:length(mapv)
     hold on;
-    h=plot(a,col(i),row(i),'Marker','o','Color','k');
-    set(h,'Tag',['contact_',channames{i}]);
+    plot(a,col(i),row(i),'Marker','o','Color','k','Tag',channames{i});
 end
 
 set(a,'Tag','SpatialMapAxes');
