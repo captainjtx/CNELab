@@ -249,14 +249,14 @@ classdef SpatialMapWindow < handle
         end
         function val=get.fig_w(obj)
             if obj.color_bar
-                val=obj.width+60;
+                val=obj.width+60/400*obj.width;
             else
-                val=obj.width+20;
+                val=obj.width+20/400*obj.width;
             end
         end
         
         function val=get.fig_h(obj)
-            val=obj.height+20;
+            val=obj.height+20/300*obj.height;
         end
         
         function val=get.color_bar(obj)
@@ -371,14 +371,23 @@ classdef SpatialMapWindow < handle
             val=obj.threshold_;
         end
         function set.threshold(obj,val)
-            old=digits(4);
-            %             val=vpa(val);
+            oldval=obj.threshold;
             obj.threshold_=val;
+            
             if obj.valid
                 set(obj.threshold_edit,'string',num2str(val));
                 set(obj.threshold_slider,'value',val);
             end
-            digits(old);
+            
+            obj.width=obj.width/oldval*val;
+            obj.height=obj.height/oldval*val;
+            
+            for i=1:length(obj.SpatialMapFig)
+                if ishandle(obj.SpatialMapFig(i))
+                    fpos=get(obj.SpatialMapFig(i),'position');
+                    set(obj.SpatialMapFig(i),'position',[fpos(1),fpos(2),obj.fig_w,obj.fig_h]);
+                end
+            end
         end
         
         function val=get.scale_by_max(obj)
@@ -756,7 +765,7 @@ classdef SpatialMapWindow < handle
             obj.valid=1;
             obj.fig=figure('MenuBar','none','Name','Spatial-Spectral Map','units','pixels',...
                 'Position',[500 100 300 700],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
-                'Resize','off');
+                'Resize','on');
             obj.advance_menu=uimenu(obj.fig,'label','Settings');
             obj.stft_menu=uimenu(obj.advance_menu,'label','STFT','callback',@(src,evts) STFTCallback(obj));
             obj.p_menu=uimenu(obj.advance_menu,'label','P-Value','callback',@(src,evts) PCallback(obj));
@@ -882,7 +891,7 @@ classdef SpatialMapWindow < handle
                 'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.max_clim,'sliderstep',[0.01,0.05]);
             
             
-            hp_threshold=uipanel('parent',hp,'title','Threshold','units','normalized','position',[0,0.23,1,0.05]);
+            hp_threshold=uipanel('parent',hp,'title','Window Scale','units','normalized','position',[0,0.23,1,0.05]);
             
             uicontrol('parent',hp_threshold,'style','text','string','Ratio','units','normalized',...
                 'position',[0,0.2,0.1,0.6]);
@@ -890,7 +899,7 @@ classdef SpatialMapWindow < handle
                 'position',[0.15,0.1,0.2,0.8],'horizontalalignment','center','callback',@(src,evts) ThresholdCallback(obj,src));
             obj.threshold_slider=uicontrol('parent',hp_threshold,'style','slider','units','normalized',...
                 'position',[0.4,0.2,0.55,0.6],'callback',@(src,evts) ThresholdCallback(obj,src),...
-                'min',0,'max',1,'value',obj.threshold,'sliderstep',[0.01,0.05]);
+                'min',0.1,'max',3,'value',obj.threshold,'sliderstep',[0.01,0.05]);
             
             hp_display=uipanel('parent',hp,'title','Display','units','normalized','position',[0,0.05,1,0.17]);
             
@@ -1281,6 +1290,10 @@ classdef SpatialMapWindow < handle
             
             if NoSpatialMapFig(obj)
                 NewSpatialMapFig(obj);
+            else
+                for i=1:length(obj.SpatialMapFig)
+                    set(obj.SpatialMapFig(i),'position',[obj.fig_x,obj.fig_y,obj.fig_w,obj.fig_h]);
+                end
             end
             
             wd=obj.stft_winlen;
@@ -1478,7 +1491,7 @@ classdef SpatialMapWindow < handle
                     if isnan(t)
                         t=obj.threshold;
                     end
-                    t=max(0,min(t,1));
+                    t=max(0.1,min(t,3));
                     
                     obj.threshold=t;
                 case obj.threshold_slider
@@ -1578,13 +1591,17 @@ classdef SpatialMapWindow < handle
                     
                     a=findobj(obj.SpatialMapFig(i),'Tag','SpatialMapAxes');
                     if ~isempty(a)
+                        h=figure(obj.SpatialMapFig(i));
+                        fpos=get(h,'position');
                         if obj.color_bar
                             %optional color bar
-                            figure(obj.SpatialMapFig(i));
-                            cb=colorbar('Units','Pixels');
+                            cb=colorbar('Units','normalized');
                             cbpos=get(cb,'Position');
-                            set(a,'Position',[10,10,obj.width,obj.height]);
-                            set(cb,'Position',[obj.width+20,10,cbpos(3),cbpos(4)]);
+                            set(a,'Position',[10/400*obj.width/fpos(3),10/300*obj.height/fpos(4),obj.width/fpos(3),obj.height/fpos(4)]);
+                            set(cb,'Position',[(obj.width+20/400*obj.width)/fpos(3),10/300*obj.height/fpos(4),cbpos(3),cbpos(4)]);
+                        else
+                            colorbar('off');
+                            set(a,'Position',[10/400*obj.width/fpos(3),10/300*obj.height/fpos(4),obj.width/fpos(3),obj.height/fpos(4)]);
                         end
                     end
                 end
@@ -1646,12 +1663,12 @@ classdef SpatialMapWindow < handle
                 mapv=obj.map_val;
                 for i=1:length(obj.SpatialMapFig)
                     h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
-                    
+%                     figure(obj.SpatialMapFig(i));
                     if ~isempty(h)
-                        col=max(1,round(obj.pos_x*obj.width));
-                        row=max(1,round(obj.pos_y*obj.height));
+                        col=obj.pos_x;
+                        row=obj.pos_y;
                         if strcmpi(obj.interp_method,'natural')
-                            [x,y]=meshgrid(1:obj.width,1:obj.height);
+                            [x,y]=meshgrid((1:obj.width)/obj.width,(1:obj.height)/obj.height);
                             
                             F= scatteredInterpolant(col,row,mapv{i}',obj.interp_method,obj.extrap_method);
                             % mapvq=griddata(col,row,mapv,x,y,method);
@@ -1668,6 +1685,23 @@ classdef SpatialMapWindow < handle
                             set(h,'clim',[obj.min_clim,obj.max_clim]);
                         end
                         set(imagehandle,'CData',single(mapvq));
+                        set(h,'xlim',[1,size(mapvq,2)])
+                        set(h,'ylim',[1,size(mapvq,1)]);
+%                         con=findobj(h,'-regexp','Tag','Contact*');
+%                         if ~isempty(con)
+%                             delete(con);
+%                         end
+% %                         figure(obj.SpatialMapFig(i));
+%                         for m=1:length(col)
+%                             hold on;
+%                             %     %x_o and y_o = center of circle
+%                             %     x = col(i) + radio*sin(t);
+%                             %     y = row(i) + radio*cos(t);
+%                             %     scatter(x,y,'k','Tag',channames{i});
+%                             tmp=plot(h,col(m)*obj.width,row(m)*obj.height);
+%                             set(tmp,'Marker','o','Color','k','Tag','Contact');
+%                         end
+%                         hold off
                         drawnow
                     end
                 end
