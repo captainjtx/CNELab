@@ -164,6 +164,7 @@ classdef SpatialMapWindow < handle
         
         pos_x
         pos_y
+        radius
         
         need_recalculate
         
@@ -379,15 +380,25 @@ classdef SpatialMapWindow < handle
                 set(obj.threshold_slider,'value',val);
             end
             
-            obj.width=obj.width/oldval*val;
-            obj.height=obj.height/oldval*val;
+            obj.width=round(obj.width/oldval*val);
+            obj.height=round(obj.height/oldval*val);
             
             for i=1:length(obj.SpatialMapFig)
                 if ishandle(obj.SpatialMapFig(i))
                     fpos=get(obj.SpatialMapFig(i),'position');
                     set(obj.SpatialMapFig(i),'position',[fpos(1),fpos(2),obj.fig_w,obj.fig_h]);
+                    
+                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                    if ~isempty(h)
+                        con_h=findobj(h,'-regexp','tag','contact');
+                        delete(con_h);
+                        figure(obj.SpatialMapFig(i));
+                        plot_contact(h,obj.pos_x,obj.pos_y,obj.radius,obj.height,obj.width);
+                    end
                 end
             end
+            
+            UpdateFigure(obj);
         end
         
         function val=get.scale_by_max(obj)
@@ -1271,6 +1282,7 @@ classdef SpatialMapWindow < handle
             end
             chanpos(:,1)=chanpos(:,1)/x_len;
             chanpos(:,2)=chanpos(:,2)/y_len;
+            chanpos(:,3)=chanpos(:,3)/x_len;
             %set default parameter*****************************************************
             
             s=[obj.min_clim obj.max_clim];
@@ -1428,7 +1440,7 @@ classdef SpatialMapWindow < handle
                     obj.tfmat.f=f;
                     obj.tfmat.channel=channel;
                     obj.tfmat.dataset=dataset;
-                    obj.tfmat.channame=chanNames;
+                    obj.tfmat.channame=channames;
                     obj.tfmat.event=obj.event;
                 end
             end
@@ -1442,6 +1454,7 @@ classdef SpatialMapWindow < handle
             
             obj.pos_x=chanpos(:,1);
             obj.pos_y=chanpos(:,2);
+            obj.radius=chanpos(:,3);
             
             
             if obj.scale_by_max
@@ -1454,7 +1467,7 @@ classdef SpatialMapWindow < handle
             mapv=obj.map_val;
             for e=1:length(evt)
                 spatialmap_grid(obj.SpatialMapFig(e),mapv{e},obj.interp_method,...
-                    obj.extrap_method,chanNames,chanpos(:,1),chanpos(:,2),obj.width,obj.height,sl,sh,obj.color_bar);
+                    obj.extrap_method,channames,chanpos(:,1),chanpos(:,2),chanpos(:,3),obj.width,obj.height,sl,sh,obj.color_bar);
             end
         end
         
@@ -1684,24 +1697,9 @@ classdef SpatialMapWindow < handle
                         else
                             set(h,'clim',[obj.min_clim,obj.max_clim]);
                         end
+                        set(h,'xlim',[1,obj.width]);
+                        set(h,'ylim',[1,obj.height]);
                         set(imagehandle,'CData',single(mapvq));
-                        set(h,'xlim',[1,size(mapvq,2)])
-                        set(h,'ylim',[1,size(mapvq,1)]);
-%                         con=findobj(h,'-regexp','Tag','Contact*');
-%                         if ~isempty(con)
-%                             delete(con);
-%                         end
-% %                         figure(obj.SpatialMapFig(i));
-%                         for m=1:length(col)
-%                             hold on;
-%                             %     %x_o and y_o = center of circle
-%                             %     x = col(i) + radio*sin(t);
-%                             %     y = row(i) + radio*cos(t);
-%                             %     scatter(x,y,'k','Tag',channames{i});
-%                             tmp=plot(h,col(m)*obj.width,row(m)*obj.height);
-%                             set(tmp,'Marker','o','Color','k','Tag','Contact');
-%                         end
-%                         hold off
                         drawnow
                     end
                 end

@@ -38,7 +38,7 @@ if length(obj.DisplayedData)>1
     
 end
 
-[channelname,pos_x,pos_y,pos_z] = ReadPosition( fullfile(FilePath,FileName) );
+[channelname,pos_x,pos_y,r] = ReadPosition( fullfile(FilePath,FileName) );
 OriginalChanNames=obj.Montage{tmp}(obj.MontageRef(tmp)).channames;
 
 pos=zeros(length(OriginalChanNames),3);
@@ -48,8 +48,8 @@ for i=1:length(pos)
     
     if Lia
         pos(i,1:2)=[pos_x(Locb), pos_y(Locb)];
-        if ~isempty(pos_z)
-            pos(i,3)=pos_z(Locb);
+        if ~isempty(r)
+            pos(i,3)=r(Locb);
         end
     else
         pos(i,:)=nan;

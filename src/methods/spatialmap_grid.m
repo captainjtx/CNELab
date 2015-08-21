@@ -1,4 +1,4 @@
-function spatialmap_grid(fig,mapv,method,extrap,channames,pos_x,pos_y,w,h,sl,sh,colbar)
+function spatialmap_grid(fig,mapv,method,extrap,channames,pos_x,pos_y,r,w,h,sl,sh,colbar)
 %TFMAP_GRID Summary of this function goes here
 %   Detailed explanation goes here
 %Orign of postion is top left corner
@@ -9,6 +9,9 @@ function spatialmap_grid(fig,mapv,method,extrap,channames,pos_x,pos_y,w,h,sl,sh,
 
 col=pos_x;
 row=pos_y;
+
+h=round(h);
+w=round(w);
 
 if strcmpi(method,'natural')
     [x,y]=meshgrid((1:w)/w,(1:h)/h);
@@ -51,14 +54,16 @@ end
 %     plot(a,col(i)*w,row(i)*h,'Marker','o','Color','k','Tag',['Contact-' channames{i}]);
 % end
 
-for m=1:length(col)
-    hold on;
-    tmp=plot(a,col(m)*w,row(m)*h);
-    set(tmp,'Marker','o','Color','k','Tag','Contact');
-end
-hold off
+% for m=1:length(col)
+%     hold on;
+%     tmp=plot(a,col(m)*w,row(m)*h);
+%     set(tmp,'Marker','o','Color','k','Tag','Contact');
+% end
+% hold off
 
 set(a,'Tag','SpatialMapAxes');
+
+plot_contact(a,col,row,r,h,w);
 drawnow
 end
 
