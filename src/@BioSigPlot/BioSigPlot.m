@@ -330,7 +330,6 @@ classdef BioSigPlot < hgsetget
     end
     properties (SetAccess=protected) %Readonly properties
         Data                        %(Read-Only)All the Signals
-        PreprocData                 %(Read-Only)The currently preprocessed and drawed Data
         Commands                    %(Read-Only)List of all commands to be on this state
     end
     properties (Access = protected,Hidden) %State Properties. No utilities for users
@@ -373,6 +372,9 @@ classdef BioSigPlot < hgsetget
         WinVideo
         TFMapWin
         SpatialMapWin
+        InterpolateWin
+        
+        PreprocData                 %The currently preprocessed and drawed Data
     end
     
     methods
@@ -401,6 +403,9 @@ classdef BioSigPlot < hgsetget
             obj.TFMapWin=TFMapWindow(obj);
             set(obj.BtnTFMap,'ClickedCallback',@(src,evt) obj.TFMapWin.ComputeCallback(obj.BtnTFMap));
             obj.SpatialMapWin=SpatialMapWindow(obj);
+            
+            obj.InterpolateWin=InterpWin(obj);
+            
             obj.IsInitialize=false;
             
 %             set(obj.Fig,'Visible','on')
@@ -499,6 +504,10 @@ classdef BioSigPlot < hgsetget
                 obj.SpatialMapWin.OnClose();
             end
             
+            if obj.InterpolateWin.valid
+                obj.InterpolateWin.OnClose();
+            end
+            
             if isa(obj.WinFastEvts,'FastEventWindow') && isvalid(obj.WinFastEvts)
                 delete(obj.WinFastEvts);
             end
@@ -513,9 +522,13 @@ classdef BioSigPlot < hgsetget
             end
             
             
+            
+            
             if ~isempty(obj.SPFObj)&&isvalid(obj.SPFObj)&&isa(obj.SPFObj,'SPFPlot')
                 delete(obj.SPFObj);
             end
+            
+            
             
             
         end % delete
@@ -1439,6 +1452,8 @@ classdef BioSigPlot < hgsetget
                 
                 obj.SelectedEvent=tmp;
             end
+            
+            notify(obj,'SelectionChange');
         end
         %==================================================================
         %******************************************************************
@@ -1534,6 +1549,8 @@ classdef BioSigPlot < hgsetget
             end
             
             obj.ChanSelect2Edit_=tmp;
+            
+            notify(obj,'SelectionChange');
             
         end
         %==================================================================
@@ -2308,5 +2325,6 @@ classdef BioSigPlot < hgsetget
         SelectedFastEvtChange
         EventListChange
         SelectedEventChange
+        SelectionChange
     end
 end

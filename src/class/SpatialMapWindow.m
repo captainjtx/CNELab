@@ -250,14 +250,14 @@ classdef SpatialMapWindow < handle
         end
         function val=get.fig_w(obj)
             if obj.color_bar
-                val=obj.width+60/400*obj.width;
+                val=obj.width+80/400*obj.width;
             else
                 val=obj.width+20/400*obj.width;
             end
         end
         
         function val=get.fig_h(obj)
-            val=obj.height+20/300*obj.height;
+            val=obj.height+30/300*obj.height;
         end
         
         function val=get.color_bar(obj)
@@ -393,7 +393,7 @@ classdef SpatialMapWindow < handle
                         con_h=findobj(h,'-regexp','tag','contact');
                         delete(con_h);
                         figure(obj.SpatialMapFig(i));
-                        plot_contact(h,obj.pos_x,obj.pos_y,obj.radius,obj.height,obj.width);
+                        plot_contact(h,obj.pos_x,obj.pos_y,obj.radius,obj.height,obj.width,[]);
                     end
                 end
             end
@@ -659,7 +659,7 @@ classdef SpatialMapWindow < handle
         
         function set.event_list(obj,val)
             
-            if all(strcmpi(sort(obj.event_list),sort(val)))
+            if (length(obj.event_list)==length(val))&&all(strcmpi(sort(obj.event_list),sort(val)))
                 return
             end
             obj.event_list_=val;
@@ -707,10 +707,7 @@ classdef SpatialMapWindow < handle
             else
                 obj.normalization_end_event=val{1};
             end
-            
-            
         end
-        
     end
     
     methods
@@ -757,7 +754,7 @@ classdef SpatialMapWindow < handle
             obj.auto_refresh_=1;
             obj.color_bar_=0;
             obj.width=400;
-            obj.height=300;
+            obj.height=350;
             obj.stft_winlen=round(obj.fs/3);
             obj.stft_overlap=round(obj.stft_winlen*0.9);
             obj.unit='dB';
@@ -910,7 +907,7 @@ classdef SpatialMapWindow < handle
                 'position',[0.15,0.1,0.2,0.8],'horizontalalignment','center','callback',@(src,evts) ThresholdCallback(obj,src));
             obj.threshold_slider=uicontrol('parent',hp_threshold,'style','slider','units','normalized',...
                 'position',[0.4,0.2,0.55,0.6],'callback',@(src,evts) ThresholdCallback(obj,src),...
-                'min',0.1,'max',3,'value',obj.threshold,'sliderstep',[0.01,0.05]);
+                'min',0.1,'max',2,'value',obj.threshold,'sliderstep',[0.01,0.05]);
             
             hp_display=uipanel('parent',hp,'title','Display','units','normalized','position',[0,0.05,1,0.17]);
             
@@ -1254,35 +1251,8 @@ classdef SpatialMapWindow < handle
             channames=chanNames(chanind);
             chanpos=chanpos(chanind,:);
             
-            chanpos(:,1)=chanpos(:,1)-min(chanpos(:,1));
-            chanpos(:,2)=chanpos(:,2)-min(chanpos(:,2));
-            
-            
-            dx=abs(pdist2(chanpos(:,1),chanpos(:,1)));
-            dx=min(dx(dx~=0));
-            if isempty(dx)
-                dx=1;
-            end
-            
-            dy=abs(pdist2(chanpos(:,2),chanpos(:,2)));
-            dy=min(dy(dy~=0));
-            if isempty(dy)
-                dy=1;
-            end
-            chanpos(:,1)=chanpos(:,1)+dx/2;
-            chanpos(:,2)=chanpos(:,2)+dy*0.6;
-            
-            x_len=max(chanpos(:,1))+dx/2;
-            y_len=max(chanpos(:,2))+dy*0.6;
-            
-            if x_len>y_len
-                obj.height=round(obj.width/x_len*y_len);
-            else
-                obj.width=round(obj.height/y_len*x_len);
-            end
-            chanpos(:,1)=chanpos(:,1)/x_len;
-            chanpos(:,2)=chanpos(:,2)/y_len;
-            chanpos(:,3)=chanpos(:,3)/x_len;
+            [chanpos(:,1),chanpos(:,2),chanpos(:,3),obj.width,obj.height] = ...
+                get_relative_chanpos(chanpos(:,1),chanpos(:,2),chanpos(:,3),obj.width,obj.height);
             %set default parameter*****************************************************
             
             s=[obj.min_clim obj.max_clim];
@@ -1608,13 +1578,13 @@ classdef SpatialMapWindow < handle
                         fpos=get(h,'position');
                         if obj.color_bar
                             %optional color bar
-                            cb=colorbar('Units','normalized');
+                            cb=colorbar('Units','normalized','FontSize',14);
                             cbpos=get(cb,'Position');
-                            set(a,'Position',[10/400*obj.width/fpos(3),10/300*obj.height/fpos(4),obj.width/fpos(3),obj.height/fpos(4)]);
-                            set(cb,'Position',[(obj.width+20/400*obj.width)/fpos(3),10/300*obj.height/fpos(4),cbpos(3),cbpos(4)]);
+                            set(a,'Position',[10/400*obj.width/fpos(3),15/300*obj.height/fpos(4),obj.width/fpos(3),obj.height/fpos(4)],'FontSize',14);
+                            set(cb,'Position',[(obj.width+20/400*obj.width)/fpos(3),15/300*obj.height/fpos(4),0.04,cbpos(4)]);
                         else
                             colorbar('off');
-                            set(a,'Position',[10/400*obj.width/fpos(3),10/300*obj.height/fpos(4),obj.width/fpos(3),obj.height/fpos(4)]);
+                            set(a,'Position',[10/400*obj.width/fpos(3),15/300*obj.height/fpos(4),obj.width/fpos(3),obj.height/fpos(4)]);
                         end
                     end
                 end

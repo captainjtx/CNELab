@@ -89,12 +89,12 @@ end
 for i=1:length(obj.Axes)
 %     yl=get(obj.Axes(i),'YLim');
     xl=get(obj.Axes(i),'XLim');
-    obj.LineVideo(i)=line([xl(1)-1,xl(1)-1],[0,1000],'parent',obj.Axes(i),...
+    obj.LineVideo(i)=line([xl(1)-100,xl(1)-100],[0,1000],'parent',obj.Axes(i),...
         'Color',[1 0 0],'LineStyle','-.','LineWidth',1.5,'ButtonDownFcn',@(src,evt) LineVideoButtonDown(obj,src));
     
     
     %     drawnow;
-    obj.LineMeasurer(i)=line([xl(1)-1,xl(1)-1],[0,1000],'parent',obj.Axes(i),'Color',[1 0 0]);
+    obj.LineMeasurer(i)=line([xl(1)-100,xl(1)-100],[0,1000],'parent',obj.Axes(i),'Color',[1 0 0]);
 
     uistack(obj.LineVideo(i),'top');
 end

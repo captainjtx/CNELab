@@ -140,7 +140,7 @@ obj.MenuSpatialPCA=uimenu(obj.MenuApp,'Label','Spatial PCA',...
     'Callback', @(src,evt)Spatial_PCA(obj));
 
 obj.MenuInterpolate=uimenu(obj.MenuApp,'Label','Interpolate',...
-    'Callback',@(src,evt)Interpolate(obj));
+    'Callback',@(src,evt)obj.InterpolateWin.buildfig());
 
 
 end

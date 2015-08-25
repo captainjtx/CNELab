@@ -1,6 +1,7 @@
-function plot_contact(axe,col,row,r,h,w)
+function plot_contact(axe,col,row,r,h,w,channames)
+%channames is optional
 background=uint8(ones(h,w,3)*255);
-shapeInserter = vision.ShapeInserter('Shape','Circles','BorderColor','Custom','CustomBorderColor',[0,0,0]);
+shapeInserter = vision.ShapeInserter('Shape','Circles','BorderColor','Custom','CustomBorderColor',[0,0,0],'LineWidth',1);
 circles=[];
 
 col=round(col*w);
@@ -21,6 +22,10 @@ A=rgb2gray(I);
 set(imgh,'AlphaData',255-A);
 set(imgh,'Tag','contact');
 
+for i=1:length(channames)
+    text(col(i),row(i)-10,channames{i},...
+    'fontsize',8,'horizontalalignment','center','parent',axe,'interpreter','none');
+end
 
 end
 
