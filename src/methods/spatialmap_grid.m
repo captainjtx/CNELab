@@ -43,27 +43,7 @@ if colbar
     set(cb,'Position',[(w+20/400*w)/fpos(3),15/300*h/fpos(4),0.04,cbpos(4)]);
 end
 
-% radio=5;
-% t=0:0.01:2*pi;
-% for i=1:length(mapv)
-%     hold on;
-% %     %x_o and y_o = center of circle
-% %     x = col(i) + radio*sin(t);
-% %     y = row(i) + radio*cos(t);
-% %     scatter(x,y,'k','Tag',channames{i});
-%     plot(a,col(i)*w,row(i)*h,'Marker','o','Color','k','Tag',['Contact-' channames{i}]);
-% end
-
-% for m=1:length(col)
-%     hold on;
-%     tmp=plot(a,col(m)*w,row(m)*h);
-%     set(tmp,'Marker','o','Color','k','Tag','Contact');
-% end
-% hold off
-
 set(a,'Tag','SpatialMapAxes');
 
-plot_contact(a,col,row,r,h,w,[]);
-drawnow
 end
 

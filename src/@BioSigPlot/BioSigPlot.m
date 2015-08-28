@@ -79,7 +79,7 @@ classdef BioSigPlot < hgsetget
         MenuSave
         MenuSaveFigure
         MenuSaveFigureMirror
-        MenuSaveFigureAdvanced
+        MenuSaveFigureData
         MenuSaveEvents
         MenuSaveData
         MenuMergeData
@@ -1878,19 +1878,6 @@ classdef BioSigPlot < hgsetget
         end
         %==================================================================
         %******************************************************************
-        function SaveToFigure(obj)
-            f=figure('Name','Mirror figure','Position',get(obj.Fig,'Position'));
-            %             for i=1:length(obj.Axes)
-            %                 set(obj.Axes(i),'YTick',[]);
-            %                 set(obj.Axes(i),'XTick',[]);
-            %             end
-            copyobj(obj.Axes(:),f);
-        end
-        function SaveToWindow(obj)
-            SaveWindow(obj);
-        end
-        %==================================================================
-        %******************************************************************
         LoadDataSet(obj)
         %==================================================================
         %******************************************************************
@@ -2198,6 +2185,7 @@ classdef BioSigPlot < hgsetget
         MnuNextPrevFile(obj)
         SavePosition(obj)
         Interpolate(obj)
+        SaveToFigure(obj,opt)
     end
     
     methods

@@ -22,8 +22,8 @@ classdef InterpWin < handle
     methods
         
         function obj=InterpWin(bsp)
-            obj.height=250;
-            obj.width=300;
+            obj.height=350;
+            obj.width=350;
             obj.bsp=bsp;
             obj.valid=0;
             
@@ -62,7 +62,7 @@ classdef InterpWin < handle
                 'xlimmode','manual','ylimmode','manual');
             
             %needs relative positions
-            plot_contact(a,obj.col,obj.row,obj.r,obj.height,obj.width,obj.channames);
+            plot_contact(a,obj.col,obj.row,obj.r,obj.height,obj.width,obj.channames,[]);
             %**************************************************************
             %transform to pixels
             obj.col=round(obj.col*obj.width);
@@ -103,7 +103,7 @@ classdef InterpWin < handle
             end
             
             D=pdist2([pos(1),pos(2)],[obj.col,obj.row]);
-            [d,I]=min(D);
+            [~,I]=min(D);
             clickchan=I(1);
             
             obj.interpChan=setxor(obj.interpChan,clickchan);
@@ -115,7 +115,7 @@ classdef InterpWin < handle
             
             background=uint8(ones(obj.height,obj.width,3)*255);
             shapeInserter = vision.ShapeInserter('Shape','Circles','BorderColor','Custom','CustomBorderColor',[0,0,0],...
-                'Fill',true,'FillColor','Custom','CustomFillColor',[0,255,0]);
+                'Fill',true,'FillColor','Custom','CustomFillColor',[0,255,0],'Antialiasing',true);
             circles=[];
             
             
@@ -169,7 +169,7 @@ classdef InterpWin < handle
                 
                 background=uint8(ones(obj.height,obj.width,3)*255);
                 shapeInserter = vision.ShapeInserter('Shape','Circles','BorderColor','Custom','CustomBorderColor',[0,0,0],...
-                    'Fill',true,'FillColor','Custom','CustomFillColor',[255,0,0]);
+                    'Fill',true,'FillColor','Custom','CustomFillColor',[255,0,0],'Antialiasing',true);
                 
                 circles = int32([obj.col(obj.selectChan) obj.row(obj.selectChan) obj.r(obj.selectChan)]);
                 I = step(shapeInserter, background, circles);

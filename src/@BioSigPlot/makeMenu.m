@@ -21,8 +21,8 @@ obj.MenuSaveEvents=uimenu(obj.MenuSave,'Label','Events','Callback',@(src,evt) ob
 obj.MenuSaveMontage=uimenu(obj.MenuSave,'Label','Montage','Callback',@(src,evt) obj.SaveMontage);
 obj.MenuSavePosition=uimenu(obj.MenuSave,'Label','Position','Callback',@(src,evt) obj.SavePosition);
 obj.MenuSaveFigure=uimenu(obj.MenuSave,'Label','Figure');
-obj.MenuSaveFigureMirror=uimenu(obj.MenuSaveFigure,'Label','Mirror','Callback',@(src,evt) obj.SaveToFigure,'Accelerator','p');
-obj.MenuSaveFigureAdvanced=uimenu(obj.MenuSaveFigure,'Label','Advanced','Callback',@(src,evt) obj.SaveToWindow);
+obj.MenuSaveFigureData=uimenu(obj.MenuSaveFigure,'Label','Data','Callback',@(src,evt) SaveToFigure(obj,'data'),'Accelerator','p');
+obj.MenuSaveFigureMirror=uimenu(obj.MenuSaveFigure,'Label','Mirror','Callback',@(src,evt) SaveToFigure(obj,'mirror'));
 
 obj.MenuExport=uimenu(obj.MenuFile,'Label','Export to Matlab');
 obj.MenuExportData=uimenu(obj.MenuExport,'Label','Data(sel)','Callback',@(src,evt) obj.ExportDataToWorkspace);

@@ -1,18 +1,36 @@
-function plot_contact(axe,col,row,r,h,w,channames)
+function plot_contact(axe,col,row,r,h,w,channames,badchan)
 %channames is optional
-background=uint8(ones(h,w,3)*255);
-shapeInserter = vision.ShapeInserter('Shape','Circles','BorderColor','Custom','CustomBorderColor',[0,0,0],'LineWidth',1);
-circles=[];
-
 col=round(col*w);
 row=round(row*h);
 r=round(r*w);
-for i=1:length(col)
-    circles = cat(1,circles,int32([col(i) row(i) r(i)]));
-%     viscircles(a,[col(i)/width,row(i)/height],r,'EdgeColor','k');
+if ~isempty(badchan)
+    
+    badcol=col(badchan);
+    badrow=row(badchan);
+    badr=r(badchan);
+    
+    col=col(~badchan);
+    row=row(~badchan);
+    r=r(~badchan);
+    if ~isempty(channames)
+        channames=channames(~badchan);
+    end
 end
 
+background=uint8(ones(h,w,3)*255);
+shapeInserter = vision.ShapeInserter('Shape','Circles','BorderColor','Custom',...
+    'CustomBorderColor',[0,0,0],'LineWidth',1,'Antialiasing',true);
+circles =int32([col, row, r]);
+
 I = step(shapeInserter, background, circles);
+
+if ~isempty(badchan)
+    shapeInserter = vision.ShapeInserter('Shape','Circles','BorderColor','Custom',...
+        'CustomBorderColor',[100,100,100],'LineWidth',1,'Antialiasing',true);
+    circles=int32([badcol,badrow,badr]);
+    
+    I = step(shapeInserter, I, circles);
+end
 
 hold on
 
@@ -26,6 +44,8 @@ for i=1:length(channames)
     text(col(i),row(i)-10,channames{i},...
     'fontsize',8,'horizontalalignment','center','parent',axe,'interpreter','none');
 end
+
+
 
 end
 

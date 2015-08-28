@@ -2,9 +2,12 @@ classdef SpatialMapWindow < handle
     %TFMAPWINDOW Summary of this class goes here
     %   Detailed explanation goes here
     properties
+        export_menu
+        export_movie_menu
         advance_menu
         stft_menu
         p_menu
+        
         
         valid
         add_event_valid
@@ -165,6 +168,7 @@ classdef SpatialMapWindow < handle
         pos_x
         pos_y
         radius
+        all_chan_pos
         
         need_recalculate
         
@@ -191,8 +195,8 @@ classdef SpatialMapWindow < handle
                 set(obj.symmetric_scale_radio,'value',val);
             end
         end
-            
-            
+        
+        
         function val=get.link(obj)
             val=obj.link_;
         end
@@ -393,7 +397,8 @@ classdef SpatialMapWindow < handle
                         con_h=findobj(h,'-regexp','tag','contact');
                         delete(con_h);
                         figure(obj.SpatialMapFig(i));
-                        plot_contact(h,obj.pos_x,obj.pos_y,obj.radius,obj.height,obj.width,[]);
+                        plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
+                            ~ismember(obj.all_chan_pos,[obj.pos_x,obj.pos_y,obj.radius],'rows'));
                     end
                 end
             end
@@ -410,15 +415,6 @@ classdef SpatialMapWindow < handle
                 set(obj.scale_by_max_radio,'value',val);
             end
         end
-        %         function val=get.display_mask_channel(obj)
-        %             val=obj.display_mask_channel_;
-        %         end
-        %         function set.display_mask_channel(obj,val)
-        %             obj.display_mask_channel_=val;
-        %             if obj.valid
-        %                 set(obj.display_mask_radio,'value',val);
-        %             end
-        %         end
         
         
         function val=get.data_input(obj)
@@ -753,8 +749,8 @@ classdef SpatialMapWindow < handle
             obj.act_len_=500;
             obj.auto_refresh_=1;
             obj.color_bar_=0;
-            obj.width=400;
-            obj.height=350;
+            obj.width=300;
+            obj.height=300;
             obj.stft_winlen=round(obj.fs/3);
             obj.stft_overlap=round(obj.stft_winlen*0.9);
             obj.unit='dB';
@@ -773,10 +769,15 @@ classdef SpatialMapWindow < handle
             obj.valid=1;
             obj.fig=figure('MenuBar','none','Name','Spatial-Spectral Map','units','pixels',...
                 'Position',[500 100 300 700],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
-                'Resize','on');
+                'Resize','on','DockControls','off');
+            
+            obj.export_menu=uimenu(obj.fig,'label','Export');
+            obj.export_movie_menu=uimenu(obj.export_menu,'label','Movie','callback',@(src,evts) ExportMovieCallback(obj));
             obj.advance_menu=uimenu(obj.fig,'label','Settings');
+            
             obj.stft_menu=uimenu(obj.advance_menu,'label','STFT','callback',@(src,evts) STFTCallback(obj));
             obj.p_menu=uimenu(obj.advance_menu,'label','P-Value','callback',@(src,evts) PCallback(obj));
+            
             
             hp=uipanel('units','normalized','Position',[0,0,1,1]);
             
@@ -1245,6 +1246,11 @@ classdef SpatialMapWindow < handle
                 errordlg('No channel position in the data !');
                 return
             end
+            [~,~,~,~,~,~,~,allchanpos]=get_selected_data(obj.bsp);
+            chanind=~isnan(allchanpos(:,1))&~isnan(allchanpos(:,2));
+            allchanpos=allchanpos(chanind,:);
+            [allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),~,~] = ...
+                get_relative_chanpos(allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.width,obj.height);
             
             chanind=~isnan(chanpos(:,1))&~isnan(chanpos(:,2));
             data=data(:,chanind);
@@ -1386,7 +1392,7 @@ classdef SpatialMapWindow < handle
                             tfm=10*log10(tfm);
                         end
                         
-                    
+                        
                         obj.tfmat(e).mat{j}=tfm;
                         obj.tfmat(e).t=t;
                         obj.tfmat(e).f=f;
@@ -1435,9 +1441,13 @@ classdef SpatialMapWindow < handle
             obj.clim_slider_max=obj.cmax;
             obj.clim_slider_min=-obj.cmax;
             mapv=obj.map_val;
+            
+            obj.all_chan_pos=allchanpos;
             for e=1:length(evt)
                 spatialmap_grid(obj.SpatialMapFig(e),mapv{e},obj.interp_method,...
                     obj.extrap_method,channames,chanpos(:,1),chanpos(:,2),chanpos(:,3),obj.width,obj.height,sl,sh,obj.color_bar);
+                plot_contact(findobj(obj.SpatialMapFig(e),'-regexp','tag','SpatialMapAxes'),...
+                    allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.height,obj.width,[],~ismember(allchanpos,chanpos,'rows'));
             end
         end
         
@@ -1646,7 +1656,7 @@ classdef SpatialMapWindow < handle
                 mapv=obj.map_val;
                 for i=1:length(obj.SpatialMapFig)
                     h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
-%                     figure(obj.SpatialMapFig(i));
+                    %                     figure(obj.SpatialMapFig(i));
                     if ~isempty(h)
                         col=obj.pos_x;
                         row=obj.pos_y;
@@ -1677,25 +1687,29 @@ classdef SpatialMapWindow < handle
         end
         
         function AddEventCallback(obj,src)
-            pos=get(obj.fig,'Position');
-            if isempty(obj.event_group)
-                obj.event_group={obj.event};
+            
+            if obj.add_event_valid
+                figure(obj.add_event_fig);
+            else
+                pos=get(obj.fig,'Position');
+                if isempty(obj.event_group)
+                    obj.event_group={obj.event};
+                end
+                h=figure('name','Bind Events','units','pixels','position',[pos(1)+pos(3),pos(2)+pos(4)-150,300,150],...
+                    'NumberTitle','off','resize','off','menubar','none',...
+                    'CloseRequestFcn',@(src,evts) AddEventCloseCallback(obj,src));
+                obj.event_list_listbox=uicontrol('parent',h,'style','listbox','units','normalized','position',[0,0,0.4,1],...
+                    'string',obj.event_list,'value',1,'max',3,'min',1);
+                obj.event_group_listbox=uicontrol('parent',h,'style','listbox','units','normalized','position',[0.6,0,0.4,1],...
+                    'string',obj.event_group,'value',1,'max',3,'min',1);
+                uicontrol('parent',h,'style','pushbutton','units','normalized','position',[0.45,0.55,0.1,0.1],...
+                    'callback',@(src,evts)AddCallback(obj,src),'string','>>');
+                
+                uicontrol('parent',h,'style','pushbutton','units','normalized','position',[0.45,0.35,0.1,0.1],...
+                    'callback',@(src,evts)RemoveCallback(obj,src),'string','<<');
+                obj.add_event_fig=h;
+                obj.add_event_valid=1;
             end
-            h=figure('name','Bind Events','units','pixels','position',[pos(1)+pos(3),pos(2)+pos(4)-150,300,150],...
-                'NumberTitle','off','resize','off','menubar','none',...
-                'CloseRequestFcn',@(src,evts) AddEventCloseCallback(obj,src));
-            obj.event_list_listbox=uicontrol('parent',h,'style','listbox','units','normalized','position',[0,0,0.4,1],...
-                'string',obj.event_list,'value',1,'max',3,'min',1);
-            obj.event_group_listbox=uicontrol('parent',h,'style','listbox','units','normalized','position',[0.6,0,0.4,1],...
-                'string',obj.event_group,'value',1,'max',3,'min',1);
-            uicontrol('parent',h,'style','pushbutton','units','normalized','position',[0.45,0.55,0.1,0.1],...
-                'callback',@(src,evts)AddCallback(obj,src),'string','>>');
-            
-            uicontrol('parent',h,'style','pushbutton','units','normalized','position',[0.45,0.35,0.1,0.1],...
-                'callback',@(src,evts)RemoveCallback(obj,src),'string','<<');
-            obj.add_event_fig=h;
-            obj.add_event_valid=1;
-            
         end
         
         function AddCallback(obj,src)
@@ -1740,6 +1754,131 @@ classdef SpatialMapWindow < handle
             obj.symmetric_scale_=get(src,'value');
         end
         
+        function ExportMovieCallback(obj)
+            %recalculating stft********************************************
+            %             ComputeCallback(obj);
+            %**************************************************************
+%             profile='Motion JPEG AVI';
+            profile='MPEG-4';
+            framerate=30;
+            quality=100;
+%             t_start=500; %ms
+            t_start=get(obj.act_start_slider,'min');
+            t_end=get(obj.act_start_slider,'max');
+            %**************************************************************
+            [FileName,FilePath,FilterIndex]=uiputfile({'*.avi;*.mp4','Video Files (*.avi;*.mp4)';...
+                '*.avi','AVI file (*.avi)';
+                '*.mp4','MPEG-4 file(*.mp4)'}...
+                ,'save your video',fullfile(obj.bsp.FileDir,'untitled'));
+            
+            if FileName~=0
+                filename=fullfile(FilePath,FileName);
+            else
+                return
+            end
+            %**************************************************************
+            
+            set(obj.act_start_slider,'value',t_start);
+            step=get(obj.act_start_slider,'sliderstep');
+            loops = floor(1/step(1));
+            
+            step=(get(obj.act_start_slider,'max')-get(obj.act_start_slider,'min'))*step(1);
+
+            t=t_start;
+            
+            %make a new movie figuer***************************************
+            mov_width=0;
+            mov_height=0;
+            
+            
+            mov_fig=figure('Name','Movie','NumberTitle','off','Resize','off','units','pixels');
+            panel=zeros(length(obj.SpatialMapFig),1);
+            
+            for i=1:length(obj.SpatialMapFig)
+                pos=get(obj.SpatialMapFig(i),'position');
+                
+                
+                panel(i)=uipanel('parent',mov_fig,'units','pixels','Position',[mov_width,45,pos(3),pos(4)]);
+                mov_height=pos(4);
+                mov_width=mov_width+pos(3)+10;
+                
+                child_axes=findobj(obj.SpatialMapFig(i),'type','axes');
+                for m=1:length(child_axes)
+                    newh=copyobj(child_axes(m),panel(i));
+                    set(newh,'position',get(child_axes(m),'position'));
+                end
+            end
+            name_panel=uipanel('parent',mov_fig,'units','pixels','position',[0,45+pos(4),mov_width,30]);
+            axes('parent',name_panel,'units','normalized','position',[0,0,1,1],'xlim',[0,1],'ylim',[0,1],'visible','off');
+            for i=1:length(obj.SpatialMapFig)
+                text('position',[(2*i-1)/(2*length(obj.SpatialMapFig)),0.5],'string',...
+                    get(obj.SpatialMapFig(i),'name'),'FontSize',12,'HorizontalAlignment','center');
+%                 uicontrol('style','text','string',get(obj.SpatialMapFig(i),'name'),...
+%                     'units','normalized','position',...
+%                     [(2*i-2)/(2*length(obj.SpatialMapFig)),0.2,1/length(obj.SpatialMapFig),0.6],...
+%                     'FontSize',12,'HorizontalAlignment','center');
+
+            end
+            time_panel=uipanel('parent',mov_fig,'units','pixels','position',[0,0,mov_width,45]);
+            
+            mov_width=mov_width-10;
+            mov_height=mov_height+80;
+            
+            if mod(mov_width,2)==1
+                mov_width=mov_width+1;
+            end
+            if mod(mov_height,2)==1
+                mov_height=mov_height+1;
+            end
+            
+            set(mov_fig,'position',[50,50,mov_width,mov_height]);
+            set(mov_fig,'visible','off');
+            wait_bar=waitbar(0,'Time: 0');
+            %**************************************************************
+            
+            
+            writerObj = VideoWriter(filename,profile);
+            writerObj.FrameRate = framerate;
+            writerObj.Quality=quality;
+            open(writerObj);
+            
+            loop_start=floor(t_start/step);
+            loop_end=floor(t_end/step);
+            
+            for k=loop_start:loop_end
+                waitbar(k/loops,wait_bar,['Time: ',num2str(t),' ms']);
+                
+                delete(allchild(time_panel));
+                
+                new_handle=copyobj(findobj(wait_bar,'type','axes'),time_panel);
+                set(new_handle,'units','normalized','position',[0.02,0.1,0.96,0.3],'FontSize',12);
+                
+                set(obj.act_start_slider,'value',t);
+                ActCallback(obj,obj.act_start_slider);
+                for i=1:length(obj.SpatialMapFig)
+                    delete(findobj(panel(i),'-regexp','tag','SpatialMapAxes'));
+                    child_axes=findobj(obj.SpatialMapFig(i),'-regexp','tag','SpatialMapAxes');
+                    newh=copyobj(child_axes,panel(i));
+                    set(newh,'position',get(child_axes,'position'));
+                end
+                
+%                 drawnow
+                
+                t=t+step;
+                F = im2frame(export_fig(mov_fig, '-nocrop','-r150'));
+                writeVideo(writerObj,F);
+            end
+            close(wait_bar);
+            close(writerObj);
+        end
+    end
+    
+    methods
+        
+        function ExportMovieWin(obj)
+            
+            
+        end
     end
     
 end
