@@ -478,15 +478,14 @@ classdef SpatialMapWindow < handle
                 if ishandle(obj.SpatialMapFig(i))
                     fpos=get(obj.SpatialMapFig(i),'position');
                     set(obj.SpatialMapFig(i),'position',[fpos(1),fpos(2),obj.fig_w,obj.fig_h]);
-                    
-                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
-                    if ~isempty(h)
-                        con_h=findobj(h,'-regexp','tag','contact');
-                        delete(con_h);
-                        figure(obj.SpatialMapFig(i));
-                        plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
-                            ~ismember(obj.all_chan_pos,[obj.pos_x,obj.pos_y,obj.radius],'rows'));
-                    end
+                    %                     h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                    %                     if ~isempty(h)
+                    %                         con_h=findobj(h,'-regexp','tag','contact');
+                    %                         delete(con_h);
+                    %                         figure(obj.SpatialMapFig(i));
+                    %                         plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
+                    %                             ~ismember(obj.all_chan_pos,[obj.pos_x,obj.pos_y,obj.radius],'rows'));
+                    %                     end
                 end
             end
             
@@ -663,8 +662,8 @@ classdef SpatialMapWindow < handle
             if obj.valid
                 set(obj.max_clim_slider,'min',val);
                 set(obj.min_clim_slider,'min',val);
-%                 set(obj.erd_slider,'min',val);
-%                 set(obj.ers_slider,'min',val);
+                %                 set(obj.erd_slider,'min',val);
+                %                 set(obj.ers_slider,'min',val);
             end
         end
         
@@ -679,8 +678,8 @@ classdef SpatialMapWindow < handle
             if obj.valid
                 set(obj.max_clim_slider,'max',val);
                 set(obj.min_clim_slider,'max',val);
-%                 set(obj.erd_slider,'max',val);
-%                 set(obj.ers_slider,'max',val);
+                %                 set(obj.erd_slider,'max',val);
+                %                 set(obj.ers_slider,'max',val);
             end
         end
         function val=get.max_clim(obj)
@@ -880,7 +879,7 @@ classdef SpatialMapWindow < handle
                 'String',{'Selection','Single Event','Average Event'},'units','normalized','position',[0.01,0.6,0.59,0.35],...
                 'Callback',@(src,evts) DataPopUpCallback(obj,src),'value',obj.data_input);
             
-
+            
             
             obj.event_text=uicontrol('Parent',hp_data,'Style','text','string','Event: ','units','normalized','position',[0.01,0.3,0.35,0.3],...
                 'HorizontalAlignment','left','visible','off');
@@ -1501,9 +1500,9 @@ classdef SpatialMapWindow < handle
                         %**************************************************
                         if strcmpi(obj.unit,'dB')
                             tfm=10*log10(tfm);
-%                             for tmp=1:length(event_tfm)
-%                                 event_tfm{tmp}=10*log10(event_tfm{tmp});
-%                             end
+                            %                             for tmp=1:length(event_tfm)
+                            %                                 event_tfm{tmp}=10*log10(event_tfm{tmp});
+                            %                             end
                         end
                         
                         obj.tfmat(e).mat{j}=tfm;
@@ -1915,11 +1914,11 @@ classdef SpatialMapWindow < handle
                 ComputeCallback(obj);
             end
             %**************************************************************
-%             profile='Motion JPEG AVI';
+            %             profile='Motion JPEG AVI';
             profile='MPEG-4';
             framerate=20;
             quality=100;
-%             t_start=500; %ms
+            %             t_start=500; %ms
             t_start=get(obj.act_start_slider,'min');
             t_end=get(obj.act_start_slider,'max');
             %**************************************************************
@@ -1940,7 +1939,7 @@ classdef SpatialMapWindow < handle
             loops = floor(1/step(1));
             
             step=(get(obj.act_start_slider,'max')-get(obj.act_start_slider,'min'))*step(1);
-
+            
             t=t_start;
             %make a new movie figuer***************************************
             mov_width=0;
@@ -1970,11 +1969,11 @@ classdef SpatialMapWindow < handle
             for i=1:length(obj.SpatialMapFig)
                 text('position',[(2*i-1)/(2*length(obj.SpatialMapFig)),0.5],'string',...
                     get(obj.SpatialMapFig(i),'name'),'FontSize',12,'HorizontalAlignment','center');
-%                 uicontrol('style','text','string',get(obj.SpatialMapFig(i),'name'),...
-%                     'units','normalized','position',...
-%                     [(2*i-2)/(2*length(obj.SpatialMapFig)),0.2,1/length(obj.SpatialMapFig),0.6],...
-%                     'FontSize',12,'HorizontalAlignment','center');
-
+                %                 uicontrol('style','text','string',get(obj.SpatialMapFig(i),'name'),...
+                %                     'units','normalized','position',...
+                %                     [(2*i-2)/(2*length(obj.SpatialMapFig)),0.2,1/length(obj.SpatialMapFig),0.6],...
+                %                     'FontSize',12,'HorizontalAlignment','center');
+                
             end
             time_panel=uipanel('parent',mov_fig,'units','pixels','position',[0,0,mov_width,45]);
             
@@ -1989,7 +1988,7 @@ classdef SpatialMapWindow < handle
             end
             
             set(mov_fig,'position',[50,50,mov_width,mov_height]);
-%             set(mov_fig,'visible','off');
+            %             set(mov_fig,'visible','off');
             wait_bar=waitbar(0,'Time: 0');
             
             time_left=uicontrol('parent',wait_bar,'style','text','string','Estimated time left: 0 h 0 min 0 s',...
@@ -2006,13 +2005,13 @@ classdef SpatialMapWindow < handle
             loop_start=floor(t_start/step);
             loop_end=floor(t_end/step);
             
-            tStart=clock;
-            
             if obj.center_mass
                 obj.center_mass_=2;
             end
             
+            delta_t=[];
             for k=loop_start:loop_end
+                tElapsed=clock;
                 
                 waitbar(k/loops,wait_bar,['Time: ',num2str(t),' ms']);
                 
@@ -2034,10 +2033,9 @@ classdef SpatialMapWindow < handle
                 F = im2frame(export_fig(mov_fig, '-nocrop','-r150'));
                 writeVideo(writerObj,F);
                 
-                tElapsed=clock;
+                delta_t=cat(1,delta_t,etime(clock,tElapsed));
                 
-                
-                t_left=etime(tElapsed,tStart)/(k-loop_start+1)*(loop_end-k);
+                t_left=median(delta_t)*(loop_end-k);
                 hr=floor(t_left/3600);
                 minu=floor(mod(t_left,3600)/60);
                 sec=mod(mod(t_left,3600),60);
@@ -2053,13 +2051,46 @@ classdef SpatialMapWindow < handle
         
         function CenterMassCallback(obj,src)
             obj.center_mass_=get(src,'value');
-            UpdateFigure(obj);
+            
+            if ~NoSpatialMapFig(obj)
+                mapv=obj.map_val;
+                chanpos=[obj.pos_x,obj.pos_y,obj.radius];
+                erdchan=obj.erd_chan;
+                erschan=obj.ers_chan;
+                for i=1:length(obj.SpatialMapFig)
+                    delete(findobj(obj.SpatialMapFig(i),'tag','mass'));
+                    
+                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                    if ~isempty(h)
+                        if obj.erd||obj.ers
+%                             figure(obj.SpatialMapFig(i))
+                            [obj.erd_center{i},obj.ers_center{i}]=plot_mass_center(h,mapv{i},round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),erdchan{i},erschan{i},obj.center_mass,...
+                                obj.erd_center{i},obj.ers_center{i});
+                        end
+                    end
+                end
+            end
         end
         
         
         function PeakCallback(obj,src)
             obj.peak_=get(src,'value');
-            UpdateFigure(obj);
+            if ~NoSpatialMapFig(obj)
+                mapv=obj.map_val;
+                for i=1:length(obj.SpatialMapFig)
+                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                    if ~isempty(h)
+                        col=obj.pos_x;
+                        row=obj.pos_y;
+                        delete(findobj(h,'tag','peak'));
+                        if obj.peak
+                            [~,I]=max(abs(mapv{i}'));
+                            text(col(I)*obj.width,row(I)*obj.height,'p','parent',h,'fontsize',12,'color','w',...
+                                'tag','peak');
+                        end
+                    end
+                end
+            end
         end
     end
     
