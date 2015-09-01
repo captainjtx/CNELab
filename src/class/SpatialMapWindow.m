@@ -1988,7 +1988,7 @@ classdef SpatialMapWindow < handle
             end
             
             set(mov_fig,'position',[50,50,mov_width,mov_height]);
-            %             set(mov_fig,'visible','off');
+            set(mov_fig,'visible','off');
             wait_bar=waitbar(0,'Time: 0');
             
             time_left=uicontrol('parent',wait_bar,'style','text','string','Estimated time left: 0 h 0 min 0 s',...
