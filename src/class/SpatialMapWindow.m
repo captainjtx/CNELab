@@ -1922,8 +1922,6 @@ classdef SpatialMapWindow < handle
 %             t_start=500; %ms
             t_start=get(obj.act_start_slider,'min');
             t_end=get(obj.act_start_slider,'max');
-                        
-            trajectory=0;
             %**************************************************************
             [FileName,FilePath,FilterIndex]=uiputfile({'*.avi;*.mp4','Video Files (*.avi;*.mp4)';...
                 '*.avi','AVI file (*.avi)';
