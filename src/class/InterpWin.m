@@ -62,7 +62,7 @@ classdef InterpWin < handle
                 'xlimmode','manual','ylimmode','manual');
             
             %needs relative positions
-            plot_contact(a,obj.col,obj.row,obj.r,obj.height,obj.width,obj.channames,[]);
+            plot_contact(a,obj.col,obj.row,obj.r,obj.height,obj.width,obj.channames);
             %**************************************************************
             %transform to pixels
             obj.col=round(obj.col*obj.width);

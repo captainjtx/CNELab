@@ -41,8 +41,7 @@ if colbar
     cbpos=get(cb,'Position');
     set(a,'Position',[10/400*w/fpos(3),15/300*h/fpos(4),w/fpos(3),h/fpos(4)]);
     set(cb,'Position',[(w+20/400*w)/fpos(3),15/300*h/fpos(4),0.04,cbpos(4)]);
-end
-
+end                
 set(a,'Tag','SpatialMapAxes');
 
 end
