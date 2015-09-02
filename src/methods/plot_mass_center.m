@@ -10,7 +10,7 @@ mapval=abs(mapval);
 
 pre_erd_center=[];
 pre_ers_center=[];
-if center_mass_opt==2
+if center_mass_opt>1
     if length(varargin)==1
         pre_erd_center=varargin{1};
     elseif length(varargin)==2
