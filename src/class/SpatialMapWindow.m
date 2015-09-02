@@ -2006,7 +2006,7 @@ classdef SpatialMapWindow < handle
             loop_end=floor(t_end/step);
             
             if obj.center_mass
-                obj.center_mass_=2;
+                obj.center_mass_=3;
             end
             
             delta_t=[];
