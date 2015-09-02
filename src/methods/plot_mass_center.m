@@ -1,7 +1,8 @@
 function [erd_center,ers_center]=plot_mass_center(axe,mapval,col,row,erdchan,erschan,center_mass_opt,varargin)
 %PLOT_MASS_CENTER Summary of this function goes here
 %   Detailed explanation goes here
-%center_mass_opt 0, no mass center, 1, single mass center, 2, hold on mass center
+%center_mass_opt 0, no mass center, 1, single mass center, 2, hold on mass
+%center,3 hold on mass without marker
 
 erd_center=[];
 ers_center=[];
@@ -33,12 +34,13 @@ if ~isempty(erdchan)
         weight=weight/sum(weight);
         erd_center=[reshape(erdrow,1,length(erdrow));reshape(erdcol,1,length(erdcol))]*weight;
         %         I=insertMarker(I,[center(2),center(1)],'+','color','red','size',4);
-
-        text('position',[erd_center(2),erd_center(1)],'string','+','fontsize',12,'color','r','tag','mass',...
-            'horizontalalignment','center','parent',axe);
+        if center_mass_opt~=3
+            text('position',[erd_center(2),erd_center(1)],'string','+','fontsize',12,'color','r','tag','mass',...
+                'horizontalalignment','center','parent',axe);
+        end
         if ~isempty(pre_erd_center)
             line([pre_erd_center(2),erd_center(2)],[pre_erd_center(1),erd_center(1)],...
-                'parent',axe,'color','k','tag','mass','linestyle',':');
+                'parent',axe,'color','r','tag','mass','linestyle','-');
         end
         
     end
@@ -51,12 +53,13 @@ if ~isempty(erschan)
         weight=weight/sum(weight);
         ers_center=[reshape(ersrow,1,length(ersrow));reshape(erscol,1,length(erscol))]*weight;
         %         I=insertMarker(I,[center(2),center(1)],'+','color','blue','size',4);
-
-        text('position',[ers_center(2),ers_center(1)],'string','+','fontsize',12,'color','b','tag','mass',...
-            'horizontalalignment','center','parent',axe);
+        if center_mass_opt~=3
+            text('position',[ers_center(2),ers_center(1)],'string','+','fontsize',12,'color','b','tag','mass',...
+                'horizontalalignment','center','parent',axe);
+        end
         if ~isempty(pre_ers_center)
             line([pre_ers_center(2),ers_center(2)],[pre_ers_center(1),ers_center(1)],...
-                'parent',axe,'color',' k','tag','mass','linestyle',':');
+                'parent',axe,'color',' b','tag','mass','linestyle','-');
         end
     end
 end
