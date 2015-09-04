@@ -479,18 +479,21 @@ classdef SpatialMapWindow < handle
             obj.width=round(obj.width/oldval*val);
             obj.height=round(obj.height/oldval*val);
             
+            chanpos=[obj.pos_x,obj.pos_y,obj.radius];
+            
             for i=1:length(obj.SpatialMapFig)
                 if ishandle(obj.SpatialMapFig(i))
                     fpos=get(obj.SpatialMapFig(i),'position');
                     set(obj.SpatialMapFig(i),'position',[fpos(1),fpos(2),obj.fig_w,obj.fig_h]);
-                    %                     h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
-                    %                     if ~isempty(h)
-                    %                         con_h=findobj(h,'-regexp','tag','contact');
-                    %                         delete(con_h);
-                    %                         figure(obj.SpatialMapFig(i));
-                    %                         plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
-                    %                             ~ismember(obj.all_chan_pos,[obj.pos_x,obj.pos_y,obj.radius],'rows'));
-                    %                     end
+                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                    if ~isempty(h)
+                        if ~obj.erd&&~obj.ers
+                            delete(findobj(h,'Tag','contact'));
+                            figure(obj.SpatialMapFig(i))
+                            plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
+                                ~ismember(obj.all_chan_pos,chanpos,'rows'));
+                        end
+                    end
                 end
             end
             
@@ -1847,7 +1850,6 @@ classdef SpatialMapWindow < handle
                         delete(findobj(h,'tag','peak'));
                         drawnow
                         
-                        
                         if obj.erd||obj.ers
                             delete(findobj(h,'Tag','contact'));
                             figure(obj.SpatialMapFig(i))
@@ -2158,7 +2160,9 @@ classdef SpatialMapWindow < handle
                     dt=tf.data(:,:,trial);
                     fdata=filter_symmetric(b,a,dt,obj.fs,0,'iir');
                     
-                    move_data=fdata(t1:t2,:);
+                    t_start=min(t1,size(fdata,1));
+                    t_end=min(t2,size(fdata,1));
+                    move_data=fdata(t_start:t_end,:);
                     [corr,pval]=corrcoef(move_data);
                     
                     corr_matrix=corr_matrix+corr;
