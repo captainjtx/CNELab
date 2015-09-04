@@ -36,7 +36,7 @@ classdef InterpWin < handle
                 return
             end
             
-            [data,chanNames,dataset,channel,sample,evts,groupnames,pos]=get_selected_data(obj.bsp);
+            [~,~,dataset,channel,~,~,~,~]=get_selected_data(obj.bsp);
             
             if length(channel)~=1
                 errordlg('Must select one channel !');

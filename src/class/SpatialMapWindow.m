@@ -7,10 +7,12 @@ classdef SpatialMapWindow < handle
         advance_menu
         stft_menu
         p_menu
+        corr_menu
         
         
         valid
         add_event_valid
+        
         SpatialMapFig
         bsp
         fig
@@ -48,6 +50,7 @@ classdef SpatialMapWindow < handle
         threshold_edit
         threshold_slider
         compute_btn
+        refresh_btn
         scale_by_max_radio
         %         display_mask_radio
         new_btn
@@ -184,6 +187,8 @@ classdef SpatialMapWindow < handle
         event_group
         erd_center
         ers_center
+        
+        corr_win
     end
     methods
         
@@ -852,6 +857,8 @@ classdef SpatialMapWindow < handle
             obj.symmetric_scale_=1;
             obj.center_mass_=1;
             obj.peak_=1;
+            
+            obj.corr_win=CorrMapWindow(obj);
         end
         function buildfig(obj)
             if obj.valid
@@ -869,7 +876,7 @@ classdef SpatialMapWindow < handle
             
             obj.stft_menu=uimenu(obj.advance_menu,'label','STFT','callback',@(src,evts) STFTCallback(obj));
             obj.p_menu=uimenu(obj.advance_menu,'label','P-Value','callback',@(src,evts) PCallback(obj));
-            
+            obj.corr_menu=uimenu(obj.advance_menu,'label','Correlation','callback',@(src,evts) CorrCallback(obj));
             
             hp=uipanel('units','normalized','Position',[0,0,1,1]);
             
@@ -958,7 +965,7 @@ classdef SpatialMapWindow < handle
                 'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) FreqCallback(obj,src),...
                 'min',0,'max',obj.fs/2,'sliderstep',[0.005,0.02],'value',obj.max_freq);
             
-            hp_erds=uipanel('parent',hp,'title','ERD/ERS(dB) T-Test','units','normalized','position',[0,0.4,1,0.1]);
+            hp_erds=uipanel('parent',hp,'title','ERD/ERS T-Test','units','normalized','position',[0,0.4,1,0.1]);
             
             obj.erd_radio=uicontrol('parent',hp_erds,'style','radiobutton','string','ERD','units','normalized',...
                 'position',[0,0.6,0.18,0.3],'value',obj.erd,'callback',@(src,evts) ERDSCallback(obj,src));
@@ -1044,6 +1051,9 @@ classdef SpatialMapWindow < handle
             obj.new_btn=uicontrol('parent',hp,'style','pushbutton','string','New','units','normalized','position',[0.01,0.005,0.2,0.04],...
                 'callback',@(src,evts) NewCallback(obj));
             
+            obj.refresh_btn=uicontrol('parent',hp,'style','pushbutton','string','Refresh','units','normalized','position',[0.4,0.005,0.2,0.04],...
+                'callback',@(src,evts) UpdateFigure(obj));
+            
             DataPopUpCallback(obj,obj.data_popup);
             NormalizationCallback(obj,obj.normalization_popup);
             
@@ -1069,6 +1079,10 @@ classdef SpatialMapWindow < handle
             h = obj.add_event_fig;
             if ishandle(h)
                 delete(h);
+            end
+            
+            if obj.corr_win.valid
+                delete(obj.corr_win.fig);
             end
             
         end
@@ -1298,7 +1312,7 @@ classdef SpatialMapWindow < handle
             %Data selection************************************************************
             if obj.data_input==1
                 omitMask=true;
-                [data,chanNames,dataset,channel,sample,evts,groupnames,chanpos]=get_selected_data(obj,omitMask);
+                [data,chanNames,dataset,channel,~,~,~,chanpos]=get_selected_data(obj,omitMask);
             elseif obj.data_input==2
                 if isempty(obj.bsp.SelectedEvent)
                     errordlg('No event selection !');
@@ -1317,7 +1331,7 @@ classdef SpatialMapWindow < handle
                 end
                 tmp_sel=[reshape(i_label-nL,1,length(i_label));reshape(i_label+nR,1,length(i_label))];
                 omitMask=true;
-                [data,chanNames,dataset,channel,sample,evts,groupnames,chanpos]=get_selected_data(obj.bsp,omitMask,tmp_sel);
+                [data,chanNames,dataset,channel,~,~,~,chanpos]=get_selected_data(obj.bsp,omitMask,tmp_sel);
             elseif obj.data_input==3
                 if isempty(obj.active_ievent)
                     evt=obj.event;
@@ -1344,7 +1358,7 @@ classdef SpatialMapWindow < handle
                 txt_evt((i_event-nL)<1)=[];
                 
                 omitMask=true;
-                [data,chanNames,dataset,channel,sample,evts,groupnames,chanpos]=get_selected_data(obj.bsp,omitMask);
+                [data,chanNames,dataset,channel,~,~,~,chanpos]=get_selected_data(obj.bsp,omitMask);
                 %need to change the data
             end
             %Channel position******************************************************************
@@ -1462,25 +1476,35 @@ classdef SpatialMapWindow < handle
                         nref_tmp=[];
                     end
                     %******************************************************
+                    raw_data=[];
+                    
                     for i=1:length(i_event)
                         tmp_sel=[i_event(i)-nL;i_event(i)+nR];
                         data=get_selected_data(obj.bsp,true,tmp_sel);
                         data=data(:,chanind);
                         data=data(:,j);
-                        [tf,f,t]=bsp_tfmap(obj.SpatialMapFig,data,baseline,obj.fs,wd,ov,[sl,sh],nref_tmp,channames,freq,obj.unit);
+                        
+                        if obj.normalization==4
+                            tmp_base=baseline(:,chanind);
+                            tmp_base=tmp_base(:,j);
+                        else
+                            tmp_base=[];
+                        end
+                        
+                        raw_data=cat(2,raw_data,data);
+                        
+                        [tf,f,t]=bsp_tfmap(obj.SpatialMapFig,data,tmp_base,obj.fs,wd,ov,[sl,sh],nref_tmp,channames,freq,obj.unit);
                         tmp_tfm{i}=tf;
                     end
                     
-                    
                     for e=1:length(evt)
                         tfm=0;
-                        
-                        event_tfm=tmp_tfm(strcmpi(txt_evt,evt{e}));
+                        ind=strcmpi(txt_evt,evt{e});
+                        event_tfm=tmp_tfm(ind);
                         
                         for k=1:length(event_tfm)
                             tfm=tfm+event_tfm{k};
                         end
-                        
                         tfm=tfm/length(event_tfm);
                         
                         %use baseline from all events**********************
@@ -1513,6 +1537,7 @@ classdef SpatialMapWindow < handle
                         obj.tfmat(e).channame=chanNames;
                         obj.tfmat(e).event=evt(e);
                         obj.tfmat(e).trial_mat{j}=event_tfm;
+                        obj.tfmat(e).data(:,j,:)=raw_data(:,ind);
                     end
                 end
             else
@@ -1531,7 +1556,10 @@ classdef SpatialMapWindow < handle
                     obj.tfmat.dataset=dataset;
                     obj.tfmat.channame=channames;
                     obj.tfmat.event=obj.event;
+                    obj.tfmat.data(:,j)=data(:,j);
                 end
+                
+                
             end
             
             close(wait_bar_h);
@@ -1789,6 +1817,9 @@ classdef SpatialMapWindow < handle
                 mapv=obj.map_val;
                 erdchan=obj.erd_chan;
                 erschan=obj.ers_chan;
+                
+                chanpos=[obj.pos_x,obj.pos_y,obj.radius];
+                
                 for i=1:length(obj.SpatialMapFig)
                     h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
                     if ~isempty(h)
@@ -1816,10 +1847,9 @@ classdef SpatialMapWindow < handle
                         delete(findobj(h,'tag','peak'));
                         drawnow
                         
+                        
                         if obj.erd||obj.ers
                             delete(findobj(h,'Tag','contact'));
-                            chanpos=[obj.pos_x,obj.pos_y,obj.radius];
-                            
                             figure(obj.SpatialMapFig(i))
                             plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
                                 ~ismember(obj.all_chan_pos,chanpos,'rows'),erdchan{i},erschan{i});
@@ -1832,9 +1862,22 @@ classdef SpatialMapWindow < handle
                         end
                         
                         if obj.erd||obj.ers
-                            [obj.erd_center{i},obj.ers_center{i}]=plot_mass_center(h,mapv{i},round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),erdchan{i},erschan{i},obj.center_mass,...
+                            [obj.erd_center{i},obj.ers_center{i}]=plot_mass_center(h,mapv{i},...
+                                round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
+                                erdchan{i},erschan{i},obj.center_mass,...
                                 obj.erd_center{i},obj.ers_center{i});
                         end
+                        
+                        %Correlation Network
+                        if obj.corr_win.pos||obj.corr_win.neg||obj.corr_win.sig
+                            % correlation
+                            UpdateCorrelation(obj);
+                            plot_correlation(h,round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
+                                obj.corr_win.pos,obj.corr_win.neg,obj.corr_win.sig,...
+                                obj.tfmat(i).corr_matrix,obj.corr_win.pos_t,obj.corr_win.neg_t,...
+                                obj.tfmat(i).p_matrix,obj.corr_win.sig_t);
+                        end
+                        
                     end
                 end
             end
@@ -2092,9 +2135,42 @@ classdef SpatialMapWindow < handle
                 end
             end
         end
+        
+        function CorrCallback(obj)
+            obj.corr_win.buildfig();
+        end
     end
     
     methods
+        
+        function UpdateCorrelation(obj)
+            
+            t1=round(obj.act_start/1000*obj.fs);
+            t2=t1+round(obj.act_len/1000*obj.fs);
+            for i=1:length(obj.tfmat)
+                %different movement
+                
+                corr_matrix=0;
+                p_matrix=0;
+                tf=obj.tfmat(i);
+                for trial=1:size(tf.data,3)
+                    [b,a]=butter(2,[obj.min_freq,obj.max_freq]/(obj.fs/2));
+                    dt=tf.data(:,:,trial);
+                    fdata=filter_symmetric(b,a,dt,obj.fs,0,'iir');
+                    
+                    move_data=fdata(t1:t2,:);
+                    [corr,pval]=corrcoef(move_data);
+                    
+                    corr_matrix=corr_matrix+corr;
+                    p_matrix=p_matrix+pval;
+                end
+                
+                obj.tfmat(i).corr_matrix=corr_matrix/size(tf.data,3);
+                obj.tfmat(i).p_matrix=p_matrix/size(tf.data,3);
+                
+            end
+            
+        end
         
         function ExportMovieWin(obj)
             

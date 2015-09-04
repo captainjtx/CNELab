@@ -159,14 +159,19 @@ classdef BioSigPlot < hgsetget
         MenuPSDGrid
         MenuPSDSettings
         MenuPSDHold
+        MenuCrossCorr
+        MenuCrossCorrRaw
+        MenuCrossCorrEnv
         
-
+        MenuAppDenoise
         MenuMeanRef
         MenuTemporalPCA
         MenuRemovePulse
         MenuSpatialPCA
         
         MenuInterpolate
+        
+        
         
         PanObj
         LineVideo
@@ -2186,6 +2191,7 @@ classdef BioSigPlot < hgsetget
         SavePosition(obj)
         Interpolate(obj)
         SaveToFigure(obj,opt)
+        CrossCorrelation(obj,src)
     end
     
     methods
