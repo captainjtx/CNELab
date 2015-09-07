@@ -163,6 +163,10 @@ classdef BioSigPlot < hgsetget
         MenuCrossCorrRaw
         MenuCrossCorrEnv
         
+        MenuCohere
+        MenuCohereRaw
+        MenuCohereEnv
+        
         MenuAppDenoise
         MenuMeanRef
         MenuTemporalPCA
