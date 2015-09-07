@@ -62,7 +62,7 @@ switch src
         subplot(3,1,3)
         
         
-        [r,lag]=xcorr(env1,env2,'coef');
+        [r,lag]=xcorr(detrend(env1),detrend(env2),'coef');
         
         lag=lag/obj.SRate*1000;%ms
         

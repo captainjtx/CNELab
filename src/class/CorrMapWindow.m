@@ -131,7 +131,7 @@ classdef CorrMapWindow < handle
         
         function set.neg_t(obj,val)
             
-            obj.neg_t_=min(-1,max(val,0));
+            obj.neg_t_=max(-1,min(val,0));
             
             if obj.valid
                 set(obj.neg_edit,'string',num2str(obj.neg_t));
@@ -173,11 +173,11 @@ classdef CorrMapWindow < handle
             
             sigp=uipanel('parent',hp,'units','normalized','position',[0,0,1,0.35],'title','Significant Network');
             obj.sig_radio=uicontrol('parent',sigp,'style','radiobutton','string','P-Val','units','normalized',...
-                'position',[0,0.1,0.18,0.8],'value',obj.sig,'callback',@(src,evts) SigCallback(obj,src));
+                'position',[0,0.1,0.18,0.8],'value',obj.sig,'callback',@(src,evts) CorrCallback(obj,src));
             obj.sig_edit=uicontrol('parent',sigp,'style','edit','string',num2str(obj.sig_t),'units','normalized',...
-                'position',[0.2,0.2,0.15,0.6],'horizontalalignment','center','callback',@(src,evts) SigCallback(obj,src));
+                'position',[0.2,0.2,0.15,0.6],'horizontalalignment','center','callback',@(src,evts) CorrCallback(obj,src));
             obj.sig_slider=uicontrol('parent',sigp,'style','slider','units','normalized',...
-                'position',[0.4,0.2,0.55,0.6],'callback',@(src,evts) SigCallback(obj,src),...
+                'position',[0.4,0.2,0.55,0.6],'callback',@(src,evts) CorrCallback(obj,src),...
                 'min',0,'max',1,'value',obj.sig_t,'sliderstep',[0.01,0.05]);
             
             
@@ -212,23 +212,6 @@ classdef CorrMapWindow < handle
             end
         end
         
-        function SigCallback(obj,src)
-            switch src
-                case obj.sig_radio
-                    obj.sig=get(src,'value');
-                case obj.sig_edit
-                    tmp=str2double(get(src,'string'));
-                    if isnan(tmp)
-                        return
-                    end
-                    
-                    obj.sig_t=tmp;
-                    
-                case obj.sig_slider
-                    obj.sig_t=get(src,'value');
-            end
-        end
-        
         function CorrCallback(obj,src)
             
             switch src
@@ -257,6 +240,19 @@ classdef CorrMapWindow < handle
                     obj.neg_t=tmp;
                 case obj.neg_slider
                     obj.pos_t=get(src,'value');
+                    
+                case obj.sig_radio
+                    obj.sig=get(src,'value');
+                case obj.sig_edit
+                    tmp=str2double(get(src,'string'));
+                    if isnan(tmp)
+                        return
+                    end
+                    
+                    obj.sig_t=tmp;
+                    
+                case obj.sig_slider
+                    obj.sig_t=get(src,'value');
             end
             
             chanpos=[obj.smw.pos_x,obj.smw.pos_y,obj.smw.radius];

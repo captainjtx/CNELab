@@ -9,7 +9,6 @@ classdef SpatialMapWindow < handle
         p_menu
         corr_menu
         
-        
         valid
         add_event_valid
         
@@ -2170,7 +2169,9 @@ classdef SpatialMapWindow < handle
                 end
                 
                 obj.tfmat(i).corr_matrix=corr_matrix/size(tf.data,3);
-                obj.tfmat(i).p_matrix=p_matrix/size(tf.data,3);
+                %Bonferroni's correction
+                K=size(tf.data,2)*(size(tf.data,2)-1)/2;
+                obj.tfmat(i).p_matrix=p_matrix/size(tf.data,3)*K;
                 
             end
             
