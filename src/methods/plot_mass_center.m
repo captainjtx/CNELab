@@ -35,7 +35,7 @@ if ~isempty(erdchan)
         erd_center=[reshape(erdrow,1,length(erdrow));reshape(erdcol,1,length(erdcol))]*weight;
         %         I=insertMarker(I,[center(2),center(1)],'+','color','red','size',4);
         if center_mass_opt~=3
-            text('position',[erd_center(2),erd_center(1)],'string','+','fontsize',12,'color','r','tag','mass',...
+            text('position',[erd_center(2),erd_center(1)],'string','+','fontsize',15,'color','r','tag','mass',...
                 'horizontalalignment','center','parent',axe);
         end
         if ~isempty(pre_erd_center)
@@ -54,7 +54,7 @@ if ~isempty(erschan)
         ers_center=[reshape(ersrow,1,length(ersrow));reshape(erscol,1,length(erscol))]*weight;
         %         I=insertMarker(I,[center(2),center(1)],'+','color','blue','size',4);
         if center_mass_opt~=3
-            text('position',[ers_center(2),ers_center(1)],'string','+','fontsize',12,'color','b','tag','mass',...
+            text('position',[ers_center(2),ers_center(1)],'string','+','fontsize',15,'color','b','tag','mass',...
                 'horizontalalignment','center','parent',axe);
         end
         if ~isempty(pre_ers_center)

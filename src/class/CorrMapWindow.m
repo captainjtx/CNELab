@@ -169,7 +169,7 @@ classdef CorrMapWindow < handle
                 'CloseRequestFcn',@(src,evts) OnClose(obj),...
                 'Resize','on','DockControls','off');
             
-            hp=uipanel('units','normalized','Position',[0,0,1,1]);
+            hp=uipanel('parent',obj.fig,'units','normalized','Position',[0,0,1,1]);
             
             sigp=uipanel('parent',hp,'units','normalized','position',[0,0,1,0.35],'title','Significant Network');
             obj.sig_radio=uicontrol('parent',sigp,'style','radiobutton','string','P-Val','units','normalized',...

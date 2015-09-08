@@ -4,6 +4,7 @@ classdef SpatialMapWindow < handle
     properties
         export_menu
         export_movie_menu
+        export_pic_menu
         advance_menu
         stft_menu
         p_menu
@@ -188,6 +189,7 @@ classdef SpatialMapWindow < handle
         ers_center
         
         corr_win
+        export_picture_win
     end
     methods
         
@@ -496,7 +498,7 @@ classdef SpatialMapWindow < handle
                 end
             end
             
-            UpdateFigure(obj);
+            UpdateFigure(obj,obj.threshold_edit);
         end
         
         function val=get.scale_by_max(obj)
@@ -861,6 +863,7 @@ classdef SpatialMapWindow < handle
             obj.peak_=1;
             
             obj.corr_win=CorrMapWindow(obj);
+            obj.export_picture_win=ExportPictureWindow(obj);
         end
         function buildfig(obj)
             if obj.valid
@@ -875,6 +878,8 @@ classdef SpatialMapWindow < handle
             obj.export_menu=uimenu(obj.fig,'label','Export');
             obj.export_movie_menu=uimenu(obj.export_menu,'label','Movie','callback',@(src,evts) ExportMovieCallback(obj));
             obj.advance_menu=uimenu(obj.fig,'label','Settings');
+            
+            obj.export_pic_menu=uimenu(obj.export_menu,'label','Pictures','callback',@(src,evts) ExportPictureCallback(obj));
             
             obj.stft_menu=uimenu(obj.advance_menu,'label','STFT','callback',@(src,evts) STFTCallback(obj));
             obj.p_menu=uimenu(obj.advance_menu,'label','P-Value','callback',@(src,evts) PCallback(obj));
@@ -970,19 +975,19 @@ classdef SpatialMapWindow < handle
             hp_erds=uipanel('parent',hp,'title','ERD/ERS T-Test','units','normalized','position',[0,0.4,1,0.1]);
             
             obj.erd_radio=uicontrol('parent',hp_erds,'style','radiobutton','string','ERD','units','normalized',...
-                'position',[0,0.6,0.18,0.3],'value',obj.erd,'callback',@(src,evts) ERDSCallback(obj,src));
+                'position',[0,0.6,0.18,0.3],'value',obj.erd,'callback',@(src,evts) ERDSCallback(obj,src),'interruptible','off');
             obj.ers_radio=uicontrol('parent',hp_erds,'style','radiobutton','string','ERS','units','normalized',...
-                'position',[0,0.1,0.18,0.3],'value',obj.ers,'callback',@(src,evts) ERDSCallback(obj,src));
+                'position',[0,0.1,0.18,0.3],'value',obj.ers,'callback',@(src,evts) ERDSCallback(obj,src),'interruptible','off');
             obj.erd_edit=uicontrol('parent',hp_erds,'style','edit','string',num2str(obj.erd_t),'units','normalized',...
-                'position',[0.2,0.55,0.15,0.4],'horizontalalignment','center','callback',@(src,evts) ERDSCallback(obj,src));
+                'position',[0.2,0.55,0.15,0.4],'horizontalalignment','center','callback',@(src,evts) ERDSCallback(obj,src),'interruptible','off');
             obj.erd_slider=uicontrol('parent',hp_erds,'style','slider','units','normalized',...
                 'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) ERDSCallback(obj,src),...
-                'min',0,'max',1,'value',obj.erd_t,'sliderstep',[0.01,0.05]);
+                'min',0,'max',1,'value',obj.erd_t,'sliderstep',[0.01,0.05],'interruptible','off');
             obj.ers_edit=uicontrol('parent',hp_erds,'style','edit','string',num2str(obj.ers_t),'units','normalized',...
-                'position',[0.2,0.05,0.15,0.4],'horizontalalignment','center','callback',@(src,evts) ERDSCallback(obj,src));
+                'position',[0.2,0.05,0.15,0.4],'horizontalalignment','center','callback',@(src,evts) ERDSCallback(obj,src),'interruptible','off');
             obj.ers_slider=uicontrol('parent',hp_erds,'style','slider','units','normalized',...
                 'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) ERDSCallback(obj,src),...
-                'min',1,'max',10,'value',obj.ers_t,'sliderstep',[0.01,0.05]);
+                'min',1,'max',10,'value',obj.ers_t,'sliderstep',[0.01,0.05],'interruptible','off');
             
             hp_clim=uipanel('parent',hp,'title','Scale','units','normalized','position',[0,0.29,1,0.1]);
             
@@ -1054,7 +1059,7 @@ classdef SpatialMapWindow < handle
                 'callback',@(src,evts) NewCallback(obj));
             
             obj.refresh_btn=uicontrol('parent',hp,'style','pushbutton','string','Refresh','units','normalized','position',[0.4,0.005,0.2,0.04],...
-                'callback',@(src,evts) UpdateFigure(obj));
+                'callback',@(src,evts) UpdateFigure(obj,src));
             
             DataPopUpCallback(obj,obj.data_popup);
             NormalizationCallback(obj,obj.normalization_popup);
@@ -1085,6 +1090,10 @@ classdef SpatialMapWindow < handle
             
             if obj.corr_win.valid
                 delete(obj.corr_win.fig);
+            end
+            
+            if obj.export_picture_win.valid
+                delete(obj.export_picture_win.fig);
             end
             
         end
@@ -1199,7 +1208,7 @@ classdef SpatialMapWindow < handle
                     obj.min_freq=round(get(src,'value')*10)/10;
             end
             if obj.auto_refresh
-                UpdateFigure(obj)
+                UpdateFigure(obj,src)
             end
         end
         function ClimCallback(obj,src)
@@ -1633,7 +1642,7 @@ classdef SpatialMapWindow < handle
                     obj.ers_t=get(src,'value');
             end
             
-            UpdateFigure(obj);
+            UpdateFigure(obj,src);
         end
         function ThresholdCallback(obj,src)
             switch src
@@ -1682,7 +1691,7 @@ classdef SpatialMapWindow < handle
             if ~obj.auto_refresh
                 return
             end
-            UpdateFigure(obj);
+            UpdateFigure(obj,src);
         end
         
         function ActCallback(obj,src)
@@ -1705,14 +1714,14 @@ classdef SpatialMapWindow < handle
                     obj.act_len=get(src,'value');
             end
             if obj.auto_refresh
-                UpdateFigure(obj);
+                UpdateFigure(obj,src);
             end
         end
         function AutoRefreshCallback(obj,src)
             obj.auto_refresh_=get(src,'value');
             
             if obj.auto_refresh
-                UpdateFigure(obj);
+                UpdateFigure(obj,src);
             end
         end
         
@@ -1813,7 +1822,7 @@ classdef SpatialMapWindow < handle
             obj.p=max(0,min(tmp,1));
         end
         
-        function UpdateFigure(obj)
+        function UpdateFigure(obj,src)
             if ~NoSpatialMapFig(obj)
                 
                 mapv=obj.map_val;
@@ -1849,7 +1858,7 @@ classdef SpatialMapWindow < handle
                         delete(findobj(h,'tag','peak'));
                         drawnow
                         
-                        if obj.erd||obj.ers
+                        if obj.erd||obj.ers||ismember(src,[obj.erd_radio,obj.ers_radio])
                             delete(findobj(h,'Tag','contact'));
                             figure(obj.SpatialMapFig(i))
                             plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
@@ -2180,6 +2189,10 @@ classdef SpatialMapWindow < handle
         function ExportMovieWin(obj)
             
             
+        end
+        
+        function ExportPictureCallback(obj)
+            obj.export_picture_win.buildfig();
         end
     end
     
