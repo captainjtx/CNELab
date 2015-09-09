@@ -15,12 +15,13 @@ classdef ExportMovieWindow < handle
         t_step_
         
         res_ppi_
-        multi_exp_
+        fps_
+        
         dest_dir_
         filename_
         format_
         
-        multi_exp_radio
+        
         res_edit
         t_start_edit
         t_end_edit
@@ -37,6 +38,7 @@ classdef ExportMovieWindow < handle
         
         export_btn
         format_list
+        fps_edit
     end
     
     properties(Dependent)
@@ -51,6 +53,7 @@ classdef ExportMovieWindow < handle
         dest_dir
         filename
         format
+        fps
     end
     
     methods
@@ -61,6 +64,16 @@ classdef ExportMovieWindow < handle
             obj.res_ppi_=val;
             if obj.valid
                 set(obj.res_edit,'string',num2str(obj.res_ppi_));
+            end
+        end
+        
+        function val=get.fps(obj)
+            val=obj.fps_;
+        end
+        function set.fps(obj,val)
+            obj.fps_=val;
+            if obj.valid
+                set(obj.fps_edit,'string',num2str(obj.fps_));
             end
         end
         
@@ -94,32 +107,6 @@ classdef ExportMovieWindow < handle
             obj.format_=val;
             if obj.valid
                 set(obj.format_popup,'value',obj.format_);
-            end
-        end
-        
-        function val=get.multi_exp(obj)
-            val=obj.multi_exp_;
-        end
-        
-        function set.multi_exp(obj,val)
-            obj.multi_exp_=val;
-            if obj.valid
-                set(obj.multi_exp_radio,'value',obj.multi_exp_);
-                
-                if obj.multi_exp_
-                    onoff='on';
-                else
-                    onoff='off';
-                    obj.t_start=obj.smw.act_start;
-                    obj.t_end=obj.smw.act_start;
-                end
-                
-                set(obj.t_start_edit,'enable',onoff);
-                set(obj.t_end_edit,'enable',onoff);
-                set(obj.t_start_slider,'enable',onoff);
-                set(obj.t_end_slider,'enable',onoff);
-                set(obj.t_step_edit,'enable',onoff);
-                set(obj.t_step_slider,'enable',onoff);
             end
         end
         function val=get.t_start(obj)
@@ -181,8 +168,8 @@ classdef ExportMovieWindow < handle
             obj.width=300;
             obj.height=280;
             
-            obj.multi_exp_=1;
-            obj.res_ppi_=300;
+            obj.res_ppi_=150;
+            obj.fps_=20;
             obj.t_start_=0;
             obj.t_end_=obj.smw.ms_before+obj.smw.ms_after;
             obj.t_step_=(obj.smw.stft_winlen-obj.smw.stft_overlap)/obj.smw.fs*1000;
@@ -190,7 +177,7 @@ classdef ExportMovieWindow < handle
             obj.filename_='Untitled';
             obj.format_=1;%mp4
             
-            obj.format_list={'mp4','avi'};
+            obj.format_list={'MPEG-4','Motion JPEG AVI'};
             
         end
         
@@ -214,13 +201,16 @@ classdef ExportMovieWindow < handle
             
             resp=uipanel('parent',setp,'units','normalized','Position',[0,5/6,1,1/6]);
             
-            obj.multi_exp_radio=uicontrol('parent',resp,'style','radiobutton','string','Series Export',...
-                'units','normalized','position',[0,0.1,0.5,0.8],'value',obj.multi_exp,...
-                'callback',@(src,evt) MultiExpCallback(obj,src));
+            uicontrol('parent',resp,'style','text','string','Resolution (ppi): ',...
+                'units','normalized','position',[0,0.1,0.2,0.8]);
             obj.res_edit=uicontrol('parent',resp,'style','edit','string',num2str(obj.res_ppi),...
-                'units','normalized','position',[0.5,0.2,0.35,0.6]);
-            uicontrol('parent',resp,'style','text','string','ppi','units','normalized',...
-            'position',[0.85,0.2,0.15,0.6],'fontsize',12);
+                'units','normalized','position',[0.25,0.2,0.2,0.6],'Callback',@(src,evt) ResCallback(obj,src));
+            
+            
+            uicontrol('parent',resp,'style','text','string','FPS: ',...
+                'units','normalized','position',[0.5,0.1,0.2,0.8]);
+            obj.fps_edit=uicontrol('parent',resp,'style','edit','string',num2str(obj.fps),...
+                'units','normalized','position',[0.75,0.2,0.2,0.6],'Callback',@(src,evt) FPSCallback(obj,src));
         
             dp=uipanel('parent',setp,'units','normalized','position',[0,2.2/6,1,2.8/6]);
             uicontrol('parent',dp,'style','text','string','Start (ms):','units','normalized','position',[0,0.7,0.25,0.25]);
@@ -268,8 +258,6 @@ classdef ExportMovieWindow < handle
             obj.export_btn=uicontrol('parent',hp,'style','pushbutton','string','Export',...
                 'units','normalized','position',[0.78,0.01,0.2,0.08],...
                 'callback',@(src,evt) ExportCallback(obj));
-            
-            obj.multi_exp=obj.multi_exp_;
         end
         
         function OnClose(obj)
@@ -279,10 +267,6 @@ classdef ExportMovieWindow < handle
             if ishandle(h)
                 delete(h);
             end
-        end
-        
-        function MultiExpCallback(obj,src)
-            obj.multi_exp=get(src,'value');
         end
         
         function TCallback(obj,src)
@@ -331,29 +315,149 @@ classdef ExportMovieWindow < handle
         end
         
         function ExportCallback(obj)
-            mov_format=obj.format_list{obj.format};
+            profile=obj.format_list{obj.format};            %recalculating stft********************************************
+            if obj.smw.NoSpatialMapFig()
+                obj.smw.ComputeCallback();
+            end
+            %**************************************************************
+            %             profile='Motion JPEG AVI';
+            framerate=obj.fps;
+            quality=100;
+            %             t_start=500; %ms
+            t_start=obj.t_start;
+            t_end=obj.t_end;
+
+            %**************************************************************
             
-            if obj.multi_exp
-                wait_bar_h = waitbar(0,'Exporting Movies...');
-                for t=obj.t_start:obj.t_step:obj.t_end
-                    waitbar((t-obj.t_start)/(obj.t_end-obj.t_start));
-                    set(obj.smw.act_start_slider,'value',t);
-                    obj.smw.ActCallback(obj.smw.act_start_slider)
-                    for i=1:length(obj.smw.SpatialMapFig)
-                        fname=fullfile(obj.dest_dir,[obj.filename,'_',obj.smw.event_group{i},'_',num2str(t)]);
-                        export_fig(obj.smw.SpatialMapFig(i),['-',mov_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);
-                    end
+            set(obj.smw.act_start_slider,'value',t_start);
+            step=obj.t_step;
+            
+            t=t_start;
+            %make a new movie figuer***************************************
+            mov_width=0;
+            mov_height=0;
+            
+            
+            mov_fig=figure('Name','Movie','NumberTitle','off','Resize','off','units','pixels');
+            panel=zeros(length(obj.smw.SpatialMapFig),1);
+            
+            for i=1:length(obj.smw.SpatialMapFig)
+                delete(findobj(obj.smw.SpatialMapFig(i),'tag','mass'));
+                pos=get(obj.smw.SpatialMapFig(i),'position');
+                
+                
+                panel(i)=uipanel('parent',mov_fig,'units','pixels','Position',[mov_width,45,pos(3),pos(4)]);
+                mov_height=pos(4);
+                mov_width=mov_width+pos(3)+10;
+                
+                child_axes=findobj(obj.smw.SpatialMapFig(i),'type','axes');
+                for m=1:length(child_axes)
+                    newh=copyobj(child_axes(m),panel(i));
+                    set(newh,'position',get(child_axes(m),'position'));
                 end
-            close(wait_bar_h);
-            else
-                t=obj.smw.act_start;
+            end
+            name_panel=uipanel('parent',mov_fig,'units','pixels','position',[0,45+pos(4),mov_width,30]);
+            axes('parent',name_panel,'units','normalized','position',[0,0,1,1],'xlim',[0,1],'ylim',[0,1],'visible','off');
+            for i=1:length(obj.smw.SpatialMapFig)
+                text('position',[(2*i-1)/(2*length(obj.smw.SpatialMapFig)),0.5],'string',...
+                    get(obj.smw.SpatialMapFig(i),'name'),'FontSize',12,'HorizontalAlignment','center');
+                %                 uicontrol('style','text','string',get(obj.SpatialMapFig(i),'name'),...
+                %                     'units','normalized','position',...
+                %                     [(2*i-2)/(2*length(obj.SpatialMapFig)),0.2,1/length(obj.SpatialMapFig),0.6],...
+                %                     'FontSize',12,'HorizontalAlignment','center');
+                
+            end
+            time_panel=uipanel('parent',mov_fig,'units','pixels','position',[0,0,mov_width,45]);
+            
+            mov_width=mov_width-10;
+            mov_height=mov_height+80;
+            
+            if mod(mov_width,2)==1
+                mov_width=mov_width+1;
+            end
+            if mod(mov_height,2)==1
+                mov_height=mov_height+1;
+            end
+            
+            set(mov_fig,'position',[50,50,mov_width,mov_height]);
+            set(mov_fig,'visible','off');
+            wait_bar=waitbar(0,['Time: ',num2str(-obj.smw.ms_before),' ms']);
+            
+            time_left=uicontrol('parent',wait_bar,'style','text','string','Estimated time left: 0 h 0 min 0 s',...
+                'units','normalized','position',[0,0,1,0.2],...
+                'backgroundcolor',get(wait_bar,'color'),'horizontalalignment','center');
+            %**************************************************************
+            
+            fname=fullfile(obj.dest_dir,obj.filename);
+            writerObj = VideoWriter(fname,profile);
+            writerObj.FrameRate = framerate;
+            writerObj.Quality=quality;
+            open(writerObj);
+            
+            loop_start=floor(t_start/step);
+            loop_end=floor(t_end/step);
+            
+            if obj.smw.center_mass
+                obj.smw.center_mass_=3;
+            end
+            
+            delta_t=[];
+            
+            loops=floor((obj.smw.ms_before+obj.smw.ms_after)/step);
+            
+            for k=loop_start:loop_end
+                tElapsed=clock;
+                
+                waitbar(k/loops,wait_bar,['Time: ',num2str(t-obj.smw.ms_before),' ms']);
+                
+                delete(allchild(time_panel));
+                
+                new_handle=copyobj(findobj(wait_bar,'type','axes'),time_panel);
+                set(new_handle,'units','normalized','position',[0.02,0.1,0.96,0.3],'FontSize',12);
+                
+                set(obj.smw.act_start_slider,'value',t);
+                obj.smw.ActCallback(obj.smw.act_start_slider);
                 for i=1:length(obj.smw.SpatialMapFig)
-                    fname=fullfile(obj.dest_dir,[obj.filename,'_',obj.smw.event_group{i},'_',num2str(t)]);
-                    export_fig(obj.smw.SpatialMapFig(i),['-',mov_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);
+                    delete(findobj(panel(i),'-regexp','tag','SpatialMapAxes'));
+                    child_axes=findobj(obj.smw.SpatialMapFig(i),'-regexp','tag','SpatialMapAxes');
+                    newh=copyobj(child_axes,panel(i));
+                    set(newh,'position',get(child_axes,'position'));
                 end
+                
+                t=t+step;
+                F = im2frame(export_fig(mov_fig, '-nocrop',['-r',num2str(obj.res_ppi)]));
+                writeVideo(writerObj,F);
+                
+                delta_t=cat(1,delta_t,etime(clock,tElapsed));
+                
+                t_left=median(delta_t)*(loop_end-k);
+                hr=floor(t_left/3600);
+                minu=floor(mod(t_left,3600)/60);
+                sec=mod(mod(t_left,3600),60);
+                set(time_left,'string',['Estimated time left: ',...
+                    num2str(hr),' h ',num2str(minu),' min ',num2str(sec),' s']);
+            end
+            close(wait_bar);
+            close(writerObj);
+            delete(mov_fig);
+            
+            obj.smw.center_mass_=get(obj.smw.center_mass_radio,'value');
+        end
+        
+        function ResCallback(obj,src)
+            tmp=round(str2double(get(src,'string')));
+            if ~isnan(tmp)
+                obj.res_ppi=tmp;
             end
         end
         
+        
+        function FPSCallback(obj,src)
+            tmp=round(str2double(get(src,'string')));
+            if ~isnan(tmp)
+                obj.fps=tmp;
+            end
+        end
     end
     
 end

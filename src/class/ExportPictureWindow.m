@@ -218,7 +218,7 @@ classdef ExportPictureWindow < handle
                 'units','normalized','position',[0,0.1,0.5,0.8],'value',obj.multi_exp,...
                 'callback',@(src,evt) MultiExpCallback(obj,src));
             obj.res_edit=uicontrol('parent',resp,'style','edit','string',num2str(obj.res_ppi),...
-                'units','normalized','position',[0.5,0.2,0.35,0.6]);
+                'units','normalized','position',[0.5,0.2,0.35,0.6],'callback',@(src,evt) ResCallback(obj,src));
             uicontrol('parent',resp,'style','text','string','ppi','units','normalized',...
             'position',[0.85,0.2,0.15,0.6],'fontsize',12);
         
@@ -351,6 +351,13 @@ classdef ExportPictureWindow < handle
                     fname=fullfile(obj.dest_dir,[obj.filename,'_',obj.smw.event_group{i},'_',num2str(t)]);
                     export_fig(obj.smw.SpatialMapFig(i),['-',pic_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);
                 end
+            end
+        end
+        
+        function ResCallback(obj,src)
+            tmp=round(str2double(get(src,'string')));
+            if ~isnan(tmp)
+                obj.res_ppi=tmp;
             end
         end
         

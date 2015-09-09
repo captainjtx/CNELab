@@ -190,6 +190,7 @@ classdef SpatialMapWindow < handle
         
         corr_win
         export_picture_win
+        export_movie_win
     end
     methods
         
@@ -864,6 +865,7 @@ classdef SpatialMapWindow < handle
             
             obj.corr_win=CorrMapWindow(obj);
             obj.export_picture_win=ExportPictureWindow(obj);
+            obj.export_movie_win=ExportMovieWindow(obj);
         end
         function buildfig(obj)
             if obj.valid
@@ -1096,6 +1098,10 @@ classdef SpatialMapWindow < handle
                 delete(obj.export_picture_win.fig);
             end
             
+            if obj.export_movie_win.valid
+                delete(obj.export_movie_win.fig);
+            end
+            
         end
         
         function DataPopUpCallback(obj,src)
@@ -1323,7 +1329,7 @@ classdef SpatialMapWindow < handle
             %Data selection************************************************************
             if obj.data_input==1
                 omitMask=true;
-                [data,chanNames,dataset,channel,~,~,~,chanpos]=get_selected_data(obj,omitMask);
+                [data,chanNames,dataset,channel,~,~,~,chanpos]=get_selected_data(obj.bsp,omitMask);
             elseif obj.data_input==2
                 if isempty(obj.bsp.SelectedEvent)
                     errordlg('No event selection !');
@@ -1962,144 +1968,9 @@ classdef SpatialMapWindow < handle
         end
         
         function ExportMovieCallback(obj)
-            %recalculating stft********************************************
-            if NoSpatialMapFig(obj)
-                ComputeCallback(obj);
-            end
-            %**************************************************************
-            %             profile='Motion JPEG AVI';
-            profile='MPEG-4';
-            framerate=20;
-            quality=100;
-            %             t_start=500; %ms
-            t_start=get(obj.act_start_slider,'min');
-            t_end=get(obj.act_start_slider,'max');
-            %**************************************************************
-            [FileName,FilePath,FilterIndex]=uiputfile({'*.avi;*.mp4','Video Files (*.avi;*.mp4)';...
-                '*.avi','AVI file (*.avi)';
-                '*.mp4','MPEG-4 file(*.mp4)'}...
-                ,'save your video',fullfile(obj.bsp.FileDir,'untitled'));
             
-            if FileName~=0
-                filename=fullfile(FilePath,FileName);
-            else
-                return
-            end
-            %**************************************************************
-            
-            set(obj.act_start_slider,'value',t_start);
-            step=get(obj.act_start_slider,'sliderstep');
-            loops = floor(1/step(1));
-            
-            step=(get(obj.act_start_slider,'max')-get(obj.act_start_slider,'min'))*step(1);
-            
-            t=t_start;
-            %make a new movie figuer***************************************
-            mov_width=0;
-            mov_height=0;
-            
-            
-            mov_fig=figure('Name','Movie','NumberTitle','off','Resize','off','units','pixels');
-            panel=zeros(length(obj.SpatialMapFig),1);
-            
-            for i=1:length(obj.SpatialMapFig)
-                delete(findobj(obj.SpatialMapFig(i),'tag','mass'));
-                pos=get(obj.SpatialMapFig(i),'position');
-                
-                
-                panel(i)=uipanel('parent',mov_fig,'units','pixels','Position',[mov_width,45,pos(3),pos(4)]);
-                mov_height=pos(4);
-                mov_width=mov_width+pos(3)+10;
-                
-                child_axes=findobj(obj.SpatialMapFig(i),'type','axes');
-                for m=1:length(child_axes)
-                    newh=copyobj(child_axes(m),panel(i));
-                    set(newh,'position',get(child_axes(m),'position'));
-                end
-            end
-            name_panel=uipanel('parent',mov_fig,'units','pixels','position',[0,45+pos(4),mov_width,30]);
-            axes('parent',name_panel,'units','normalized','position',[0,0,1,1],'xlim',[0,1],'ylim',[0,1],'visible','off');
-            for i=1:length(obj.SpatialMapFig)
-                text('position',[(2*i-1)/(2*length(obj.SpatialMapFig)),0.5],'string',...
-                    get(obj.SpatialMapFig(i),'name'),'FontSize',12,'HorizontalAlignment','center');
-                %                 uicontrol('style','text','string',get(obj.SpatialMapFig(i),'name'),...
-                %                     'units','normalized','position',...
-                %                     [(2*i-2)/(2*length(obj.SpatialMapFig)),0.2,1/length(obj.SpatialMapFig),0.6],...
-                %                     'FontSize',12,'HorizontalAlignment','center');
-                
-            end
-            time_panel=uipanel('parent',mov_fig,'units','pixels','position',[0,0,mov_width,45]);
-            
-            mov_width=mov_width-10;
-            mov_height=mov_height+80;
-            
-            if mod(mov_width,2)==1
-                mov_width=mov_width+1;
-            end
-            if mod(mov_height,2)==1
-                mov_height=mov_height+1;
-            end
-            
-            set(mov_fig,'position',[50,50,mov_width,mov_height]);
-            set(mov_fig,'visible','off');
-            wait_bar=waitbar(0,'Time: 0');
-            
-            time_left=uicontrol('parent',wait_bar,'style','text','string','Estimated time left: 0 h 0 min 0 s',...
-                'units','normalized','position',[0,0,1,0.2],...
-                'backgroundcolor',get(wait_bar,'color'),'horizontalalignment','center');
-            %**************************************************************
-            
-            
-            writerObj = VideoWriter(filename,profile);
-            writerObj.FrameRate = framerate;
-            writerObj.Quality=quality;
-            open(writerObj);
-            
-            loop_start=floor(t_start/step);
-            loop_end=floor(t_end/step);
-            
-            if obj.center_mass
-                obj.center_mass_=3;
-            end
-            
-            delta_t=[];
-            for k=loop_start:loop_end
-                tElapsed=clock;
-                
-                waitbar(k/loops,wait_bar,['Time: ',num2str(t),' ms']);
-                
-                delete(allchild(time_panel));
-                
-                new_handle=copyobj(findobj(wait_bar,'type','axes'),time_panel);
-                set(new_handle,'units','normalized','position',[0.02,0.1,0.96,0.3],'FontSize',12);
-                
-                set(obj.act_start_slider,'value',t);
-                ActCallback(obj,obj.act_start_slider);
-                for i=1:length(obj.SpatialMapFig)
-                    delete(findobj(panel(i),'-regexp','tag','SpatialMapAxes'));
-                    child_axes=findobj(obj.SpatialMapFig(i),'-regexp','tag','SpatialMapAxes');
-                    newh=copyobj(child_axes,panel(i));
-                    set(newh,'position',get(child_axes,'position'));
-                end
-                
-                t=t+step;
-                F = im2frame(export_fig(mov_fig, '-nocrop','-r150'));
-                writeVideo(writerObj,F);
-                
-                delta_t=cat(1,delta_t,etime(clock,tElapsed));
-                
-                t_left=median(delta_t)*(loop_end-k);
-                hr=floor(t_left/3600);
-                minu=floor(mod(t_left,3600)/60);
-                sec=mod(mod(t_left,3600),60);
-                set(time_left,'string',['Estimated time left: ',...
-                    num2str(hr),' h ',num2str(minu),' min ',num2str(sec),' s']);
-            end
-            close(wait_bar);
-            close(writerObj);
-            delete(mov_fig);
-            
-            obj.center_mass_=get(obj.center_mass_radio,'value');
+            obj.export_movie_win.buildfig();
+
         end
         
         function CenterMassCallback(obj,src)
