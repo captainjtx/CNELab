@@ -343,10 +343,11 @@ classdef ExportPictureWindow < handle
                     set(obj.smw.act_start_slider,'value',t);
                     obj.smw.ActCallback(obj.smw.act_start_slider)
                     for i=1:length(obj.smw.SpatialMapFig)
+                        figname=get(obj.smw.SpatialMapFig(i),'Name');
                         if obj.smw.data_input~=1
-                            fname=fullfile(obj.dest_dir,[obj.filename,'_',obj.smw.event_group{i},'_',num2str(t)]);
+                            fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',num2str(t)]);
                         else
-                           fname=fullfile(obj.dest_dir,[obj.filename,'_',obj.smw.event_group{i},'_',num2str(t-obj.smw.ms_before)]); 
+                           fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',num2str(t-obj.smw.ms_before)]); 
                         end
                         export_fig(obj.smw.SpatialMapFig(i),['-',pic_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);
                     end
@@ -355,10 +356,11 @@ classdef ExportPictureWindow < handle
             else
                 t=obj.smw.act_start;
                 for i=1:length(obj.smw.SpatialMapFig)
+                    figname=get(obj.smw.SpatialMapFig(i),'Name');
                     if obj.smw.data_input~=1
-                        fname=fullfile(obj.dest_dir,[obj.filename,'_',obj.smw.event_group{i},'_',num2str(t)]);
+                        fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',num2str(t)]);
                     else
-                        fname=fullfile(obj.dest_dir,[obj.filename,'_',obj.smw.event_group{i},'_',num2str(t-obj.smw.ms_before)]);
+                        fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',num2str(t-obj.smw.ms_before)]);
                     end
                     export_fig(obj.smw.SpatialMapFig(i),['-',pic_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);
                 end

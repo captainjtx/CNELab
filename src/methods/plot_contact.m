@@ -112,6 +112,7 @@ for i=1:length(channames)
     'fontsize',8,'horizontalalignment','center','parent',axe,'interpreter','none');
 end
 
+drawnow
 
 
 end

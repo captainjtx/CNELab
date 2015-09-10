@@ -43,6 +43,7 @@ if colbar
     set(cb,'Position',[(w+20/400*w)/fpos(3),15/300*h/fpos(4),0.04,cbpos(4)]);
 end                
 set(a,'Tag','SpatialMapAxes');
+drawnow
 
 end
 

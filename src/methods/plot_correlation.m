@@ -41,5 +41,6 @@ if sig
     end
 end
 
+drawnow
 end
 

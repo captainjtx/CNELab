@@ -1569,7 +1569,7 @@ classdef SpatialMapWindow < handle
                         obj.tfmat(e).channel=channel;
                         obj.tfmat(e).dataset=dataset;
                         obj.tfmat(e).channame=chanNames;
-                        obj.tfmat(e).event=evt(e);
+                        obj.tfmat(e).event=evt{e};
                         obj.tfmat(e).trial_mat{j}=event_tfm;
                         obj.tfmat(e).data(:,j,:)=raw_data(:,ind);
                     end
@@ -1621,6 +1621,16 @@ classdef SpatialMapWindow < handle
             erschan=obj.ers_chan;
             
             obj.all_chan_pos=allchanpos;
+            
+            if obj.corr_win.pos||obj.corr_win.neg||obj.corr_win.sig
+                % correlation
+                obj.corr_win.UpdateCorrelation();
+            end
+            
+            if obj.xcorr_win.t
+                obj.xcorr_win.UpdateCrossCorrelation();
+            end
+    
             for e=1:length(evt)
                 spatialmap_grid(obj.SpatialMapFig(e),mapv{e},obj.interp_method,...
                     obj.extrap_method,channames,chanpos(:,1),chanpos(:,2),chanpos(:,3),obj.width,obj.height,sl,sh,obj.color_bar);
@@ -1639,12 +1649,16 @@ classdef SpatialMapWindow < handle
                 
                 %Correlation Network
                 if obj.corr_win.pos||obj.corr_win.neg||obj.corr_win.sig
-                    % correlation
-                    obj.corr_win.UpdateCorrelation();
                     plot_correlation(h,round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
                         obj.corr_win.pos,obj.corr_win.neg,obj.corr_win.sig,...
                         obj.tfmat(i).corr_matrix,obj.corr_win.pos_t,obj.corr_win.neg_t,...
                         obj.tfmat(i).p_matrix,obj.corr_win.sig_t);
+                end
+        
+                %Cross Correlation Network
+                if obj.xcorr_win.t
+                    plot_xcorrelation(h,round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
+                        obj.xcorr_win.t,obj.tfmat(i).xcorr_matrix,obj.xcorr_win.t_t);
                 end
             end
         end
@@ -1864,6 +1878,16 @@ classdef SpatialMapWindow < handle
                 
                 chanpos=[obj.pos_x,obj.pos_y,obj.radius];
                 
+                if obj.corr_win.pos||obj.corr_win.neg||obj.corr_win.sig
+                    % correlation
+                    obj.corr_win.UpdateCorrelation();
+                end
+                
+                if obj.xcorr_win.t
+                    obj.xcorr_win.UpdateCrossCorrelation();
+                end
+                    
+                
                 for i=1:length(obj.SpatialMapFig)
                     h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
                     if ~isempty(h)
@@ -1914,7 +1938,6 @@ classdef SpatialMapWindow < handle
                         %Correlation Network
                         if obj.corr_win.pos||obj.corr_win.neg||obj.corr_win.sig
                             % correlation
-                            obj.corr_win.UpdateCorrelation();
                             plot_correlation(h,round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
                                 obj.corr_win.pos,obj.corr_win.neg,obj.corr_win.sig,...
                                 obj.tfmat(i).corr_matrix,obj.corr_win.pos_t,obj.corr_win.neg_t,...
@@ -1923,8 +1946,6 @@ classdef SpatialMapWindow < handle
                         
                         %Cross Correlation Network
                         if obj.xcorr_win.t
-                            obj.xcorr_win.UpdateCrossCorrelation();
-                            
                             plot_xcorrelation(h,round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
                                 obj.xcorr_win.t,obj.tfmat(i).xcorr_matrix,obj.xcorr_win.t_t);
                         end

@@ -206,14 +206,15 @@ classdef CrossCorrMapWindow < handle
             if obj.smw.auto_refresh
                 chanpos=[obj.smw.pos_x,obj.smw.pos_y,obj.smw.radius];
                 if ~obj.smw.NoSpatialMapFig()
+                    if need_update
+                        obj.UpdateCrossCorrelation();
+                    end
+                    
                     for i=1:length(obj.smw.SpatialMapFig)
                         h=findobj(obj.smw.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
                         if ~isempty(h)
                             delete(findobj(h,'-regexp','tag','xcorr'));
                             if obj.t
-                                if need_update
-                                    obj.UpdateCrossCorrelation();
-                                end
                                 plot_xcorrelation(h,round(chanpos(:,1)*obj.smw.width),round(chanpos(:,2)*obj.smw.height),...
                                     obj.t,obj.smw.tfmat(i).xcorr_matrix,obj.t_t);
                             end
@@ -229,7 +230,9 @@ classdef CrossCorrMapWindow < handle
             movements=length(obj.smw.tfmat);
             for i=1:movements
                 %different movement
-                wait_bar=waitbar(0,['Computing cross correlations for ',obj.smw.event_group{i}]);
+                
+                event=obj.smw.tfmat(i).event;
+                wait_bar=waitbar(0,['Computing cross correlations for ',event]);
                 
                 corr_matrix=0;
                 tf=obj.smw.tfmat(i);
@@ -253,7 +256,7 @@ classdef CrossCorrMapWindow < handle
                         for n=1:chan_num
                             tmp=chan_num*chan_num-chan_num;
                             waitbar(((trial-1)*tmp+(m-1)*(chan_num-1)+n)/(trial_num*tmp),wait_bar,...
-                                [obj.smw.event_group{i},' : Trial ',num2str(trial),' Channel ',num2str(m)]);
+                                [event,' : Trial ',num2str(trial),' Channel ',num2str(m)]);
                             if n~=m
                                 if obj.lag
                                     [tmp_corr,~]=xcorr(move_data(:,m),move_data(:,n),obj.lag_t,'coef');

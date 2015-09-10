@@ -16,7 +16,6 @@ if pos
     end
 end
 
-
-
+drawnow
 end
 

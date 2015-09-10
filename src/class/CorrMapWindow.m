@@ -278,6 +278,11 @@ classdef CorrMapWindow < handle
             
             chanpos=[obj.smw.pos_x,obj.smw.pos_y,obj.smw.radius];
             if ~obj.smw.NoSpatialMapFig()
+                
+                if needupdate
+                    obj.UpdateCorrelation();
+                end
+                
                 for i=1:length(obj.smw.SpatialMapFig)
                     h=findobj(obj.smw.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
                     if ~isempty(h)
@@ -285,9 +290,6 @@ classdef CorrMapWindow < handle
                         delete(findobj(h,'-regexp','tag','corr'));
                         if obj.pos||obj.neg||obj.sig
                             % correlation
-                            if needupdate
-                                obj.UpdateCorrelation();
-                            end
                             plot_correlation(h,round(chanpos(:,1)*obj.smw.width),round(chanpos(:,2)*obj.smw.height),...
                                 obj.pos,obj.neg,obj.sig,...
                                 obj.smw.tfmat(i).corr_matrix,obj.pos_t,obj.neg_t,...
