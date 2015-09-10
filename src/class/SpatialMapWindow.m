@@ -1497,7 +1497,7 @@ classdef SpatialMapWindow < handle
             
             if obj.data_input==3%Average Event
                 for j=1:length(channames)
-                    if ~ishandle(wait_bar_h)||~isvalid(wait_bar_h)
+                    if ~ishandle(wait_bar_h)||isdouble(wait_bar_h)||~isvalid(wait_bar_h)
                         return
                     end
                         

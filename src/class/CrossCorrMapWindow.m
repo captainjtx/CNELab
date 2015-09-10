@@ -239,7 +239,7 @@ classdef CrossCorrMapWindow < handle
                 trial_num=size(tf.data,3);
                 for trial=1:trial_num
                     
-                    if ~ishandle(wait_bar)||~isvalid(wait_bar)
+                    if ~ishandle(wait_bar)||isdouble(wait_bar)||~isvalid(wait_bar)
                         return
                     end
                     [b,a]=butter(2,[obj.smw.min_freq,obj.smw.max_freq]/(obj.smw.fs/2));
