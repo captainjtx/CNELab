@@ -1331,8 +1331,6 @@ classdef SpatialMapWindow < handle
         end
         function ComputeCallback(obj)
             obj.tfmat=[];
-            obj.erd_center={};
-            obj.ers_center={};
             %==========================================================================
             nL=round(obj.ms_before*obj.fs/1000);
             nR=round(obj.ms_after*obj.fs/1000);
@@ -1628,6 +1626,9 @@ classdef SpatialMapWindow < handle
                 obj.xcorr_win.UpdateCrossCorrelation();
             end
     
+            obj.erd_center=cell(size(evt));
+            obj.ers_center=cell(size(evt));
+            
             for e=1:length(evt)
                 spatialmap_grid(obj.SpatialMapFig(e),mapv{e},obj.interp_method,...
                     obj.extrap_method,channames,chanpos(:,1),chanpos(:,2),chanpos(:,3),obj.width,obj.height,sl,sh,obj.color_bar);
@@ -1763,10 +1764,6 @@ classdef SpatialMapWindow < handle
         end
         function AutoRefreshCallback(obj,src)
             obj.auto_refresh_=get(src,'value');
-            
-            if obj.auto_refresh
-                UpdateFigure(obj,src);
-            end
         end
         
         
@@ -1875,15 +1872,18 @@ classdef SpatialMapWindow < handle
                 
                 chanpos=[obj.pos_x,obj.pos_y,obj.radius];
                 
-                if obj.corr_win.pos||obj.corr_win.neg||obj.corr_win.sig
+                if obj.corr_win.pos||obj.corr_win.neg||obj.corr_win.sig&&ismember(src,...
+                        [obj.act_len_edit,obj.act_len_slider,obj.act_start_edit,obj.act_len_slider,...
+                         obj.refresh_btn,obj.min_freq_edit,obj.min_freq_slider,obj.max_freq_edit,obj.max_freq_slider])
                     % correlation
                     obj.corr_win.UpdateCorrelation();
                 end
                 
-                if obj.xcorr_win.t
+                if obj.xcorr_win.t&&ismember(src,...
+                        [obj.act_len_edit,obj.act_len_slider,obj.act_start_edit,obj.act_len_slider,...
+                         obj.refresh_btn,obj.min_freq_edit,obj.min_freq_slider,obj.max_freq_edit,obj.max_freq_slider])
                     obj.xcorr_win.UpdateCrossCorrelation();
-                end
-                    
+                end    
                 
                 for i=1:length(obj.SpatialMapFig)
                     h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');

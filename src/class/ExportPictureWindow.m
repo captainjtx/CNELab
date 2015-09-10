@@ -354,7 +354,7 @@ classdef ExportPictureWindow < handle
                 t=obj.smw.act_start;
                 for i=1:length(obj.smw.SpatialMapFig)
                     figname=get(obj.smw.SpatialMapFig(i),'Name');
-                    if obj.smw.data_input~=1
+                    if obj.smw.data_input==1
                         fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',num2str(t)]);
                     else
                         fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',num2str(t-obj.smw.ms_before)]);

@@ -21,7 +21,7 @@ if neg
         for c=1:size(corr_matrix,2)
             if corr_matrix(r,c)<neg_t
 %                 hold on
-                line([col(r),col(c)],[row(r),row(c)],'color','w','linewidth',1,...
+                line([col(r),col(c)],[row(r),row(c)],'color','k','linewidth',1,...
                     'tag','corr','parent',axe,'linestyle','-');
             end
         end
@@ -34,7 +34,7 @@ if sig
             if p_matrix(r,c)<p_t
                 %this is unlikely to happen by chance
 %                 hold on
-                line([col(r),col(c)],[row(r),row(c)],'color','r','linewidth',1,...
+                line([col(r),col(c)],[row(r),row(c)],'color','k','linewidth',1,...
                     'tag','corr','parent',axe,'linestyle','-');
             end
         end
