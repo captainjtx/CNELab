@@ -410,7 +410,7 @@ classdef ExportMovieWindow < handle
             
             for k=loop_start:loop_end
                 
-                if ~isvalid(wait_bar)
+                if ~ishandle(wait_bar)||~isvalid(wait_bar)
                     return
                 end
                 tElapsed=clock;

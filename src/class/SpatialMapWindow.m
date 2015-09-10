@@ -405,6 +405,8 @@ classdef SpatialMapWindow < handle
             if obj.valid
                 set(obj.act_len_edit,'string',num2str(val));
                 set(obj.act_len_slider,'value',val);
+                
+                obj.xcorr_win.lag_t=min(obj.xcorr_win.lag_t,floor(val/1000*obj.fs)-1);
             end
         end
         
@@ -1495,7 +1497,7 @@ classdef SpatialMapWindow < handle
             
             if obj.data_input==3%Average Event
                 for j=1:length(channames)
-                    if ~isvalid(wait_bar_h)
+                    if ~ishandle(wait_bar_h)||~isvalid(wait_bar_h)
                         return
                     end
                         

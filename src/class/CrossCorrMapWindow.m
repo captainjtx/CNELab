@@ -118,7 +118,7 @@ classdef CrossCorrMapWindow < handle
             obj.t_t=0.5;
             
             obj.lag=0;
-            obj.lag_t=smw.stft_winlen-1;
+            obj.lag_t=floor(obj.smw.act_len/1000*obj.smw.fs/2)-1;
         end
         
         function buildfig(obj)
@@ -149,7 +149,7 @@ classdef CrossCorrMapWindow < handle
                 'position',[0.3,0.1,0.18,0.3],'horizontalalignment','center','callback',@(src,evts) CorrCallback(obj,src));
             obj.lag_slider=uicontrol('parent',hp,'style','slider','units','normalized',...
                 'position',[0.5,0.1,0.45,0.3],'callback',@(src,evts) CorrCallback(obj,src),...
-                'min',0,'max',obj.smw.stft_winlen-1,'value',obj.lag_t,'sliderstep',[0.01,0.05]);
+                'min',0,'max',floor(obj.smw.act_len/1000*obj.smw.fs)-1,'value',obj.lag_t,'sliderstep',[0.01,0.05]);
             
             obj.t=obj.t_;
             obj.lag=obj.lag_;
@@ -236,7 +236,7 @@ classdef CrossCorrMapWindow < handle
                 trial_num=size(tf.data,3);
                 for trial=1:trial_num
                     
-                    if ~isvalid(wait_bar)
+                    if ~ishandle(wait_bar)||~isvalid(wait_bar)
                         return
                     end
                     [b,a]=butter(2,[obj.smw.min_freq,obj.smw.max_freq]/(obj.smw.fs/2));

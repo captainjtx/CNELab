@@ -336,7 +336,7 @@ classdef ExportPictureWindow < handle
             if obj.multi_exp
                 wait_bar_h = waitbar(0,'Exporting Pictures...');
                 for t=obj.t_start:obj.t_step:obj.t_end
-                    if ~isvalid(wait_bar_h)
+                    if ~ishandle(wait_bar_h)||~isvalid(wait_bar_h)
                         return
                     end
                     waitbar((t-obj.t_start)/(obj.t_end-obj.t_start));
