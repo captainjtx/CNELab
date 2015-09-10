@@ -410,9 +410,6 @@ classdef ExportMovieWindow < handle
             
             for k=loop_start:loop_end
                 
-                if ~ishandle(wait_bar)||~isvalid(wait_bar)
-                    return
-                end
                 tElapsed=clock;
                 
                 if obj.smw.data_input~=1
