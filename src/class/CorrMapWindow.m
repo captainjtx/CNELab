@@ -216,10 +216,15 @@ classdef CorrMapWindow < handle
             
             switch src
                 case obj.pos_radio
+                    if obj.pos||obj.neg||obj.sig
+                        needupdate=false;
+                    else
+                        needupdate=true;
+                    end
                     obj.pos=get(src,'value');
                     
                 case obj.pos_edit
-                    
+                    needupdate=false;
                     tmp=str2double(get(src,'string'));
                     if isnan(tmp)
                         return
@@ -228,10 +233,17 @@ classdef CorrMapWindow < handle
                     obj.pos_t=tmp;
                     
                 case obj.pos_slider
+                    needupdate=false;
                     obj.pos_t=get(src,'value');
                 case obj.neg_radio
+                    if obj.pos||obj.neg||obj.sig
+                        needupdate=false;
+                    else
+                        needupdate=true;
+                    end
                     obj.neg=get(src,'value');
                 case obj.neg_edit
+                    needupdate=false;
                     tmp=str2double(get(src,'string'));
                     if isnan(tmp)
                         return
@@ -239,11 +251,19 @@ classdef CorrMapWindow < handle
                     
                     obj.neg_t=tmp;
                 case obj.neg_slider
-                    obj.pos_t=get(src,'value');
+                    needupdate=false;
+                    obj.neg_t=get(src,'value');
                     
                 case obj.sig_radio
+                    
+                    if obj.pos||obj.neg||obj.sig
+                        needupdate=false;
+                    else
+                        needupdate=true;
+                    end
                     obj.sig=get(src,'value');
                 case obj.sig_edit
+                    needupdate=false;
                     tmp=str2double(get(src,'string'));
                     if isnan(tmp)
                         return
@@ -252,6 +272,7 @@ classdef CorrMapWindow < handle
                     obj.sig_t=tmp;
                     
                 case obj.sig_slider
+                    needupdate=false;
                     obj.sig_t=get(src,'value');
             end
             
@@ -264,7 +285,9 @@ classdef CorrMapWindow < handle
                         delete(findobj(h,'-regexp','tag','corr'));
                         if obj.pos||obj.neg||obj.sig
                             % correlation
-                            obj.smw.UpdateCorrelation();
+                            if needupdate
+                                obj.UpdateCorrelation();
+                            end
                             plot_correlation(h,round(chanpos(:,1)*obj.smw.width),round(chanpos(:,2)*obj.smw.height),...
                                 obj.pos,obj.neg,obj.sig,...
                                 obj.smw.tfmat(i).corr_matrix,obj.pos_t,obj.neg_t,...
@@ -273,8 +296,36 @@ classdef CorrMapWindow < handle
                     end
                 end
             end
-            
-            
+        end
+        
+        function UpdateCorrelation(obj)
+            t1=round(obj.smw.act_start/1000*obj.smw.fs);
+            t2=t1+round(obj.smw.act_len/1000*obj.smw.fs);
+            for i=1:length(obj.smw.tfmat)
+                %different movement
+                
+                corr_matrix=0;
+                p_matrix=0;
+                tf=obj.smw.tfmat(i);
+                for trial=1:size(tf.data,3)
+                    [b,a]=butter(2,[obj.smw.min_freq,obj.smw.max_freq]/(obj.smw.fs/2));
+                    dt=tf.data(:,:,trial);
+                    fdata=filter_symmetric(b,a,dt,obj.smw.fs,0,'iir');
+                    
+                    t_start=min(t1,size(fdata,1));
+                    t_end=min(t2,size(fdata,1));
+                    move_data=fdata(t_start:t_end,:);
+                    [corr,pval]=corrcoef(move_data);
+                    
+                    corr_matrix=corr_matrix+corr;
+                    p_matrix=p_matrix+pval;
+                end
+                
+                obj.smw.tfmat(i).corr_matrix=corr_matrix/size(tf.data,3);
+                %Bonferroni's correction
+                K=size(tf.data,2)*(size(tf.data,2)-1)/2;
+                obj.smw.tfmat(i).p_matrix=p_matrix/size(tf.data,3)*K;
+            end
         end
     end
     

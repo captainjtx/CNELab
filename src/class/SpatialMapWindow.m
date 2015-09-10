@@ -9,6 +9,7 @@ classdef SpatialMapWindow < handle
         stft_menu
         p_menu
         corr_menu
+        xcorr_menu
         
         valid
         add_event_valid
@@ -189,6 +190,7 @@ classdef SpatialMapWindow < handle
         ers_center
         
         corr_win
+        xcorr_win
         export_picture_win
         export_movie_win
     end
@@ -864,6 +866,8 @@ classdef SpatialMapWindow < handle
             obj.peak_=1;
             
             obj.corr_win=CorrMapWindow(obj);
+            obj.xcorr_win=CrossCorrMapWindow(obj);
+            
             obj.export_picture_win=ExportPictureWindow(obj);
             obj.export_movie_win=ExportMovieWindow(obj);
         end
@@ -886,6 +890,7 @@ classdef SpatialMapWindow < handle
             obj.stft_menu=uimenu(obj.advance_menu,'label','STFT','callback',@(src,evts) STFTCallback(obj));
             obj.p_menu=uimenu(obj.advance_menu,'label','P-Value','callback',@(src,evts) PCallback(obj));
             obj.corr_menu=uimenu(obj.advance_menu,'label','Correlation','callback',@(src,evts) CorrCallback(obj));
+            obj.xcorr_menu=uimenu(obj.advance_menu,'label','Cross Correlation','callback',@(src,evts) CrossCorrCallback(obj));
             
             hp=uipanel('units','normalized','Position',[0,0,1,1]);
             
@@ -1092,6 +1097,10 @@ classdef SpatialMapWindow < handle
             
             if obj.corr_win.valid
                 delete(obj.corr_win.fig);
+            end
+            
+            if obj.xcorr_win.valid
+                delete(obj.xcorr_win.fig);
             end
             
             if obj.export_picture_win.valid
@@ -1486,7 +1495,13 @@ classdef SpatialMapWindow < handle
             
             if obj.data_input==3%Average Event
                 for j=1:length(channames)
+                    if ~isvalid(wait_bar_h)
+                        return
+                    end
+                        
                     waitbar(j/length(channames));
+                    
+                    
                     tmp_tfm=cell(1,length(i_event));
                     
                     if obj.normalization==3
@@ -1618,6 +1633,16 @@ classdef SpatialMapWindow < handle
                 
                 if obj.erd||obj.ers
                     [obj.erd_center{e},obj.ers_center{e}]=plot_mass_center(h,mapv{e},round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),erdchan{e},erschan{e},obj.center_mass);
+                end
+                
+                %Correlation Network
+                if obj.corr_win.pos||obj.corr_win.neg||obj.corr_win.sig
+                    % correlation
+                    obj.corr_win.UpdateCorrelation();
+                    plot_correlation(h,round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
+                        obj.corr_win.pos,obj.corr_win.neg,obj.corr_win.sig,...
+                        obj.tfmat(i).corr_matrix,obj.corr_win.pos_t,obj.corr_win.neg_t,...
+                        obj.tfmat(i).p_matrix,obj.corr_win.sig_t);
                 end
             end
         end
@@ -1887,13 +1912,20 @@ classdef SpatialMapWindow < handle
                         %Correlation Network
                         if obj.corr_win.pos||obj.corr_win.neg||obj.corr_win.sig
                             % correlation
-                            UpdateCorrelation(obj);
+                            obj.corr_win.UpdateCorrelation();
                             plot_correlation(h,round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
                                 obj.corr_win.pos,obj.corr_win.neg,obj.corr_win.sig,...
                                 obj.tfmat(i).corr_matrix,obj.corr_win.pos_t,obj.corr_win.neg_t,...
                                 obj.tfmat(i).p_matrix,obj.corr_win.sig_t);
                         end
                         
+                        %Cross Correlation Network
+                        if obj.xcorr_win.t
+                            obj.xcorr_win.UpdateCrossCorrelation();
+                            
+                            plot_xcorrelation(h,round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
+                                obj.xcorr_win.t,obj.tfmat(i).xcorr_matrix,obj.xcorr_win.t_t);
+                        end
                     end
                 end
             end
@@ -2020,48 +2052,14 @@ classdef SpatialMapWindow < handle
         function CorrCallback(obj)
             obj.corr_win.buildfig();
         end
+        
+        
+        function CrossCorrCallback(obj)
+            obj.xcorr_win.buildfig();
+        end
     end
     
     methods
-        
-        function UpdateCorrelation(obj)
-            
-            t1=round(obj.act_start/1000*obj.fs);
-            t2=t1+round(obj.act_len/1000*obj.fs);
-            for i=1:length(obj.tfmat)
-                %different movement
-                
-                corr_matrix=0;
-                p_matrix=0;
-                tf=obj.tfmat(i);
-                for trial=1:size(tf.data,3)
-                    [b,a]=butter(2,[obj.min_freq,obj.max_freq]/(obj.fs/2));
-                    dt=tf.data(:,:,trial);
-                    fdata=filter_symmetric(b,a,dt,obj.fs,0,'iir');
-                    
-                    t_start=min(t1,size(fdata,1));
-                    t_end=min(t2,size(fdata,1));
-                    move_data=fdata(t_start:t_end,:);
-                    [corr,pval]=corrcoef(move_data);
-                    
-                    corr_matrix=corr_matrix+corr;
-                    p_matrix=p_matrix+pval;
-                end
-                
-                obj.tfmat(i).corr_matrix=corr_matrix/size(tf.data,3);
-                %Bonferroni's correction
-                K=size(tf.data,2)*(size(tf.data,2)-1)/2;
-                obj.tfmat(i).p_matrix=p_matrix/size(tf.data,3)*K;
-                
-            end
-            
-        end
-        
-        function ExportMovieWin(obj)
-            
-            
-        end
-        
         function ExportPictureCallback(obj)
             obj.export_picture_win.buildfig();
         end

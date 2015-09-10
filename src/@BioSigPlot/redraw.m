@@ -149,7 +149,7 @@ x=[t NaN]'*ones(1,size(data,2));
 y=[data;NaN*ones(1,size(data,2))];
 % y=data';
 
-h=line(x,y,'parent',axe,'Color',[0 0 0]);
+h=line(x,y,'parent',axe,'Color',[0 0 0],'linewidth',0.4);
 % drawnow;
 for i=1:length(h)
     set(h(i),'Color',colors(i,:));

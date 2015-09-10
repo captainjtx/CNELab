@@ -336,11 +336,18 @@ classdef ExportPictureWindow < handle
             if obj.multi_exp
                 wait_bar_h = waitbar(0,'Exporting Pictures...');
                 for t=obj.t_start:obj.t_step:obj.t_end
+                    if ~isvalid(wait_bar_h)
+                        return
+                    end
                     waitbar((t-obj.t_start)/(obj.t_end-obj.t_start));
                     set(obj.smw.act_start_slider,'value',t);
                     obj.smw.ActCallback(obj.smw.act_start_slider)
                     for i=1:length(obj.smw.SpatialMapFig)
-                        fname=fullfile(obj.dest_dir,[obj.filename,'_',obj.smw.event_group{i},'_',num2str(t)]);
+                        if obj.smw.data_input~=1
+                            fname=fullfile(obj.dest_dir,[obj.filename,'_',obj.smw.event_group{i},'_',num2str(t)]);
+                        else
+                           fname=fullfile(obj.dest_dir,[obj.filename,'_',obj.smw.event_group{i},'_',num2str(t-obj.smw.ms_before)]); 
+                        end
                         export_fig(obj.smw.SpatialMapFig(i),['-',pic_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);
                     end
                 end
@@ -348,7 +355,11 @@ classdef ExportPictureWindow < handle
             else
                 t=obj.smw.act_start;
                 for i=1:length(obj.smw.SpatialMapFig)
-                    fname=fullfile(obj.dest_dir,[obj.filename,'_',obj.smw.event_group{i},'_',num2str(t)]);
+                    if obj.smw.data_input~=1
+                        fname=fullfile(obj.dest_dir,[obj.filename,'_',obj.smw.event_group{i},'_',num2str(t)]);
+                    else
+                        fname=fullfile(obj.dest_dir,[obj.filename,'_',obj.smw.event_group{i},'_',num2str(t-obj.smw.ms_before)]);
+                    end
                     export_fig(obj.smw.SpatialMapFig(i),['-',pic_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);
                 end
             end

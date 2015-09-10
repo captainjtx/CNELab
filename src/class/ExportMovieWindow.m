@@ -324,15 +324,13 @@ classdef ExportMovieWindow < handle
             framerate=obj.fps;
             quality=100;
             %             t_start=500; %ms
-            t_start=obj.t_start;
-            t_end=obj.t_end;
 
             %**************************************************************
             
-            set(obj.smw.act_start_slider,'value',t_start);
+            set(obj.smw.act_start_slider,'value',obj.t_start);
             step=obj.t_step;
             
-            t=t_start;
+            t=obj.t_start;
             %make a new movie figuer***************************************
             mov_width=0;
             mov_height=0;
@@ -381,7 +379,12 @@ classdef ExportMovieWindow < handle
             
             set(mov_fig,'position',[50,50,mov_width,mov_height]);
             set(mov_fig,'visible','off');
-            wait_bar=waitbar(0,['Time: ',num2str(-obj.smw.ms_before),' ms']);
+            
+            if obj.smw.data_input~=1
+                wait_bar=waitbar(0,['Time: ',num2str(-obj.smw.ms_before),' ms']);
+            else
+                wait_bar=waitbar(0,['Time: ','0',' ms']);
+            end
             
             time_left=uicontrol('parent',wait_bar,'style','text','string','Estimated time left: 0 h 0 min 0 s',...
                 'units','normalized','position',[0,0,1,0.2],...
@@ -394,8 +397,8 @@ classdef ExportMovieWindow < handle
             writerObj.Quality=quality;
             open(writerObj);
             
-            loop_start=floor(t_start/step);
-            loop_end=floor(t_end/step);
+            loop_start=floor(obj.t_start/step);
+            loop_end=floor(obj.t_end/step);
             
             if obj.smw.center_mass
                 obj.smw.center_mass_=3;
@@ -406,9 +409,17 @@ classdef ExportMovieWindow < handle
             loops=floor((obj.smw.ms_before+obj.smw.ms_after)/step);
             
             for k=loop_start:loop_end
+                
+                if ~isvalid(wait_bar)
+                    return
+                end
                 tElapsed=clock;
                 
-                waitbar(k/loops,wait_bar,['Time: ',num2str(t-obj.smw.ms_before),' ms']);
+                if obj.smw.data_input~=1
+                    waitbar(k/loops,wait_bar,['Time: ',num2str(t-obj.smw.ms_before),' ms']);
+                else
+                    waitbar(k/loops,wait_bar,['Time: ',num2str(t),' ms']);
+                end
                 
                 delete(allchild(time_panel));
                 
