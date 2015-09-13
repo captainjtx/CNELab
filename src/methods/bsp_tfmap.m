@@ -19,7 +19,7 @@ for i=1:size(eeg,2)
         rf=mean(abs(rtf),2);
         tf=tf./repmat(rf,1,size(tf,2));
     elseif ~isempty(nref)
-        rf=mean(tf(:,(t>=nref(1)/fs)&(t<=nref(2))),2);
+        rf=mean(tf(:,(t>=(nref(1)/fs))&(t<=(nref(2)/fs))),2);
         tf=tf./repmat(rf,1,size(tf,2));
     end
     tfm=tfm+tf;

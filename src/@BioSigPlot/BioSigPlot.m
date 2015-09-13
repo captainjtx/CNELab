@@ -107,6 +107,7 @@ classdef BioSigPlot < hgsetget
         MenuFigurePosition
         MenuVideo
         MenuVideoOnTop
+        MenuNotchFilter
         
         MenuChannel
         MenuChannelNumber
@@ -114,6 +115,7 @@ classdef BioSigPlot < hgsetget
         MenuGain
         MenuDetrend
         MenuNextPrevFile
+        MenuDownSample
         
         MenuMontage
         MontageOptMenu
@@ -423,6 +425,7 @@ classdef BioSigPlot < hgsetget
         %*****************************************************************
         function varInitial(obj,g)
             obj.Title=cell(1,obj.DataNumber);
+            obj.DownSample=1;
             obj.ResizeMode=false;
             obj.AxesResizeMode=[];
             obj.UponAdjustPanel=false;
@@ -2196,6 +2199,8 @@ classdef BioSigPlot < hgsetget
         Interpolate(obj)
         SaveToFigure(obj,opt)
         CrossCorrelation(obj,src)
+        MnuNotchFilter(obj)
+        MnuDownSample(obj)
     end
     
     methods
@@ -2318,6 +2323,8 @@ classdef BioSigPlot < hgsetget
         
         NextFiles
         PrevFiles
+        
+        DownSample
     end
     events
         SelectedFastEvtChange

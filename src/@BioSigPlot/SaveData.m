@@ -1,19 +1,30 @@
 function SaveData(obj,src)
 
-[data,chanNames,dataset,channel,sample,evts,groupnames,pos]=get_selected_data(obj);
+[data,chanNames,dataset,~,~,evts,groupnames,pos]=get_selected_data(obj);
 dd=unique(dataset);
+
+if obj.DownSample~=1
+    choice=questdlg( sprintf('Are you sure you wanna DOWNSAMPLE the data by %d ?',obj.DownSample),'CNELab','Yes','No','No');
+    
+    if strcmpi(choice,'Yes')
+        downsample=obj.DownSample;
+    else
+        downsample=1;
+    end
+    
+end
 
 switch src
     case obj.MenuSaveData
         for i=1:length(dd)
             cds=CommonDataStructure;
             
-            cds.Data.Data=data(:,dataset==dd(i));
+            cds.Data.Data=data(1:downsample:end,dataset==dd(i));
             cds.Data.Annotations=evts;
-            cds.Data.SampleRate=obj.SRate;
+            cds.Data.SampleRate=obj.SRate/downsample;
             cds.Data.Units=obj.Units{dd(i)};
             cds.Data.VideoName=obj.VideoFile;
-            cds.Data.TimeStamps=linspace(0,obj.DataTime,size(obj.Data{1},1))+obj.StartTime;
+            cds.Data.TimeStamps=linspace(0,obj.DataTime,size(cds.Data.Data,1))+obj.StartTime;
             cds.Data.FileName=obj.FileNames{dd(i)};
             cds.Data.NextFile=obj.NextFiles{dd(i)};
             cds.Data.PrevFile=obj.PrevFiles{dd(i)};
@@ -39,9 +50,9 @@ switch src
         
         cds=CommonDataStructure;
         
-        cds.Data.Data=data;
+        cds.Data.Data=data(1:downsample:end,:);
         cds.Data.Annotations=evts;
-        cds.Data.SampleRate=obj.SRate;
+        cds.Data.SampleRate=obj.SRate/downsample;
         units=obj.Units{dd(1)};
         for i=2:length(dd)
             units=cat(2,units,obj.Units{dd(i)});
@@ -49,7 +60,7 @@ switch src
         cds.Data.Units=units;
         
         cds.Data.VideoName=obj.VideoFile;
-        cds.Data.TimeStamps=linspace(0,obj.DataTime,size(obj.Data{1},1))+obj.StartTime;
+        cds.Data.TimeStamps=linspace(0,obj.DataTime,size(cds.Data.Data,1))+obj.StartTime;
         cds.Data.FileName=obj.FileNames{dd(1)};
         cds.Data.NextFile=obj.NextFiles{dd(1)};
         cds.Data.PrevFile=obj.PrevFiles{dd(1)};

@@ -469,7 +469,9 @@ classdef TFMapWindow < handle
             %             buildfig(obj);
         end
         function UpdateEventList(obj)
-            obj.event_list=unique(obj.bsp.Evts(:,2));
+            if ~isempty(obj.bsp.Evts)
+                obj.event_list=unique(obj.bsp.Evts(:,2));
+            end
         end
         function varinitial(obj)
             obj.valid=0;

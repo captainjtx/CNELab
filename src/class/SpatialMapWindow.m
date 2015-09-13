@@ -196,7 +196,13 @@ classdef SpatialMapWindow < handle
     end
     methods
         
-        
+        function val=get.valid(obj)
+            try
+                val=ishandle(obj.fig)&&isvalid(obj.fig);
+            catch 
+                val=0;
+            end
+        end
         function val=get.peak(obj)
             val=obj.peak_;
         end
@@ -286,6 +292,9 @@ classdef SpatialMapWindow < handle
                     mapv=mapv/max(abs(mapv));
                 end
                 
+                if strcmpi(obj.unit,'dB')
+                    mapv=10*log10(mapv);
+                end
                 val{k}=mapv;
             end
         end
@@ -303,12 +312,15 @@ classdef SpatialMapWindow < handle
                 if obj.valid&&obj.erd
                     for i=1:length(tf.trial_mat)
                         event_mat=tf.trial_mat{i};
-                        erd_val=[];
-                        for t=1:length(event_mat)
-                            erd_val=cat(1,erd_val,mean(mean(event_mat{t}(fi,ti))));
+                        if ~isempty(event_mat)
+                            erd_val=[];
+                            
+                            for t=1:length(event_mat)
+                                erd_val=cat(1,erd_val,mean(mean(event_mat{t}(fi,ti))));
+                            end
+                            
+                            tmp(i)=ttest(erd_val,obj.erd_t,'Tail','Left','Alpha',obj.p);
                         end
-                        
-                        tmp(i)=ttest(erd_val,obj.erd_t,'Tail','Left','Alpha',obj.p);
                     end
                 end
                 
@@ -327,13 +339,16 @@ classdef SpatialMapWindow < handle
                 
                 if obj.valid&&obj.ers
                     for i=1:length(tf.trial_mat)
-                        event_mat=tf.trial_mat{i};
-                        ers_val=[];
-                        for t=1:length(event_mat)
-                            ers_val=cat(1,ers_val,mean(mean(event_mat{t}(fi,ti))));
-                        end
                         
-                        tmp(i)=ttest(ers_val,obj.ers_t,'Tail','Right','Alpha',obj.p);
+                        event_mat=tf.trial_mat{i};
+                        if ~isempty(event_mat)
+                            ers_val=[];
+                            for t=1:length(event_mat)
+                                ers_val=cat(1,ers_val,mean(mean(event_mat{t}(fi,ti))));
+                            end
+                            
+                            tmp(i)=ttest(ers_val,obj.ers_t,'Tail','Right','Alpha',obj.p);
+                        end
                     end
                 end
                 
@@ -385,7 +400,11 @@ classdef SpatialMapWindow < handle
             if isempty(obj.active_ievent)
                 tf=obj.tfmat;
             else
-                tf=obj.tfmat(obj.active_ievent);
+                if isempty(obj.tfmat)
+                    tf=[];
+                else
+                    tf=obj.tfmat(obj.active_ievent);
+                end
             end
             if ~isempty(tf)
                 val=min(max(min(tf.t*1000),val),max(tf.t*1000));
@@ -522,6 +541,26 @@ classdef SpatialMapWindow < handle
         end
         function set.data_input(obj,val)
             obj.data_input_=val;
+            
+            if obj.data_input==1
+                [~,~,~,~,sample,~,~,~]=get_selected_data(obj.bsp);
+                if obj.valid
+                    set(obj.act_start_slider,'max',length(sample)/obj.fs*1000);
+                    set(obj.act_len_slider,'max',length(sample)/obj.fs*1000)
+                end
+                
+                obj.act_start=min(length(sample)/obj.fs*1000,obj.act_start_);
+                obj.act_len=min(length(sample)/obj.fs*1000,obj.act_len_);
+            else
+                if obj.valid
+                    set(obj.act_start_slider,'max',obj.ms_before+obj.ms_after);
+                    set(obj.act_len_slider,'max',obj.ms_before+obj.ms_after)
+                end
+                
+                obj.act_start=min(obj.ms_before+obj.ms_after,obj.act_start_);
+                obj.act_len=min(obj.ms_before+obj.ms_after,obj.act_len_);
+            end
+            
             if obj.valid
                 set(obj.data_popup,'value',val);
             end
@@ -531,9 +570,17 @@ classdef SpatialMapWindow < handle
         end
         function set.ms_before(obj,val)
             obj.ms_before_=val;
+            
             if obj.valid
                 set(obj.ms_before_edit,'string',num2str(val));
+                set(obj.act_start_slider,'max',obj.ms_before+obj.ms_after);
+                set(obj.act_len_slider,'max',obj.ms_before+obj.ms_after);
             end
+            
+            obj.act_start=min(obj.ms_before+obj.ms_after,obj.act_start_);
+            obj.act_len=min(obj.ms_before+obj.ms_after,obj.act_len_);
+            
+            
         end
         function val=get.ms_after(obj)
             val=obj.ms_after_;
@@ -542,7 +589,13 @@ classdef SpatialMapWindow < handle
             obj.ms_after_=val;
             if obj.valid
                 set(obj.ms_after_edit,'string',num2str(val));
+                
+                set(obj.act_start_slider,'max',obj.ms_before+obj.ms_after);
+                set(obj.act_len_slider,'max',obj.ms_before+obj.ms_after);
             end
+            
+            obj.act_start=min(obj.ms_before+obj.ms_after,obj.act_start_);
+            obj.act_len=min(obj.ms_before+obj.ms_after,obj.act_len_);
         end
         function val=get.event(obj)
             val=obj.event_;
@@ -573,8 +626,8 @@ classdef SpatialMapWindow < handle
             val=obj.normalization_start_;
         end
         function set.normalization_start(obj,val)
-            val=max(0,min((obj.ms_before+obj.ms_after),val));
             if obj.valid
+                val=max(0,min(get(obj.act_start_slider,'max'),val));
                 set(obj.scale_start_edit,'string',num2str(val));
             end
             
@@ -600,9 +653,10 @@ classdef SpatialMapWindow < handle
         end
         function set.normalization_end(obj,val)
             val=max(obj.normalization_start+obj.stft_winlen/obj.fs*1000,val);
-            val=max(0,min((obj.ms_before+obj.ms_after),val));
-            obj.normalization_end_=val;
+            
             if obj.valid
+                val=max(0,min(get(obj.act_start_slider,'max'),val));
+                
                 if obj.normalization==2||obj.normalization==3
                     set(obj.scale_end_edit,'string',num2str(val));
                     
@@ -610,6 +664,7 @@ classdef SpatialMapWindow < handle
                     set(obj.scale_end_edit,'string',val);
                 end
             end
+            obj.normalization_end_=val;
         end
         
         function val=get.normalization_end_event(obj)
@@ -820,18 +875,21 @@ classdef SpatialMapWindow < handle
             varinitial(obj);
             addlistener(bsp,'EventListChange',@(src,evts)UpdateEventList(obj));
             addlistener(bsp,'SelectedEventChange',@(src,evts)UpdateEventSelected(obj));
+            addlistener(bsp,'SelectionChange',@(src,evts)UpdateSelection(obj));
             %             buildfig(obj);
         end
         function UpdateEventList(obj)
-            obj.event_list=unique(obj.bsp.Evts(:,2));
+            if ~isempty(obj.bsp.Evts)
+                obj.event_list=unique(obj.bsp.Evts(:,2));
+            end
         end
         function varinitial(obj)
             obj.valid=0;
-            obj.data_input_=1;%selection
+            obj.data_input_=3;%average event
             obj.ms_before_=1500;
             obj.ms_after_=1500;
             obj.event_='';
-            obj.normalization_=1;%none
+            obj.normalization_=3;%average within segments
             obj.normalization_start_=0;
             obj.normalization_end_=500;
             obj.normalization_start_event_='';
@@ -1317,15 +1375,19 @@ classdef SpatialMapWindow < handle
         end
         
         function NewSpatialMapFig(obj)
-            if any(strcmpi(obj.event,obj.event_group))
+            delete(obj.SpatialMapFig(ishandle(obj.SpatialMapFig)));
+            
+            fpos=get(obj.fig,'position');
+            
+            if obj.data_input==3
                 for i=1:length(obj.event_group)
                     obj.SpatialMapFig(i)=figure('Name',[obj.event_group{i},' Active'],'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
-                        'units','pixels','position',[obj.fig_x+(obj.fig_w+10)*(i-1),obj.fig_y,obj.fig_w,obj.fig_h],'Resize','off',...
+                        'units','pixels','position',[fpos(1)+fpos(3)+20+(obj.fig_w+20)*(i-1),fpos(2),obj.fig_w,obj.fig_h],'Resize','off',...
                         'doublebuffer','off','Tag','Active');
                 end
             else
                 obj.SpatialMapFig=figure('Name',[obj.event,' Active'],'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
-                    'units','pixels','position',[obj.fig_x,obj.fig_y,obj.fig_w,obj.fig_h],'Resize','off',...
+                    'units','pixels','position',[fpos(1)+fpos(3)+20,fpos(2),obj.fig_w,obj.fig_h],'Resize','off',...
                     'doublebuffer','off','Tag','Active');
             end
         end
@@ -1337,6 +1399,7 @@ classdef SpatialMapWindow < handle
             
             %Data selection************************************************************
             if obj.data_input==1
+                evt={'selection'};
                 omitMask=true;
                 [data,chanNames,dataset,channel,~,~,~,chanpos]=get_selected_data(obj.bsp,omitMask);
             elseif obj.data_input==2
@@ -1358,9 +1421,10 @@ classdef SpatialMapWindow < handle
                 tmp_sel=[reshape(i_label-nL,1,length(i_label));reshape(i_label+nR,1,length(i_label))];
                 omitMask=true;
                 [data,chanNames,dataset,channel,~,~,~,chanpos]=get_selected_data(obj.bsp,omitMask,tmp_sel);
+                evt={obj.event};
             elseif obj.data_input==3
                 if isempty(obj.active_ievent)
-                    evt=obj.event;
+                    evt={obj.event};
                 else
                     evt=obj.event_group;
                 end
@@ -1422,22 +1486,11 @@ classdef SpatialMapWindow < handle
                 obj.min_freq=freq(1);
             end
             
-            if NoSpatialMapFig(obj)
-                NewSpatialMapFig(obj);
-            else
-                for i=1:length(obj.SpatialMapFig)
-                    set(obj.SpatialMapFig(i),'position',[obj.fig_x+(i-1)*(obj.fig_w+10),obj.fig_y,obj.fig_w,obj.fig_h]);
-                end
-            end
+            NewSpatialMapFig(obj);
             
             wd=obj.stft_winlen;
             ov=obj.stft_overlap;
             
-            if isempty(obj.active_ievent)
-                evt={obj.event};
-            else
-                evt=obj.event_group;
-            end
             for i=1:length(obj.SpatialMapFig)
                 clf(obj.SpatialMapFig(i));
                 set(obj.SpatialMapFig(i),'Name',[evt{i} ' Active']);
@@ -1495,7 +1548,7 @@ classdef SpatialMapWindow < handle
             
             if obj.data_input==3%Average Event
                 for j=1:length(channames)
-                        
+                    
                     waitbar(j/length(channames));
                     
                     
@@ -1551,12 +1604,6 @@ classdef SpatialMapWindow < handle
                             end
                         end
                         %**************************************************
-                        if strcmpi(obj.unit,'dB')
-                            tfm=10*log10(tfm);
-                            %                             for tmp=1:length(event_tfm)
-                            %                                 event_tfm{tmp}=10*log10(event_tfm{tmp});
-                            %                             end
-                        end
                         
                         obj.tfmat(e).mat{j}=tfm;
                         obj.tfmat(e).t=t;
@@ -1574,27 +1621,22 @@ classdef SpatialMapWindow < handle
                     waitbar(j/length(channames));
                     [tfm,f,t]=bsp_tfmap(obj.SpatialMapFig,data(:,j),baseline,obj.fs,wd,ov,[sl,sh],nref,channames,freq,obj.unit);
                     
-                    if strcmpi(obj.unit,'dB')
-                        tfm=10*log10(tfm);
-                    end
-                    
                     obj.tfmat.mat{j}=tfm;
                     obj.tfmat.t=t;
                     obj.tfmat.f=f;
                     obj.tfmat.channel=channel;
                     obj.tfmat.dataset=dataset;
                     obj.tfmat.channame=channames;
-                    obj.tfmat.event=obj.event;
+                    obj.tfmat.trial_mat{j}=[];
                     obj.tfmat.data(:,j)=data(:,j);
+                    obj.tfmat.event=evt{1};
                 end
-                
-                
             end
             
             close(wait_bar_h);
             
-            set(obj.act_start_slider,'max',max(t*1000));
-            set(obj.act_start_slider,'min',min(t*1000));
+            %             set(obj.act_start_slider,'max',max(t*1000));
+            %             set(obj.act_start_slider,'min',min(t*1000));
             step=min(diff(t))/(max(t)-min(t));
             set(obj.act_start_slider,'sliderstep',[step,step*5]);
             
@@ -1625,7 +1667,7 @@ classdef SpatialMapWindow < handle
             if obj.xcorr_win.t
                 obj.xcorr_win.UpdateCrossCorrelation();
             end
-    
+            
             obj.erd_center=cell(size(evt));
             obj.ers_center=cell(size(evt));
             
@@ -1649,14 +1691,14 @@ classdef SpatialMapWindow < handle
                 if obj.corr_win.pos||obj.corr_win.neg||obj.corr_win.sig
                     plot_correlation(h,round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
                         obj.corr_win.pos,obj.corr_win.neg,obj.corr_win.sig,...
-                        obj.tfmat(i).corr_matrix,obj.corr_win.pos_t,obj.corr_win.neg_t,...
-                        obj.tfmat(i).p_matrix,obj.corr_win.sig_t);
+                        obj.tfmat(e).corr_matrix,obj.corr_win.pos_t,obj.corr_win.neg_t,...
+                        obj.tfmat(e).p_matrix,obj.corr_win.sig_t);
                 end
-        
+                
                 %Cross Correlation Network
                 if obj.xcorr_win.t
                     plot_xcorrelation(h,round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
-                        obj.xcorr_win.t,obj.tfmat(i).xcorr_matrix,obj.xcorr_win.t_t);
+                        obj.xcorr_win.t,obj.tfmat(e).xcorr_matrix,obj.xcorr_win.t_t);
                 end
             end
         end
@@ -1873,17 +1915,17 @@ classdef SpatialMapWindow < handle
                 chanpos=[obj.pos_x,obj.pos_y,obj.radius];
                 
                 if obj.corr_win.pos||obj.corr_win.neg||obj.corr_win.sig&&ismember(src,...
-                        [obj.act_len_edit,obj.act_len_slider,obj.act_start_edit,obj.act_len_slider,...
-                         obj.refresh_btn,obj.min_freq_edit,obj.min_freq_slider,obj.max_freq_edit,obj.max_freq_slider])
+                        [obj.act_len_edit,obj.act_len_slider,obj.act_start_edit,obj.act_start_slider,...
+                        obj.refresh_btn,obj.min_freq_edit,obj.min_freq_slider,obj.max_freq_edit,obj.max_freq_slider])
                     % correlation
                     obj.corr_win.UpdateCorrelation();
                 end
                 
                 if obj.xcorr_win.t&&ismember(src,...
-                        [obj.act_len_edit,obj.act_len_slider,obj.act_start_edit,obj.act_len_slider,...
-                         obj.refresh_btn,obj.min_freq_edit,obj.min_freq_slider,obj.max_freq_edit,obj.max_freq_slider])
+                        [obj.act_len_edit,obj.act_len_slider,obj.act_start_edit,obj.act_start_slider,...
+                        obj.refresh_btn,obj.min_freq_edit,obj.min_freq_slider,obj.max_freq_edit,obj.max_freq_slider])
                     obj.xcorr_win.UpdateCrossCorrelation();
-                end    
+                end
                 
                 for i=1:length(obj.SpatialMapFig)
                     h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
@@ -2022,7 +2064,7 @@ classdef SpatialMapWindow < handle
         function ExportMovieCallback(obj)
             
             obj.export_movie_win.buildfig();
-
+            
         end
         
         function CenterMassCallback(obj,src)
@@ -2039,7 +2081,7 @@ classdef SpatialMapWindow < handle
                     h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
                     if ~isempty(h)
                         if obj.erd||obj.ers
-%                             figure(obj.SpatialMapFig(i))
+                            %                             figure(obj.SpatialMapFig(i))
                             [obj.erd_center{i},obj.ers_center{i}]=plot_mass_center(h,mapv{i},round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),erdchan{i},erschan{i},obj.center_mass,...
                                 obj.erd_center{i},obj.ers_center{i});
                         end
@@ -2082,6 +2124,19 @@ classdef SpatialMapWindow < handle
     methods
         function ExportPictureCallback(obj)
             obj.export_picture_win.buildfig();
+        end
+        
+        function UpdateSelection(obj)
+            if obj.data_input==1
+                [~,~,~,~,sample,~,~,~]=get_selected_data(obj.bsp);
+                if obj.valid
+                    set(obj.act_start_slider,'max',length(sample)/obj.fs*1000);
+                    set(obj.act_len_slider,'max',length(sample)/obj.fs*1000);
+                end
+                
+                obj.act_start=min(length(sample)/obj.fs*1000,obj.act_start_);
+                obj.act_len=min(length(sample)/obj.fs*1000,obj.act_len_);
+            end
         end
     end
     

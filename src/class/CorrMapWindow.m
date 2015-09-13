@@ -310,9 +310,27 @@ classdef CorrMapWindow < handle
                 p_matrix=0;
                 tf=obj.smw.tfmat(i);
                 for trial=1:size(tf.data,3)
-                    [b,a]=butter(2,[obj.smw.min_freq,obj.smw.max_freq]/(obj.smw.fs/2));
+                    
                     dt=tf.data(:,:,trial);
-                    fdata=filter_symmetric(b,a,dt,obj.smw.fs,0,'iir');
+                    
+                    %filtering the data
+                    w1=obj.smw.min_freq/obj.smw.fs*2;
+                    w2=obj.smw.max_freq/obj.smw.fs*2;
+                    
+                    
+                    if w1<=0&&w2>0&&w2<1
+                        [b,a]=butter(2,w2,'low');
+                        fdata=filter_symmetric(b,a,dt,obj.smw.fs,0,'iir');
+                    elseif w2>=1&&w1>0&&w1<1
+                        [b,a]=butter(2,w1,'high');
+                        fdata=filter_symmetric(b,a,dt,obj.smw.fs,0,'iir');
+                    elseif w1==0&&w2==1
+                        fdata=dt;
+                    else
+                        [b,a]=butter(2,[w1,w2],'bandpass');
+                        fdata=filter_symmetric(b,a,dt,obj.smw.fs,0,'iir');
+                    end
+                    %******************************************************
                     
                     t_start=min(t1,size(fdata,1));
                     t_end=min(t2,size(fdata,1));
