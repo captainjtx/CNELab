@@ -45,6 +45,15 @@ classdef CorrMapWindow < handle
     end
     
     methods
+        
+        function val=get.valid(obj)
+            try
+                val=ishandle(obj.fig)&&isvalid(obj.fig);
+            catch 
+                val=0;
+            end
+        end
+        
         function val=get.sig(obj)
             val=obj.sig_;
         end
@@ -334,7 +343,7 @@ classdef CorrMapWindow < handle
                     
                     t_start=min(t1,size(fdata,1));
                     t_end=min(t2,size(fdata,1));
-                    move_data=fdata(t_start:t_end,:);
+                    move_data=fdata(max(1,t_start):t_end,:);
                     [corr,pval]=corrcoef(move_data);
                     
                     corr_matrix=corr_matrix+corr;

@@ -30,6 +30,9 @@ obj.BtnUnMaskChannel=uipushtool(obj.Toolbar,'CData',imread('unmask.png'),'Toolti
 obj.TogSelection=uitoggletool(obj.Toolbar,'CData',imread('select.bmp'),'TooltipString','Selection(ctrl e)','separator','on',...
     'ClickedCallback',@(src,evt) ChangeMouseMode(obj,src));
 
+obj.BtnSelectWin=uipushtool(obj.Toolbar,'CData',imread('select_win.bmp'),'TooltipString','Select current window',...
+    'ClickedCallback',@(src,evt) SelectCurrentWindow(obj,src));
+
 obj.TogMeasurer=uitoggletool(obj.Toolbar,'CData',imread('measurer.bmp'),'TooltipString','Measure of each channels','separator','on',...
     'ClickedCallback',@(src,evt) ChangeMouseMode(obj,src));
 

@@ -100,6 +100,13 @@ classdef TFMapWindow < handle
         tfmat_channel
     end
     methods
+        function val=get.valid(obj)
+            try
+                val=ishandle(obj.fig)&&isvalid(obj.fig);
+            catch 
+                val=0;
+            end
+        end
         function val=get.fs(obj)
             val=obj.fs_;
         end
@@ -895,7 +902,7 @@ classdef TFMapWindow < handle
             
             option=obj.method;
             
-            unit=obj.unit;
+            units=obj.unit;
             %==========================================================================
             nL=round(obj.ms_before*obj.fs/1000);
             nR=round(obj.ms_after*obj.fs/1000);
@@ -903,7 +910,7 @@ classdef TFMapWindow < handle
             %Data selection************************************************************
             if obj.data_input==1
                 omitMask=true;
-                [data,chanNames,dataset,channel,sample,evts,groupnames,chanpos]=get_selected_data(obj.bsp,omitMask);
+                [data,chanNames,dataset,channel,~,~,~,chanpos]=get_selected_data(obj.bsp,omitMask);
             elseif obj.data_input==2
                 if isempty(obj.bsp.SelectedEvent)
                     errordlg('No event selection !');
@@ -922,7 +929,7 @@ classdef TFMapWindow < handle
                 end
                 tmp_sel=[reshape(i_label-nL,1,length(i_label));reshape(i_label+nR,1,length(i_label))];
                 omitMask=true;
-                [data,chanNames,dataset,channel,sample,evts,groupnames,chanpos]=get_selected_data(obj.bsp,omitMask,tmp_sel);
+                [data,chanNames,dataset,channel,~,~,~,chanpos]=get_selected_data(obj.bsp,omitMask,tmp_sel);
             elseif obj.data_input==3
                 t_evt=[obj.bsp.Evts{:,1}];
                 t_label=t_evt(strcmpi(obj.bsp.Evts(:,2),obj.event));
@@ -937,7 +944,7 @@ classdef TFMapWindow < handle
                 i_event((i_event-nL)<1)=[];
                 
                 omitMask=true;
-                [data,chanNames,dataset,channel,sample,evts,groupnames,chanpos]=get_selected_data(obj.bsp,omitMask);
+                [data,chanNames,dataset,channel,~,~,~,chanpos]=get_selected_data(obj.bsp,omitMask);
                 %need to change the data
             end
             %**************************************************************************
@@ -1027,18 +1034,18 @@ classdef TFMapWindow < handle
             %**************************************************************************
             switch option
                 case 1
-                    [tf,f,t]=bsp_tfmap(obj.TFMapFig,data,baseline,obj.fs,wd,ov,s,nref,chanNames,freq,unit);
+                    [tf,f,t]=bsp_tfmap(obj.TFMapFig,data,baseline,obj.fs,wd,ov,s,nref,chanNames,freq,units);
                     
-                    if strcmpi(unit,'dB')
-                        imagesc(t,f,10*log10(tf));
+                    if strcmpi(units,'dB')
+                        tf=10*log10(tf);
                     else
-                        imagesc(t,f,tf-1);
+                        tf=tf-1;
                     end
                     
-                    obj.clim_slider_max=max(max(abs(tf)));
-                    obj.clim_slider_min=-max(max(abs(tf)));
+                    imagesc(t,f,tf);
+                    
                     if ~isempty(s)
-                        set(gca,'CLim',s);
+                        set(gca,'clim',s);
                     end
                     set(gca,'YLim',freq);
                     set(gca,'Tag','TFMapAxes');
@@ -1049,11 +1056,40 @@ classdef TFMapWindow < handle
                     axis xy;
                     colorbar
                     
-                case 2
-                    tf=bsp_tfmap(obj.TFMapFig,data,baseline,obj.fs,wd,ov,s,nref,chanNames,freq,unit);
                     cmax=max(max(abs(tf)));
-                    obj.clim_slider_max=cmax*2;
-                    obj.clim_slider_min=-cmax*2;
+%                     obj.max_clim=cmax*0.8;
+%                     obj.min_clim=-cmax*0.8;
+                    
+                case 2
+                    [tf,f,t]=bsp_tfmap(obj.TFMapFig,data,baseline,obj.fs,wd,ov,s,nref,chanNames,freq,units);
+                    
+                    
+                    if strcmpi(units,'dB')
+                        tf=10*log10(tf);
+                    else
+                        tf=tf-1;
+                    end
+                    
+                    
+                    
+                    imagesc(t,f,tf);
+                    
+                    if ~isempty(s)
+                        set(gca,'clim',s);
+                    end
+                    
+                    set(gca,'YLim',freq);
+                    set(gca,'Tag','TFMapAxes');
+                    title('Time Frequency Map');
+                    colormap(jet);
+                    xlabel('time (s)');
+                    ylabel('frequency (Hz)')
+                    axis xy;
+                    colorbar
+                    
+                    cmax=max(max(abs(tf)));
+%                     obj.max_clim=axe_clim(1);
+%                     obj.min_clim=axe_clim(2);
                 case 3
                     if isempty(chanpos)
                         errordlg('No channel position in the data !');
@@ -1107,7 +1143,7 @@ classdef TFMapWindow < handle
                                 data=get_selected_data(obj.bsp,true,tmp_sel);
                                 data=data(:,chanind);
                                 data=data(:,j);
-                                [tf,f,t]=bsp_tfmap(obj.TFMapFig,data,baseline,obj.fs,wd,ov,s,nref_tmp,channames,freq,unit);
+                                [tf,f,t]=bsp_tfmap(obj.TFMapFig,data,baseline,obj.fs,wd,ov,s,nref_tmp,channames,freq,units);
                                 tmp_tfm{i}=tf;
                                 tfm=tfm+tf;
                             end
@@ -1124,10 +1160,10 @@ classdef TFMapWindow < handle
                                 tfm=tfm./repmat(rtfm,1,size(tfm,2));
                             end
                         else
-                            [tfm,f,t]=bsp_tfmap(obj.TFMapFig,data(:,j),baseline,obj.fs,wd,ov,s,nref,channames,freq,unit);
+                            [tfm,f,t]=bsp_tfmap(obj.TFMapFig,data(:,j),baseline,obj.fs,wd,ov,s,nref,channames,freq,units);
                         end
                         
-                        if strcmpi(unit,'dB')
+                        if strcmpi(units,'dB')
                             %10log10(A/R)
                             tfm=10*log10(tfm);
                         else
@@ -1146,15 +1182,17 @@ classdef TFMapWindow < handle
                             cmax=max(max(max(abs(tfm))),cmax);
                         end
                     end
-                    if strcmpi(unit,'dB')
-                        obj.clim_slider_max=cmax;
-                        obj.clim_slider_min=-cmax;
-                    else
-                        obj.clim_slider_max=cmax;
-                        obj.clim_slider_min=-1;
-                    end
                     
                     obj.DisplayOnsetCallback([]);
+            end
+            
+                    
+            if strcmpi(units,'dB')
+                obj.clim_slider_max=cmax;
+                obj.clim_slider_min=-cmax;
+            else
+                obj.clim_slider_max=cmax;
+                obj.clim_slider_min=-1;
             end
         end
         

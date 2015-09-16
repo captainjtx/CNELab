@@ -5,8 +5,8 @@ row=round(row*h);
 r=round(r*w);
 
 badchan=zeros(size(col));
-erdchan=zeros(size(col));
-erschan=zeros(size(col));
+erdchan=[];
+erschan=[];
 
 switch length(varargin)
     case 1
@@ -20,10 +20,8 @@ switch length(varargin)
         erschan=varargin{3};
 end
 
-
+%*bad channels
 badchan=logical(badchan);
-erdchan=logical(erdchan);
-erschan=logical(erschan);
 
 badcol=col(badchan);
 badrow=row(badchan);
@@ -32,6 +30,19 @@ badr=r(badchan);
 col=col(~badchan);
 row=row(~badchan);
 r=r(~badchan);
+% %**********************************
+if isempty(erdchan)
+    erdchan=zeros(size(col));
+end
+erdchan=logical(erdchan);
+
+if isempty(erschan)
+    erschan=zeros(size(col));
+end
+erschan=logical(erschan);
+%**********************************
+% erdchan=erdchan(~badchan);
+% erschan=erschan(~badchan);
 
 erdcol=col(erdchan);
 erdrow=row(erdchan);

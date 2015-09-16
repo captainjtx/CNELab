@@ -32,6 +32,13 @@ classdef CrossCorrMapWindow < handle
     end
     
     methods
+        function val=get.valid(obj)
+            try
+                val=ishandle(obj.fig)&&isvalid(obj.fig);
+            catch 
+                val=0;
+            end
+        end
         
         function val=get.t(obj)
             val=obj.t_;
@@ -76,7 +83,7 @@ classdef CrossCorrMapWindow < handle
         
         function set.lag_t(obj,val)
             
-            obj.lag_t_=max(val,0);
+            obj.lag_t_=floor(max(val,0));
             
             if obj.valid
                 set(obj.lag_edit,'string',num2str(obj.lag_t));
@@ -171,10 +178,10 @@ classdef CrossCorrMapWindow < handle
                         return
                     end
                     
-                    obj.lag_t=tmp;
+                    obj.lag_t=floor(tmp);
                 case obj.lag_slider
                     need_update=true;
-                    obj.lag_t=get(src,'value');
+                    obj.lag_t=floor(get(src,'value'));
             end
             
             if obj.smw.auto_refresh
@@ -237,7 +244,7 @@ classdef CrossCorrMapWindow < handle
     
                     t_start=min(t1,size(fdata,1));
                     t_end=min(t2,size(fdata,1));
-                    move_data=fdata(t_start:t_end,:);
+                    move_data=fdata(max(1,t_start):t_end,:);
                     
                     corr=zeros(size(move_data,2),size(move_data,2),2*obj.lag_t+1);
                     

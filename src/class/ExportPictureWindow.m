@@ -204,7 +204,7 @@ classdef ExportPictureWindow < handle
             
             figpos=get(obj.smw.fig,'Position');
             
-            obj.fig=figure('MenuBar','none','Name','Export Pictures','units','pixels',...
+            obj.fig=figure('MenuBar','none','Name','Save Pictures','units','pixels',...
                 'Position',[figpos(1)+figpos(3),figpos(2)+figpos(4)-obj.height,obj.width,obj.height],'NumberTitle','off',...
                 'CloseRequestFcn',@(src,evts) OnClose(obj),...
                 'Resize','on','DockControls','off');
@@ -214,7 +214,7 @@ classdef ExportPictureWindow < handle
             
             resp=uipanel('parent',setp,'units','normalized','Position',[0,5/6,1,1/6]);
             
-            obj.multi_exp_radio=uicontrol('parent',resp,'style','radiobutton','string','Series Export',...
+            obj.multi_exp_radio=uicontrol('parent',resp,'style','radiobutton','string','Series Save',...
                 'units','normalized','position',[0,0.1,0.5,0.8],'value',obj.multi_exp,...
                 'callback',@(src,evt) MultiExpCallback(obj,src));
             obj.res_edit=uicontrol('parent',resp,'style','edit','string',num2str(obj.res_ppi),...
@@ -265,7 +265,7 @@ classdef ExportPictureWindow < handle
                 'units','normalized','position',[0.75,0.1,0.25,0.35],'value',obj.format,...
                 'callback',@(src,evt)FormatCallback(obj,src));
             
-            obj.export_btn=uicontrol('parent',hp,'style','pushbutton','string','Export',...
+            obj.export_btn=uicontrol('parent',hp,'style','pushbutton','string','Save',...
                 'units','normalized','position',[0.78,0.01,0.2,0.08],...
                 'callback',@(src,evt) ExportCallback(obj));
             
@@ -333,8 +333,9 @@ classdef ExportPictureWindow < handle
         function ExportCallback(obj)
             pic_format=obj.format_list{obj.format};
             
+            wait_bar_h = waitbar(0,'Saving Pictures...');
             if obj.multi_exp
-                wait_bar_h = waitbar(0,'Exporting Pictures...');
+                
                 for t=obj.t_start:obj.t_step:obj.t_end
                     waitbar((t-obj.t_start)/(obj.t_end-obj.t_start));
                     set(obj.smw.act_start_slider,'value',t);
@@ -349,10 +350,11 @@ classdef ExportPictureWindow < handle
                         export_fig(obj.smw.SpatialMapFig(i),['-',pic_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);
                     end
                 end
-            close(wait_bar_h);
+            
             else
                 t=obj.smw.act_start;
                 for i=1:length(obj.smw.SpatialMapFig)
+                    waitbar(i/length(obj.smw.SpatialMapFig));
                     figname=get(obj.smw.SpatialMapFig(i),'Name');
                     if obj.smw.data_input==1
                         fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',num2str(t)]);
@@ -362,6 +364,7 @@ classdef ExportPictureWindow < handle
                     export_fig(obj.smw.SpatialMapFig(i),['-',pic_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);
                 end
             end
+            close(wait_bar_h);
         end
         
         function ResCallback(obj,src)

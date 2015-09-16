@@ -33,11 +33,11 @@ imagesc('CData',mapvq,'Parent',a,'Tag','ImageMap');
 set(a,'XLim',[1,size(mapvq,2)]);
 set(a,'YLim',[1,size(mapvq,1)]);
 set(a,'CLim',[sl sh]);
-set(a,'YDir','reverse','FontSize',14);
+set(a,'YDir','reverse','FontSize',16);
 colormap(a,jet);
 if colbar
     %optional color bar
-    cb=colorbar('Units','normalized','FontSize',14);
+    cb=colorbar('Units','normalized','FontSize',16);
     cbpos=get(cb,'Position');
     set(a,'Position',[10/400*w/fpos(3),15/300*h/fpos(4),w/fpos(3),h/fpos(4)]);
     set(cb,'Position',[(w+20/400*w)/fpos(3),15/300*h/fpos(4),0.04,cbpos(4)]);

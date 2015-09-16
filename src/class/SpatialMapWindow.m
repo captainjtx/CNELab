@@ -195,7 +195,13 @@ classdef SpatialMapWindow < handle
         export_movie_win
     end
     methods
-        
+        function val=get.event_group(obj)
+            if isempty(obj.event_group)
+                val={obj.event};
+            else
+                val=obj.event_group;
+            end
+        end
         function val=get.valid(obj)
             try
                 val=ishandle(obj.fig)&&isvalid(obj.fig);
@@ -1843,7 +1849,7 @@ classdef SpatialMapWindow < handle
                         fpos=get(h,'position');
                         if obj.color_bar
                             %optional color bar
-                            cb=colorbar('Units','normalized','FontSize',14);
+                            cb=colorbar('Units','normalized','FontSize',16);
                             cbpos=get(cb,'Position');
                             set(a,'Position',[10/400*obj.width/fpos(3),15/300*obj.height/fpos(4),obj.width/fpos(3),obj.height/fpos(4)],'FontSize',14);
                             set(cb,'Position',[(obj.width+20/400*obj.width)/fpos(3),15/300*obj.height/fpos(4),0.04,cbpos(4)]);

@@ -3,15 +3,19 @@ function SaveData(obj,src)
 [data,chanNames,dataset,~,~,evts,groupnames,pos]=get_selected_data(obj);
 dd=unique(dataset);
 
+downsample=1;
 if obj.DownSample~=1
     choice=questdlg( sprintf('Are you sure you wanna DOWNSAMPLE the data by %d ?',obj.DownSample),'CNELab','Yes','No','No');
     
     if strcmpi(choice,'Yes')
         downsample=obj.DownSample;
-    else
-        downsample=1;
+        %applying low pass filter
+        freq=obj.SRate/downsample/2*0.95;
+        order=3;
+        
+        [b,a]=butter(order,freq/(obj.SRate/downsample/2),'low');
+        data=filter_symmetric(b,a,data,obj.SRate/downsample,0,'iir');
     end
-    
 end
 
 switch src

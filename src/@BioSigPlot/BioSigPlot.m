@@ -25,6 +25,7 @@ classdef BioSigPlot < hgsetget
         BtnNextEvent
         BtnNextEvent1
         BtnEnd
+        BtnSelectWin
         
         TxtInfo1
         TxtInfo2
@@ -2201,6 +2202,7 @@ classdef BioSigPlot < hgsetget
         CrossCorrelation(obj,src)
         MnuNotchFilter(obj)
         MnuDownSample(obj)
+        SelectCurrentWindow(obj,src);
     end
     
     methods
