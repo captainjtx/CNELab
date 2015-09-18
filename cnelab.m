@@ -1,4 +1,4 @@
-function cnelab()
+function bsp=cnelab()
 
 cds=[];
 while(1)

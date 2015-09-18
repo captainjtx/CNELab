@@ -512,17 +512,19 @@ classdef SpatialMapWindow < handle
             
             chanpos=[obj.pos_x,obj.pos_y,obj.radius];
             
-            for i=1:length(obj.SpatialMapFig)
-                if ishandle(obj.SpatialMapFig(i))
-                    fpos=get(obj.SpatialMapFig(i),'position');
-                    set(obj.SpatialMapFig(i),'position',[fpos(1),fpos(2),obj.fig_w,obj.fig_h]);
-                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
-                    if ~isempty(h)
-                        if ~obj.erd&&~obj.ers
-                            delete(findobj(h,'Tag','contact'));
-                            figure(obj.SpatialMapFig(i))
-                            plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
-                                ~ismember(obj.all_chan_pos,chanpos,'rows'));
+            if ~NoSpatialMapFig(obj)
+                for i=1:length(obj.SpatialMapFig)
+                    if ishandle(obj.SpatialMapFig(i))
+                        fpos=get(obj.SpatialMapFig(i),'position');
+                        set(obj.SpatialMapFig(i),'position',[fpos(1),fpos(2),obj.fig_w,obj.fig_h]);
+                        h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                        if ~isempty(h)
+                            if ~obj.erd&&~obj.ers
+                                delete(findobj(h,'Tag','contact'));
+                                figure(obj.SpatialMapFig(i))
+                                plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
+                                    ~ismember(obj.all_chan_pos,chanpos,'rows'));
+                            end
                         end
                     end
                 end
@@ -1794,12 +1796,15 @@ classdef SpatialMapWindow < handle
                     if isnan(t)
                         t=obj.act_start;
                     end
+                    
+                    t=min(max(get(obj.act_start_slider,'min'),t),get(obj.act_start_slider,'max'));
                     obj.act_start=t;
                 case obj.act_len_edit
                     t=str2double(get(src,'string'));
                     if isnan(t)
                         t=obj.act_len;
                     end
+                    t=min(max(get(obj.act_len_slider,'min'),t),get(obj.act_len_slider,'max'));
                     obj.act_len=t;
                 case obj.act_start_slider
                     obj.act_start=get(src,'value');

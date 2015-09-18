@@ -864,7 +864,13 @@ classdef BioSigPlot < hgsetget
         function obj = set.PSDOverlap(obj,val), set(obj,'PSDOverlap',val); end
         function val = get.PSDOverlap(obj), val=obj.PSDOverlap_; end
         
-        function val=get.FileDir(obj), val=fileparts(obj.FileNames{obj.DisplayedData(1)}); end
+        function val=get.FileDir(obj) 
+            if ~isempty(obj.FileNames)
+                val=fileparts(obj.FileNames{obj.DisplayedData(1)});
+            else
+                val=[];
+            end
+        end
         %*****************************************************************
         % ***************** User available methods  **********************
         %*****************************************************************

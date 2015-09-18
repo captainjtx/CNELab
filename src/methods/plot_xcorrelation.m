@@ -9,7 +9,7 @@ if pos
         for c=1:size(corr_matrix,2)
             if corr_matrix(r,c)>pos_t
 %                 hold on
-                line([col(r),col(c)],[row(r),row(c)],'color','k','linewidth',1,...
+                line([col(r),col(c)],[row(r),row(c)],'color','k','linewidth',3,...
                     'tag','xcorr','parent',axe,'linestyle','-');
             end
         end

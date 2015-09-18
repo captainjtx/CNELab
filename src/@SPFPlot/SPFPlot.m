@@ -26,6 +26,9 @@ classdef SPFPlot < BioSigPlot
             set(obj.Fig,'Name',method);
             set(obj.BtnMaskChannel,'ClickedCallback',@(src,evt)maskSubspaceChannel(obj,src));
             set(obj.BtnUnMaskChannel,'ClickedCallback',@(src,evt)maskSubspaceChannel(obj,src));
+%             set(obj.BtnGainIncrease,'ClickedCallback',@(src,evt)maskSubspaceChannel(obj,src));
+%             set(obj.BtnGainDecrease,'ClickedCallback',@(src,evt)maskSubspaceChannel(obj,src));
+            
             
             if ~isempty(obj.Weight)
                 obj.SPWeightFig=figure('Name','Subspce Weight Plot','NumberTitle','off');
@@ -78,10 +81,23 @@ classdef SPFPlot < BioSigPlot
     
      methods
          %apply subspace filter
-         function sfdata=subspacefilter(obj,data)
+         function sfdata=subspacefilter(obj,data,varargin)
+             ratio=0;
+             if length(varargin)==1
+                 %rather than completely remove the component, ratio can be
+                 %used to suppress the component
+                 ratio=varargin{1};
+                 ratio=max(0,min(ratio,1));
+             end
              subspacedata=data*obj.DemixMat;
-             sfdata=subspacedata*diag(obj.subspaceMask)*obj.MixMat;
+             
+             
+             mask=obj.subspaceMask;
+             mask(mask==0)=ratio;
+             
+             sfdata=subspacedata*diag(mask)*obj.MixMat;
          end
+         
      end
     
     events
