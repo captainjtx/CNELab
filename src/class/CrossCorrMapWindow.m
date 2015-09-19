@@ -215,12 +215,10 @@ classdef CrossCorrMapWindow < handle
                 event=obj.smw.tfmat(i).event;
                 wait_bar=waitbar(0,['Computing cross correlations for ',event]);
                 
-                corr_matrix=0;
                 tf=obj.smw.tfmat(i);
                 trial_num=size(tf.data,3);
+                move_data=[];
                 for trial=1:trial_num
-                    
-                    waitbar(trial/trial_num,wait_bar,[event,' : Trial ',num2str(trial),'/',num2str(trial_num)]);
                     
                     dt=tf.data(:,:,trial);
                     %filtering the data
@@ -244,24 +242,24 @@ classdef CrossCorrMapWindow < handle
     
                     t_start=min(t1,size(fdata,1));
                     t_end=min(t2,size(fdata,1));
-                    move_data=fdata(max(1,t_start):t_end,:);
+                    move_data=cat(1,move_data,fdata(max(1,t_start):t_end,:));
                     
-                    corr=zeros(size(move_data,2),size(move_data,2),2*obj.lag_t+1);
-                    
-                    chan_num=size(move_data,2);
-                    
-                    for m=1:chan_num
-                        for n=1:chan_num
-                            if n~=m
-                                [tmp_corr,lags]=xcorr(move_data(:,m),move_data(:,n),obj.lag_t,'coef');
-                                corr(m,n,:)=tmp_corr;
-                            end
+                end
+                
+                corr=zeros(size(move_data,2),size(move_data,2),2*obj.lag_t+1);
+                
+                chan_num=size(move_data,2);
+                
+                for m=1:chan_num
+                    waitbar(m/chan_num,wait_bar,event);
+                    for n=1:chan_num
+                        if n~=m
+                            [tmp_corr,lags]=xcorr(move_data(:,m),move_data(:,n),obj.lag_t,'coef');
+                            corr(m,n,:)=tmp_corr;
                         end
                     end
-                    
-                    corr_matrix=corr_matrix+corr;
                 end
-                obj.smw.tfmat(i).xcorr_matrix=max(corr_matrix,[],3)/trial_num;
+                obj.smw.tfmat(i).xcorr_matrix=max(corr,[],3);
                 close(wait_bar)
             end
         end

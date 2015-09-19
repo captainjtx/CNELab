@@ -315,9 +315,8 @@ classdef CorrMapWindow < handle
             for i=1:length(obj.smw.tfmat)
                 %different movement
                 
-                corr_matrix=0;
-                p_matrix=0;
                 tf=obj.smw.tfmat(i);
+                move_data=[];
                 for trial=1:size(tf.data,3)
                     
                     dt=tf.data(:,:,trial);
@@ -343,17 +342,15 @@ classdef CorrMapWindow < handle
                     
                     t_start=min(t1,size(fdata,1));
                     t_end=min(t2,size(fdata,1));
-                    move_data=fdata(max(1,t_start):t_end,:);
-                    [corr,pval]=corrcoef(move_data);
-                    
-                    corr_matrix=corr_matrix+corr;
-                    p_matrix=p_matrix+pval;
+                    move_data=cat(1,move_data,fdata(max(1,t_start):t_end,:));
                 end
                 
-                obj.smw.tfmat(i).corr_matrix=corr_matrix/size(tf.data,3);
+                [corr,pval]=corrcoef(move_data);
+                
+                obj.smw.tfmat(i).corr_matrix=corr;
                 %Bonferroni's correction
                 K=size(tf.data,2)*(size(tf.data,2)-1)/2;
-                obj.smw.tfmat(i).p_matrix=p_matrix/size(tf.data,3)*K;
+                obj.smw.tfmat(i).p_matrix=pval*K;
             end
         end
     end
