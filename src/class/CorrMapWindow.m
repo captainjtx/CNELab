@@ -14,9 +14,15 @@ classdef CorrMapWindow < handle
         pos_edit
         pos_slider
         
+        multi_pos_radio
+        multi_pos_edit
+        
         neg_radio
         neg_edit
         neg_slider
+        
+        multi_neg_radio
+        multi_neg_edit
         
         smw
         
@@ -29,8 +35,14 @@ classdef CorrMapWindow < handle
         pos_
         pos_t_
         
+        multi_pos_
+        multi_pos_t_
+        
         neg_
         neg_t_
+        
+        multi_neg_
+        multi_neg_t_
     end
     
     properties(Dependent)
@@ -39,9 +51,13 @@ classdef CorrMapWindow < handle
         
         pos
         pos_t
+        multi_pos
+        multi_pos_t
         
         neg
         neg_t
+        multi_neg
+        multi_neg_t
     end
     
     methods
@@ -86,6 +102,25 @@ classdef CorrMapWindow < handle
                     set(obj.pos_edit,'enable','off');
                     set(obj.pos_slider,'enable','off');
                 end
+                
+                set(obj.pos_radio,'value',val);
+            end
+        end
+        
+        function val=get.multi_pos(obj)
+            val=obj.multi_pos_;
+        end
+        
+        function set.multi_pos(obj,val)
+            obj.multi_pos_=val;
+            if obj.valid
+                if obj.multi_pos
+                    set(obj.multi_pos_edit,'enable','on');
+                else
+                    set(obj.multi_pos_edit,'enable','off');
+                end
+                
+                set(obj.multi_pos_radio,'value',val);
             end
         end
         
@@ -103,6 +138,27 @@ classdef CorrMapWindow < handle
                     set(obj.neg_edit,'enable','off');
                     set(obj.neg_slider,'enable','off');
                 end
+                
+                set(obj.neg_radio,'value',val);
+            end
+        end
+        
+        
+        
+        function val=get.multi_neg(obj)
+            val=obj.multi_neg_;
+        end
+        
+        function set.multi_neg(obj,val)
+            obj.multi_neg_=val;
+            if obj.valid
+                if obj.multi_neg
+                    set(obj.multi_neg_edit,'enable','on');
+                else
+                    set(obj.multi_neg_edit,'enable','off');
+                end
+                
+                set(obj.multi_neg_radio,'value',val);
             end
         end
         
@@ -134,6 +190,21 @@ classdef CorrMapWindow < handle
             end
         end
         
+        
+        
+        function val=get.multi_pos_t(obj)
+            val=obj.multi_pos_t_;
+        end
+        
+        function set.multi_pos_t(obj,val)
+            
+            obj.multi_pos_t_=min(1,max(val,0));
+            
+            if obj.valid
+                set(obj.multi_pos_edit,'string',num2str(sort(obj.multi_pos_t)));
+            end
+        end
+        
         function val=get.neg_t(obj)
             val=obj.neg_t_;
         end
@@ -147,6 +218,23 @@ classdef CorrMapWindow < handle
                 set(obj.neg_slider,'value',obj.neg_t);
             end
         end
+        
+        
+        
+        
+        
+        function val=get.multi_neg_t(obj)
+            val=obj.multi_neg_t_;
+        end
+        
+        function set.multi_neg_t(obj,val)
+            
+            obj.multi_neg_t_=max(-1,min(val,0));
+            
+            if obj.valid
+                set(obj.multi_neg_edit,'string',num2str(sort(obj.multi_neg_t,'descend')));
+            end
+        end
     end
     
     methods
@@ -154,7 +242,7 @@ classdef CorrMapWindow < handle
             obj.valid=0;
             obj.smw=smw;
             obj.width=300;
-            obj.height=140;
+            obj.height=250;
             obj.sig=0;
             obj.sig_t=0.05;
             
@@ -163,6 +251,12 @@ classdef CorrMapWindow < handle
             
             obj.neg=0;
             obj.neg_t=-0.5;
+            
+            obj.multi_pos=0;
+            obj.multi_pos_t=0.5;
+            
+            obj.multi_neg=0;
+            obj.multi_neg_t=-0.5;
         end
         
         function buildfig(obj)
@@ -180,7 +274,7 @@ classdef CorrMapWindow < handle
             
             hp=uipanel('parent',obj.fig,'units','normalized','Position',[0,0,1,1]);
             
-            sigp=uipanel('parent',hp,'units','normalized','position',[0,0,1,0.35],'title','Significant Network');
+            sigp=uipanel('parent',hp,'units','normalized','position',[0,0,1,0.2],'title','Significant Network');
             obj.sig_radio=uicontrol('parent',sigp,'style','radiobutton','string','P-Val','units','normalized',...
                 'position',[0,0.1,0.18,0.8],'value',obj.sig,'callback',@(src,evts) CorrCallback(obj,src));
             obj.sig_edit=uicontrol('parent',sigp,'style','edit','string',num2str(obj.sig_t),'units','normalized',...
@@ -190,25 +284,40 @@ classdef CorrMapWindow < handle
                 'min',0,'max',1,'value',obj.sig_t,'sliderstep',[0.01,0.05]);
             
             
-            corrp=uipanel('parent',hp,'units','normalized','position',[0,0.4,1,0.55],'title','Correlation NetWork');
+            corrp=uipanel('parent',hp,'units','normalized','position',[0,0.2,1,0.8],'title','Correlation NetWork');
             obj.pos_radio=uicontrol('parent',corrp,'style','radiobutton','string','++','units','normalized',...
-                'position',[0,0.6,0.18,0.3],'value',obj.pos,'callback',@(src,evts) CorrCallback(obj,src),'fontsize',12);
-            obj.neg_radio=uicontrol('parent',corrp,'style','radiobutton','string','---','units','normalized',...
-                'position',[0,0.1,0.18,0.3],'value',obj.neg,'callback',@(src,evts) CorrCallback(obj,src),'fontsize',12);
+                'position',[0,0.75,0.18,0.15],'value',obj.pos,'callback',@(src,evts) CorrCallback(obj,src),'fontsize',12);
             obj.pos_edit=uicontrol('parent',corrp,'style','edit','string',num2str(obj.pos_t),'units','normalized',...
-                'position',[0.2,0.6,0.15,0.3],'horizontalalignment','center','callback',@(src,evts) CorrCallback(obj,src));
+                'position',[0.2,0.75,0.15,0.15],'horizontalalignment','center','callback',@(src,evts) CorrCallback(obj,src));
             obj.pos_slider=uicontrol('parent',corrp,'style','slider','units','normalized',...
-                'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) CorrCallback(obj,src),...
+                'position',[0.4,0.72,0.55,0.15],'callback',@(src,evts) CorrCallback(obj,src),...
                 'min',0,'max',1,'value',obj.pos_t,'sliderstep',[0.01,0.05]);
+            
+            obj.multi_pos_radio=uicontrol('parent',corrp,'style','radiobutton','string','++ Multi:','units','normalized',...
+                'position',[0,0.5,0.4,0.15],'value',obj.multi_pos,'callback',@(src,evts) CorrCallback(obj,src),'fontsize',12);
+            obj.multi_pos_edit=uicontrol('parent',corrp,'style','edit','string',num2str(obj.multi_pos_t),'units','normalized',...
+                'position',[0.4,0.5,0.55,0.15],'horizontalalignment','center','callback',@(src,evts) CorrCallback(obj,src));
+            
+            
+            obj.neg_radio=uicontrol('parent',corrp,'style','radiobutton','string','---','units','normalized',...
+                'position',[0,0.25,0.18,0.15],'value',obj.neg,'callback',@(src,evts) CorrCallback(obj,src),'fontsize',12);
             obj.neg_edit=uicontrol('parent',corrp,'style','edit','string',num2str(obj.neg_t),'units','normalized',...
-                'position',[0.2,0.1,0.15,0.3],'horizontalalignment','center','callback',@(src,evts) CorrCallback(obj,src));
+                'position',[0.2,0.25,0.15,0.15],'horizontalalignment','center','callback',@(src,evts) CorrCallback(obj,src));
             obj.neg_slider=uicontrol('parent',corrp,'style','slider','units','normalized',...
-                'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) CorrCallback(obj,src),...
+                'position',[0.4,0.22,0.55,0.15],'callback',@(src,evts) CorrCallback(obj,src),...
                 'min',-1,'max',0,'value',obj.neg_t,'sliderstep',[0.01,0.05]);
+            
+            obj.multi_neg_radio=uicontrol('parent',corrp,'style','radiobutton','string','--- Multi:','units','normalized',...
+                'position',[0,0.05,0.4,0.15],'value',obj.multi_neg,'callback',@(src,evts) CorrCallback(obj,src),'fontsize',12);
+            obj.multi_neg_edit=uicontrol('parent',corrp,'style','edit','string',num2str(obj.multi_neg_t),'units','normalized',...
+                'position',[0.4,0.05,0.55,0.15],'horizontalalignment','center','callback',@(src,evts) CorrCallback(obj,src));
             
             obj.sig=obj.sig_;
             obj.pos=obj.pos_;
             obj.neg=obj.neg_;
+            
+            obj.multi_pos=obj.multi_pos_;
+            obj.multi_neg=obj.multi_neg_;
             
         end
         
@@ -225,13 +334,14 @@ classdef CorrMapWindow < handle
             
             switch src
                 case obj.pos_radio
-                    if obj.pos||obj.neg||obj.sig
+                    if obj.pos||obj.neg||obj.sig||obj.multi_pos||obj.multi_neg
                         needupdate=false;
                     else
                         needupdate=true;
                     end
                     obj.pos=get(src,'value');
                     
+                    obj.multi_pos=0;
                 case obj.pos_edit
                     needupdate=false;
                     tmp=str2double(get(src,'string'));
@@ -244,13 +354,35 @@ classdef CorrMapWindow < handle
                 case obj.pos_slider
                     needupdate=false;
                     obj.pos_t=get(src,'value');
+                case obj.multi_pos_radio
+                    obj.multi_pos=get(src,'value');
+                    
+                    if obj.multi_pos&&~obj.pos
+                        needupdate=true;
+                    else
+                        needupdate=false;
+                    end
+                    
+                    obj.pos=0;
+                case obj.multi_pos_edit
+                    
+                    needupdate=false;
+                    tmp=str2num(get(src,'string'));
+                    if isnan(tmp)
+                        return
+                    end
+                    
+                    obj.multi_pos_t=tmp;
                 case obj.neg_radio
-                    if obj.pos||obj.neg||obj.sig
+                    if obj.pos||obj.neg||obj.sig||obj.multi_pos||obj.multi_neg
                         needupdate=false;
                     else
                         needupdate=true;
                     end
                     obj.neg=get(src,'value');
+                    
+                    obj.multi_neg=0;
+                
                 case obj.neg_edit
                     needupdate=false;
                     tmp=str2double(get(src,'string'));
@@ -262,7 +394,25 @@ classdef CorrMapWindow < handle
                 case obj.neg_slider
                     needupdate=false;
                     obj.neg_t=get(src,'value');
+                case obj.multi_neg_radio
+                    obj.multi_neg=get(src,'value');
                     
+                    if obj.multi_neg&&~obj.neg
+                        needupdate=true;
+                    else
+                        needupdate=false;
+                    end
+                    
+                    obj.neg=0;
+                case obj.multi_neg_edit
+                    
+                    needupdate=false;
+                    tmp=str2num(get(src,'string'));
+                    if isnan(tmp)
+                        return
+                    end
+                    
+                    obj.multi_neg_t=tmp;
                 case obj.sig_radio
                     
                     if obj.pos||obj.neg||obj.sig
@@ -296,12 +446,28 @@ classdef CorrMapWindow < handle
                     h=findobj(obj.smw.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
                     if ~isempty(h)
                         
-                        delete(findobj(h,'-regexp','tag','corr'));
-                        if obj.pos||obj.neg||obj.sig
-                            % correlation
+                        delete(findobj(h,'tag','corr'));
+                        
+                        if obj.pos
+                            tmp_pos_t=obj.pos_t;
+                        elseif obj.multi_pos
+                            tmp_pos_t=obj.multi_pos_t;
+                        else
+                            tmp_pos_t=[];
+                        end
+                        
+                        if obj.neg
+                            tmp_neg_t=obj.neg_t;
+                        elseif obj.multi_neg
+                            tmp_neg_t=obj.multi_neg_t;
+                        else
+                            tmp_neg_t=[];
+                        end
+                        
+                        if obj.neg||obj.pos||obj.sig||obj.multi_neg||obj.multi_pos
                             plot_correlation(h,round(chanpos(:,1)*obj.smw.width),round(chanpos(:,2)*obj.smw.height),...
-                                obj.pos,obj.neg,obj.sig,...
-                                obj.smw.tfmat(i).corr_matrix,obj.pos_t,obj.neg_t,...
+                                obj.pos||obj.multi_pos,obj.neg||obj.multi_neg,obj.sig,...
+                                obj.smw.tfmat(i).corr_matrix,tmp_pos_t,tmp_neg_t,...
                                 obj.smw.tfmat(i).p_matrix,obj.sig_t);
                         end
                     end

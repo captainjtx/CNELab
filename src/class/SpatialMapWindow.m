@@ -205,7 +205,7 @@ classdef SpatialMapWindow < handle
         function val=get.valid(obj)
             try
                 val=ishandle(obj.fig)&&isvalid(obj.fig);
-            catch 
+            catch
                 val=0;
             end
         end
@@ -1667,12 +1667,12 @@ classdef SpatialMapWindow < handle
             
             obj.all_chan_pos=allchanpos;
             
-            if obj.corr_win.pos||obj.corr_win.neg||obj.corr_win.sig
+            if obj.corr_win.pos||obj.corr_win.neg||obj.corr_win.sig||obj.corr_win.multi_pos||obj.corr_win.multi_neg
                 % correlation
                 obj.corr_win.UpdateCorrelation();
             end
             
-            if obj.xcorr_win.t
+            if obj.xcorr_win.t||obj.xcorr_win.multi_t
                 obj.xcorr_win.UpdateCrossCorrelation();
             end
             
@@ -1696,17 +1696,38 @@ classdef SpatialMapWindow < handle
                 end
                 
                 %Correlation Network
-                if obj.corr_win.pos||obj.corr_win.neg||obj.corr_win.sig
+                if obj.corr_win.pos
+                    tmp_pos_t=obj.corr_win.pos_t;
+                elseif obj.corr_win.multi_pos
+                    tmp_pos_t=obj.corr_win.multi_pos_t;
+                else
+                    tmp_pos_t=[];
+                end
+                
+                if obj.corr_win.neg
+                    tmp_neg_t=obj.corr_win.neg_t;
+                elseif obj.corr_win.multi_neg
+                    tmp_neg_t=obj.corr_win.multi_neg_t;
+                else
+                    tmp_neg_t=[];
+                end
+                
+                if obj.corr_win.neg||obj.corr_win.pos||obj.corr_win.sig||obj.corr_win.multi_neg||obj.corr_win.multi_pos
+                    
                     plot_correlation(h,round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
-                        obj.corr_win.pos,obj.corr_win.neg,obj.corr_win.sig,...
-                        obj.tfmat(e).corr_matrix,obj.corr_win.pos_t,obj.corr_win.neg_t,...
+                        obj.corr_win.pos||obj.corr_win.multi_pos,obj.corr_win.neg||obj.corr_win.multi_neg,obj.corr_win.sig,...
+                        obj.tfmat(e).corr_matrix,tmp_pos_t,tmp_neg_t,...
                         obj.tfmat(e).p_matrix,obj.corr_win.sig_t);
                 end
+                
                 
                 %Cross Correlation Network
                 if obj.xcorr_win.t
                     plot_xcorrelation(h,round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
                         obj.xcorr_win.t,obj.tfmat(e).xcorr_matrix,obj.xcorr_win.t_t);
+                elseif obj.xcorr_win.multi_t
+                    plot_xcorrelation(h,round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
+                        obj.xcorr_win.multi_t,obj.tfmat(e).xcorr_matrix,obj.xcorr_win.multi_t_t);
                 end
             end
         end
@@ -1925,14 +1946,14 @@ classdef SpatialMapWindow < handle
                 
                 chanpos=[obj.pos_x,obj.pos_y,obj.radius];
                 
-                if obj.corr_win.pos||obj.corr_win.neg||obj.corr_win.sig&&ismember(src,...
+                if obj.corr_win.pos||obj.corr_win.neg||obj.corr_win.sig||obj.corr_win.multi_pos||obj.corr_win.multi_neg&&ismember(src,...
                         [obj.act_len_edit,obj.act_len_slider,obj.act_start_edit,obj.act_start_slider,...
                         obj.refresh_btn,obj.min_freq_edit,obj.min_freq_slider,obj.max_freq_edit,obj.max_freq_slider])
                     % correlation
                     obj.corr_win.UpdateCorrelation();
                 end
                 
-                if obj.xcorr_win.t&&ismember(src,...
+                if obj.xcorr_win.t||obj.xcorr_win.multi_t&&ismember(src,...
                         [obj.act_len_edit,obj.act_len_slider,obj.act_start_edit,obj.act_start_slider,...
                         obj.refresh_btn,obj.min_freq_edit,obj.min_freq_slider,obj.max_freq_edit,obj.max_freq_slider])
                     obj.xcorr_win.UpdateCrossCorrelation();
@@ -1986,11 +2007,26 @@ classdef SpatialMapWindow < handle
                         end
                         
                         %Correlation Network
-                        if obj.corr_win.pos||obj.corr_win.neg||obj.corr_win.sig
-                            % correlation
+                        if obj.corr_win.pos
+                            tmp_pos_t=obj.corr_win.pos_t;
+                        elseif obj.corr_win.multi_pos
+                            tmp_pos_t=obj.corr_win.multi_pos_t;
+                        else
+                            tmp_pos_t=[];
+                        end
+                        
+                        if obj.corr_win.neg
+                            tmp_neg_t=obj.corr_win.neg_t;
+                        elseif obj.corr_win.multi_neg
+                            tmp_neg_t=obj.corr_win.multi_neg_t;
+                        else
+                            tmp_neg_t=[];
+                        end
+                        % correlation
+                        if obj.corr_win.neg||obj.corr_win.pos||obj.corr_win.sig||obj.corr_win.multi_neg||obj.corr_win.multi_pos
                             plot_correlation(h,round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
-                                obj.corr_win.pos,obj.corr_win.neg,obj.corr_win.sig,...
-                                obj.tfmat(i).corr_matrix,obj.corr_win.pos_t,obj.corr_win.neg_t,...
+                                obj.corr_win.pos||obj.corr_win.multi_pos,obj.corr_win.neg||obj.corr_win.multi_neg,obj.corr_win.sig,...
+                                obj.tfmat(i).corr_matrix,tmp_pos_t,tmp_neg_t,...
                                 obj.tfmat(i).p_matrix,obj.corr_win.sig_t);
                         end
                         
@@ -1998,6 +2034,9 @@ classdef SpatialMapWindow < handle
                         if obj.xcorr_win.t
                             plot_xcorrelation(h,round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
                                 obj.xcorr_win.t,obj.tfmat(i).xcorr_matrix,obj.xcorr_win.t_t);
+                        elseif obj.xcorr_win.multi_t
+                            plot_xcorrelation(h,round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
+                                obj.xcorr_win.multi_t,obj.tfmat(i).xcorr_matrix,obj.xcorr_win.multi_t_t);
                         end
                     end
                 end
