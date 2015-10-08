@@ -97,6 +97,8 @@ classdef BioSigPlot < hgsetget
         
         MenuExport
         MenuExportData
+        MenuExportObj
+        MenuExportTrials
         
         MenuSettings
         MenuCommands
@@ -109,6 +111,7 @@ classdef BioSigPlot < hgsetget
         MenuVideo
         MenuVideoOnTop
         MenuNotchFilter
+        MenuOverwritePreprocess
         
         MenuChannel
         MenuChannelNumber
@@ -386,6 +389,8 @@ classdef BioSigPlot < hgsetget
         SpatialMapWin
         InterpolateWin
         
+        ExportTrialWin
+        
         PreprocData                 %The currently preprocessed and drawed Data
     end
     
@@ -417,6 +422,8 @@ classdef BioSigPlot < hgsetget
             obj.SpatialMapWin=SpatialMapWindow(obj);
             
             obj.InterpolateWin=InterpWin(obj);
+            
+            obj.ExportTrialWin=ExportSingleTrialWin(obj);
             
             obj.IsInitialize=false;
             
@@ -521,6 +528,10 @@ classdef BioSigPlot < hgsetget
                 obj.InterpolateWin.OnClose();
             end
             
+            if obj.ExportTrialWin.valid
+                obj.ExportTrialWin.OnClose();
+            end
+            
             if isa(obj.WinFastEvts,'FastEventWindow') && isvalid(obj.WinFastEvts)
                 delete(obj.WinFastEvts);
             end
@@ -534,15 +545,9 @@ classdef BioSigPlot < hgsetget
                 delete(h);
             end
             
-            
-            
-            
             if ~isempty(obj.SPFObj)&&isvalid(obj.SPFObj)&&isa(obj.SPFObj,'SPFPlot')
                 delete(obj.SPFObj);
             end
-            
-            
-            
             
         end % delete
         
@@ -2209,6 +2214,8 @@ classdef BioSigPlot < hgsetget
         MnuNotchFilter(obj)
         MnuDownSample(obj)
         SelectCurrentWindow(obj,src);
+        ExportObjToWorkspace(obj);
+        MnuOverwritePreprocess(obj);
     end
     
     methods

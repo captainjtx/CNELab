@@ -39,7 +39,7 @@ switch src
             
             cds.Montage.ChannelNames=chanNames(dataset==dd(i));
             cds.Montage.Name=obj.Montage{dd(i)}(obj.MontageRef(dd(i))).name;
-            cds.Montage.GroupNames=groupnames;
+            cds.Montage.GroupNames=groupnames(dataset==dd(i));
             cds.Montage.MaskChanNames=obj.MontageChanNames{dd(i)}(obj.Mask{dd(i)}==0);
             if ~isempty(pos)
                 cds.Montage.ChannelPosition=pos(dataset==dd(i),:);

@@ -197,7 +197,7 @@ function plotYTicks(axe,ChanNames,ChanSelect2Edit,ChanSelectColor,gain,colors)
 % ChanNames : cell of channel names that will be writted
 
 lim=get(axe,'Ylim');
-
+% x_lim=get(axe,'Xlim');
 h=findobj(axe,'-regexp','DisplayName','ChanName*');
 if ~isempty(h)
     delete(h);

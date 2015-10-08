@@ -1,0 +1,41 @@
+function MnuNotchFilter (obj)
+%MNUNOTCHFILTER Summary of this function goes here
+%   Detailed explanation goes here
+
+prompt={'Frequency (Hz,Powerline)','Order'};
+title='Notch Filters (Harmonics)';
+
+def={'50 Hz Europe&Asia, 60 Hz USA','3'};
+answer=inputdlg(prompt,title,1,def);
+
+if isempty(answer)
+    return
+end
+
+freq=str2double(answer{1});
+if isnan(freq)
+    return
+end
+
+freq=max(0,min(freq,obj.SRate));
+
+order=str2double(answer{2});
+if isnan(order)
+    return
+end
+
+order=max(1,order);
+
+fs=obj.SRate;
+for i=1:floor(fs/freq)
+    f=freq*i;
+    [b,a]=butter(order,[f-2,f+2]/(fs/2),'stop');
+    iir(i).a=a;
+    iir(i).b=b;
+    iir(i).desc=['IIR_Notch_50_Harmonics_2000Hz_' num2str(f-2) '_' num2str(f+2)];
+end
+
+[]=get_selected_data
+
+end
+

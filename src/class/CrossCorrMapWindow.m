@@ -5,13 +5,22 @@ classdef CrossCorrMapWindow < handle
     properties
         valid
         fig
+        env_radio
+        raw_radio
         
-        t_radio
-        t_edit
-        t_slider
+        pos_radio
+        pos_edit
+        pos_slider
         
-        multi_t_radio
-        multi_t_edit
+        multi_pos_radio
+        multi_pos_edit
+        
+        neg_radio
+        neg_edit
+        neg_slider
+        
+        multi_neg_radio
+        multi_neg_edit
         
         lag_edit
         lag_slider
@@ -21,20 +30,36 @@ classdef CrossCorrMapWindow < handle
         width
         height
         
-        multi_t_
-        multi_t_t_
+        multi_pos_
+        multi_pos_t_
         
-        t_
-        t_t_
+        pos_
+        pos_t_
+        
+        multi_neg_
+        multi_neg_t_
+        
+        neg_
+        neg_t_
         
         lag_t_
+        
+        env_
+        raw_
     end
     
     properties(Dependent)
-        multi_t
-        multi_t_t
-        t
-        t_t
+        env
+        raw
+        multi_pos
+        multi_pos_t
+        pos
+        pos_t
+        
+        multi_neg
+        multi_neg_t
+        neg
+        neg_t
         
         lag_t
     end
@@ -43,75 +68,158 @@ classdef CrossCorrMapWindow < handle
         function val=get.valid(obj)
             try
                 val=ishandle(obj.fig)&&isvalid(obj.fig);
-            catch 
+            catch
                 val=0;
             end
         end
         
-        function val=get.t(obj)
-            val=obj.t_;
+        function val=get.env(obj)
+            val=obj.env_;
         end
         
-        function set.t(obj,val)
-            obj.t_=val;
-            
+        function set.env(obj,val)
+            obj.env_=val;
             if obj.valid
-                if obj.t
-                    set(obj.t_edit,'enable','on');
-                    set(obj.t_slider,'enable','on');
+                set(obj.env_radio,'value',obj.env_);
+            end
+        end
+        
+        function val=get.raw(obj)
+            val=obj.raw_;
+        end
+        
+        function set.raw(obj,val)
+            obj.raw_=val;
+            if obj.valid
+                set(obj.raw_radio,'value',obj.raw_);
+            end
+        end
+        
+        function val=get.pos(obj)
+            val=obj.pos_;
+        end
+        
+        function set.pos(obj,val)
+            obj.pos_=val;
+            if obj.valid
+                if obj.pos
+                    set(obj.pos_edit,'enable','on');
+                    set(obj.pos_slider,'enable','on');
                 else
-                    set(obj.t_edit,'enable','off');
-                    set(obj.t_slider,'enable','off');
+                    set(obj.pos_edit,'enable','off');
+                    set(obj.pos_slider,'enable','off');
                 end
                 
-                set(obj.t_radio,'value',val);
+                set(obj.pos_radio,'value',val);
             end
         end
         
-        
-        
-        function val=get.multi_t(obj)
-            val=obj.multi_t_;
+        function val=get.multi_pos(obj)
+            val=obj.multi_pos_;
         end
         
-        function set.multi_t(obj,val)
-            obj.multi_t_=val;
-            
+        function set.multi_pos(obj,val)
+            obj.multi_pos_=val;
             if obj.valid
-                if obj.multi_t
-                    set(obj.multi_t_edit,'enable','on');
+                if obj.multi_pos
+                    set(obj.multi_pos_edit,'enable','on');
                 else
-                    set(obj.multi_t_edit,'enable','off');
-
+                    set(obj.multi_pos_edit,'enable','off');
                 end
-                set(obj.multi_t_radio,'value',val);
+                
+                set(obj.multi_pos_radio,'value',val);
             end
         end
         
-        function val=get.t_t(obj)
-            val=obj.t_t_;
+        function val=get.neg(obj)
+            val=obj.neg_;
         end
         
-        function set.t_t(obj,val)
-            
-            obj.t_t_=min(1,max(val,0));
-            
+        function set.neg(obj,val)
+            obj.neg_=val;
             if obj.valid
-                set(obj.t_edit,'string',num2str(obj.t_t));
-                set(obj.t_slider,'value',obj.t_t);
+                if obj.neg
+                    set(obj.neg_edit,'enable','on');
+                    set(obj.neg_slider,'enable','on');
+                else
+                    set(obj.neg_edit,'enable','off');
+                    set(obj.neg_slider,'enable','off');
+                end
+                
+                set(obj.neg_radio,'value',val);
             end
         end
         
-        function val=get.multi_t_t(obj)
-            val=obj.multi_t_t_;
+        function val=get.multi_neg(obj)
+            val=obj.multi_neg_;
         end
         
-        function set.multi_t_t(obj,val)
+        function set.multi_neg(obj,val)
+            obj.multi_neg_=val;
+            if obj.valid
+                if obj.multi_neg
+                    set(obj.multi_neg_edit,'enable','on');
+                else
+                    set(obj.multi_neg_edit,'enable','off');
+                end
+                
+                set(obj.multi_neg_radio,'value',val);
+            end
+        end
+        
+        function val=get.pos_t(obj)
+            val=obj.pos_t_;
+        end
+        
+        function set.pos_t(obj,val)
             
-            obj.multi_t_t_=min(1,max(val,0));
+            obj.pos_t_=min(1,max(val,0));
             
             if obj.valid
-                set(obj.multi_t_edit,'string',num2str(sort(obj.multi_t_t)));
+                set(obj.pos_edit,'string',num2str(obj.pos_t));
+                set(obj.pos_slider,'value',obj.pos_t);
+            end
+        end
+        
+        
+        
+        function val=get.multi_pos_t(obj)
+            val=obj.multi_pos_t_;
+        end
+        
+        function set.multi_pos_t(obj,val)
+            
+            obj.multi_pos_t_=min(1,max(val,0));
+            
+            if obj.valid
+                set(obj.multi_pos_edit,'string',num2str(sort(obj.multi_pos_t)));
+            end
+        end
+        
+        function val=get.neg_t(obj)
+            val=obj.neg_t_;
+        end
+        
+        function set.neg_t(obj,val)
+            
+            obj.neg_t_=max(-1,min(val,0));
+            
+            if obj.valid
+                set(obj.neg_edit,'string',num2str(obj.neg_t));
+                set(obj.neg_slider,'value',obj.neg_t);
+            end
+        end
+        
+        function val=get.multi_neg_t(obj)
+            val=obj.multi_neg_t_;
+        end
+        
+        function set.multi_neg_t(obj,val)
+            
+            obj.multi_neg_t_=max(-1,min(val,0));
+            
+            if obj.valid
+                set(obj.multi_neg_edit,'string',num2str(sort(obj.multi_neg_t,'descend')));
             end
         end
         
@@ -136,13 +244,22 @@ classdef CrossCorrMapWindow < handle
             obj.smw=smw;
             
             obj.width=350;
-            obj.height=120;
+            obj.height=270;
             
-            obj.t_=0;
-            obj.t_t_=0.5;
+            obj.pos=0;
+            obj.pos_t=0.5;
             
-            obj.multi_t_=0;
-            obj.multi_t_t_=0.5;
+            obj.neg=0;
+            obj.neg_t=-0.5;
+            
+            obj.multi_pos=0;
+            obj.multi_pos_t=0.5;
+            
+            obj.multi_neg=0;
+            obj.multi_neg_t=-0.5;
+            
+            obj.env_=0;
+            obj.raw_=1;
             
             obj.lag_t=floor(obj.smw.act_len/1000*obj.smw.fs/2)-1;
         end
@@ -160,32 +277,61 @@ classdef CrossCorrMapWindow < handle
                 'CloseRequestFcn',@(src,evts) OnClose(obj),...
                 'Resize','on','DockControls','off');
             
-            hp=uipanel('parent',obj.fig,'units','normalized','Position',[0,0,1,1]);
+            enp=uipanel('parent',obj.fig,'units','normalized','Position',[0,230/obj.height,1,1-230/obj.height]);
+            obj.raw_radio=uicontrol('parent',enp,'style','radiobutton','string','Raw data','units','normalized',...
+                'position',[0,0.2,0.5,0.6],'Callback',@(src,evts) RawEnvCallback(obj,src),'value',obj.raw_);
             
-            obj.t_radio=uicontrol('parent',hp,'style','radiobutton','string','Single Threshold: ','units','normalized',...
-                'position',[0,0.7,0.35,0.25],'value',obj.t,'callback',@(src,evts) CorrCallback(obj,src),'fontsize',10);
-
-            obj.t_edit=uicontrol('parent',hp,'style','edit','string',num2str(obj.t_t),'units','normalized',...
-                'position',[0.35,0.7,0.13,0.2],'horizontalalignment','center','callback',@(src,evts) CorrCallback(obj,src));
-            obj.t_slider=uicontrol('parent',hp,'style','slider','units','normalized',...
-                'position',[0.5,0.7,0.45,0.2],'callback',@(src,evts) CorrCallback(obj,src),...
-                'min',0,'max',1,'value',obj.t_t,'sliderstep',[0.01,0.05]);
+            obj.env_radio=uicontrol('parent',enp,'style','radiobutton','string','Envelope','units','normalized',...
+                'position',[0.5,0.2,0.5,0.6],'Callback',@(src,evts) RawEnvCallback(obj,src),'value',obj.env_);
             
-            obj.multi_t_radio=uicontrol('parent',hp,'style','radiobutton','string','Multi Threshold: ','units','normalized',...
-                'position',[0,0.35,0.4,0.25],'value',obj.multi_t,'callback',@(src,evts) CorrCallback(obj,src),'fontsize',10);
-            obj.multi_t_edit=uicontrol('parent',hp,'style','edit','string',num2str(obj.multi_t_t),'units','normalized',...
-                'position',[0.35,0.4,0.6,0.2],'horizontalalignment','center','callback',@(src,evts) CorrCallback(obj,src));
             
-            uicontrol('parent',hp,'style','text','string','Max Lag (sample): ','units','normalized',...
-                'position',[0,0.05,0.3,0.15],'fontsize',10);
-            obj.lag_edit=uicontrol('parent',hp,'style','edit','string',num2str(obj.lag_t),'units','normalized',...
-                'position',[0.35,0.05,0.13,0.2],'horizontalalignment','center','callback',@(src,evts) CorrCallback(obj,src));
-            obj.lag_slider=uicontrol('parent',hp,'style','slider','units','normalized',...
-                'position',[0.5,0.05,0.45,0.2],'callback',@(src,evts) CorrCallback(obj,src),...
+            hp=uipanel('parent',obj.fig,'units','normalized','Position',[0,0,1,230/obj.height]);
+            
+            corrp=uipanel('parent',hp,'units','normalized','position',[0,0.22,1,0.78]);
+            obj.pos_radio=uicontrol('parent',corrp,'style','radiobutton','string','++ Threshold:','units','normalized',...
+                'position',[0,0.75,0.35,0.15],'value',obj.pos,'callback',@(src,evts) CorrCallback(obj,src),'fontsize',10);
+            obj.pos_edit=uicontrol('parent',corrp,'style','edit','string',num2str(obj.pos_t),'units','normalized',...
+                'position',[0.35,0.75,0.13,0.15],'horizontalalignment','center','callback',@(src,evts) CorrCallback(obj,src));
+            obj.pos_slider=uicontrol('parent',corrp,'style','slider','units','normalized',...
+                'position',[0.5,0.72,0.45,0.15],'callback',@(src,evts) CorrCallback(obj,src),...
+                'min',0,'max',1,'value',obj.pos_t,'sliderstep',[0.01,0.05]);
+            
+            obj.multi_pos_radio=uicontrol('parent',corrp,'style','radiobutton','string','Multi Threshold:','units','normalized',...
+                'position',[0,0.55,0.35,0.15],'value',obj.multi_pos,'callback',@(src,evts) CorrCallback(obj,src),'fontsize',10);
+            obj.multi_pos_edit=uicontrol('parent',corrp,'style','edit','string',num2str(obj.multi_pos_t),'units','normalized',...
+                'position',[0.35,0.55,0.6,0.15],'horizontalalignment','center','callback',@(src,evts) CorrCallback(obj,src));
+            
+            
+            obj.neg_radio=uicontrol('parent',corrp,'style','radiobutton','string','--- Threshold:','units','normalized',...
+                'position',[0,0.25,0.35,0.15],'value',obj.neg,'callback',@(src,evts) CorrCallback(obj,src),'fontsize',10);
+            obj.neg_edit=uicontrol('parent',corrp,'style','edit','string',num2str(obj.neg_t),'units','normalized',...
+                'position',[0.35,0.25,0.13,0.15],'horizontalalignment','center','callback',@(src,evts) CorrCallback(obj,src));
+            obj.neg_slider=uicontrol('parent',corrp,'style','slider','units','normalized',...
+                'position',[0.5,0.22,0.45,0.15],'callback',@(src,evts) CorrCallback(obj,src),...
+                'min',-1,'max',0,'value',obj.neg_t,'sliderstep',[0.01,0.05]);
+            
+            obj.multi_neg_radio=uicontrol('parent',corrp,'style','radiobutton','string','Multi Threshold:','units','normalized',...
+                'position',[0,0.05,0.35,0.15],'value',obj.multi_neg,'callback',@(src,evts) CorrCallback(obj,src),'fontsize',10);
+            obj.multi_neg_edit=uicontrol('parent',corrp,'style','edit','string',num2str(obj.multi_neg_t),'units','normalized',...
+                'position',[0.35,0.05,0.6,0.15],'horizontalalignment','center','callback',@(src,evts) CorrCallback(obj,src));
+            
+            lagp=uipanel('parent',hp,'units','normalized','position',[0,0,1,0.22]);
+            uicontrol('parent',lagp,'style','text','string','Max Lag (sample): ','units','normalized',...
+                'position',[0,0.25,0.35,0.5],'fontsize',10);
+            obj.lag_edit=uicontrol('parent',lagp,'style','edit','string',num2str(obj.lag_t),'units','normalized',...
+                'position',[0.35,0.25,0.13,0.5],'horizontalalignment','center','callback',@(src,evts) CorrCallback(obj,src));
+            obj.lag_slider=uicontrol('parent',lagp,'style','slider','units','normalized',...
+                'position',[0.5,0.25,0.45,0.5],'callback',@(src,evts) CorrCallback(obj,src),...
                 'min',0,'max',floor(obj.smw.act_len/1000*obj.smw.fs)-1,'value',obj.lag_t,'sliderstep',[0.01,0.05]);
             
-            obj.t=obj.t_;
-            obj.multi_t=obj.multi_t_;
+            
+            obj.pos=obj.pos_;
+            obj.multi_pos=obj.multi_pos_;
+            
+            obj.neg=obj.neg_;
+            obj.multi_neg=obj.multi_neg_;
+            
+            
             
         end
         
@@ -200,53 +346,97 @@ classdef CrossCorrMapWindow < handle
         
         function CorrCallback(obj,src)
             switch src
-                case obj.t_radio
-                    
-                    obj.t=get(src,'value');
-                    
-                    if obj.t&&~obj.multi_t
-                        need_update=true;
+                case obj.raw_radio
+                    needupdate=true;
+                case obj.env_radio
+                    needupdate=true;
+                case obj.pos_radio
+                    if obj.pos||obj.neg||obj.multi_pos||obj.multi_neg
+                        needupdate=false;
                     else
-                        need_update=false;
+                        needupdate=true;
                     end
+                    obj.pos=get(src,'value');
                     
-                    obj.multi_t=0;
-                    
-                case obj.t_edit
-                    need_update=false;
+                    obj.multi_pos=0;
+                case obj.pos_edit
+                    needupdate=false;
                     tmp=str2double(get(src,'string'));
                     if isnan(tmp)
                         return
                     end
                     
-                    obj.t_t=tmp;
+                    obj.pos_t=tmp;
                     
-                case obj.t_slider
-                    need_update=false;
-                    obj.t_t=get(src,'value');
+                case obj.pos_slider
+                    needupdate=false;
+                    obj.pos_t=get(src,'value');
+                case obj.multi_pos_radio
+                    obj.multi_pos=get(src,'value');
                     
-                case obj.multi_t_radio
-                    
-                    obj.multi_t=get(src,'value');
-                    
-                    if obj.multi_t&&~obj.t
-                        need_update=true;
+                    if obj.multi_pos&&~obj.pos
+                        needupdate=true;
                     else
-                        need_update=false;
+                        needupdate=false;
                     end
                     
-                    obj.t=0;
+                    obj.pos=0;
+                case obj.multi_pos_edit
                     
-                case obj.multi_t_edit
-                    need_update=false;
+                    needupdate=false;
                     tmp=str2num(get(src,'string'));
                     if isnan(tmp)
                         return
                     end
                     
-                    obj.multi_t_t=tmp;
+                    obj.multi_pos_t=tmp;
+                case obj.neg_radio
+                    if obj.pos||obj.neg||obj.multi_pos||obj.multi_neg
+                        needupdate=false;
+                    else
+                        needupdate=true;
+                    end
+                    obj.neg=get(src,'value');
+                    
+                    obj.multi_neg=0;
+                    
+                case obj.neg_edit
+                    needupdate=false;
+                    tmp=str2double(get(src,'string'));
+                    if isnan(tmp)
+                        return
+                    end
+                    
+                    obj.neg_t=tmp;
+                case obj.neg_slider
+                    needupdate=false;
+                    obj.neg_t=get(src,'value');
+                case obj.multi_neg_radio
+                    obj.multi_neg=get(src,'value');
+                    
+                    if obj.multi_neg&&~obj.neg
+                        needupdate=true;
+                    else
+                        needupdate=false;
+                    end
+                    
+                    obj.neg=0;
+                case obj.multi_neg_edit
+                    
+                    needupdate=false;
+                    tmp=str2num(get(src,'string'));
+                    if isnan(tmp)
+                        return
+                    end
+                    
+                    obj.multi_neg_t=tmp;
                 case obj.lag_edit
-                    need_update=true;
+                    if obj.pos||obj.neg||obj.multi_pos||obj.multi_neg
+                        needupdate=true;
+                    else
+                        needupdate=false;
+                    end
+                    
                     tmp=str2double(get(src,'string'));
                     if isnan(tmp)
                         return
@@ -254,14 +444,18 @@ classdef CrossCorrMapWindow < handle
                     
                     obj.lag_t=floor(tmp);
                 case obj.lag_slider
-                    need_update=true;
+                    if obj.pos||obj.neg||obj.multi_pos||obj.multi_neg
+                        needupdate=true;
+                    else
+                        needupdate=false;
+                    end
                     obj.lag_t=floor(get(src,'value'));
             end
             
             if obj.smw.auto_refresh
                 chanpos=[obj.smw.pos_x,obj.smw.pos_y,obj.smw.radius];
                 if ~obj.smw.NoSpatialMapFig()
-                    if need_update
+                    if needupdate
                         obj.UpdateCrossCorrelation();
                     end
                     
@@ -269,12 +463,26 @@ classdef CrossCorrMapWindow < handle
                         h=findobj(obj.smw.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
                         if ~isempty(h)
                             delete(findobj(h,'tag','xcorr'));
-                            if obj.t
+                            if obj.pos
+                                tmp_pos_t=obj.pos_t;
+                            elseif obj.multi_pos
+                                tmp_pos_t=obj.multi_pos_t;
+                            else
+                                tmp_pos_t=[];
+                            end
+                            
+                            if obj.neg
+                                tmp_neg_t=obj.neg_t;
+                            elseif obj.multi_neg
+                                tmp_neg_t=obj.multi_neg_t;
+                            else
+                                tmp_neg_t=[];
+                            end
+                            
+                            if obj.neg||obj.pos||obj.multi_neg||obj.multi_pos
                                 plot_xcorrelation(h,round(chanpos(:,1)*obj.smw.width),round(chanpos(:,2)*obj.smw.height),...
-                                    obj.t,obj.smw.tfmat(i).xcorr_matrix,obj.t_t);
-                            elseif obj.multi_t
-                                plot_xcorrelation(h,round(chanpos(:,1)*obj.smw.width),round(chanpos(:,2)*obj.smw.height),...
-                                    obj.multi_t,obj.smw.tfmat(i).xcorr_matrix,obj.multi_t_t);
+                                    obj.pos||obj.multi_pos,obj.neg||obj.multi_neg,...
+                                    obj.smw.tfmat(i).xcorr_matrix,tmp_pos_t,tmp_neg_t);
                             end
                         end
                     end
@@ -316,7 +524,7 @@ classdef CrossCorrMapWindow < handle
                         fdata=filter_symmetric(b,a,dt,obj.smw.fs,0,'iir');
                     end
                     %******************************************************
-    
+                    
                     t_start=min(t1,size(fdata,1));
                     t_end=min(t2,size(fdata,1));
                     move_data=cat(1,move_data,fdata(max(1,t_start):t_end,:));
@@ -324,20 +532,47 @@ classdef CrossCorrMapWindow < handle
                 end
                 
                 corr=zeros(size(move_data,2),size(move_data,2),2*obj.lag_t+1);
-                
                 chan_num=size(move_data,2);
                 
                 for m=1:chan_num
                     waitbar(m/chan_num,wait_bar,event);
                     for n=1:chan_num
-                        if n~=m
+                        if obj.raw
                             [tmp_corr,lags]=xcorr(move_data(:,m),move_data(:,n),obj.lag_t,'coef');
-                            corr(m,n,:)=tmp_corr;
+                        elseif obj.env
+                            [tmp_corr,lags]=xcorr(detrend(abs(hilbert(move_data(:,m))),'constant'),...
+                                detrend(abs(hilbert(move_data(:,n))),'constant'),obj.lag_t,'coef');
                         end
+                        corr(m,n,:)=tmp_corr;
                     end
                 end
-                obj.smw.tfmat(i).xcorr_matrix=max(corr,[],3);
+                
+                [~,max_lag]=max(abs(corr),[],3);
+                
+                tmp_xcorr=zeros(size(corr,1),size(corr,2));
+                for k=1:size(corr,1)
+                    for l=1:size(corr,2)
+                        tmp_xcorr(k,l)=corr(k,l,max_lag(k,l));
+                    end
+                end
+                obj.smw.tfmat(i).xcorr_matrix=tmp_xcorr;
+                obj.smw.tfmat(i).max_lag=lags(max_lag);
                 close(wait_bar)
+            end
+        end
+        
+        function RawEnvCallback(obj,src)
+            needupdate=get(obj.raw_radio,'value')||get(obj.env_radio,'value');
+            switch src
+                case obj.raw_radio
+                    obj.raw=1;
+                    obj.env=0;
+                case obj.env_radio
+                    obj.env=1;
+                    obj.raw=0;
+            end
+            if needupdate
+                CorrCallback(obj,src);
             end
         end
     end

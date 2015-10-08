@@ -92,10 +92,18 @@ for i=1:length(dd)
     chanNames=cat(1,chanNames,reshape(obj.MontageChanNames{dd(i)}(chan),length(obj.MontageChanNames{dd(i)}(chan)),1));
     if ~isempty(obj.Montage{dd(i)}(obj.MontageRef(dd(i))).groupnames)
         groupnames=cat(1,groupnames,obj.Montage{dd(i)}(obj.MontageRef(dd(i))).groupnames(chan));
+    else
+        default_name=cell(length(chan),1);
+        for gn=1:length(default_name)
+            default_name{gn}='Default';
+        end
+        groupnames=cat(1,groupnames,default_name);
     end
     
     if ~isempty(obj.Montage{dd(i)}(obj.MontageRef(dd(i))).position)
         pos=cat(1,pos,obj.Montage{dd(i)}(obj.MontageRef(dd(i))).position(chan,:));
+    else
+        pos=cat(1,pos,ones(length(chan),3)*nan);
     end
 end
 

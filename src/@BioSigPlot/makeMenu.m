@@ -24,9 +24,10 @@ obj.MenuSaveFigure=uimenu(obj.MenuSave,'Label','Figure');
 obj.MenuSaveFigureData=uimenu(obj.MenuSaveFigure,'Label','Data','Callback',@(src,evt) SaveToFigure(obj,'data'),'Accelerator','p');
 obj.MenuSaveFigureMirror=uimenu(obj.MenuSaveFigure,'Label','Mirror','Callback',@(src,evt) SaveToFigure(obj,'mirror'));
 
-obj.MenuExport=uimenu(obj.MenuFile,'Label','Export to Matlab');
+obj.MenuExport=uimenu(obj.MenuFile,'Label','Export');
+obj.MenuExportObj=uimenu(obj.MenuExport,'Label','Object','Callback',@(src,evt) ExportObjToWorkspace(obj));
 obj.MenuExportData=uimenu(obj.MenuExport,'Label','Data(sel)','Callback',@(src,evt) obj.ExportDataToWorkspace);
-
+obj.MenuExportTrials=uimenu(obj.MenuExport,'Label','Trials','Callback',@(src,evt) obj.ExportTrialWin.buildfig());
 %**************************************************************************
 %First Order Menu--------------------------------------------------Settings
 obj.MenuSettings=uimenu(obj.Fig,'Label','Settings');
@@ -42,6 +43,8 @@ obj.MenuColorLines=uimenu(obj.MenuColor,'Label','Lines','Accelerator','l',...
     'Callback',@(src,evt) MnuLineColor(obj));
 obj.MenuFigurePosition=uimenu(obj.MenuSettings,'Label','Figue Position',...
     'Callback',@(src,evts) MnuFigurePosition(obj));
+obj.MenuOverwritePreprocess=uimenu(obj.MenuSettings,'Label','Overwrite Preprocess',...
+    'Callback',@(src,evt) MnuOverwritePreprocess(obj),'Accelerator','o');
 
 obj.MenuVideo=uimenu(obj.MenuSettings,'Label','Video');
 obj.MenuPlaySpeed=uimenu(obj.MenuVideo,'Label','Speed','Callback',@(src,evt) MnuPlay(obj));
@@ -98,7 +101,7 @@ obj.MenuChannelLabel=uimenu(obj.MenuDisplay,'Label','Channel Label',...
     'Callback', @(src,evt) showChannelLabel(obj,src),'checked','on');
 
 obj.Menupanels=uimenu(obj.MenuDisplay,'Label','Panels');
-obj.MenuEventsWindow=uimenu(obj.Menupanels,'Label','Events','Accelerator','o',...
+obj.MenuEventsWindow=uimenu(obj.Menupanels,'Label','Events',...
     'Callback',@(src,evt) set(obj,'EventsWindowDisplay',~obj.EventsWindowDisplay));
 obj.MenuControlPanel=uimenu(obj.Menupanels,'Label','Control',...
     'Callback',@(src,evt) set(obj,'ControlPanelDisplay',~obj.ControlPanelDisplay));
@@ -159,6 +162,8 @@ obj.MenuSpatialPCA=uimenu(obj.MenuAppDenoise,'Label','Spatial PCA',...
     'Callback', @(src,evt)Spatial_PCA(obj));
 obj.MenuTemporalPCA=uimenu(obj.MenuAppDenoise,'Label','Temporal PCA',...
     'Callback', @(src,evt) Temporal_PCA(obj));
+
+
 end
 
 

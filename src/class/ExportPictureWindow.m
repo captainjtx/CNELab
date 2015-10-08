@@ -172,6 +172,15 @@ classdef ExportPictureWindow < handle
             end
                 
         end
+        
+        
+        function val=get.valid(obj)
+            try
+                val=ishandle(obj.fig)&&isvalid(obj.fig);
+            catch
+                val=0;
+            end
+        end
     end
     
     methods
@@ -181,7 +190,7 @@ classdef ExportPictureWindow < handle
             obj.width=300;
             obj.height=280;
             
-            obj.multi_exp_=1;
+            obj.multi_exp_=0;
             obj.res_ppi_=300;
             obj.t_start_=0;
             obj.t_end_=obj.smw.ms_before+obj.smw.ms_after;
@@ -342,11 +351,12 @@ classdef ExportPictureWindow < handle
                     obj.smw.ActCallback(obj.smw.act_start_slider)
                     for i=1:length(obj.smw.SpatialMapFig)
                         figname=get(obj.smw.SpatialMapFig(i),'Name');
-                        if obj.smw.data_input~=1
+                        if obj.smw.data_input==1
                             fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',num2str(t)]);
                         else
                            fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',num2str(t-obj.smw.ms_before)]); 
                         end
+                        set(obj.smw.SpatialMapFig(i),'color','white');
                         export_fig(obj.smw.SpatialMapFig(i),['-',pic_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);
                     end
                 end
@@ -361,6 +371,7 @@ classdef ExportPictureWindow < handle
                     else
                         fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',num2str(t-obj.smw.ms_before)]);
                     end
+                    set(obj.smw.SpatialMapFig(i),'color','white');
                     export_fig(obj.smw.SpatialMapFig(i),['-',pic_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);
                 end
             end

@@ -1,4 +1,4 @@
-function bsp=cnelab()
+function cnelab()
 
 cds=[];
 while(1)
@@ -213,11 +213,28 @@ for i=1:length(cds)
 end
     
 %check if the event is duplicated==========================================
+duplicate=[];
+
 if ~isempty(evts)
-    [tmp,itime,ic]=unique([evts{:,1}]);
-    [tmp,itxt,ic]=unique(evts(:,2));
-    imerge=unique(cat(1,itime,itxt));
-    evts=evts(imerge,:);
+    for i=1:size(evts,1)
+        t=evts{i,1};
+        txt=evts{i,2};
+        
+        ind1=find(t==[evts{:,1}]);
+        ind1(ind1<=i)=[];
+        
+        ind2=find(strcmpi(txt,evts(:,2)));
+        ind2(ind2<=i)=[];
+        
+        if ~isempty(intersect(ind1,ind2))
+            duplicate=cat(1,duplicate,i);
+        end
+        
+    end
+    non_dup=1:size(evts,1);
+    
+    non_dup(duplicate)=[];
+    evts=evts(non_dup,:);
 end
 bsp.Evts=evts;
 %scan for montage file folder==============================================

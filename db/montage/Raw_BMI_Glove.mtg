@@ -1,0 +1,15 @@
+%Rows commented by % will be ignored
+%File needs to be comma(,) delimited
+%File format: ChannelName,Channel Statement,GroupName
+%{Groupname} is optional:
+Synch,Synch,ECoG
+Finger 1,Finger 1,Finger
+Finger 2,Finger 2,Finger
+Finger 3,Finger 3,Finger
+Finger 4,Finger 4,Finger
+Finger 5,Finger 5,Finger
+Acceleration X,Acceleration X,Acc
+Acceleration Y,Acceleration Y,Acc
+Acceleration Z,Acceleration Z,Acc
+Roll,Roll,RP
+Pitch,Pitch,RP

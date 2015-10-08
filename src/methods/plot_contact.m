@@ -62,14 +62,14 @@ end
 
 background=uint8(ones(h,w,3)*255);
 shapeInserter = vision.ShapeInserter('Shape','Circles','BorderColor','Custom',...
-    'CustomBorderColor',[0,0,0],'LineWidth',1,'Antialiasing',true);
+    'CustomBorderColor',[0,0,0],'LineWidth',1.2,'Antialiasing',true);
 circles =int32([col, row, r]);
 
 I = step(shapeInserter, background, circles);
 
 if ~isempty(badcol)
     shapeInserter = vision.ShapeInserter('Shape','Circles','BorderColor','Custom',...
-        'CustomBorderColor',[100,100,100],'LineWidth',1,'Antialiasing',true);
+        'CustomBorderColor',[100,100,100],'LineWidth',1.2,'Antialiasing',true);
     circles=int32([badcol,badrow,badr]);
     
     I = step(shapeInserter, I, circles);
@@ -80,7 +80,7 @@ alpha=pi/4;
 
 if ~isempty(erdcol)
     shapeInserter = vision.ShapeInserter('Shape','Polygons','BorderColor','Custom',...
-        'CustomBorderColor',[0,0,0],'LineWidth',1,'Antialiasing',true);
+        'CustomBorderColor',[0,0,0],'LineWidth',1.2,'Antialiasing',true);
     triangles=zeros(0,6);
     
     for i=1:length(erdcol)
@@ -96,7 +96,7 @@ end
 
 if ~isempty(erscol)
     shapeInserter = vision.ShapeInserter('Shape','Polygons','BorderColor','Custom',...
-        'CustomBorderColor',[0,0,0],'LineWidth',1,'Antialiasing',true);
+        'CustomBorderColor',[0,0,0],'LineWidth',1.2,'Antialiasing',true);
     triangles=zeros(0,6);
     
     for i=1:length(erscol)

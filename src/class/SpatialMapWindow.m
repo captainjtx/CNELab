@@ -5,6 +5,8 @@ classdef SpatialMapWindow < handle
         export_menu
         export_movie_menu
         export_pic_menu
+        export_trial_info_menu
+        
         advance_menu
         stft_menu
         p_menu
@@ -70,6 +72,7 @@ classdef SpatialMapWindow < handle
         
         center_mass_radio
         peak_radio
+        contact_radio
     end
     properties
         
@@ -111,6 +114,7 @@ classdef SpatialMapWindow < handle
         fs_
         center_mass_
         peak_
+        contact_
     end
     
     properties (Dependent)
@@ -165,6 +169,7 @@ classdef SpatialMapWindow < handle
         symmetric_scale
         center_mass
         peak
+        contact
     end
     properties
         width
@@ -218,6 +223,19 @@ classdef SpatialMapWindow < handle
             
             if obj.valid
                 set(obj.peak_radio,'value',val);
+            end
+        end
+        
+        
+        function val=get.contact(obj)
+            val=obj.contact_;
+        end
+        
+        function set.contact(obj,val)
+            obj.contact_=val;
+            
+            if obj.valid
+                set(obj.contact_radio,'value',val);
             end
         end
         
@@ -306,7 +324,6 @@ classdef SpatialMapWindow < handle
         end
         
         function val=get.erd_chan(obj)
-            
             for k=1:length(obj.tfmat)
                 tf=obj.tfmat(k);
                 
@@ -522,12 +539,21 @@ classdef SpatialMapWindow < handle
                             if ~obj.erd&&~obj.ers
                                 delete(findobj(h,'Tag','contact'));
                                 figure(obj.SpatialMapFig(i))
-                                plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
-                                    ~ismember(obj.all_chan_pos,chanpos,'rows'));
+                                if obj.contact
+                                    plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
+                                        ~ismember(obj.all_chan_pos,chanpos,'rows'));
+                                end
                             end
                         end
                     end
                 end
+            end
+            
+            if obj.color_bar
+                obj.color_bar=0;
+                ColorBarCallback(obj,obj.color_bar_radio);
+                obj.color_bar=1;
+                ColorBarCallback(obj,obj.color_bar_radio);
             end
             
             UpdateFigure(obj,obj.threshold_edit);
@@ -932,6 +958,7 @@ classdef SpatialMapWindow < handle
             obj.symmetric_scale_=1;
             obj.center_mass_=1;
             obj.peak_=1;
+            obj.contact_=1;
             
             obj.corr_win=CorrMapWindow(obj);
             obj.xcorr_win=CrossCorrMapWindow(obj);
@@ -950,11 +977,11 @@ classdef SpatialMapWindow < handle
                 'Resize','on','DockControls','off');
             
             obj.export_menu=uimenu(obj.fig,'label','Export');
-            obj.export_movie_menu=uimenu(obj.export_menu,'label','Movie','callback',@(src,evts) ExportMovieCallback(obj));
-            obj.advance_menu=uimenu(obj.fig,'label','Settings');
-            
             obj.export_pic_menu=uimenu(obj.export_menu,'label','Pictures','callback',@(src,evts) ExportPictureCallback(obj));
+            obj.export_movie_menu=uimenu(obj.export_menu,'label','Movie','callback',@(src,evts) ExportMovieCallback(obj));
+            obj.export_trial_info_menu=uimenu(obj.export_menu,'label','Trial Info','callback',@(src,evts) ExportTrialInfoCallback(obj));
             
+            obj.advance_menu=uimenu(obj.fig,'label','Settings');
             obj.stft_menu=uimenu(obj.advance_menu,'label','STFT','callback',@(src,evts) STFTCallback(obj));
             obj.p_menu=uimenu(obj.advance_menu,'label','P-Value','callback',@(src,evts) PCallback(obj));
             obj.corr_menu=uimenu(obj.advance_menu,'label','Correlation','callback',@(src,evts) CorrCallback(obj));
@@ -1125,6 +1152,10 @@ classdef SpatialMapWindow < handle
             obj.peak_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Peak',...
                 'units','normalized','position',[0.5,0.25,0.45,0.25],'value',obj.peak,...
                 'callback',@(src,evts) PeakCallback(obj,src));
+
+            obj.contact_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Contact',...
+                'units','normalized','position',[0.5,0,0.45,0.25],'value',obj.contact,...
+                'callback',@(src,evts) ContactCallback(obj,src));
             
             obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.005,0.2,0.04],...
                 'callback',@(src,evts) ComputeCallback(obj));
@@ -1290,6 +1321,10 @@ classdef SpatialMapWindow < handle
                 case obj.min_freq_slider
                     obj.min_freq=round(get(src,'value')*10)/10;
             end
+            
+%             obj.clim_slider_max=obj.cmax*1.5;
+%             obj.clim_slider_min=-obj.cmax*1.5;
+            
             if obj.auto_refresh
                 UpdateFigure(obj,src)
             end
@@ -1616,9 +1651,9 @@ classdef SpatialMapWindow < handle
                         obj.tfmat(e).mat{j}=tfm;
                         obj.tfmat(e).t=t;
                         obj.tfmat(e).f=f;
-                        obj.tfmat(e).channel=channel;
-                        obj.tfmat(e).dataset=dataset;
-                        obj.tfmat(e).channame=chanNames;
+                        obj.tfmat(e).channel=channel(chanind);
+                        obj.tfmat(e).dataset=dataset(chanind);
+                        obj.tfmat(e).channame=channames;
                         obj.tfmat(e).event=evt{e};
                         obj.tfmat(e).trial_mat{j}=event_tfm;
                         obj.tfmat(e).data(:,j,:)=raw_data(:,ind);
@@ -1658,8 +1693,8 @@ classdef SpatialMapWindow < handle
                 sh=sh/obj.cmax;
             end
             
-            obj.clim_slider_max=obj.cmax;
-            obj.clim_slider_min=-obj.cmax;
+            obj.clim_slider_max=obj.cmax*1.5;
+            obj.clim_slider_min=-obj.cmax*1.5;
             mapv=obj.map_val;
             
             erdchan=obj.erd_chan;
@@ -1672,7 +1707,7 @@ classdef SpatialMapWindow < handle
                 obj.corr_win.UpdateCorrelation();
             end
             
-            if obj.xcorr_win.t||obj.xcorr_win.multi_t
+            if obj.xcorr_win.pos||obj.xcorr_win.multi_pos||obj.xcorr_win.neg||obj.xcorr_win.multi_neg
                 obj.xcorr_win.UpdateCrossCorrelation();
             end
             
@@ -1681,18 +1716,21 @@ classdef SpatialMapWindow < handle
             
             for e=1:length(evt)
                 spatialmap_grid(obj.SpatialMapFig(e),mapv{e},obj.interp_method,...
-                    obj.extrap_method,channames,chanpos(:,1),chanpos(:,2),chanpos(:,3),obj.width,obj.height,sl,sh,obj.color_bar);
+                    obj.extrap_method,channames,chanpos(:,1),chanpos(:,2),chanpos(:,3),obj.width,obj.height,sl,sh,obj.color_bar,obj.threshold);
                 h=findobj(obj.SpatialMapFig(e),'-regexp','tag','SpatialMapAxes');
-                plot_contact(h,allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.height,obj.width,[],...
-                    ~ismember(allchanpos,chanpos,'rows'),erdchan{e},erschan{e});
+                if obj.contact
+                    plot_contact(h,allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.height,obj.width,[],...
+                        ~ismember(allchanpos,chanpos,'rows'),erdchan{e},erschan{e});
+                end
                 if obj.peak
                     [~,I]=max(abs(mapv{e}'));
-                    text(obj.pos_x(I)*obj.width,obj.pos_y(I)*obj.height,'p','parent',h,'fontsize',12,'color','w',...
-                        'tag','peak');
+                    text(obj.pos_x(I)*obj.width,obj.pos_y(I)*obj.height,'p','parent',h,'fontsize',round(20*obj.threshold),'color','w',...
+                        'tag','peak','horizontalalignment','center','fontweight','bold');
                 end
                 
                 if obj.erd||obj.ers
-                    [obj.erd_center{e},obj.ers_center{e}]=plot_mass_center(h,mapv{e},round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),erdchan{e},erschan{e},obj.center_mass);
+                    [obj.erd_center{e},obj.ers_center{e}]=plot_mass_center(h,mapv{e},round(chanpos(:,1)*obj.width),...
+                        round(chanpos(:,2)*obj.height),erdchan{e},erschan{e},obj.center_mass,obj.threshold);
                 end
                 
                 %Correlation Network
@@ -1722,12 +1760,26 @@ classdef SpatialMapWindow < handle
                 
                 
                 %Cross Correlation Network
-                if obj.xcorr_win.t
+                if obj.xcorr_win.pos
+                    tmp_pos_t=obj.xcorr_win.pos_t;
+                elseif obj.xcorr_win.multi_pos
+                    tmp_pos_t=obj.xcorr_win.multi_pos_t;
+                else
+                    tmp_pos_t=[];
+                end
+                
+                if obj.xcorr_win.neg
+                    tmp_neg_t=obj.xcorr_win.neg_t;
+                elseif obj.xcorr_win.multi_neg
+                    tmp_neg_t=obj.xcorr_win.multi_neg_t;
+                else
+                    tmp_neg_t=[];
+                end
+                
+                if obj.xcorr_win.neg||obj.xcorr_win.pos||obj.xcorr_win.multi_neg||obj.xcorr_win.multi_pos
                     plot_xcorrelation(h,round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
-                        obj.xcorr_win.t,obj.tfmat(e).xcorr_matrix,obj.xcorr_win.t_t);
-                elseif obj.xcorr_win.multi_t
-                    plot_xcorrelation(h,round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
-                        obj.xcorr_win.multi_t,obj.tfmat(e).xcorr_matrix,obj.xcorr_win.multi_t_t);
+                        obj.xcorr_win.pos||obj.xcorr_win.multi_pos,obj.xcorr_win.neg||obj.xcorr_win.multi_neg,...
+                        obj.tfmat(e).xcorr_matrix,tmp_pos_t,tmp_neg_t);
                 end
             end
         end
@@ -1859,9 +1911,9 @@ classdef SpatialMapWindow < handle
         function ColorBarCallback(obj,src)
             obj.color_bar_=get(src,'value');
             
-            if ~obj.auto_refresh
-                return
-            end
+%             if ~obj.auto_refresh
+%                 return
+%             end
             
             if ~NoSpatialMapFig(obj)
                 for i=1:length(obj.SpatialMapFig)
@@ -1875,9 +1927,9 @@ classdef SpatialMapWindow < handle
                         fpos=get(h,'position');
                         if obj.color_bar
                             %optional color bar
-                            cb=colorbar('Units','normalized','FontSize',16);
+                            cb=colorbar('Units','normalized','FontSize',round(15*obj.threshold));
                             cbpos=get(cb,'Position');
-                            set(a,'Position',[10/400*obj.width/fpos(3),15/300*obj.height/fpos(4),obj.width/fpos(3),obj.height/fpos(4)],'FontSize',14);
+                            set(a,'Position',[10/400*obj.width/fpos(3),15/300*obj.height/fpos(4),obj.width/fpos(3),obj.height/fpos(4)],'FontSize',round(15*obj.threshold));
                             set(cb,'Position',[(obj.width+20/400*obj.width)/fpos(3),15/300*obj.height/fpos(4),0.04,cbpos(4)]);
                         else
                             colorbar('off');
@@ -1946,14 +1998,14 @@ classdef SpatialMapWindow < handle
                 
                 chanpos=[obj.pos_x,obj.pos_y,obj.radius];
                 
-                if obj.corr_win.pos||obj.corr_win.neg||obj.corr_win.sig||obj.corr_win.multi_pos||obj.corr_win.multi_neg&&ismember(src,...
+                if (obj.corr_win.pos||obj.corr_win.neg||obj.corr_win.sig||obj.corr_win.multi_pos||obj.corr_win.multi_neg)&&ismember(src,...
                         [obj.act_len_edit,obj.act_len_slider,obj.act_start_edit,obj.act_start_slider,...
                         obj.refresh_btn,obj.min_freq_edit,obj.min_freq_slider,obj.max_freq_edit,obj.max_freq_slider])
                     % correlation
                     obj.corr_win.UpdateCorrelation();
                 end
                 
-                if obj.xcorr_win.t||obj.xcorr_win.multi_t&&ismember(src,...
+                if (obj.xcorr_win.pos||obj.xcorr_win.multi_pos||obj.xcorr_win.neg||obj.xcorr_win.multi_neg)&&ismember(src,...
                         [obj.act_len_edit,obj.act_len_slider,obj.act_start_edit,obj.act_start_slider,...
                         obj.refresh_btn,obj.min_freq_edit,obj.min_freq_slider,obj.max_freq_edit,obj.max_freq_slider])
                     obj.xcorr_win.UpdateCrossCorrelation();
@@ -1989,20 +2041,22 @@ classdef SpatialMapWindow < handle
                         if obj.erd||obj.ers||ismember(src,[obj.erd_radio,obj.ers_radio])
                             delete(findobj(h,'Tag','contact'));
                             figure(obj.SpatialMapFig(i))
-                            plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
-                                ~ismember(obj.all_chan_pos,chanpos,'rows'),erdchan{i},erschan{i});
+                            if obj.contact
+                                plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
+                                    ~ismember(obj.all_chan_pos,chanpos,'rows'),erdchan{i},erschan{i});
+                            end
                         end
                         
                         if obj.peak
                             [~,I]=max(abs(mapv{i}'));
-                            text(col(I)*obj.width,row(I)*obj.height,'p','parent',h,'fontsize',12,'color','w',...
-                                'tag','peak');
+                            text(col(I)*obj.width,row(I)*obj.height,'p','parent',h,'fontsize',round(20*obj.threshold),'color','w',...
+                                'tag','peak','horizontalalignment','center','fontweight','bold');
                         end
                         
                         if obj.erd||obj.ers
                             [obj.erd_center{i},obj.ers_center{i}]=plot_mass_center(h,mapv{i},...
                                 round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
-                                erdchan{i},erschan{i},obj.center_mass,...
+                                erdchan{i},erschan{i},obj.center_mass,obj.threshold,...
                                 obj.erd_center{i},obj.ers_center{i});
                         end
                         
@@ -2031,12 +2085,26 @@ classdef SpatialMapWindow < handle
                         end
                         
                         %Cross Correlation Network
-                        if obj.xcorr_win.t
+                        if obj.xcorr_win.pos
+                            tmp_pos_t=obj.xcorr_win.pos_t;
+                        elseif obj.xcorr_win.multi_pos
+                            tmp_pos_t=obj.xcorr_win.multi_pos_t;
+                        else
+                            tmp_pos_t=[];
+                        end
+                        
+                        if obj.xcorr_win.neg
+                            tmp_neg_t=obj.xcorr_win.neg_t;
+                        elseif obj.xcorr_win.multi_neg
+                            tmp_neg_t=obj.xcorr_win.multi_neg_t;
+                        else
+                            tmp_neg_t=[];
+                        end
+                        
+                        if obj.xcorr_win.neg||obj.xcorr_win.pos||obj.xcorr_win.multi_neg||obj.xcorr_win.multi_pos
                             plot_xcorrelation(h,round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
-                                obj.xcorr_win.t,obj.tfmat(i).xcorr_matrix,obj.xcorr_win.t_t);
-                        elseif obj.xcorr_win.multi_t
-                            plot_xcorrelation(h,round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
-                                obj.xcorr_win.multi_t,obj.tfmat(i).xcorr_matrix,obj.xcorr_win.multi_t_t);
+                                obj.xcorr_win.pos||obj.xcorr_win.multi_pos,obj.xcorr_win.neg||obj.xcorr_win.multi_neg,...
+                                obj.tfmat(i).xcorr_matrix,tmp_pos_t,tmp_neg_t);
                         end
                     end
                 end
@@ -2132,7 +2200,8 @@ classdef SpatialMapWindow < handle
                     if ~isempty(h)
                         if obj.erd||obj.ers
                             %                             figure(obj.SpatialMapFig(i))
-                            [obj.erd_center{i},obj.ers_center{i}]=plot_mass_center(h,mapv{i},round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),erdchan{i},erschan{i},obj.center_mass,...
+                            [obj.erd_center{i},obj.ers_center{i}]=plot_mass_center(h,mapv{i},round(chanpos(:,1)*obj.width),...
+                                round(chanpos(:,2)*obj.height),erdchan{i},erschan{i},obj.center_mass,obj.threshold,...
                                 obj.erd_center{i},obj.ers_center{i});
                         end
                     end
@@ -2153,8 +2222,8 @@ classdef SpatialMapWindow < handle
                         delete(findobj(h,'tag','peak'));
                         if obj.peak
                             [~,I]=max(abs(mapv{i}'));
-                            text(col(I)*obj.width,row(I)*obj.height,'p','parent',h,'fontsize',12,'color','w',...
-                                'tag','peak');
+                            text(col(I)*obj.width,row(I)*obj.height,'p','parent',h,'fontsize',round(20*obj.threshold),'color','w',...
+                                'tag','peak','horizontalalignment','center','fontweight','bold');
                         end
                     end
                 end
@@ -2168,6 +2237,25 @@ classdef SpatialMapWindow < handle
         
         function CrossCorrCallback(obj)
             obj.xcorr_win.buildfig();
+        end
+        
+        function ContactCallback(obj,src)
+            obj.contact_=get(src,'value');
+            chanpos=[obj.pos_x,obj.pos_y,obj.radius];
+            if ~NoSpatialMapFig(obj)
+                for i=1:length(obj.SpatialMapFig)
+                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                    if ~isempty(h)
+                        delete(findobj(h,'Tag','contact'));
+                        figure(obj.SpatialMapFig(i))
+                        if obj.contact
+                            plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
+                                ~ismember(obj.all_chan_pos,chanpos,'rows'),obj.erd_chan{i},obj.ers_chan{i});
+                        end
+                        
+                    end
+                end
+            end
         end
     end
     
@@ -2187,6 +2275,59 @@ classdef SpatialMapWindow < handle
                 obj.act_start=min(length(sample)/obj.fs*1000,obj.act_start_);
                 obj.act_len=min(length(sample)/obj.fs*1000,obj.act_len_);
             end
+        end
+        function ExportTrialInfoCallback(obj)
+            [FileName,FilePath,FilterIndex]=uiputfile({'*.mat','Matlab Files (*.mat)';...
+                '*.txt','Text File (*.evt)'}...
+                ,'save your trial informations',fullfile(obj.bsp.FileDir,'info'));
+            if FileName~=0
+                filename=fullfile(FilePath,FileName);
+                switch FilterIndex
+                    case 1
+                        %matlab file
+                        erdchan=obj.erd_chan;
+                        erschan=obj.ers_chan;
+                        for k=1:length(obj.tfmat)
+                            %k th event
+                            tf=obj.tfmat(k);
+                            
+                            fi=(tf.f>=obj.min_freq)&(tf.f<=obj.max_freq);
+                            ti=(tf.t>=obj.act_start/1000)&(tf.t<=obj.act_start/1000+obj.act_len/1000);
+                            
+                            
+                            for i=1:length(tf.trial_mat)
+                                %i th channel
+                                event_mat=tf.trial_mat{i};
+                                if ~isempty(event_mat)
+                                    pow_val=[];
+                                    
+                                    for t=1:length(event_mat)
+                                        %t th trial
+                                        pow_val=cat(1,pow_val,mean(mean(event_mat{t}(fi,ti))));
+                                    end
+                                    
+                                   info(k).pow(:,i)=pow_val(:);
+                                end
+                            end
+                            info(k).event=tf.event;
+                            info(k).channame=tf.channame;
+                            info(k).erd_chan=erdchan{k};
+                            info(k).ers_chan=erschan{k};
+                        end
+                        save(filename,'info');
+                        
+                        [pathstr,name,ext] = fileparts(filename);
+                        assignin('base',name,info);
+                        
+                    case 2
+                        %text file
+                        
+                end
+            else
+                return
+            end
+            
+            
         end
     end
     

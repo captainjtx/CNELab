@@ -36,6 +36,8 @@ classdef InterpWin < handle
                 return
             end
             
+            obj.interpChan=[];
+            
             [~,~,dataset,channel,~,~,~,~]=get_selected_data(obj.bsp);
             
             if length(channel)~=1

@@ -1175,9 +1175,9 @@ classdef TFMapWindow < handle
                         obj.tfmat{j}=tfm;
                         obj.tfmat_t=t;
                         obj.tfmat_f=f;
-                        obj.tfmat_channel=channel;
-                        obj.tfmat_dataset=dataset;
-                        obj.tfmat_channame=chanNames;
+                        obj.tfmat_channel=channel(chanind);
+                        obj.tfmat_dataset=dataset(chanind);
+                        obj.tfmat_channame=channames;
                         if ~isempty(tfm)
                             cmax=max(max(max(abs(tfm))),cmax);
                         end

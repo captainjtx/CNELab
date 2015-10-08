@@ -14,30 +14,38 @@ function [trR,trL,tstR,tstL] = CSPFeatures(TrainR, TrainL, ValidR, ValidL, NF, W
 % W = CSPFilters(TrainR,TrainL, NF, sp, SpL);
 
 % Calculating features: training
-[Ns, Nt, Nc] = size(TrainR); 
-trR = zeros(Nt,NF); % feature matrix for class R
-trL = zeros(Nt,NF); % feature matrix for class L
+[Ns, NtR, Nc] = size(TrainR); 
+[Ns, NtL, Nc] = size(TrainL); 
+[Ns, NsR, Nc] = size(ValidR); 
+[Ns, NsL, Nc] = size(ValidL); 
+
+trR = zeros(NtR,NF); % feature matrix for class R
+trL = zeros(NtL,NF); % feature matrix for class L
 
 % extract filters from W
 W = zeros(Nc, NF); %
 W(:,1:NF/2) = Wvec(:,1:NF/2);
 W(:,end-(NF/2)+1:end) = Wvec(:,end-(NF/2)+1:end);
 
-for i=1:Nt
+for i=1:NtR
     R  = squeeze(TrainR(:,i,:))*W;
     trR(i,:) = log(sum(R.^2));
+end
+for i=1:NtL
     L  = squeeze(TrainL(:,i,:))*W;
     trL(i,:) = log(sum(L.^2));
 end
 
 % Calculating features: test
-[Ns, Nt, Nc] = size(ValidR); 
-tstR = zeros(Nt,NF); % feature matrix for class R
-tstL = zeros(Nt,NF); % feature matrix for class L
 
-for i=1:Nt
+tstR = zeros(NsR,NF); % feature matrix for class R
+tstL = zeros(NsL,NF); % feature matrix for class L
+
+for i=1:NsR
     R  = squeeze(ValidR(:,i,:))*W;
     tstR(i,:) = log(sum(R.^2));
+end
+for i=1:NsL
     L  = squeeze(ValidL(:,i,:))*W;
     tstL(i,:) = log(sum(L.^2));
 end

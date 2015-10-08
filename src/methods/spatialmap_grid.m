@@ -1,4 +1,4 @@
-function spatialmap_grid(fig,mapv,method,extrap,channames,pos_x,pos_y,r,w,h,sl,sh,colbar)
+function spatialmap_grid(fig,mapv,method,extrap,channames,pos_x,pos_y,r,w,h,sl,sh,colbar,ratio)
 %TFMAP_GRID Summary of this function goes here
 %   Detailed explanation goes here
 %Orign of postion is top left corner
@@ -33,11 +33,11 @@ imagesc('CData',mapvq,'Parent',a,'Tag','ImageMap');
 set(a,'XLim',[1,size(mapvq,2)]);
 set(a,'YLim',[1,size(mapvq,1)]);
 set(a,'CLim',[sl sh]);
-set(a,'YDir','reverse','FontSize',16);
+set(a,'YDir','reverse','FontSize',round(15*ratio));
 colormap(a,jet);
 if colbar
     %optional color bar
-    cb=colorbar('Units','normalized','FontSize',16);
+    cb=colorbar('Units','normalized','FontSize',round(15*ratio));
     cbpos=get(cb,'Position');
     set(a,'Position',[10/400*w/fpos(3),15/300*h/fpos(4),w/fpos(3),h/fpos(4)]);
     set(cb,'Position',[(w+20/400*w)/fpos(3),15/300*h/fpos(4),0.04,cbpos(4)]);

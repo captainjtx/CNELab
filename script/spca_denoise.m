@@ -1,5 +1,5 @@
 omitmask=true;
-ratio=0.3;
+ratio=0.2;
 
 [data,chanNames,dataset,channel,sample,evts,groupnames,pos]=get_selected_data(bsp,omitmask);
 

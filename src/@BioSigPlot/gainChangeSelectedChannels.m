@@ -72,7 +72,7 @@ if ~isempty(ChanSelect2Edit)
     for i=1:length(ChanInd)
         set(ChannelLines(ChanInd(i)),'YData',y(:,ChanInd(i)));
         
-        h=findobj(axes,'DisplayName',['YGauge' num2str(ChanInd(i)+FirstDispChan-1)]);
+        h=findobj(axes,'DisplayName',['YGauge' num2str(ChanInd(i))]);
         set(h,'String',num2str(1/gain(ChanInd(i)+FirstDispChan-1),'%0.3g'));
     end
 end
