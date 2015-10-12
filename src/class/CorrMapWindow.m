@@ -549,7 +549,16 @@ classdef CorrMapWindow < handle
                     
                     t_start=min(t1,size(fdata,1));
                     t_end=min(t2,size(fdata,1));
-                    move_data=cat(1,move_data,fdata(max(1,t_start):t_end,:));
+                    fd=fdata(max(1,t_start):t_end,:);
+                    move_data=cat(1,move_data,fd);
+                    
+                    %for TNSRE
+                    if obj.raw
+                        [corr,pval]=corrcoef(fd);
+                    elseif obj.env
+                        [corr,pval]=corrcoef(detrend(abs(hilbert(fd)),'constant'));
+                    end
+                    obj.smw.tfmat(i).corr_matrix_trial(:,:,trial)=corr;
                 end
                 
                 

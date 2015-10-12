@@ -1,5 +1,5 @@
-subs={s2_trials};
-
+subs={s1_trials};
+stats={};
 for i_sub=1:length(subs)
     
     
@@ -21,7 +21,7 @@ Chi=find(~ismember(sub(1).channame,{'Synch','ECG Bipolar','EMG Bipolar'}));
     step=50;%step in ms
     
     f1=[8,60];
-    f2=[30,200];
+    f2=[32,200];
     col={'g','k','r','b',};
     exp={};
     
@@ -54,7 +54,7 @@ Chi=find(~ismember(sub(1).channame,{'Synch','ECG Bipolar','EMG Bipolar'}));
             total=size(ecogC,1);
             tr=len/2:step:total;
             
-            for s=1:50
+            for s=1:25
                 fprintf('Session%d:\n',s);
                 tm=1;
                 for i=1:length(tr)
@@ -149,9 +149,18 @@ Chi=find(~ismember(sub(1).channame,{'Synch','ECG Bipolar','EMG Bipolar'}));
             
             hold on
             transparent=1;
-            shadedErrorBar((tr-onset)*1000/fs,mean(erM,1),std(erM),col{env*2+fi},transparent)
+            time=(tr-onset)*1000/fs;
+            mean_er=mean(erM,1);
+            std_er=std(erM);
+            
+            stat(env*2+fi).onset=[mean_er(time==0),std_er(time==0)];
+            [min_er,min_er_ind]=min(mean_er);
+            stat(env*2+fi).min=[min_er,std_er(min_er_ind),time(min_er_ind)];
+            shadedErrorBar(time,mean_er,std_er,col{env*2+fi},transparent)
             exp{env*2+fi}=['color: ',col{env*2+fi},' env ',num2str(env),' freq ',num2str(fi)];
             drawnow
+            
+            stats{i_sub}=stat;
         end
     end
 end
@@ -169,5 +178,6 @@ hold on
 plot(xl,[50,50],'--k','linewidth',3)
 
 ylim([0,100])
-
+xlabel('Time (ms)');
+ylabel('Error Rate(%)');
 

@@ -1,7 +1,6 @@
 classdef TFMapWindow < handle
     %TFMAPWINDOW Summary of this class goes here
     %   Detailed explanation goes here
-    
     properties
         valid
         bsp
@@ -850,6 +849,7 @@ classdef TFMapWindow < handle
                     for i=1:length(h)
                         tmp=findobj(h(i),'Type','line');
                         delete(tmp);
+%                         axes(h(i))
                         line([tonset,tonset],[obj.min_freq,obj.max_freq],'LineStyle',':',...
                             'color','k','linewidth',0.1,'Parent',h(i))
                     end
@@ -1186,7 +1186,9 @@ classdef TFMapWindow < handle
                     obj.DisplayOnsetCallback([]);
             end
             
-                    
+            if isnan(cmax)||isempty(cmax)||isinf(cmax)
+                cmax=15;
+            end
             if strcmpi(units,'dB')
                 obj.clim_slider_max=cmax;
                 obj.clim_slider_min=-cmax;

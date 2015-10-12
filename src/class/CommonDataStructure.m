@@ -182,7 +182,10 @@ classdef CommonDataStructure < handle
                 
                 fnames=fullfile(FilePath,FileName);
             end
+            
+            wait_bar_h = waitbar(0,['Saving data to :  ' fnames]);
             save(fnames,'-struct','cds','-mat');
+            close(wait_bar_h);
         end
         
         function success=extractTimeFrameFromData(obj,varargin)
