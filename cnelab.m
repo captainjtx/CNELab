@@ -7,7 +7,7 @@ while(1)
         cds=[cds,tmp];
     end
     
-    choice=questdlg('Do you want to select more dataset?','CNELab','Yes','No','No');
+    choice=questdlg('Do you want to select more datasets?','CNELab','Yes','No','No');
     
     if strcmpi(choice,'No')
         break;
@@ -27,9 +27,10 @@ for i=2:length(cds)
     else
         fs=cds{i}.Data.SampleRate;
     end
-    
 end
 
+
+% cdsmatfiles=cell(1,length(cds));
 data=cell(1,length(cds));
 FileNames=cell(1,length(cds));
 fnames=cell(1,length(cds));
@@ -40,6 +41,9 @@ for i=1:length(cds)
     
     FileNames{i}=cds{i}.Data.FileName;
     [fpaths{i},fnames{i}]=fileparts(cds{i}.Data.FileName);
+    
+    %get the first mat file
+    
 end
 
 %==========================================================================
@@ -145,97 +149,100 @@ for i=1:length(cds)
     end
 end
 %==========================================================================
-%**************************************************************************        
+%**************************************************************************
 bsp=BioSigPlot(data,'Title',fnames,...
-                    'SRate',fs,...
-                    'ChanNames',ChanNames,...
-                    'GroupNames',GroupNames,...
-                    'ChanPosition',ChanPosition,...
-                    'VideoStartTime',VideoStartTime,...
-                    'VideoTimeFrame',VideoTimeFrame,...
-                    'NumberOfFrame',NumberOfFrame,...
-                    'Units',Units,...
-                    'FileNames',FileNames,...
-                    'StartTime',StartTime,...
-                    'NextFiles',NextFiles,...
-                    'PrevFiles',PrevFiles);
+    'SRate',fs,...
+    'ChanNames',ChanNames,...
+    'GroupNames',GroupNames,...
+    'ChanPosition',ChanPosition,...
+    'VideoStartTime',VideoStartTime,...
+    'VideoTimeFrame',VideoTimeFrame,...
+    'NumberOfFrame',NumberOfFrame,...
+    'Units',Units,...
+    'FileNames',FileNames,...
+    'StartTime',StartTime,...
+    'NextFiles',NextFiles,...
+    'PrevFiles',PrevFiles);
 set(bsp.Fig,'Visible','off');
 %==========================================================================
 %**************************************************************************
-
-startTime=0;
-for i=1:length(cds)
-    if ~isempty(cds{i}.Data.TimeStamps)
-        startTime=cds{i}.Data.TimeStamps(1);
-        break;
+%Enumerate all files for events
+% while(1)
+    startTime=0;
+    for i=1:length(cds)
+        if ~isempty(cds{i}.Data.TimeStamps)
+            startTime=cds{i}.Data.TimeStamps(1);
+            break;
+        end
     end
-end
-evts=[];
-for i=1:length(cds)
-    if ~isempty(cds{i}.Data.Annotations)
-        tmp_evts=cds{i}.Data.Annotations;
-        tmp_evts(:,1)=num2cell(cell2mat(tmp_evts(:,1))-startTime);
-        code=cell(size(tmp_evts,1),1);
-        [code{:}]=deal(0);
-        tmp_evts=bsp.assignEventColor(tmp_evts);
-        tmp_evts=cat(2,tmp_evts,code);
-    else
-        tmp_evts=[];
-    end
-    evts=cat(1,evts,tmp_evts);
-    
-    if isfield(cds{i}.Data,'TriggerCodes')
-        for r=1:size(cds{i}.Data.TriggerCodes,1)
-            center_hold_time=cds{i}.Data.TriggerCodes(r,1)/fs;
-            show_cue_time=cds{i}.Data.TriggerCodes(r,2)/fs;
-%             fill_target_time=cds{i}.Data.TriggerCodes(r,3)/fs;
-            
-            errorCode=cds{i}.Data.TriggerCodes(r,end);
-            
-            if ~errorCode
-                color=bsp.AdvanceEventDefaultColor;
-            else
-                color=[0.8 0 0];
-            end
-            
-            for c=1:6
-                if show_cue_time-center_hold_time<2.8%...
-%                         ||fill_target_time-show_cue_time<0.8...
-%                         ||fill_target_time-show_cue_time>1.7
-                    color=[0.5 0.5 0.5];
-                    evts=cat(1,evts,{cds{i}.Data.TriggerCodes(r,c)/fs,['0-' num2str(c)],color,2});
+    evts=[];
+    for i=1:length(cds)
+        if ~isempty(cds{i}.Data.Annotations)
+            tmp_evts=cds{i}.Data.Annotations;
+            tmp_evts(:,1)=num2cell(cell2mat(tmp_evts(:,1))-startTime);
+            code=cell(size(tmp_evts,1),1);
+            [code{:}]=deal(0);
+            tmp_evts=bsp.assignEventColor(tmp_evts);
+            tmp_evts=cat(2,tmp_evts,code);
+        else
+            tmp_evts=[];
+        end
+        evts=cat(1,evts,tmp_evts);
+        
+        if isfield(cds{i}.Data,'TriggerCodes')
+            for r=1:size(cds{i}.Data.TriggerCodes,1)
+                center_hold_time=cds{i}.Data.TriggerCodes(r,1)/fs;
+                show_cue_time=cds{i}.Data.TriggerCodes(r,2)/fs;
+                %             fill_target_time=cds{i}.Data.TriggerCodes(r,3)/fs;
+                
+                errorCode=cds{i}.Data.TriggerCodes(r,end);
+                
+                if ~errorCode
+                    color=bsp.AdvanceEventDefaultColor;
                 else
-                    evts=cat(1,evts,{cds{i}.Data.TriggerCodes(r,c)/fs,num2str(c),color,2});
+                    color=[0.8 0 0];
+                end
+                
+                for c=1:6
+                    if show_cue_time-center_hold_time<2.8%...
+                        %                         ||fill_target_time-show_cue_time<0.8...
+                        %                         ||fill_target_time-show_cue_time>1.7
+                        color=[0.5 0.5 0.5];
+                        evts=cat(1,evts,{cds{i}.Data.TriggerCodes(r,c)/fs,['0-' num2str(c)],color,2});
+                    else
+                        evts=cat(1,evts,{cds{i}.Data.TriggerCodes(r,c)/fs,num2str(c),color,2});
+                    end
                 end
             end
         end
     end
-end
     
-%check if the event is duplicated==========================================
-duplicate=[];
-
-if ~isempty(evts)
-    for i=1:size(evts,1)
-        t=evts{i,1};
-        txt=evts{i,2};
-        
-        ind1=find(t==[evts{:,1}]);
-        ind1(ind1<=i)=[];
-        
-        ind2=find(strcmpi(txt,evts(:,2)));
-        ind2(ind2<=i)=[];
-        
-        if ~isempty(intersect(ind1,ind2))
-            duplicate=cat(1,duplicate,i);
+    %check if the event is duplicated==========================================
+    duplicate=[];
+    
+    if ~isempty(evts)
+        for i=1:size(evts,1)
+            t=evts{i,1};
+            txt=evts{i,2};
+            
+            ind1=find(t==[evts{:,1}]);
+            ind1(ind1<=i)=[];
+            
+            ind2=find(strcmpi(txt,evts(:,2)));
+            ind2(ind2<=i)=[];
+            
+            if ~isempty(intersect(ind1,ind2))
+                duplicate=cat(1,duplicate,i);
+            end
+            
         end
+        non_dup=1:size(evts,1);
         
+        non_dup(duplicate)=[];
+        evts=evts(non_dup,:);
     end
-    non_dup=1:size(evts,1);
-    
-    non_dup(duplicate)=[];
-    evts=evts(non_dup,:);
-end
+% end
+
 bsp.Evts=evts;
 %scan for montage file folder==============================================
 montage=cell(length(fnames),1);
@@ -262,27 +269,27 @@ for i=1:length(fnames)
 end
 remakeMontageMenu(bsp);
 %scan for video============================================================
-%check if this is a right system 
+%check if this is a right system
 %video feature is only supported in windows system as activex is required
 %currently only one video is supported
 if ~isempty(regexp(computer,'WIN','ONCE'))
     for i=1:length(cds)
         if ~isempty(cds{i}.Data.VideoName)
             videofile=[];
-           if exist(cds{i}.Data.VideoName,'file')==2
-               videofile=cds{i}.Data.VideoName;
-           elseif exist(fullfile(fpaths{i},cds{i}.Data.VideoName),'file')==2
-               videofile=fullfile(fpaths{i},cds{i}.Data.VideoName);
-           end
-           if ~isempty(videofile)
-               bsp.WinVideo=VideoWindow(videofile,bsp.VideoActxOpt); %VLC or WMPlayer
-               addlistener(bsp.WinVideo,'VideoChangeTime',@(src,evt) SynchDataWithVideo(bsp));
-               addlistener(bsp.WinVideo,'VideoChangeState',@(src,ect) SynchVideoState(bsp));
-               addlistener(bsp.WinVideo,'VideoClosed',@(src,evt) StopPlay(bsp));
-               
-               bsp.VideoFile=videofile;
-               break;
-           end
+            if exist(cds{i}.Data.VideoName,'file')==2
+                videofile=cds{i}.Data.VideoName;
+            elseif exist(fullfile(fpaths{i},cds{i}.Data.VideoName),'file')==2
+                videofile=fullfile(fpaths{i},cds{i}.Data.VideoName);
+            end
+            if ~isempty(videofile)
+                bsp.WinVideo=VideoWindow(videofile,bsp.VideoActxOpt); %VLC or WMPlayer
+                addlistener(bsp.WinVideo,'VideoChangeTime',@(src,evt) SynchDataWithVideo(bsp));
+                addlistener(bsp.WinVideo,'VideoChangeState',@(src,ect) SynchVideoState(bsp));
+                addlistener(bsp.WinVideo,'VideoClosed',@(src,evt) StopPlay(bsp));
+                
+                bsp.VideoFile=videofile;
+                break;
+            end
         end
     end
 end

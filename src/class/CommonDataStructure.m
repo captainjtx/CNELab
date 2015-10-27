@@ -184,7 +184,7 @@ classdef CommonDataStructure < handle
             end
             
             wait_bar_h = waitbar(0,['Saving data to :  ' fnames]);
-            save(fnames,'-struct','cds','-mat');
+            save(fnames,'-struct','cds','-mat','-v7.3');
             close(wait_bar_h);
         end
         

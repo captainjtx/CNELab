@@ -9,11 +9,11 @@ freq={};
 freq{1}=[8,32];
 freq{2}=[60,200];
 
-f=2;
+f=1;
 
 erdchan=obj.erd_chan;
 erschan=obj.ers_chan;
-for k=1
+for k=2
     %k th event
     tf=obj.tfmat(k);
     
@@ -49,7 +49,7 @@ for k=1
     hold on;
     figure(fig)
     
-    H{f}=shadedErrorBar(tf.t*1000-1500,mean(10*log10(pow_curve),1),std(10*log10(pow_curve),0,1),col{f},1);
+    H{f}=shadedErrorBar(tf.t*1000-1500,10*log10(mean(pow_curve,1)),std(10*log10(pow_curve),0,1),col{f},1);
     set(H{f}.mainLine,'linewidth',3);
 end
 %%
@@ -61,7 +61,7 @@ a.FontSize=20;
 hold on
 
 plot(a.XLim,[0,0],'--k','linewidth',3);
-ylabel('dB']
+ylabel('dB')
 xlabel('Time (ms)')
 plot([0,0],a.YLim,':k','linewidth',3);
 
