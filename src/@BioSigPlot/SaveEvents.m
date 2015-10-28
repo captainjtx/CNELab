@@ -34,13 +34,13 @@ if ~isempty(Events)
         if FilterIndex==1
             [pathstr, name, ext] = fileparts(FileName);
             if strcmpi(ext,'.txt')
-                FilterIndex=2;
-            elseif strcmpi(ext,'.csv')
                 FilterIndex=3;
-            elseif strcmpi(ext,'.mat')
+            elseif strcmpi(ext,'.csv')
                 FilterIndex=4;
-            elseif strcmpi(ext,'.evt')
+            elseif strcmpi(ext,'.mat')
                 FilterIndex=5;
+            elseif strcmpi(ext,'.evt')
+                FilterIndex=2;
             end
         end
         
@@ -54,10 +54,10 @@ if ~isempty(Events)
                 writeheader(filename);
                 cell2csv(filename,EventsList,',','a');
             case 4
-                save(filename,'-struct','Events','-mat');
-            case 5
                 writeheader(filename);
                 cell2csv(filename,EventsList,',','a');
+            case 5
+                save(filename,'-struct','Events','-mat');
         end
         obj.IsEvtsSaved=true;
     end
