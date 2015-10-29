@@ -1,10 +1,10 @@
-function data = filter_notch_hormonics(data,freq,fs,varargin)
+function data = filter_harmonics(data,freq,fs,varargin)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 if length(varargin)==1
     order=varargin{1};
 else
-    order=2;
+    order=3;
 end
 for i=1:floor(fs/2/freq)
     f=freq*i;

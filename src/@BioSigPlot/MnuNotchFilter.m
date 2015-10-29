@@ -30,7 +30,7 @@ fs=obj.SRate;
 
 [data,~,dataset,channel,sample,~,~,~]=get_selected_data(obj);
 
-data = filter_notch_hormonics(data,freq,fs,order);
+data = filter_harmonics(data,freq,fs,order);
 
 for i=1:size(data,2)
     obj.PreprocData{dataset(i)}(sample,channel(i))=data(:,i);
