@@ -1,7 +1,8 @@
 function Clust = DBSCAN(DistMat,Eps,MinPts)
 %A simple DBSCAN implementation of the original paper:
 %"A Density-Based Algorithm for Discovering Clusters in Large Spatial
-%Databases with Noise" -- Martin Ester et.al.
+%Databases with Noise" -- Martin Ester et.al. DBSCAN is capable of
+%clustering arbitray shapes with noise.
 %Since no spatial access method is implemented, the run time complexity
 %will be N^2 rather than N*logN
 %**************************************************************************
