@@ -20,6 +20,9 @@ classdef CommonDataStructure < handle
         next% next cds
         prev% prev cds
         file%Data.FileName
+        evt %Data.Annotations
+        
+        all_evts
     end
     
     methods
@@ -39,6 +42,9 @@ classdef CommonDataStructure < handle
         function obj = set.prevf(obj,val), obj.Data.PrevFile=val; end
         function val = get.prevf(obj),     val=obj.Data.PrevFile; end
         
+        function obj = set.evt(obj,val), obj.Data.Annotations=val; end
+        function val = get.evt(obj),       val=obj.Data.Annotations; end
+        
         function cds = get.next(obj)
             [pathstr, name, ext] = fileparts(obj.file);
             cds=obj.Load(fullfile(pathstr,obj.nextf));
@@ -49,8 +55,67 @@ classdef CommonDataStructure < handle
             cds=obj.Load(fullfile(pathstr,obj.prevf));
         end
         
+        
         function obj = set.file(obj,val), obj.Data.FileName=val; end
         function val = get.file(obj),     val=obj.Data.FileName; end
+        
+        function val=get.all_evts(obj)
+            
+            current_data=obj;
+            val=obj.evt;
+            if ~isempty(obj.Data.TimeStamps)
+                val(:,1)=num2cell(cell2mat(val(:,1))-obj.Data.TimeStamps(1));
+            end
+            
+            [pathstr, name, ext] = fileparts(obj.file);
+            
+            %searching backward
+            while ~isempty(current_data.Data.PrevFile)
+                tmp=matfile(fullfile(pathstr,current_data.Data.PrevFile));
+                
+                ts=tmp.Data.TimeStamps;
+                if ~isempty(ts)
+                    len=ts(end)-ts(1);
+                else
+                    len=size(tmp.Data.Data,1)/tmp.Data.SampleRate;
+                end
+                
+                val(:,1)=num2cell(cell2mat(val(:,1))+len);
+                
+                new_evt=tmp.Data.Annotations;
+                
+                if ~isempty(ts)
+                    new_evt(:,1)=num2cell(cell2mat(new_evt(:,1))-ts(1));
+                end
+                val=cat(1,new_evt,val);
+                
+                current_data=tmp;
+            end
+            
+            current_data=obj;
+            %searching forward
+            while ~isempty(current_data.Data.NextFile)
+                tmp=matfile(fullfile(pathstr,current_data.Data.PrevFile));
+                
+                ts=tmp.Data.TimeStamps;
+                if ~isempty(ts)
+                    len=ts(end)-ts(1);
+                else
+                    len=size(tmp.Data.Data,1)/tmp.Data.SampleRate;
+                end
+                
+                new_evt=tmp.Data.Annotations;
+                
+                if ~isempty(ts)
+                    new_evt(:,1)=num2cell(cell2mat(new_evt(:,1))-ts(1));
+                end
+                new_evt(:,1)=num2cell(cell2mat(new_evt(:,1))+len);
+                
+                val=cat(1,val,new_evt);
+                
+                current_data=tmp;
+            end
+        end
     end
     
     methods
@@ -829,6 +894,7 @@ classdef CommonDataStructure < handle
                 
             end
         end
+        
     end
 end
 
