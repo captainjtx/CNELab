@@ -5,117 +5,85 @@ classdef CommonDataStructure < handle
     %06/03/2014
     
     properties (Access=public)
-        Data
+        
+        DataInfo
         Montage
         PatientInfo
+        
+        MatFile
     end
     
     properties (Dependent)
+        %Data will be either stored dat or a reference to a matfile
+        Data
+        
         %alias for the elements of common data structures
-        dat %Data.Data
-        fs  %Data.SampleRate
-        vtf %Data.Video.TimeFrame
-        nextf%Data.NextFile
-        prevf%Data.PrevFile
-        next% next cds
-        prev% prev cds
-        file%Data.FileName
-        evt %Data.Annotations
+        fs  %DataInfo.SampleRate
+        vtf %DataInfo.Video.TimeFrame
+        nextf%DataInfo.NextFile
+        prevf%DataInfo.PrevFile
+        file%DataInfo.FileName
+        evt %DataInfo.Annotations
         
         all_evts
+        all_files
+        start_file
+        file_time
+    end
+    
+    properties  (Access=protected)
+        %buffer_size is for cnelab visualization and preprocessing
+        buffer_size
+        %file_size is to automatically split storing the file
+        %if empty, all files chained together will be merged and saved to a
+        %single mat file.
+        file_size %in mega bytes
+        %dat is for other file type compatibility
+        dat
+        
+        save_as_single % default single, otherwise save as loaded precision
     end
     
     methods
-        
-        function obj = set.dat(obj,val), obj.Data.Data=val; end
-        function val = get.dat(obj),     val=obj.Data.Data; end
-        
-        function obj = set.fs(obj,val), obj.Data.SampleRate=val; end
-        function val = get.fs(obj),     val=obj.Data.SampleRate; end
-        
-        function obj = set.vtf(obj,val), obj.Data.Video.TimeFrame=val; end
-        function val = get.vtf(obj),     val=obj.Data.Video.TimeFrame; end
-        
-        function obj = set.nextf(obj,val), obj.Data.NextFile=val; end
-        function val = get.nextf(obj),     val=obj.Data.NextFile; end
-        
-        function obj = set.prevf(obj,val), obj.Data.PrevFile=val; end
-        function val = get.prevf(obj),     val=obj.Data.PrevFile; end
-        
-        function obj = set.evt(obj,val), obj.Data.Annotations=val; end
-        function val = get.evt(obj),       val=obj.Data.Annotations; end
-        
-        function cds = get.next(obj)
-            [pathstr, name, ext] = fileparts(obj.file);
-            cds=obj.Load(fullfile(pathstr,obj.nextf));
-        end
-        
-        function cds = get.prev(obj)
-            [pathstr, name, ext] = fileparts(obj.file);
-            cds=obj.Load(fullfile(pathstr,obj.prevf));
-        end
-        
-        
-        function obj = set.file(obj,val), obj.Data.FileName=val; end
-        function val = get.file(obj),     val=obj.Data.FileName; end
-        
-        function val=get.all_evts(obj)
-            
-            current_data=obj;
-            val=obj.evt;
-            if ~isempty(obj.Data.TimeStamps)
-                val(:,1)=num2cell(cell2mat(val(:,1))-obj.Data.TimeStamps(1));
-            end
-            
-            [pathstr, name, ext] = fileparts(obj.file);
-            
-            %searching backward
-            while ~isempty(current_data.Data.PrevFile)
-                tmp=matfile(fullfile(pathstr,current_data.Data.PrevFile));
-                
-                ts=tmp.Data.TimeStamps;
-                if ~isempty(ts)
-                    len=ts(end)-ts(1);
-                else
-                    len=size(tmp.Data.Data,1)/tmp.Data.SampleRate;
-                end
-                
-                val(:,1)=num2cell(cell2mat(val(:,1))+len);
-                
-                new_evt=tmp.Data.Annotations;
-                
-                if ~isempty(ts)
-                    new_evt(:,1)=num2cell(cell2mat(new_evt(:,1))-ts(1));
-                end
-                val=cat(1,new_evt,val);
-                
-                current_data=tmp;
-            end
-            
-            current_data=obj;
-            %searching forward
-            while ~isempty(current_data.Data.NextFile)
-                tmp=matfile(fullfile(pathstr,current_data.Data.PrevFile));
-                
-                ts=tmp.Data.TimeStamps;
-                if ~isempty(ts)
-                    len=ts(end)-ts(1);
-                else
-                    len=size(tmp.Data.Data,1)/tmp.Data.SampleRate;
-                end
-                
-                new_evt=tmp.Data.Annotations;
-                
-                if ~isempty(ts)
-                    new_evt(:,1)=num2cell(cell2mat(new_evt(:,1))-ts(1));
-                end
-                new_evt(:,1)=num2cell(cell2mat(new_evt(:,1))+len);
-                
-                val=cat(1,val,new_evt);
-                
-                current_data=tmp;
+        function obj=set.Data(obj,val)
+            if ~isempty(obj.MatFile)
+                obj.MatFile.Data=val; 
+            else
+                obj.dat=val;
             end
         end
+        function val=get.Data(obj)
+            if ~isempty(obj.MatFile)
+                val=obj.MatFile.Data;
+            else
+                val=obj.dat;
+            end
+        end
+        
+        function obj = set.fs(obj,val), obj.DataInfo.SampleRate=val; end
+        function val = get.fs(obj),     val=obj.DataInfo.SampleRate; end
+        
+        function obj = set.vtf(obj,val), obj.DataInfo.Video.TimeFrame=val; end
+        function val = get.vtf(obj),     val=obj.DataInfo.Video.TimeFrame; end
+        
+        function obj = set.nextf(obj,val), obj.DataInfo.NextFile=val; end
+        function val = get.nextf(obj),     val=obj.DataInfo.NextFile; end
+        
+        function obj = set.prevf(obj,val), obj.DataInfo.PrevFile=val; end
+        function val = get.prevf(obj),     val=obj.DataInfo.PrevFile; end
+        
+        function obj = set.evt(obj,val), obj.DataInfo.Annotations=val; end
+        function val = get.evt(obj),       val=obj.DataInfo.Annotations; end
+        
+        function obj = set.file(obj,val), obj.DataInfo.FileName=val; end
+        function val = get.file(obj),     val=obj.DataInfo.FileName; end
+        function val=get.all_evts(obj),   [~,~,~,val]=CommonDataStructure.get_file_info(obj); end
+        
+        function val=get.all_files(obj),  [val,~,~,~]=CommonDataStructure.get_file_info(obj); end
+        
+        function val=get.start_file(obj), val=CommonDataStructure.get_start_file(obj); end
+        
+        function val=get.file_time(obj), [~,~,val,~]=CommonDataStructure.get_file_info(obj); end
     end
     
     methods
@@ -123,13 +91,14 @@ classdef CommonDataStructure < handle
             if nargin==0
                 cds=CommonDataStructure.initial();
                 
-                obj.Data=cds.Data;
+                obj.DataInfo=cds.DataInfo;
                 obj.Montage=cds.Montage;
                 obj.PatientInfo=cds.PatientInfo;
             else
                 d=varargin{1};
                 obj.copy(d);
             end
+            obj.save_as_single=true;
         end
         
         function delete(obj)
@@ -139,20 +108,23 @@ classdef CommonDataStructure < handle
         end
         
         function copy(obj,s)
-            
+            %s can either be a matfile object or a struct
             if isfield(s,'Data')
                 obj.Data=s.Data;
             end
             
-            if isfield(s,'Montage')
+            if isfield(s,'Montage')||any(strcmpi('Montage',who(s)))
                 obj.Montage=s.Montage;
             end
             
-            if isfield(s,'PatientInfo')
+            if isfield(s,'PatientInfo')||any(strcmpi('PatientInfo',who(s)))
                 obj.PatientInfo=s.PatientInfo;
             end
-            
+            if isfield(s,'DataInfo')||any(strcmpi('DataInfo',who(s)))
+                obj.DataInfo=s.DataInfo;
+            end
         end
+        
         function y=load(obj,varargin)
             y=0;
             if nargin==2
@@ -167,7 +139,7 @@ classdef CommonDataStructure < handle
                     '*.medf','matlab edf format (*.medf)';...
                     '*.fif','NeuroMag MEG format (*.fif)';...
                     '*.edf','Europeon Data Format (*.edf)'},...
-                    'Select your data file','data.mat');
+                    'Select your data file','DataInfo.mat');
                 
                 if ~FileName
                     return
@@ -178,40 +150,51 @@ classdef CommonDataStructure < handle
                 filename=fullfile(FilePath,FileName);
             end
             
+            if exist(filename,'file')~=2
+                y=[];
+                return
+            end
+            
             if FilterIndex==1
                 FilterIndex=CommonDataStructure.dataStructureCheck(filename);
             end
             
-            
-            
             switch FilterIndex
                 case 0
+                    obj.MatFile=[];
                     obj.copy(CommonDataStructure.readFromMAT(filename));
                 case 2
-                    obj.copy(CommonDataStructure.readFromCDS(filename));
                     
+                    obj.MatFile=matfile(filename,'Writable',true);
+                    obj.copy(CommonDataStructure.readFromCDS(filename));
                 case 3
+                    obj.MatFile=[];
                     obj.copy(CommonDataStructure.readFromOldCDS(filename));
                     
                 case 4
+                    obj.MatFile=[];
                     obj.copy(CommonDataStructure.readFromMEDF(filename));
                 case 5
+                    obj.MatFile=[];
                     obj.copy(CommonDataStructure.readFromFIF(filename));
                 case 6
+                    obj.MatFile=[];
                     obj.copy(CommonDataStructure.readFromEDF(filename));
                     
             end
-            obj.Data.FileName=filename;
+            obj.DataInfo.FileName=filename;
+            if ~isempty(obj.MatFile)
+                obj.MatFile.DataInfo=obj.DataInfo;
+            end
         end
         
         function export2workspace(obj,varname)
             assignin('base',varname,obj);
         end
+        
         function save(obj,varargin)
             
-            cds.Data=obj.Data;
-            cds.Montage=obj.Montage;
-            cds.PatientInfo=obj.PatientInfo;
+            save_all=false;
             
             title=[];
             fnames=[];
@@ -224,6 +207,10 @@ classdef CommonDataStructure < handle
                         fnames=varargin{i+1};
                     elseif strcmpi(varargin{i},'Title')
                         title=varargin{i+1};
+                    elseif strcmpi(varargin{i},'FileSize')
+                        obj.file_size=varargin{i+1};
+                    elseif strcmpi(varargin{i},'All')
+                        save_all=varargin{i+1};
                     else
                         msgbox('Invalid argument-value pair!','CommonDataStructure.save','error');
                         return
@@ -239,7 +226,7 @@ classdef CommonDataStructure < handle
                     '*.cds;*.mat','Common Data Structure Formats (*.cds;*.mat)';...
                     '*.mat','Matlab Mat File (*.mat)';
                     '*.cds','Common Data Structure Fromat (*.cds)'}...
-                    ,title,obj.Data.FileName);
+                    ,title,obj.DataInfo.FileName);
                 
                 if ~FileName
                     return
@@ -248,22 +235,84 @@ classdef CommonDataStructure < handle
                 fnames=fullfile(FilePath,FileName);
             end
             
-            wait_bar_h = waitbar(0,['Saving data to :  ' fnames]);
-            save(fnames,'-struct','cds','-mat','-v7.3');
+            wait_bar_h = waitbar(0,'Saving data');
+            
+            if save_all
+                [filenames,pathstr,filetime,evts]=obj.get_file_info(obj);
+                if isempty(obj.file_size)
+                    %might have problem if a single cds file is too large to fit
+                    %into the memory
+                    for i=1:length(filenames)
+                        [tmp_pathstr, tmp_name, tmp_ext] = fileparts(fnames);
+                        
+                        cds=CommonDataStructure.initial();
+                        tmp=CommonDataStructure.Load(fullfile(pathstr,filenames{i}));
+                        
+                        cds.DataInfo=tmp.DataInfo;
+                        cds.Montage=tmp.Montage;
+                        cds.PatientInfo=tmp.PatientInfo;
+                        cds.MatFile=[];
+                        
+                        cds.DataInfo.NextFile=[tmp_name,'_',num2str(i+1),tmp_ext];
+                        cds.DataInfo.PrevFile=[tmp_name,'_',num2str(i-1),tmp_ext];
+                        cds.DataInfo.FileName=fullfile(tmp_pathstr,[tmp_name,'_',num2str(i),tmp_ext]);
+                        
+                        if i==1
+                            cds.DataInfo.PrevFile=[];
+                        end
+                        
+                        if i==length(filenames)
+                            cds.DataInfo.NextFile=[];
+                        end
+                        
+                        if obj.save_as_single
+                            cds.Data=single(tmp.Data);
+                        else
+                            cds.Data=tmp.Data;
+                        end
+                        
+                        
+                        save([fullfile(tmp_pathstr,[tmp_name,'_',num2str(i)]),tmp_ext],'-struct','cds','-mat','-v7.3');
+                        waitbar(i/length(filenames));
+                    end
+                else
+                    
+                end
+            else
+                if isempty(obj.file_size)
+                    %might have problem if a single cds file is too large to fit
+                    %into the memory
+                    cds=CommonDataStructure.initial();
+                    cds.DataInfo=obj.DataInfo;
+                    cds.Montage=obj.Montage;
+                    cds.PatientInfo=obj.PatientInfo;
+                    cds.MatFile=[];
+                    if obj.save_as_single
+                        cds.Data=single(obj.Data);
+                    else
+                        cds.Data=obj.Data;
+                    end
+                    save(fnames,'-struct','cds','-mat','-v7.3');
+                else
+                    %automatic split or merge files when saving using specified
+                    %file_size in megabytes
+                    
+                end
+            end
             close(wait_bar_h);
         end
         
         function success=extractTimeFrameFromData(obj,varargin)
             success=false;
             
-            if isempty(obj.Data.SampleRate)
+            if isempty(obj.DataInfo.SampleRate)
                 error('Sample rate missing!');
             end
             if nargin==1
                 %try to automatically detect the videochannel
                 videoChannel=[];
-                for i=1:size(obj.Data.Data,2)
-                    [frame,ind]=unique(obj.Data.Data(:,i));
+                for i=1:size(obj.DataInfo.Data,2)
+                    [frame,ind]=unique(obj.DataInfo.Data(:,i));
                     nv=frame<1;
                     frame(nv)=[];
                     
@@ -287,7 +336,7 @@ classdef CommonDataStructure < handle
             if ~isempty(videoChannel)
                 
                 %find the recording segments
-                frames=obj.Data.Data(:,videoChannel);
+                frames=obj.DataInfo.Data(:,videoChannel);
                 
                 %eliminate the zeros due to UDP
                 ind=find(frames>=1);
@@ -300,7 +349,7 @@ classdef CommonDataStructure < handle
                 
                 dframe=find(abs(diff(frames))>5);
                 
-                if ~isempty(dframe)                    
+                if ~isempty(dframe)
                     frames=frames(max(dframe)+1:end);
                     ind=ind(max(dframe)+1:end);
                 end
@@ -308,9 +357,9 @@ classdef CommonDataStructure < handle
                 [frames,newind]=unique(frames);
                 ind=ind(newind);
                 
-                time=ind/obj.Data.SampleRate;
-                obj.Data.Video.TimeFrame=cat(2,reshape(time,length(time),1),reshape(frames,length(frames),1));
-                obj.Data.Video.StartTime=0;
+                time=ind/obj.DataInfo.SampleRate;
+                obj.DataInfo.Video.TimeFrame=cat(2,reshape(time,length(time),1),reshape(frames,length(frames),1));
+                obj.DataInfo.Video.StartTime=0;
                 
                 figure('Name',['Extracted Time-Frame Plot on Channel ',num2str(videoChannel)]);
                 plot(time,frames);
@@ -319,6 +368,14 @@ classdef CommonDataStructure < handle
                 success=true;
             end
         end
+        
+        function cds=extractSegment(obj,start_ind,len)
+            
+            
+            
+        end
+        
+        
     end
     methods (Static=true)
         function FilterIndex=dataStructureCheck(filename)
@@ -373,26 +430,29 @@ classdef CommonDataStructure < handle
         end
         
         function s=initial()
-            %Auto generate an empty cds
+            %Auto generate an empty cds structure
             %Refer to /doc/manual for more information on the data
             %structure
-            
+            s.MatFile=[];
+            s.Data=[];
+            s.buffer_size=[];
+            s.file_size=[];% in megabytes
+            s.save_as_single=true;
             %obj.Data construction
-            s.Data.Data=[];
-            s.Data.Annotations=[];
-            s.Data.Artifact=[];
-            s.Data.TimeStamps=[];
-            s.Data.Units=[];
-            s.Data.Video.StartTime=[];
-            s.Data.Video.TimeFrame=[];
-            s.Data.Video.NumberOfFrame=[];
-            s.Data.PreFilter='';
-            s.Data.DownSample=[];
-            s.Data.SampleRate=[];
-            s.Data.FileName=[];
-            s.Data.VideoName=[];
-            s.Data.NextFile=[];
-            s.Data.PrevFile=[];
+            s.DataInfo.Annotations=[];
+            s.DataInfo.Artifact=[];
+            s.DataInfo.TimeStamps=[];
+            s.DataInfo.Units=[];
+            s.DataInfo.Video.StartTime=[];
+            s.DataInfo.Video.TimeFrame=[];
+            s.DataInfo.Video.NumberOfFrame=[];
+            s.DataInfo.PreFilter='';
+            s.DataInfo.DownSample=[];
+            s.DataInfo.SampleRate=[];
+            s.DataInfo.FileName=[];
+            s.DataInfo.VideoName=[];
+            s.DataInfo.NextFile=[];
+            s.DataInfo.PrevFile=[];
             
             %obj.Montage construction
             s.Montage.ChannelNames=[];
@@ -402,7 +462,7 @@ classdef CommonDataStructure < handle
             s.Montage.Amplifier=[];
             s.Montage.Name=[];
             s.Montage.Notes=[];
-            s.Montage.MaskChanNames=[]; 
+            s.Montage.MaskChanNames=[];
             s.Montage.ElectrodeID=[];
             s.Montage.ChannelPosition=[];
             
@@ -417,7 +477,14 @@ classdef CommonDataStructure < handle
             s.PatientInfo.Location=[];
         end
         function s=readFromCDS(filename)
-            s=load(filename,'-mat');
+            s=matfile(filename,'Writable',true);
+            if ~any(strcmpi('DataInfo',who(s)))&&any(strcmpi('Data',who(s)))
+                dat=s.Data;
+                %obsolete format Data.Data
+                %get Data.Data outside
+                s.DataInfo=rmfield(dat,'Data');
+                s.Data=dat.Data;
+            end
         end
         
         function s=readFromMEDF(filename)
@@ -428,7 +495,7 @@ classdef CommonDataStructure < handle
                 if isfield(medf.data,'dataMat')
                     for i=1:length(medf.data.dataMat)
                         try
-                            s.Data.Data(:,i)=reshape(medf.data.dataMat{i},...
+                            s.Data(:,i)=reshape(medf.data.dataMat{i},...
                                 length(medf.data.dataMat{i}),1);
                         catch exception
                             
@@ -450,17 +517,17 @@ classdef CommonDataStructure < handle
                 
                 if isfield(medf.data,'info')
                     if isfield(medf.data.info{1},'sampleRate')
-                        s.Data.SampleRate=medf.data.info{1}.sampleRate;
+                        s.DataInfo.SampleRate=medf.data.info{1}.sampleRate;
                     end
                     
                     for i=1:length(medf.data.info)
                         if isfield(medf.data.info{i},'unit')
-                            s.Data.Units{i}=medf.data.info{i}.unit;
+                            s.DataInfo.Units{i}=medf.data.info{i}.unit;
                         end
                     end
                     
                     if isfield(medf.data.info{1},'stamp')
-                        s.Data.TimeStamps=medf.data.info{1}.stamp;
+                        s.DataInfo.TimeStamps=medf.data.info{1}.stamp;
                     end
                     
                     for i=1:length(medf.data.info)
@@ -486,14 +553,13 @@ classdef CommonDataStructure < handle
                 
                 if isfield(medf.info,'video')
                     if isfield(medf.info.video,'startTime')
-                        s.Data.Video.StartTime=medf.info.video.startTime;
+                        s.DataInfo.Video.StartTime=medf.info.video.startTime;
                     end
                     if isfield(medf.info.video,'timeFrame')
-                        s.Data.Video.TimeFrame=medf.info.video.timeFrame;
+                        s.DataInfo.Video.TimeFrame=medf.info.video.timeFrame;
                     end
                 end
             end
-            
         end
         function s=readFromOldCDS(filename)
             oldcds=load(filename,'-mat');
@@ -502,23 +568,21 @@ classdef CommonDataStructure < handle
             %obj.data construction
             if isfield(oldcds,'data')
                 if isfield(oldcds.data,'data')
-                    s.Data.Data=oldcds.data.data;
+                    s.Data=oldcds.Data.data;
                 end
                 if isfield(oldcds.data,'annotations')
-                    s.Data.Annotations=oldcds.data.annotations;
+                    s.DataInfo.Annotations=oldcds.Data.annotations;
                 end
                 if isfield(oldcds.data,'artifact')
-                    s.Data.Artifact=oldcds.data.artifact;
+                    s.DataInfo.Artifact=oldcds.Data.artifact;
                 end
                 if isfield(oldcds.data,'timestamps')
-                    s.Data.TimeStamps=oldcds.data.timestamps;
+                    s.DataInfo.TimeStamps=oldcds.Data.timestamps;
                 end
                 
                 if isfield(oldcds.data,'triggerCodes')
-                    s.Data.TriggerCodes=oldcds.data.triggerCodes;
+                    s.DataInfo.TriggerCodes=oldcds.Data.triggerCodes;
                 end
-                
-                
             end
             
             %obj.Montage construction
@@ -543,11 +607,11 @@ classdef CommonDataStructure < handle
                 end
                 
                 if isfield(oldcds.montage,'SampleRate')
-                    s.Data.SampleRate=oldcds.montage.SampleRate;
-                    s.Data.TimeStamps=s.Data.TimeStamps/s.Data.SampleRate;
-                    evts=s.Data.Annotations;
-                    evts(:,1)=num2cell(cell2mat(evts(:,1))/s.Data.SampleRate);
-                    s.Data.Annotations=evts;
+                    s.DataInfo.SampleRate=oldcds.montage.SampleRate;
+                    s.DataInfo.TimeStamps=s.DataInfo.TimeStamps/s.DataInfo.SampleRate;
+                    evts=s.DataInfo.Annotations;
+                    evts(:,1)=num2cell(cell2mat(evts(:,1))/s.DataInfo.SampleRate);
+                    s.DataInfo.Annotations=evts;
                 end
             end
             %obj.PatientInfo construction
@@ -574,13 +638,13 @@ classdef CommonDataStructure < handle
                     %                         s.PatientInfo.Params.TmMinimumData=oldcds.patientInfo.Params.tmMinimumData;
                     %                     end
                     if isfield(oldcds.patientInfo.Params,'nDownSample')
-                        s.Data.DownSample=oldcds.patientInfo.Params.nDownSample;
-                        n=s.Data.DownSample;
+                        s.DataInfo.DownSample=oldcds.patientInfo.Params.nDownSample;
+                        n=s.DataInfo.DownSample;
                         if n~=0
-                            s.Data.TimeStamps=s.Data.TimeStamps/n;
-                            evts=s.Data.Annotations;
+                            s.DataInfo.TimeStamps=s.DataInfo.TimeStamps/n;
+                            evts=s.DataInfo.Annotations;
                             evts(:,1)=num2cell(cell2mat(evts(:,1))/n);
-                            s.Data.Annotations=evts;
+                            s.DataInfo.Annotations=evts;
                         end
                     end
                 end
@@ -619,13 +683,13 @@ classdef CommonDataStructure < handle
             if ~isempty(raw)
                 if isfield(raw,'info')
                     if isfield(raw.info,'sfreq')
-                        s.Data.SampleRate=raw.info.sfreq;
+                        s.DataInfo.SampleRate=raw.info.sfreq;
                     end
                     if isfield(raw.info,'lowpass')
-                        s.Data.PreFilter=strcat(s.Data.PreFilter,'LP: ',num2str(raw.info.lowpass),' Hz');
+                        s.DataInfo.PreFilter=strcat(s.DataInfo.PreFilter,'LP: ',num2str(raw.info.lowpass),' Hz');
                     end
                     if isfield(raw.info,'highpass')
-                        s.Data.PreFilter=strcat(s.Data.PreFilter,'HP: ',num2str(raw.info.highpass),' Hz');
+                        s.DataInfo.PreFilter=strcat(s.DataInfo.PreFilter,'HP: ',num2str(raw.info.highpass),' Hz');
                     end
                     
                     if isfield(raw.info,'ch_names')
@@ -695,9 +759,9 @@ classdef CommonDataStructure < handle
                     
                     ChannelNames(chan_ignore)=[];
                     
-                    s.Data.Data=data';
-                    s.Data.TimeStamps=times;
-                    s.Data.Units=units;
+                    s.Data=data';
+                    s.DataInfo.TimeStamps=times;
+                    s.DataInfo.Units=units;
                     s.Montage.ChannelNames=ChannelNames;
                 end
                 
@@ -706,6 +770,7 @@ classdef CommonDataStructure < handle
         end
         
         function s=readFromMAT(filename)
+            %Raw mat data
             s=CommonDataStructure.initial();
             st=load(filename,'-mat');
             field=fieldnames(st);
@@ -723,7 +788,7 @@ classdef CommonDataStructure < handle
                 end
             end
             
-            s.Data.Data=data;
+            s.Data=data;
         end
         
         function s=readFromEDF(filename)
@@ -753,18 +818,18 @@ classdef CommonDataStructure < handle
                 
                 if isfield(header,'data_record_duration')&&isfield(signalHeader(count),'samples_in_record')
                     if header.data_record_duration
-                        s.Data.SampleRate=signalHeader(count).samples_in_record/header.data_record_duration;
+                        s.DataInfo.SampleRate=signalHeader(count).samples_in_record/header.data_record_duration;
                     end
                 end
                 
                 if isfield(signalHeader(count),'prefiltering')
-                    s.Data.PreFilter{i}=signalHeader(count).prefiltering;
+                    s.DataInfo.PreFilter{i}=signalHeader(count).prefiltering;
                 end
                 
                 if isfield(signalHeader(count),'physical_dimension')
-                    s.Data.Units{count}=signalHeader(count).physical_dimension;
+                    s.DataInfo.Units{count}=signalHeader(count).physical_dimension;
                 end
-                s.Data.Data(:,count)=signalCell{count};
+                s.Data(:,count)=signalCell{count};
             end
             
         end
@@ -778,7 +843,7 @@ classdef CommonDataStructure < handle
                 '*.medf','matlab edf format (*.medf)';...
                 '*.fif','NeuroMag MEG format (*.fif)';...
                 '*.edf','Europeon Data Format (*.edf)'},...
-                'Select your data file','data.mat',...
+                'Select your data file','DataInfo.mat',...
                 'MultiSelect','on');
             
             if ~iscell(FileName)
@@ -807,19 +872,25 @@ classdef CommonDataStructure < handle
                 filename=fullfile(FilePath,FileName{i});
                 switch FilterIndex(i)
                     case 0
+                        cds{i}.MatFile=[];
                         cds{i}.copy(CommonDataStructure.readFromMAT(filename));
                     case 2
+                        cds{i}.MatFile=matfile(filename,'Writable',true);
                         cds{i}.copy(CommonDataStructure.readFromCDS(filename));
                     case 3
+                        cds{i}.MatFile=[];
                         cds{i}.copy(CommonDataStructure.readFromOldCDS(filename));
                     case 4
+                        cds{i}.MatFile=[];
                         cds{i}.copy(CommonDataStructure.readFromMEDF(filename));
                     case 5
+                        cds{i}.MatFile=[];
                         cds{i}.copy(CommonDataStructure.readFromFIF(filename));
                     case 6
+                        cds{i}.MatFile=[];
                         cds{i}.copy(CommonDataStructure.readFromEDF(filename));
                 end
-                cds{i}.Data.FileName=filename;
+                cds{i}.DataInfo.FileName=filename;
             end
             
         end
@@ -879,7 +950,7 @@ classdef CommonDataStructure < handle
             mtg=cell(length(montage),1);
             for i=1:length(montage)
                 [pathstr, name, ext] = fileparts(FileName{i});
-
+                
                 if length(OriginalChanNames)==1
                     channame=OriginalChanNames{1};
                 else
@@ -895,6 +966,208 @@ classdef CommonDataStructure < handle
             end
         end
         
+        function f=get_start_file(obj)
+            current_data=obj.DataInfo;
+            [pathstr, name, ext] = fileparts(current_data.FileName);
+            
+            while ~isempty(current_data.PrevFile)
+                
+                fname=fullfile(pathstr,current_data.PrevFile);
+                if exist(fname,'file')~=2
+                    break
+                end
+                tmp=matfile(fname);
+                %matfile object cannot access the subfield of its subfield.
+                %you need to retrieve the the substructure to access below
+                current_data=tmp.DataInfo;
+            end
+            f=current_data.FileName;
+        end
+        
+        function [filenames,pathstr,filetime,evts]=get_file_info(varargin)
+            %obj can either be the class instance or the matfile object
+            %if it is a matfile object, you have to guarantee that the mat
+            %file is in the correct format of CommonDataStructure
+            evts=[];
+            filenames={};
+            filetime=[];
+            pathstr=[];
+            
+            if nargin==1
+                obj=varargin{1};
+                if ischar(obj)
+                    if exist(obj,'file')~=2
+                        return
+                    else
+                        obj=matfile(obj);
+                        if ~any(strcmpi('DataInfo',who(obj)))
+                            obj=CommonDataStructure.Load(obj);
+                        end
+                    end
+                end
+            elseif nargin==0
+                [FileName,FilePath,FilterIndex]=uigetfile({...
+                    '*.cds';...
+                    'Supported formats (*.cds)'},...
+                    'Select your data file','DataInfo.mat');
+                if ~FileName
+                    return
+                end
+                obj=matfile(fullfile(FilePath,FileName));
+                
+                if ~any(strcmpi('DataInfo',who(obj)))
+                    obj=CommonDataStructure.Load(fullfile(FilePath,FileName));
+                end
+                
+            end
+            current_data_info=obj.DataInfo;
+            
+            [pathstr, ~, ~] = fileparts(current_data_info.FileName);
+            firstfile=CommonDataStructure.get_start_file(obj);
+            
+            %get to the first node of the chain
+            current_file=matfile(firstfile);
+            if ~any(strcmpi('DataInfo',who(current_file)))
+                current_file=CommonDataStructure.Load(firstfile);
+            end
+            
+            current_data_info=current_file.DataInfo;
+            
+            [~,name,ext]=fileparts(firstfile);
+            filenames{1}=[name,ext];
+            %searching forward
+            while 1
+                ts=current_data_info.TimeStamps;
+                %get all events
+                new_evt=current_data_info.Annotations;
+                if ~isempty(new_evt)
+                    if ~isempty(ts)
+                        new_evt(:,1)=num2cell(cell2mat(new_evt(:,1))-ts(1));
+                    end
+                    if ~isempty(filetime)
+                        new_evt(:,1)=num2cell(cell2mat(new_evt(:,1))+filetime(end,2));
+                    end
+                end
+                
+                evts=cat(1,evts,new_evt);
+                %**********************************************************
+                if ~isempty(ts)
+                    new_t=[ts(1),ts(end)]-ts(1);
+                else
+                    %this will require to load Data, extremly slow, so it
+                    %is always advicalbe to store timestamp into the data
+                    %very costy
+                    new_t=[0,size(current_file.Data,1)]/current_data_info.SampleRate;
+                end
+                
+                if ~isempty(filetime)
+                    new_t=new_t+filetime(end,2);
+                end
+                filetime=cat(1,filetime,new_t);
+                
+                fname=fullfile(pathstr,current_data_info.NextFile);
+                
+                if isempty(current_data_info.NextFile)||exist(fname,'file')~=2
+                    break
+                end
+                
+                filenames=cat(1,filenames,current_data_info.NextFile);
+                
+                current_file=matfile(fname);
+                if ~any(strcmpi('DataInfo',who(current_file)))
+                    current_file=CommonDataStructure.Load(fname);
+                end
+                current_data_info=current_file.DataInfo;
+            end
+        end
+        
+        function [dat,eof,evts]=get_data_segment(varargin)
+            %t_start, t_end will be the start and end time in seconds, if
+            %t_start is empty, will start from the begining; if t_end is
+            %empty, will extend to the end
+            %if negative , start from the end
+            dat=[];
+            eof=[];
+            evts=[];
+            if nargin==3
+                obj=varargin{1};
+                if ischar(obj)
+                    if exist(obj,'file')~=2
+                        return
+                    else
+                        obj=matfile(obj);
+                    end
+                end
+            elseif nargin==2
+                [FileName,FilePath,FilterIndex]=uigetfile({...
+                    '*.cds';...
+                    'Supported formats (*.cds)'},...
+                    'Select your data file','DataInfo.mat');
+                if ~FileName
+                    return
+                end
+                obj=matfile(fullfile(FilePath,FileName));
+            else
+                return
+            end
+            
+            t_start=varargin{end-1};
+            t_end=varargin{end};
+            current_data_info=obj.DataInfo;
+            fs=current_data_info.SampleRate;
+            %**************************************************************
+            eof=false;
+            [filenames,pathstr,filetime,evts]=CommonDataStructure.get_file_info(obj);
+            
+            if isempty(t_start)
+                f_start=1;
+            else
+                if t_start<0
+                    t_start=filetime(end,2)+t_start;
+                end
+                tmp=find(t_start>=filetime(:,1));
+                if isempty(tmp)
+                    eof=true;
+                    return
+                end
+                f_start=tmp(end);
+            end
+            if isempty(t_end)
+                f_end=length(filenames);
+            else
+                if t_end<0
+                    t_end=filetime(end,2)+t_end;
+                end
+                tmp=find(t_end<=filetime(:,2));
+                if isempty(tmp)
+                    eof=true;
+                    return
+                end
+                f_end=tmp(1);
+            end
+            
+            if t_start>t_end
+                tmp=t_start;
+                t_start=t_end;
+                t_end=tmp;
+            end
+            
+            for f=f_start:f_end
+                fileobj=matfile(fullfile(pathstr,filenames{f}));
+                if f==f_end
+                    ind_end=max(1,floor((t_end-filetime(f,1))*fs));
+                else
+                    ind_end=round((filetime(f,2)-filetime(f,1))*fs);
+                end
+                
+                if f==f_start
+                    ind_start=max(1,floor((t_start-filetime(f,1))*fs));
+                else
+                    ind_start=1;
+                end
+                dat=cat(1,dat,fileobj.Data(ind_start:ind_end,:));
+            end
+        end
     end
 end
 

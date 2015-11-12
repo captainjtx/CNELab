@@ -17,15 +17,15 @@ if isempty(cds)
     return;
 end
 
-fs=cds{1}.Data.SampleRate;
+fs=cds{1}.DataInfo.SampleRate;
 
 for i=2:length(cds)
     
-    if cds{i}.Data.SampleRate~=cds{i-1}.Data.SampleRate
+    if cds{i}.DataInfo.SampleRate~=cds{i-1}.DataInfo.SampleRate
         fs=1;
         msgbox(['Sampling frequency in data set ' num2str(i-1) ' and ' num2str(i) ' is not the same!'],'run','error');
     else
-        fs=cds{i}.Data.SampleRate;
+        fs=cds{i}.DataInfo.SampleRate;
     end
 end
 
@@ -37,10 +37,10 @@ fnames=cell(1,length(cds));
 fpaths=cell(1,length(cds));
 
 for i=1:length(cds)
-    data{i}=cds{i}.Data.Data;
+    data{i}=cds{i}.Data;
     
-    FileNames{i}=cds{i}.Data.FileName;
-    [fpaths{i},fnames{i}]=fileparts(cds{i}.Data.FileName);
+    FileNames{i}=cds{i}.DataInfo.FileName;
+    [fpaths{i},fnames{i}]=fileparts(cds{i}.DataInfo.FileName);
     
     %get the first mat file
     
@@ -85,18 +85,18 @@ VideoStartTime=0;
 VideoTimeFrame=[];
 NumberOfFrame=[];
 for i=1:length(cds)
-    if ~isempty(cds{i}.Data.Video.StartTime)
-        VideoStartTime=cds{i}.Data.Video.StartTime;
+    if ~isempty(cds{i}.DataInfo.Video.StartTime)
+        VideoStartTime=cds{i}.DataInfo.Video.StartTime;
     end
     
-    if ~isempty(cds{i}.Data.Video.TimeFrame)
-        VideoTimeFrame=cds{i}.Data.Video.TimeFrame;
+    if ~isempty(cds{i}.DataInfo.Video.TimeFrame)
+        VideoTimeFrame=cds{i}.DataInfo.Video.TimeFrame;
     end
 end
 
 for i=1:length(cds)
-    if isfield(cds{i}.Data.Video,'NumberOfFrame')
-        NumberOfFrame=cds{i}.Data.Video.NumberOfFrame;
+    if isfield(cds{i}.DataInfo.Video,'NumberOfFrame')
+        NumberOfFrame=cds{i}.DataInfo.Video.NumberOfFrame;
     end
 end
 
@@ -112,21 +112,21 @@ end
 %**************************************************************************
 Units=cell(length(cds),1);
 for i=1:length(cds)
-    if iscell(cds{i}.Data.Units)
-        if length(cds{i}.Data.Units)==size(cds{i}.Data.Data,2)
-            Units{i}=cds{i}.Data.Units;
+    if iscell(cds{i}.DataInfo.Units)
+        if length(cds{i}.DataInfo.Units)==size(cds{i}.Data,2)
+            Units{i}=cds{i}.DataInfo.Units;
         end
-    elseif ischar(cds{i}.Data.Units)
-        Units{i}=cell(1,size(cds{i}.Data.Data,2));
-        [Units{i}{:}]=deal(cds{i}.Data.Units);
+    elseif ischar(cds{i}.DataInfo.Units)
+        Units{i}=cell(1,size(cds{i}.Data,2));
+        [Units{i}{:}]=deal(cds{i}.DataInfo.Units);
     end
 end
 %==========================================================================
 %**************************************************************************
 StartTime=0;
 for i=1:length(cds)
-    if ~isempty(cds{i}.Data.TimeStamps)
-        StartTime=cds{i}.Data.TimeStamps(1);
+    if ~isempty(cds{i}.DataInfo.TimeStamps)
+        StartTime=cds{i}.DataInfo.TimeStamps(1);
         break;
     end
 end
@@ -135,7 +135,7 @@ end
 NextFiles=cell(1,length(cds));
 for i=1:length(cds)
     if isfield(cds{i}.Data,'NextFile')
-        NextFiles{i}=cds{i}.Data.NextFile;
+        NextFiles{i}=cds{i}.DataInfo.NextFile;
     else
         NextFiles{i}=[];
     end
@@ -143,7 +143,7 @@ end
 PrevFiles=cell(1,length(cds));
 for i=1:length(cds)
     if isfield(cds{i}.Data,'PrevFile')
-        PrevFiles{i}=cds{i}.Data.PrevFile;
+        PrevFiles{i}=cds{i}.DataInfo.PrevFile;
     else
         PrevFiles{i}=[];
     end
@@ -170,15 +170,15 @@ set(bsp.Fig,'Visible','off');
 % while(1)
     startTime=0;
     for i=1:length(cds)
-        if ~isempty(cds{i}.Data.TimeStamps)
-            startTime=cds{i}.Data.TimeStamps(1);
+        if ~isempty(cds{i}.DataInfo.TimeStamps)
+            startTime=cds{i}.DataInfo.TimeStamps(1);
             break;
         end
     end
     evts=[];
     for i=1:length(cds)
-        if ~isempty(cds{i}.Data.Annotations)
-            tmp_evts=cds{i}.Data.Annotations;
+        if ~isempty(cds{i}.DataInfo.Annotations)
+            tmp_evts=cds{i}.DataInfo.Annotations;
             tmp_evts(:,1)=num2cell(cell2mat(tmp_evts(:,1))-startTime);
             code=cell(size(tmp_evts,1),1);
             [code{:}]=deal(0);
@@ -190,12 +190,12 @@ set(bsp.Fig,'Visible','off');
         evts=cat(1,evts,tmp_evts);
         
         if isfield(cds{i}.Data,'TriggerCodes')
-            for r=1:size(cds{i}.Data.TriggerCodes,1)
-                center_hold_time=cds{i}.Data.TriggerCodes(r,1)/fs;
-                show_cue_time=cds{i}.Data.TriggerCodes(r,2)/fs;
-                %             fill_target_time=cds{i}.Data.TriggerCodes(r,3)/fs;
+            for r=1:size(cds{i}.DataInfo.TriggerCodes,1)
+                center_hold_time=cds{i}.DataInfo.TriggerCodes(r,1)/fs;
+                show_cue_time=cds{i}.DataInfo.TriggerCodes(r,2)/fs;
+                %             fill_target_time=cds{i}.DataInfo.TriggerCodes(r,3)/fs;
                 
-                errorCode=cds{i}.Data.TriggerCodes(r,end);
+                errorCode=cds{i}.DataInfo.TriggerCodes(r,end);
                 
                 if ~errorCode
                     color=bsp.AdvanceEventDefaultColor;
@@ -208,9 +208,9 @@ set(bsp.Fig,'Visible','off');
                         %                         ||fill_target_time-show_cue_time<0.8...
                         %                         ||fill_target_time-show_cue_time>1.7
                         color=[0.5 0.5 0.5];
-                        evts=cat(1,evts,{cds{i}.Data.TriggerCodes(r,c)/fs,['0-' num2str(c)],color,2});
+                        evts=cat(1,evts,{cds{i}.DataInfo.TriggerCodes(r,c)/fs,['0-' num2str(c)],color,2});
                     else
-                        evts=cat(1,evts,{cds{i}.Data.TriggerCodes(r,c)/fs,num2str(c),color,2});
+                        evts=cat(1,evts,{cds{i}.DataInfo.TriggerCodes(r,c)/fs,num2str(c),color,2});
                     end
                 end
             end
@@ -274,12 +274,12 @@ remakeMontageMenu(bsp);
 %currently only one video is supported
 if ~isempty(regexp(computer,'WIN','ONCE'))
     for i=1:length(cds)
-        if ~isempty(cds{i}.Data.VideoName)
+        if ~isempty(cds{i}.DataInfo.VideoName)
             videofile=[];
-            if exist(cds{i}.Data.VideoName,'file')==2
-                videofile=cds{i}.Data.VideoName;
-            elseif exist(fullfile(fpaths{i},cds{i}.Data.VideoName),'file')==2
-                videofile=fullfile(fpaths{i},cds{i}.Data.VideoName);
+            if exist(cds{i}.DataInfo.VideoName,'file')==2
+                videofile=cds{i}.DataInfo.VideoName;
+            elseif exist(fullfile(fpaths{i},cds{i}.DataInfo.VideoName),'file')==2
+                videofile=fullfile(fpaths{i},cds{i}.DataInfo.VideoName);
             end
             if ~isempty(videofile)
                 bsp.WinVideo=VideoWindow(videofile,bsp.VideoActxOpt); %VLC or WMPlayer
