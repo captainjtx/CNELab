@@ -1,4 +1,9 @@
 function cnelab()
+%Some additional default settings, will be migrated in to configuration
+%file in the future release
+
+buffer_size=100; % in megabytes
+%**************************************************************************
 
 cds=[];
 while(1)
@@ -29,6 +34,15 @@ for i=2:length(cds)
     end
 end
 
+%The buffer lenght in samples
+%If two dataset is retrieved at the sample time, the buffer needed will be
+%doubled. If future test demonstrate that dynamic buffer had a low cost,
+%automatic memory control might be implemented instead.
+buffer_len=0;
+for i=1:length(cds)
+    chan_num=size(cds{i}.get_data_segment(cds{i},0,0),2);
+    buffer_len=max(buffer_len,round(buffer_size)*1000*1000/8/chan_num);
+end
 
 % cdsmatfiles=cell(1,length(cds));
 data=cell(1,length(cds));
@@ -37,6 +51,8 @@ fnames=cell(1,length(cds));
 fpaths=cell(1,length(cds));
 
 for i=1:length(cds)
+    % In future, automatic direct to a saved position might be possible
+%     data{i}=cds{i}.get_data_segment(cds{i},0,buffer_len/fs);
     data{i}=cds{i}.Data;
     
     FileNames{i}=cds{i}.DataInfo.FileName;
@@ -113,11 +129,11 @@ end
 Units=cell(length(cds),1);
 for i=1:length(cds)
     if iscell(cds{i}.DataInfo.Units)
-        if length(cds{i}.DataInfo.Units)==size(cds{i}.Data,2)
+        if length(cds{i}.DataInfo.Units)==size(data{i},2)
             Units{i}=cds{i}.DataInfo.Units;
         end
     elseif ischar(cds{i}.DataInfo.Units)
-        Units{i}=cell(1,size(cds{i}.Data,2));
+        Units{i}=cell(1,size(data{i},2));
         [Units{i}{:}]=deal(cds{i}.DataInfo.Units);
     end
 end
@@ -134,7 +150,7 @@ end
 %**************************************************************************
 NextFiles=cell(1,length(cds));
 for i=1:length(cds)
-    if isfield(cds{i}.Data,'NextFile')
+    if isfield(cds{i}.DataInfo,'NextFile')
         NextFiles{i}=cds{i}.DataInfo.NextFile;
     else
         NextFiles{i}=[];
@@ -142,7 +158,7 @@ for i=1:length(cds)
 end
 PrevFiles=cell(1,length(cds));
 for i=1:length(cds)
-    if isfield(cds{i}.Data,'PrevFile')
+    if isfield(cds{i}.DataInfo,'PrevFile')
         PrevFiles{i}=cds{i}.DataInfo.PrevFile;
     else
         PrevFiles{i}=[];
@@ -189,7 +205,7 @@ set(bsp.Fig,'Visible','off');
         end
         evts=cat(1,evts,tmp_evts);
         
-        if isfield(cds{i}.Data,'TriggerCodes')
+        if isfield(cds{i}.DataInfo,'TriggerCodes')
             for r=1:size(cds{i}.DataInfo.TriggerCodes,1)
                 center_hold_time=cds{i}.DataInfo.TriggerCodes(r,1)/fs;
                 show_cue_time=cds{i}.DataInfo.TriggerCodes(r,2)/fs;

@@ -568,20 +568,20 @@ classdef CommonDataStructure < handle
             %obj.data construction
             if isfield(oldcds,'data')
                 if isfield(oldcds.data,'data')
-                    s.Data=oldcds.Data.data;
+                    s.Data=oldcds.data.data;
                 end
                 if isfield(oldcds.data,'annotations')
-                    s.DataInfo.Annotations=oldcds.Data.annotations;
+                    s.DataInfo.Annotations=oldcds.data.annotations;
                 end
                 if isfield(oldcds.data,'artifact')
-                    s.DataInfo.Artifact=oldcds.Data.artifact;
+                    s.DataInfo.Artifact=oldcds.data.artifact;
                 end
                 if isfield(oldcds.data,'timestamps')
-                    s.DataInfo.TimeStamps=oldcds.Data.timestamps;
+                    s.DataInfo.TimeStamps=oldcds.data.timestamps;
                 end
                 
                 if isfield(oldcds.data,'triggerCodes')
-                    s.DataInfo.TriggerCodes=oldcds.Data.triggerCodes;
+                    s.DataInfo.TriggerCodes=oldcds.data.triggerCodes;
                 end
             end
             
@@ -1128,9 +1128,15 @@ classdef CommonDataStructure < handle
                 tmp=find(t_start>=filetime(:,1));
                 if isempty(tmp)
                     eof=true;
-                    return
+                    if all(t_start<filetime(:,1))
+                        t_start=0;
+                        f_start=1;
+                    else
+                        return
+                    end
+                else
+                    f_start=tmp(end);
                 end
-                f_start=tmp(end);
             end
             if isempty(t_end)
                 f_end=length(filenames);
@@ -1141,9 +1147,17 @@ classdef CommonDataStructure < handle
                 tmp=find(t_end<=filetime(:,2));
                 if isempty(tmp)
                     eof=true;
-                    return
+                    
+                    if all(t_end>filetime(:,2))
+                        t_end=max(filetime(:,2));
+                        f_end=length(filenames);
+                    else
+                        return;
+                    end
+                
+                else
+                    f_end=tmp(1);
                 end
-                f_end=tmp(1);
             end
             
             if t_start>t_end
