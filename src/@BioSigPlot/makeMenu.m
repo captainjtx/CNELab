@@ -15,14 +15,19 @@ obj.MenuLoadVideo=uimenu(obj.MenuLoad,'Label','Video','Callback',@(src,evt) obj.
 obj.MenuLoadChannelPosition=uimenu(obj.MenuLoad,'Label','Position','Callback',@(src,evt) obj.LoadChannelPosition);
 
 obj.MenuSave=uimenu(obj.MenuFile,'Label','Save');
-obj.MenuSaveData=uimenu(obj.MenuSave,'Label','Data(sel)','Callback',@(src,evt) SaveData(obj,src),'Accelerator','s');
-obj.MenuMergeData=uimenu(obj.MenuSave,'Label','Merge Data','Callback',@(src,evt) SaveData(obj,src));
-obj.MenuSaveEvents=uimenu(obj.MenuSave,'Label','Events','Callback',@(src,evt) obj.SaveEvents);
-obj.MenuSaveMontage=uimenu(obj.MenuSave,'Label','Montage','Callback',@(src,evt) obj.SaveMontage);
-obj.MenuSavePosition=uimenu(obj.MenuSave,'Label','Position','Callback',@(src,evt) obj.SavePosition);
-obj.MenuSaveFigure=uimenu(obj.MenuSave,'Label','Figure');
-obj.MenuSaveFigureData=uimenu(obj.MenuSaveFigure,'Label','Data','Callback',@(src,evt) SaveToFigure(obj,'data'),'Accelerator','p');
-obj.MenuSaveFigureMirror=uimenu(obj.MenuSaveFigure,'Label','Mirror','Callback',@(src,evt) SaveToFigure(obj,'mirror'));
+obj.MenuSaveSettings=uimenu(obj.MenuSave,'Label','Settings','Callback',@(src,evt) SaveData(obj,src),'Accelerator','s');
+obj.MenuSaveData=uimenu(obj.MenuSave,'Label','Data','Callback',@(src,evt) SaveData(obj,src));
+
+
+obj.MenuSaveAs=uimenu(obj.MenuFile,'Label','Save As...');
+obj.MenuSaveAsData=uimenu(obj.MenuSaveAs,'Label','Data(sel)','Callback',@(src,evt) SaveData(obj,src));
+obj.MenuSaveAsMergeData=uimenu(obj.MenuSaveAs,'Label','Merge Data','Callback',@(src,evt) SaveData(obj,src));
+obj.MenuSaveAsEvents=uimenu(obj.MenuSaveAs,'Label','Events','Callback',@(src,evt) obj.SaveEvents);
+obj.MenuSaveAsMontage=uimenu(obj.MenuSaveAs,'Label','Montage','Callback',@(src,evt) obj.SaveMontage);
+obj.MenuSaveAsPosition=uimenu(obj.MenuSaveAs,'Label','Position','Callback',@(src,evt) obj.SavePosition);
+obj.MenuSaveAsFigure=uimenu(obj.MenuSaveAs,'Label','Figure');
+obj.MenuSaveAsFigureData=uimenu(obj.MenuSaveAsFigure,'Label','Data','Callback',@(src,evt) SaveToFigure(obj,'data'),'Accelerator','p');
+obj.MenuSaveAsFigureMirror=uimenu(obj.MenuSaveAsFigure,'Label','Mirror','Callback',@(src,evt) SaveToFigure(obj,'mirror'));
 
 obj.MenuExport=uimenu(obj.MenuFile,'Label','Export');
 obj.MenuExportObj=uimenu(obj.MenuExport,'Label','Object','Callback',@(src,evt) ExportObjToWorkspace(obj));
@@ -62,7 +67,10 @@ obj.MenuGain=uimenu(obj.MenuChannel,'Label','Gain','Callback',@(src,evt) MnuChan
 obj.MenuDetrend=uimenu(obj.MenuChannel,'Label','Detrend','Callback',@(src,evt) DetrendData(obj,src));
 
 obj.MenuNotchFilter=uimenu(obj.MenuChannel,'Label','Notch Filter (harmonics)','callback',@(src,evts) MnuNotchFilter(obj));
-obj.MenuDownSample=uimenu(obj.MenuChannel,'Label','Downsample','callback',@(src,evts) MnuDownSample(obj));
+
+obj.MenuDownSample=uimenu(obj.MenuChannel,'Label','Downsample');
+obj.MenuSaveDownSample=uimenu(obj.MenuDownSample,'Label','For Save','callback',@(src,evts) MnuDownSample(obj,src));
+obj.MenuVisualDownSample=uimenu(obj.MenuDownSample,'Label','For Visualization','callback',@(src,evts) MnuDownSample(obj,src));
 
 %First Order Menu---------------------------------------------------Montage
 obj.MenuMontage=uimenu(obj.Fig,'Label','Montage');

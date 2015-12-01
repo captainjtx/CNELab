@@ -1,6 +1,6 @@
 
 function ChangeTime(obj,src)
-timemax=floor((size(obj.Data{1},1)-1)/obj.SRate);
+timemax=obj.TotalTime;
 
 if src==obj.BtnNextPage
     t=obj.Time+obj.WinLength;
@@ -45,7 +45,7 @@ if isempty(obj.Evts_)
     if src==obj.BtnPrevEvent
         obj.Time=0;
     elseif src==obj.BtnNextEvent
-        obj.Time=size(obj.Data{1},1)/obj.SRate-obj.WinLength;
+        obj.Time=obj.TotalTime-obj.WinLength;
     end
     return
 end

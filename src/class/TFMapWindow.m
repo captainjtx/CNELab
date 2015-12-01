@@ -172,7 +172,12 @@ classdef TFMapWindow < handle
                     set(obj.event_popup,'value',ib);
                 else
                     set(obj.event_popup,'value',1);
-                    val=obj.event_list{1};
+                    if ~isempty(obj.event_list)
+                        val=obj.event_list{1};
+                    else
+                        val=[];
+                    end
+                        
                 end
             end
             obj.event_=val;
@@ -908,9 +913,10 @@ classdef TFMapWindow < handle
             nR=round(obj.ms_after*obj.fs/1000);
             
             %Data selection************************************************************
+            data_tmp_sel=[];
             if obj.data_input==1
                 omitMask=true;
-                [data,chanNames,dataset,channel,~,~,~,chanpos]=get_selected_data(obj.bsp,omitMask);
+                [chanNames,dataset,channel,sample,~,~,chanpos]=get_selected_datainfo(obj.bsp,omitMask);
             elseif obj.data_input==2
                 if isempty(obj.bsp.SelectedEvent)
                     errordlg('No event selection !');
@@ -918,18 +924,18 @@ classdef TFMapWindow < handle
                 elseif length(obj.bsp.SelectedEvent)>1
                     warndlg('More than one event selected, using the first one !');
                 end
-                i_label=round(obj.bsp.Evts{obj.bsp.SelectedEvent(1),1}*obj.fs);
-                i_label=min(max(1,i_label),size(obj.bsp.Data{1},1));
+                i_event=round(obj.bsp.Evts{obj.bsp.SelectedEvent(1),1}*obj.fs);
+                i_event=min(max(1,i_event),obj.bsp.TotalSample);
                 
-                i_label((i_label+nR)>size(obj.bsp.Data{1},1))=[];
-                i_label((i_label-nL)<1)=[];
-                if isempty(i_label)
+                i_event((i_event+nR)>obj.bsp.TotalSample)=[];
+                i_event((i_event-nL)<1)=[];
+                if isempty(i_event)
                     errordlg('Illegal selection!');
                     return
                 end
-                tmp_sel=[reshape(i_label-nL,1,length(i_label));reshape(i_label+nR,1,length(i_label))];
+                data_tmp_sel=[reshape(i_event-nL,1,length(i_event));reshape(i_event+nR,1,length(i_event))];
                 omitMask=true;
-                [data,chanNames,dataset,channel,~,~,~,chanpos]=get_selected_data(obj.bsp,omitMask,tmp_sel);
+                [chanNames,dataset,channel,sample,~,~,chanpos]=get_selected_datainfo(obj.bsp,omitMask,data_tmp_sel);
             elseif obj.data_input==3
                 t_evt=[obj.bsp.Evts{:,1}];
                 t_label=t_evt(strcmpi(obj.bsp.Evts(:,2),obj.event));
@@ -938,13 +944,13 @@ classdef TFMapWindow < handle
                     return
                 end
                 i_event=round(t_label*obj.fs);
-                i_event=min(max(1,i_event),size(obj.bsp.Data{1},1));
+                i_event=min(max(1,i_event),obj.bsp.TotalSample);
                 
-                i_event((i_event+nR)>size(obj.bsp.Data{1},1))=[];
+                i_event((i_event+nR)>obj.bsp.TotalSample)=[];
                 i_event((i_event-nL)<1)=[];
                 
                 omitMask=true;
-                [data,chanNames,dataset,channel,~,~,~,chanpos]=get_selected_data(obj.bsp,omitMask);
+                [chanNames,dataset,channel,sample,~,~,chanpos]=get_selected_datainfo(obj.bsp,omitMask);
                 %need to change the data
             end
             %**************************************************************************
@@ -952,7 +958,7 @@ classdef TFMapWindow < handle
             wd=round(obj.stft_winlen);
             ov=round(obj.stft_overlap);
             
-            if isempty(wd)||wd>size(data,1)
+            if isempty(wd)||wd>length(sample)
                 wd=round(obj.fs/3);
                 ov=round(wd*0.9);
             end
@@ -993,8 +999,8 @@ classdef TFMapWindow < handle
                 nref=round([obj.normalization_start,obj.normalization_end]/1000*obj.fs);
                 
                 needupdate=0;
-                if nref(2)>=size(data,1)
-                    nref(2)=size(data,1);
+                if nref(2)>=length(sample)
+                    nref(2)=length(sample);
                     needupdate=1;
                 end
                 if nref(1)>=nref(2)
@@ -1015,18 +1021,18 @@ classdef TFMapWindow < handle
                 
                 t_evt=[obj.bsp.Evts{:,1}];
                 t_label=t_evt(strcmpi(obj.bsp.Evts(:,2),obj.normalization_start_event));
-                i_label=round(t_label*obj.fs);
-                i_label=min(max(1,i_label),size(obj.bsp.Data{1},1));
+                i_event=round(t_label*obj.fs);
+                i_event=min(max(1,i_event),obj.bsp.TotalSample);
                 
-                baseline_start=i_label;
+                baseline_start=i_event;
                 
                 t_label=t_evt(strcmpi(obj.bsp.Evts(:,2),obj.normalization_end_event));
-                i_label=round(t_label*obj.fs);
-                i_label=min(max(1,i_label),size(obj.bsp.Data{1},1));
+                i_event=round(t_label*obj.fs);
+                i_event=min(max(1,i_event),obj.bsp.TotalSample);
                 
-                baseline_end=i_label;
+                baseline_end=i_event;
                 
-                tmp_sel=[reshape(baseline_start,1,length(i_label));reshape(baseline_end,1,length(i_label))];
+                tmp_sel=[reshape(baseline_start,1,length(i_event));reshape(baseline_end,1,length(i_event))];
                 omitMask=true;
                 baseline=get_selected_data(obj.bsp,omitMask,tmp_sel);
 
@@ -1034,6 +1040,11 @@ classdef TFMapWindow < handle
             %**************************************************************************
             switch option
                 case 1
+                    if isempty(data_tmp_sel)
+                        data=get_selected_data(obj.bsp,true);
+                    else
+                        data=get_selected_data(obj.bsp,true,data_tmp_sel);
+                    end
                     [tf,f,t]=bsp_tfmap(obj.TFMapFig,data,baseline,obj.fs,wd,ov,s,nref,chanNames,freq,units);
                     
                     if strcmpi(units,'dB')
@@ -1061,6 +1072,11 @@ classdef TFMapWindow < handle
 %                     obj.min_clim=-cmax*0.8;
                     
                 case 2
+                    if isempty(data_tmp_sel)
+                        data=get_selected_data(obj.bsp,true);
+                    else
+                        data=get_selected_data(obj.bsp,true,data_tmp_sel);
+                    end
                     [tf,f,t]=bsp_tfmap(obj.TFMapFig,data,baseline,obj.fs,wd,ov,s,nref,chanNames,freq,units);
                     
                     
@@ -1097,7 +1113,6 @@ classdef TFMapWindow < handle
                     end
                     
                     chanind=~isnan(chanpos(:,1))&~isnan(chanpos(:,2));
-                    data=data(:,chanind);
                     channames=chanNames(chanind);
                     chanpos=chanpos(chanind,:);
                     
@@ -1129,6 +1144,16 @@ classdef TFMapWindow < handle
                     
                     cmax=-inf;
                     nref_tmp=nref;
+                    
+                    sel=[];
+                    for i=1:length(i_event)
+                        tmp_sel=[i_event(i)-nL;i_event(i)+nR];
+                        sel=cat(2,sel,tmp_sel);
+                    end
+                    
+                    [data,~,~,~,sample,~,~,~]=get_selected_data(obj.bsp,true,sel);
+                    data=data(:,chanind);
+                    
                     for j=1:length(channames)
                         if obj.data_input==3
                             tfm=0;
@@ -1139,11 +1164,10 @@ classdef TFMapWindow < handle
                             end
                             %******************************************************
                             for i=1:length(i_event)
-                                tmp_sel=[i_event(i)-nL;i_event(i)+nR];
-                                data=get_selected_data(obj.bsp,true,tmp_sel);
-                                data=data(:,chanind);
-                                data=data(:,j);
-                                [tf,f,t]=bsp_tfmap(obj.TFMapFig,data,baseline,obj.fs,wd,ov,s,nref_tmp,channames,freq,units);
+                                tmp_sel=i_event(i)-nL:i_event(i)+nR;
+                                data1=data(ismember(sample,tmp_sel),:);
+                                data2=data1(:,j);
+                                [tf,f,t]=bsp_tfmap(obj.TFMapFig,data2,baseline,obj.fs,wd,ov,s,nref_tmp,channames,freq,units);
                                 tmp_tfm{i}=tf;
                                 tfm=tfm+tf;
                             end

@@ -1,5 +1,4 @@
 classdef BioSigPlot < hgsetget
-    
     properties (Access = protected,Hidden) %Graphics Object
         Sliders
         
@@ -78,14 +77,18 @@ classdef BioSigPlot < hgsetget
         MenuNew
         MenuNewMontage
         MenuSave
-        MenuSaveFigure
-        MenuSaveFigureMirror
-        MenuSaveFigureData
-        MenuSaveEvents
+        MenuSaveSettings
         MenuSaveData
-        MenuMergeData
-        MenuSaveMontage
-        MenuSavePosition
+        
+        MenuSaveAs
+        MenuSaveAsFigure
+        MenuSaveAsFigureMirror
+        MenuSaveAsFigureData
+        MenuSaveAsEvents
+        MenuSaveAsData
+        MenuSaveAsMergeData
+        MenuSaveAsMontage
+        MenuSaveAsPosition
         
         MenuLoad
         MenuLoadDataSet
@@ -120,6 +123,8 @@ classdef BioSigPlot < hgsetget
         MenuDetrend
         MenuNextPrevFile
         MenuDownSample
+        MenuSaveDownSample
+        MenuVisualDownSample
         
         MenuMontage
         MontageOptMenu
@@ -272,6 +277,11 @@ classdef BioSigPlot < hgsetget
         PSDOverlap
         
         FileDir
+        
+        VisualDownSample
+        TotalTime
+        BufferStartSample
+        BufferEndSample
     end
     properties (Access=protected,Hidden)%Storage of public properties
         Version_
@@ -360,7 +370,6 @@ classdef BioSigPlot < hgsetget
         
     end
     properties (Dependent) %'Public computed read-only properties
-        
         DataTime
         DataNumber                  %(Read-Only) Number of Dataset
         ChanNumber                  %(Read-Only) Channel number for the Raw data
@@ -887,7 +896,12 @@ classdef BioSigPlot < hgsetget
         %*****************************************************************
         % ***************** Public computed read-only properties*********
         %*****************************************************************
-
+        function val = get.BufferStartSample(obj)
+            val=min(max(1,round(obj.BufferTime*obj.SRate)),obj.TotalSample);
+        end
+        function val = get.BufferEndSample(obj)
+            val=min(round((obj.BufferTime+obj.BufferLength)*obj.SRate),obj.TotalSample);
+        end
         %******************************************************************
         function val = get.DataTime(obj)
             val=size(obj.Data{1},1)/obj.SRate;
@@ -955,7 +969,9 @@ classdef BioSigPlot < hgsetget
         %*****************************************************************
         %**********************Private Properties*************************
         %*****************************************************************
-        
+        function val=get.TotalTime(obj)
+            val=obj.TotalSample/obj.SRate;
+        end
         %******************************************************************
         function obj = set.Config_(obj,val)
             if ~strcmpi(val(end-3:end),'.cfg')
@@ -1180,14 +1196,31 @@ classdef BioSigPlot < hgsetget
                     obj.Evts_=EventList;
                 end
             end
-            if ~isempty(obj.SRate)
-                m=floor((size(obj.Data{1},1)-1)/obj.SRate);
-            else
-                m=val;
-            end
             
             prevTime=obj.Time_;
-            obj.Time_=min(max(val,0),m);
+            
+            if ~isempty(obj.TotalTime)
+                obj.Time_=min(max(val,0),obj.TotalTime);
+            else
+                obj.Time_=min(max(val,0),obj.DataTime);
+            end
+            if ~isempty(obj.BufferTime)&&~isempty(obj.BufferLength)&&~isempty(obj.TotalTime)
+                if obj.Time_<obj.BufferTime||...
+                        min(obj.TotalTime,(obj.Time_+obj.WinLength))>min(obj.TotalTime,obj.BufferTime+obj.BufferLength)
+                    %need to reload data buffer
+                    if obj.Time_>prevTime
+                        t_start=max(0,obj.Time_-obj.BufferLength/10);
+                    else
+                        t_start=max(0,obj.Time_+obj.WinLength-obj.BufferLength/10*9);
+                    end
+                    obj.BufferTime=min(t_start,obj.TotalTime);
+                    for i=1:length(obj.CDS)
+                        [obj.Data{i},eof]=obj.CDS{i}.get_data_by_start_end...
+                            (obj.CDS{i},obj.BufferStartSample,obj.BufferEndSample);
+                    end
+                    recalculate(obj);
+                end
+            end
             set(obj.EdtTime,'String',obj.Time_);
             
             if ~isempty(prevTime)
@@ -1646,6 +1679,16 @@ classdef BioSigPlot < hgsetget
         function val=get.IsChannelSelected(obj)
             val=~all(cellfun(@isempty,obj.ChanSelect2Edit));
         end
+        
+        function val=get.VisualDownSample(obj)
+            totalchan=sum(obj.DispChans);
+            val=max(1,round(obj.WinLength*obj.SRate*totalchan*8/(obj.VisualBuffer*1000*1000)));
+        end
+        
+        function obj=set.VisualDownSample(obj,val)
+            totalchan=sum(obj.DispChans);
+            obj.VisualBuffer=obj.WinLength*obj.SRate*totalchan*8/val/1000/1000;
+        end
     end
     
     methods (Access=protected)
@@ -2038,8 +2081,21 @@ classdef BioSigPlot < hgsetget
             
             if val<=0
                 val=1;
-            elseif val>obj.DataTime
-                val=obj.DataTime;
+            elseif val>obj.TotalTime
+                val=obj.TotalTime;
+            end
+            
+            if (val+obj.Time)>(obj.BufferTime+obj.BufferLength)
+                obj.BufferLength=val*2;
+                
+                %need to reload data buffer
+                t_start=max(0,obj.Time_-obj.BufferLength/10);
+                t_end=min(t_start+obj.BufferLength,obj.TotalTime);
+                obj.BufferTime=t_start;
+                for i=1:length(obj.CDS)
+                    obj.Data{i}=obj.CDS{i}.get_data_segment(obj.CDS{i},round(t_start*obj.SRate)+1:round(t_end*obj.SRate)+1,[]);
+                end
+                recalculate(obj);
             end
             obj.WinLength=val;
         end
@@ -2212,7 +2268,7 @@ classdef BioSigPlot < hgsetget
         SaveToFigure(obj,opt)
         CrossCorrelation(obj,src)
         MnuNotchFilter(obj)
-        MnuDownSample(obj)
+        MnuDownSample(obj,src)
         SelectCurrentWindow(obj,src);
         ExportObjToWorkspace(obj);
         MnuOverwritePreprocess(obj);
@@ -2336,10 +2392,13 @@ classdef BioSigPlot < hgsetget
         
         Montage_
         
-        NextFiles
-        PrevFiles
-        
         DownSample
+        
+        TotalSample
+        BufferTime
+        BufferLength
+        CDS
+        VisualBuffer
     end
     events
         SelectedFastEvtChange

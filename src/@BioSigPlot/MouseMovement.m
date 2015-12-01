@@ -181,7 +181,7 @@ if round(time*obj.SRate)<=size(obj.Data{ndata},1)
 else
     v=nan;
 end
-total=size(obj.Data{ndata},1)/obj.SRate;
+total=obj.TotalTime;
 percent=time/total*100;
 
 if obj.Filtering{ndata}(nchan)

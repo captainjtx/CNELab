@@ -2,7 +2,8 @@ function redraw(obj)
 
 channelLines=cell(obj.DataNumber,1);
 
-t=round(max(1,obj.Time*obj.SRate+1):min((obj.Time+obj.WinLength)*obj.SRate,size(obj.Data{1},1)));
+ind=round(max(1,(obj.Time-obj.BufferTime)*obj.SRate+1):min(((obj.Time-obj.BufferTime)+obj.WinLength)*obj.SRate,size(obj.PreprocData{1},1)));
+ind=ind(1:obj.VisualDownSample:end);
 % XIndex=ceil(obj.Time*obj.SRate+1):min(ceil((obj.Time+obj.WinLength)*obj.SRate),size(obj.Data{1},1));
 
 if isempty(obj.FirstDispChans_)
@@ -39,7 +40,7 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         plotXTicks(obj.Axes(i),obj.Time,obj.WinLength,obj.SRate);
         if ~isempty(obj.PreprocData)
             
-            lhs=plotData(obj.Axes(i),t-t(1)+1,obj.PreprocData{i}(t,:),obj.ChanColors{i},...
+            lhs=plotData(obj.Axes(i),ind-ind(1)+1,obj.PreprocData{i}(ind,:),obj.ChanColors{i},...
                 obj.Gain{i},obj.Mask{i},Nchan(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),obj.DispChans(i),...
                 obj.ChanSelect2Edit{i},obj.ChanSelectColor);
             
@@ -63,7 +64,7 @@ else
     
     i=str2double(obj.DataView(4));
     if ~isempty(obj.PreprocData)
-        lhs=plotData(obj.Axes,t-t(1)+1,obj.PreprocData{i}(t,:),obj.ChanColors{i},...
+        lhs=plotData(obj.Axes,ind-ind(1)+1,obj.PreprocData{i}(ind,:),obj.ChanColors{i},...
             obj.Gain{i},obj.Mask{i},obj.MontageChanNumber(i):-1:1,obj.ChanSelect2Display{i},obj.FirstDispChans(i),...
             obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
         channelLines{i}=lhs;
@@ -105,7 +106,7 @@ showTimeLabel(obj);
 showChannelLabel(obj);
 end
 %**************************************************************************
-function h=plotData(axe,t,data,colors,gain,mask,posY,ChanSelect2Display,FirstDispChan,...
+function h=plotData(axe,ind,data,colors,gain,mask,posY,ChanSelect2Display,FirstDispChan,...
     DispChans,ChanSelect2Edit,ChanSelectColor) %#ok<INUSD>
 % Plot data function
 % axe :axes to plot
@@ -141,9 +142,9 @@ end
 
 data=data+(posY'*ones(1,size(data,1)))';
 
-t=linspace(t(1),t(end),size(data,1));
+ind=linspace(ind(1),ind(end),size(data,1));
 
-x=[t NaN]'*ones(1,size(data,2));
+x=[ind NaN]'*ones(1,size(data,2));
 % x=t'*ones(1,size(data,1));
 
 y=[data;NaN*ones(1,size(data,2))];

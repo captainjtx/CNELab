@@ -577,7 +577,7 @@ classdef SpatialMapWindow < handle
             obj.data_input_=val;
             
             if obj.data_input==1
-                [~,~,~,~,sample,~,~,~]=get_selected_data(obj.bsp);
+                [~,~,~,sample,~,~,~]=get_selected_datainfo(obj.bsp);
                 if obj.valid
                     set(obj.act_start_slider,'max',length(sample)/obj.fs*1000);
                     set(obj.act_len_slider,'max',length(sample)/obj.fs*1000)
@@ -641,7 +641,11 @@ classdef SpatialMapWindow < handle
                     set(obj.event_popup,'value',ib);
                 else
                     set(obj.event_popup,'value',1);
-                    val=obj.event_list{1};
+                    if ~isempty(obj.event_list)
+                        val=obj.event_list{1};
+                    else
+                        val=[];
+                    end
                 end
             end
             obj.event_=val;
@@ -843,7 +847,11 @@ classdef SpatialMapWindow < handle
         end
         
         function val=get.event_list(obj)
+%             if isempty(obj.event_list_)
+%                 val={'none'};
+%             else
             val=obj.event_list_;
+%             end
         end
         
         function set.event_list(obj,val)
@@ -1444,7 +1452,7 @@ classdef SpatialMapWindow < handle
             if obj.data_input==1
                 evt={'selection'};
                 omitMask=true;
-                [data,chanNames,dataset,channel,~,~,~,chanpos]=get_selected_data(obj.bsp,omitMask);
+                [chanNames,dataset,channel,sample,~,~,chanpos]=get_selected_datainfo(obj.bsp,omitMask);
             elseif obj.data_input==2
                 if isempty(obj.bsp.SelectedEvent)
                     errordlg('No event selection !');
@@ -1453,17 +1461,17 @@ classdef SpatialMapWindow < handle
                     warndlg('More than one event selected, using the first one !');
                 end
                 i_label=round(obj.bsp.Evts{obj.bsp.SelectedEvent(1),1}*obj.fs);
-                i_label=min(max(1,i_label),size(obj.bsp.Data{1},1));
+                i_label=min(max(1,i_label),obj.bsp.TotalSample);
                 
-                i_label((i_label+nR)>size(obj.bsp.Data{1},1))=[];
+                i_label((i_label+nR)>obj.bsp.TotalSample)=[];
                 i_label((i_label-nL)<1)=[];
                 if isempty(i_label)
                     errordlg('Illegal selection!');
                     return
                 end
-                tmp_sel=[reshape(i_label-nL,1,length(i_label));reshape(i_label+nR,1,length(i_label))];
+                data_tmp_sel=[reshape(i_label-nL,1,length(i_label));reshape(i_label+nR,1,length(i_label))];
                 omitMask=true;
-                [data,chanNames,dataset,channel,~,~,~,chanpos]=get_selected_data(obj.bsp,omitMask,tmp_sel);
+                [chanNames,dataset,channel,sample,~,~,chanpos]=get_selected_datainfo(obj.bsp,omitMask,data_tmp_sel);
                 evt={obj.event};
             elseif obj.data_input==3
                 if isempty(obj.active_ievent)
@@ -1482,16 +1490,16 @@ classdef SpatialMapWindow < handle
                     return
                 end
                 i_event=round(t_label*obj.fs);
-                i_event=min(max(1,i_event),size(obj.bsp.Data{1},1));
+                i_event=min(max(1,i_event),obj.bsp.TotalSample);
                 
-                i_event((i_event+nR)>size(obj.bsp.Data{1},1))=[];
-                txt_evt((i_event+nR)>size(obj.bsp.Data{1},1))=[];
+                i_event((i_event+nR)>obj.bsp.TotalSample)=[];
+                txt_evt((i_event+nR)>obj.bsp.TotalSample)=[];
                 
                 i_event((i_event-nL)<1)=[];
                 txt_evt((i_event-nL)<1)=[];
                 
                 omitMask=true;
-                [data,chanNames,dataset,channel,~,~,~,chanpos]=get_selected_data(obj.bsp,omitMask);
+                [chanNames,dataset,channel,sample,~,~,chanpos]=get_selected_datainfo(obj.bsp,omitMask);
                 %need to change the data
             end
             %Channel position******************************************************************
@@ -1499,14 +1507,14 @@ classdef SpatialMapWindow < handle
                 errordlg('No channel position in the data !');
                 return
             end
-            [~,~,~,~,~,~,~,allchanpos]=get_selected_data(obj.bsp);
+            [~,~,~,~,~,~,allchanpos]=get_selected_datainfo(obj.bsp);
             chanind=~isnan(allchanpos(:,1))&~isnan(allchanpos(:,2));
             allchanpos=allchanpos(chanind,:);
             [allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),~,~] = ...
                 get_relative_chanpos(allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.width,obj.height);
             
             chanind=~isnan(chanpos(:,1))&~isnan(chanpos(:,2));
-            data=data(:,chanind);
+            
             channames=chanNames(chanind);
             chanpos=chanpos(chanind,:);
             
@@ -1547,8 +1555,8 @@ classdef SpatialMapWindow < handle
                 nref=round([obj.normalization_start,obj.normalization_end]/1000*obj.fs);
                 
                 needupdate=0;
-                if nref(2)>=size(data,1)
-                    nref(2)=size(data,1);
+                if nref(2)>=length(sample)
+                    nref(2)=length(sample);
                     needupdate=1;
                 end
                 if nref(1)>=nref(2)
@@ -1580,15 +1588,24 @@ classdef SpatialMapWindow < handle
                 
                 baseline_end=i_label;
                 
-                tmp_sel=[reshape(baseline_start,1,length(i_label));reshape(baseline_end,1,length(i_label))];
+                data_tmp_sel=[reshape(baseline_start,1,length(i_label));reshape(baseline_end,1,length(i_label))];
                 omitMask=true;
-                baseline=get_selected_data(obj.bsp,omitMask,tmp_sel);
+                baseline=get_selected_data(obj.bsp,omitMask,data_tmp_sel);
                 
             end
             %**************************************************************
             nref_tmp=nref;
-            wait_bar_h = waitbar(0,'STFT Recaculating...');
             
+            
+            sel=[];
+            for i=1:length(i_event)
+                tmp_sel=[i_event(i)-nL;i_event(i)+nR];
+                sel=cat(2,sel,tmp_sel);
+            end
+            
+            [data,~,~,~,sample,~,~,~]=get_selected_data(obj.bsp,true,sel);
+            data=data(:,chanind);
+            wait_bar_h = waitbar(0,'STFT Recaculating...');
             if obj.data_input==3%Average Event
                 for j=1:length(channames)
                     
@@ -1604,10 +1621,9 @@ classdef SpatialMapWindow < handle
                     raw_data=[];
                     
                     for i=1:length(i_event)
-                        tmp_sel=[i_event(i)-nL;i_event(i)+nR];
-                        data=get_selected_data(obj.bsp,true,tmp_sel);
-                        data=data(:,chanind);
-                        data=data(:,j);
+                        tmp_sel=i_event(i)-nL:i_event(i)+nR;
+                        data1=data(ismember(sample,tmp_sel),:);
+                        data2=data1(:,j);
                         
                         if obj.normalization==4
                             tmp_base=baseline(:,chanind);
@@ -1616,9 +1632,9 @@ classdef SpatialMapWindow < handle
                             tmp_base=[];
                         end
                         
-                        raw_data=cat(2,raw_data,data);
+                        raw_data=cat(2,raw_data,data2);
                         
-                        [tf,f,t]=bsp_tfmap(obj.SpatialMapFig,data,tmp_base,obj.fs,wd,ov,[sl,sh],nref_tmp,channames,freq,obj.unit);
+                        [tf,f,t]=bsp_tfmap(obj.SpatialMapFig,data2,tmp_base,obj.fs,wd,ov,[sl,sh],nref_tmp,channames,freq,obj.unit);
                         tmp_tfm{i}=tf;
                     end
                     
@@ -2266,7 +2282,7 @@ classdef SpatialMapWindow < handle
         
         function UpdateSelection(obj)
             if obj.data_input==1
-                [~,~,~,~,sample,~,~,~]=get_selected_data(obj.bsp);
+                [~,~,~,sample,~,~,~]=get_selected_datainfo(obj.bsp);
                 if obj.valid
                     set(obj.act_start_slider,'max',length(sample)/obj.fs*1000);
                     set(obj.act_len_slider,'max',length(sample)/obj.fs*1000);

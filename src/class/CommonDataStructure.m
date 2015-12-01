@@ -5,18 +5,15 @@ classdef CommonDataStructure < handle
     %06/03/2014
     
     properties (Access=public)
-        
         DataInfo
         Montage
         PatientInfo
-        
-        MatFile
     end
     
     properties (Dependent)
         %Data will be either stored dat or a reference to a matfile
         Data
-        
+        MatFile
         %alias for the elements of common data structures
         fs  %DataInfo.SampleRate
         vtf %DataInfo.Video.TimeFrame
@@ -24,11 +21,9 @@ classdef CommonDataStructure < handle
         prevf%DataInfo.PrevFile
         file%DataInfo.FileName
         evt %DataInfo.Annotations
-        
-        all_evts
-        all_files
         start_file
-        file_time
+        file_type
+        
     end
     
     properties  (Access=protected)
@@ -42,21 +37,40 @@ classdef CommonDataStructure < handle
         dat
         
         save_as_single % default single, otherwise save as loaded precision
+        file_type_
     end
     
     methods
+        function val=get.MatFile(obj)
+            if ~isempty(obj.DataInfo.FileName)
+                val=matfile(obj.DataInfo.FileName,'Writable',true);
+            else
+                val=[];
+            end
+        end
         function obj=set.Data(obj,val)
-            if ~isempty(obj.MatFile)
-                obj.MatFile.Data=val; 
+            ft=obj.file_type;
+            if ft==2&&~isempty(obj.MatFile)
+                obj.MatFile.Data=val;
             else
                 obj.dat=val;
             end
         end
         function val=get.Data(obj)
-            if ~isempty(obj.MatFile)
+            ft=obj.file_type;
+            if ft==2&&~isempty(obj.MatFile)
                 val=obj.MatFile.Data;
             else
                 val=obj.dat;
+            end
+        end
+        
+        function obj = set.file_type(obj,val), obj.file_type_=val;end
+        function val = get.file_type(obj)
+            if isempty(obj.file_type_)
+                val=CommonDataStructure.dataStructureCheck(obj.DataInfo.FileName);
+            else
+                val=obj.file_type_;
             end
         end
         
@@ -77,13 +91,9 @@ classdef CommonDataStructure < handle
         
         function obj = set.file(obj,val), obj.DataInfo.FileName=val; end
         function val = get.file(obj),     val=obj.DataInfo.FileName; end
-        function val=get.all_evts(obj),   [~,~,~,val]=CommonDataStructure.get_file_info(obj); end
         
-        function val=get.all_files(obj),  [val,~,~,~]=CommonDataStructure.get_file_info(obj); end
         
         function val=get.start_file(obj), val=CommonDataStructure.get_start_file(obj); end
-        
-        function val=get.file_time(obj), [~,~,val,~]=CommonDataStructure.get_file_info(obj); end
     end
     
     methods
@@ -159,31 +169,24 @@ classdef CommonDataStructure < handle
                 FilterIndex=CommonDataStructure.dataStructureCheck(filename);
             end
             
+            obj.file_type=FilterIndex;
             switch FilterIndex
                 case 0
-                    obj.MatFile=[];
                     obj.copy(CommonDataStructure.readFromMAT(filename));
                 case 2
-                    
-                    obj.MatFile=matfile(filename,'Writable',true);
                     obj.copy(CommonDataStructure.readFromCDS(filename));
                 case 3
-                    obj.MatFile=[];
                     obj.copy(CommonDataStructure.readFromOldCDS(filename));
-                    
                 case 4
-                    obj.MatFile=[];
                     obj.copy(CommonDataStructure.readFromMEDF(filename));
                 case 5
-                    obj.MatFile=[];
                     obj.copy(CommonDataStructure.readFromFIF(filename));
                 case 6
-                    obj.MatFile=[];
                     obj.copy(CommonDataStructure.readFromEDF(filename));
                     
             end
             obj.DataInfo.FileName=filename;
-            if ~isempty(obj.MatFile)
+            if FilterIndex==2
                 obj.MatFile.DataInfo=obj.DataInfo;
             end
         end
@@ -238,7 +241,7 @@ classdef CommonDataStructure < handle
             wait_bar_h = waitbar(0,'Saving data');
             
             if save_all
-                [filenames,pathstr,filetime,evts]=obj.get_file_info(obj);
+                [filenames,pathstr,filesample,evts]=obj.get_file_info(obj);
                 if isempty(obj.file_size)
                     %might have problem if a single cds file is too large to fit
                     %into the memory
@@ -251,7 +254,6 @@ classdef CommonDataStructure < handle
                         cds.DataInfo=tmp.DataInfo;
                         cds.Montage=tmp.Montage;
                         cds.PatientInfo=tmp.PatientInfo;
-                        cds.MatFile=[];
                         
                         cds.DataInfo.NextFile=[tmp_name,'_',num2str(i+1),tmp_ext];
                         cds.DataInfo.PrevFile=[tmp_name,'_',num2str(i-1),tmp_ext];
@@ -270,8 +272,6 @@ classdef CommonDataStructure < handle
                         else
                             cds.Data=tmp.Data;
                         end
-                        
-                        
                         save([fullfile(tmp_pathstr,[tmp_name,'_',num2str(i)]),tmp_ext],'-struct','cds','-mat','-v7.3');
                         waitbar(i/length(filenames));
                     end
@@ -286,7 +286,6 @@ classdef CommonDataStructure < handle
                     cds.DataInfo=obj.DataInfo;
                     cds.Montage=obj.Montage;
                     cds.PatientInfo=obj.PatientInfo;
-                    cds.MatFile=[];
                     if obj.save_as_single
                         cds.Data=single(obj.Data);
                     else
@@ -369,12 +368,6 @@ classdef CommonDataStructure < handle
             end
         end
         
-        function cds=extractSegment(obj,start_ind,len)
-            
-            
-            
-        end
-        
         
     end
     methods (Static=true)
@@ -395,37 +388,28 @@ classdef CommonDataStructure < handle
             elseif strcmpi(ext,'.edf')
                 FilterIndex=6;
             elseif strcmpi(ext,'.mat')
+                mf=matfile(filename,'Writable',true);
+                field=who(mf);
                 
-                s=load(filename,'-mat');
-                field=fieldnames(s);
-                
-                if isfield(s,'data')
+                if any(strcmp(field,'data'))
                     %check if it is medf file
-                    if isfield(s.data,'dataMat')&&isfield(s.data,'info')
+                    s_data=mf.data;
+                    if isfield(s_data,'dataMat')&&isfield(s_data,'info')
                         FilterIndex=4;
                         return
-                        
                         %check if it is old cds file
-                    elseif isfield(s.data,'data')
+                    elseif isfield(s_data,'data')
                         FilterIndex=3;
                         return
                     end
                 end
                 
                 %check if it is cds file
-                if isfield(s,'Data')&&isfield(s,'Montage')&&isfield(s,'PatientInfo')
+                if any(strcmp(mf,'Data'))&&any(strcmp(mf,'Montage'))&&any(strcmp(mf,'PatientInfo'))
                     FilterIndex=2;
                     return
                 end
-                
-                %check if it is raw data file
-                if length(field)>1
-                    msgbox('The file contain more than one field, try to load the first one...','CommonDataStructure','warn');
-                end
-                if ismatrix(s.(field{1}))
-                    FilterIndex=0;
-                    return
-                end
+                FilterIndex=0;
             end
         end
         
@@ -433,7 +417,6 @@ classdef CommonDataStructure < handle
             %Auto generate an empty cds structure
             %Refer to /doc/manual for more information on the data
             %structure
-            s.MatFile=[];
             s.Data=[];
             s.buffer_size=[];
             s.file_size=[];% in megabytes
@@ -453,6 +436,9 @@ classdef CommonDataStructure < handle
             s.DataInfo.VideoName=[];
             s.DataInfo.NextFile=[];
             s.DataInfo.PrevFile=[];
+            s.DataInfo.AllFiles=[];
+            s.DataInfo.FileSample=[];
+            s.DataInfo.AllEvents=[];
             
             %obj.Montage construction
             s.Montage.ChannelNames=[];
@@ -478,7 +464,7 @@ classdef CommonDataStructure < handle
         end
         function s=readFromCDS(filename)
             s=matfile(filename,'Writable',true);
-            if ~any(strcmpi('DataInfo',who(s)))&&any(strcmpi('Data',who(s)))
+            if ~any(strcmp('DataInfo',who(s)))&&any(strcmp('Data',who(s)))
                 dat=s.Data;
                 %obsolete format Data.Data
                 %get Data.Data outside
@@ -772,22 +758,28 @@ classdef CommonDataStructure < handle
         function s=readFromMAT(filename)
             %Raw mat data
             s=CommonDataStructure.initial();
-            st=load(filename,'-mat');
-            field=fieldnames(st);
+            st=matfile(filename,'Writable',true);
+            field=who(st);
             if length(field)>1
-                msgbox('The file contain more than one field, try to load the first one...','CommonDataStructure','warn');
+                h=msgbox('The file contain more than one field, try to load the first one...','CommonDataStructure','warn');
             end
             
             data=st.(field{1});
+            pause(1)
+            try
+                close(h)
+            catch
+            end
             
             if size(data,2)>size(data,1)
                 
-                choice=questdlg('The data seems to be row-wise, do you want to transpose it?','CommonDataStructure','Yes','No','Yes');
-                if strcmpi(choice,'Yes')
+%                 choice=questdlg('The data seems to be row-wise, do you want to transpose it?','CommonDataStructure','Yes','No','Yes');
+%                 if strcmpi(choice,'Yes')
                     data=data';
-                end
+%                 end
             end
-            
+            %default
+            s.DataInfo.SampleRate=256;
             s.Data=data;
         end
         
@@ -870,33 +862,31 @@ classdef CommonDataStructure < handle
             
             for i=1:length(FileName)
                 filename=fullfile(FilePath,FileName{i});
+                cds{i}.file_type=FilterIndex(i);
                 switch FilterIndex(i)
                     case 0
-                        cds{i}.MatFile=[];
                         cds{i}.copy(CommonDataStructure.readFromMAT(filename));
                     case 2
-                        cds{i}.MatFile=matfile(filename,'Writable',true);
                         cds{i}.copy(CommonDataStructure.readFromCDS(filename));
                     case 3
-                        cds{i}.MatFile=[];
                         cds{i}.copy(CommonDataStructure.readFromOldCDS(filename));
                     case 4
-                        cds{i}.MatFile=[];
                         cds{i}.copy(CommonDataStructure.readFromMEDF(filename));
                     case 5
-                        cds{i}.MatFile=[];
                         cds{i}.copy(CommonDataStructure.readFromFIF(filename));
                     case 6
-                        cds{i}.MatFile=[];
                         cds{i}.copy(CommonDataStructure.readFromEDF(filename));
                 end
                 cds{i}.DataInfo.FileName=filename;
+                
+                if FilterIndex(i)==2
+                    cds{i}.MatFile.DataInfo=cds{i}.DataInfo;
+                end
             end
             
         end
         
         function demo()
-            
             obj=CommonDataStructure();
             assignin('base','obj',obj);
             
@@ -969,7 +959,6 @@ classdef CommonDataStructure < handle
         function f=get_start_file(obj)
             current_data=obj.DataInfo;
             [pathstr, name, ext] = fileparts(current_data.FileName);
-            
             while ~isempty(current_data.PrevFile)
                 
                 fname=fullfile(pathstr,current_data.PrevFile);
@@ -981,17 +970,164 @@ classdef CommonDataStructure < handle
                 %you need to retrieve the the substructure to access below
                 current_data=tmp.DataInfo;
             end
-            f=current_data.FileName;
+            [~,f,ext]=fileparts(current_data.FileName);
+            f=[f,ext];
+            f=fullfile(pathstr,f);
         end
         
-        function [filenames,pathstr,filetime,evts]=get_file_info(varargin)
+        function val=search_field(obj,structure,field,opt)
+            
+            if strcmpi(structure,'datainfo')
+                structure='DataInfo';
+            elseif strcmpi(structure,'patientinfo')
+                structure='PatientInfo';
+            elseif strcmpi(structure,'montage')
+                structure='Montage';
+            end
+                
+            current_structure=obj.(structure);
+            
+            if isfield(current_structure,field)
+                val=current_structure.(field);
+            else
+                val=[];
+            end
+                
+            
+            if ~isempty(val)
+                if strcmpi(field,'ChannelPosition')
+                    if ~all(all(isnan(val)))
+                        if strcmpi(opt,'once')
+                            return
+                        end
+                    end
+                else
+                    return
+                end
+            end
+            current_data_info=obj.DataInfo;
+            [pathstr, ~, ~] = fileparts(current_data_info.FileName);
+            
+            if ~isempty(current_data_info.PrevFile)
+                firstfile=CommonDataStructure.get_start_file(obj);
+                
+                current_file=matfile(firstfile,'Writable',true);
+                if ~any(strcmpi(structure,who(current_file)))
+                    current_file=CommonDataStructure.Load(firstfile);
+                end
+            else
+                current_file=obj;
+                
+            end
+            
+            current_structure=current_file.(structure);
+            current_data_info=current_file.DataInfo;
+            
+            while 1
+                if strcmpi(opt,'union')
+                    if isfield(current_structure,field)
+                        val=union(val,current_structure.(field));
+                    end
+                elseif strcmpi(opt,'once')
+                    if isfield(current_structure,field)
+                        val=current_structure.(field);
+                    else
+                        val=[];
+                    end
+                end
+                
+                if ~isempty(val)
+                    if strcmpi(field,'ChannelPosition')
+                        if ~all(all(isnan(val)))
+                            if strcmpi(opt,'once')
+                                return
+                            end
+                        end
+                    else
+                        return
+                    end
+                end
+                if isempty(current_data_info.NextFile)
+                    return
+                end
+                fname=fullfile(pathstr,current_data_info.NextFile);
+                
+                current_file=matfile(fname,'Writable',true);
+                if ~any(strcmpi(structure,who(current_file)))
+                    current_file=CommonDataStructure.Load(fname);
+                end
+                current_structure=current_file.(structure);
+                current_data_info=current_file.DataInfo;
+            end
+        end
+        function write_file_info(cds,varargin)
+            %This will write into all connected files
+            current_data_info=cds.DataInfo;
+            [pathstr, ~, ~] = fileparts(current_data_info.FileName);
+            firstfile=CommonDataStructure.get_start_file(cds);
+            [~,firstfile,ext]=fileparts(firstfile);
+            firstfile=[firstfile,ext];
+            
+            current_file_name=fullfile(pathstr,firstfile);
+            current_file=matfile(current_file_name,'Writable',true);
+            current_montage=current_file.Montage;
+            current_data_info=current_file.DataInfo;
+            time=0;
+            while 1
+                for i=1:2:length(varargin)
+                    name=varargin{i};
+                    if ~ischar(name)
+                        continue
+                    end
+                    if strcmpi(name,'SampleRate')
+                        current_data_info.SampleRate=varargin{i+1};
+                        len=length(current_data_info.TimeStamps);
+                        current_data_info.TimeStamps=linspace(0,len/varargin{i+1},len);
+                    elseif strcmpi(name,'Annotations')
+                        evts=varargin{i+1};
+                        t_len=current_data_info.TimeStamps(end)-current_data_info.TimeStamps(1);
+                        tmp_evt=evts(cell2mat(evts(:,1))>=time&cell2mat(evts(:,1))<=(time+t_len),:);
+                        tmp_evt(:,1)=num2cell(cell2mat(tmp_evt(:,1))-time);
+                        current_data_info.Annotations=tmp_evt;
+                    elseif strcmpi(name,'TimeStamps')
+                        %timestamp will be specified automatically when creating the
+                        %dataset
+                    elseif strcmpi(name,'ChannelPosition')
+                        current_montage.ChannelPosition=varargin{i+1};
+                    elseif strcmpi(name,'ChannelNames')
+                        current_montage.ChannelNames=varargin{i+1};
+                    elseif strcmpi(name,'GroupNames')
+                        current_montage.GroupNames=varargin{i+1};
+                    elseif strcmpi(name,'MontageName')
+                        current_montage.Name=varargin{i+1};
+                    elseif strcmpi(name,'MaskChanNames')
+                        current_montage.MaskChanNames=varargin{i+1};
+                    end
+                end
+                
+                current_data_info.FileName=current_file_name;
+                current_file.Montage=current_montage;
+                current_file.DataInfo=current_data_info;
+                
+                if isempty(current_data_info.NextFile)
+                    break;
+                else
+                    current_file_name=fullfile(pathstr,current_data_info.NextFile);
+                    current_file=matfile(current_file_name,'Writable',true);
+                    current_data_info=current_file.DataInfo;
+                    current_montage=current_file.Montage;
+                    time=time+current_data_info.TimeStamps(end);
+                end
+            end
+        end
+        function fileinfo=get_file_info(varargin)
             %obj can either be the class instance or the matfile object
             %if it is a matfile object, you have to guarantee that the mat
             %file is in the correct format of CommonDataStructure
+            fileinfo=[];
             evts=[];
             filenames={};
-            filetime=[];
-            pathstr=[];
+            filesample=[];
             
             if nargin==1
                 obj=varargin{1};
@@ -1021,19 +1157,25 @@ classdef CommonDataStructure < handle
                 
             end
             current_data_info=obj.DataInfo;
+            fs=current_data_info.SampleRate;
             
             [pathstr, ~, ~] = fileparts(current_data_info.FileName);
-            firstfile=CommonDataStructure.get_start_file(obj);
             
-            %get to the first node of the chain
-            current_file=matfile(firstfile);
-            if ~any(strcmpi('DataInfo',who(current_file)))
-                current_file=CommonDataStructure.Load(firstfile);
+            if ~isempty(current_data_info.PrevFile)
+                firstfile=CommonDataStructure.get_start_file(obj);
+                %get to the first node of the chain
+                current_file=matfile(firstfile,'Writable',true);
+                if ~any(strcmpi('DataInfo',who(current_file)))
+                    current_file=CommonDataStructure.Load(firstfile);
+                end
+                
+                current_data_info=current_file.DataInfo;
+                
+                [~,name,ext]=fileparts(firstfile);
+            else
+                current_file=obj;
+                [~,name,ext]=fileparts(current_data_info.FileName);
             end
-            
-            current_data_info=current_file.DataInfo;
-            
-            [~,name,ext]=fileparts(firstfile);
             filenames{1}=[name,ext];
             %searching forward
             while 1
@@ -1044,26 +1186,31 @@ classdef CommonDataStructure < handle
                     if ~isempty(ts)
                         new_evt(:,1)=num2cell(cell2mat(new_evt(:,1))-ts(1));
                     end
-                    if ~isempty(filetime)
-                        new_evt(:,1)=num2cell(cell2mat(new_evt(:,1))+filetime(end,2));
+                    if ~isempty(filesample)
+                        new_evt(:,1)=num2cell(cell2mat(new_evt(:,1))+filesample(end,2)/fs);
                     end
                 end
                 
                 evts=cat(1,evts,new_evt);
                 %**********************************************************
                 if ~isempty(ts)
-                    new_t=[ts(1),ts(end)]-ts(1);
+                    new_t=[1,length(ts)];
                 else
                     %this will require to load Data, extremly slow, so it
                     %is always advicalbe to store timestamp into the data
                     %very costy
-                    new_t=[0,size(current_file.Data,1)]/current_data_info.SampleRate;
+                    new_t=[1,length(current_file.Data(:,1))];
                 end
                 
-                if ~isempty(filetime)
-                    new_t=new_t+filetime(end,2);
+                if ~isempty(filesample)
+                    new_t=new_t+filesample(end,2);
                 end
-                filetime=cat(1,filetime,new_t);
+                filesample=cat(1,filesample,new_t);
+                
+                
+                if isempty(current_data_info.NextFile)
+                    break
+                end
                 
                 fname=fullfile(pathstr,current_data_info.NextFile);
                 
@@ -1071,22 +1218,112 @@ classdef CommonDataStructure < handle
                     break
                 end
                 
+%                 current_data_info.FileName=filenames{end};
+%                 current_file.DataInfo=current_data_info;
                 filenames=cat(1,filenames,current_data_info.NextFile);
                 
-                current_file=matfile(fname);
+                current_file=matfile(fname,'Writable',true);
                 if ~any(strcmpi('DataInfo',who(current_file)))
                     current_file=CommonDataStructure.Load(fname);
                 end
                 current_data_info=current_file.DataInfo;
             end
+            
+            %it is your responsibility to keep all common field consistent
+            %in all files, I just take care of the missing ones
+            fileinfo.path=pathstr;
+            fileinfo.filesample=filesample;
+            fileinfo.filenames=filenames;
+            fileinfo.fs=CommonDataStructure.search_field(obj,'DataInfo','SampleRate','once');
+            fileinfo.units=CommonDataStructure.search_field(obj,'DataInfo','Units','once');
+            fileinfo.events=evts;
+            fileinfo.channelnames=CommonDataStructure.search_field(obj,'Montage','ChannelNames','once');
+            fileinfo.groupnames=CommonDataStructure.search_field(obj,'Montage','GroupNames','once');
+            fileinfo.channelposition=CommonDataStructure.search_field(obj,'Montage','ChannelPosition','once');
+            fileinfo.masknames=CommonDataStructure.search_field(obj,'Montage','MaskChanNames','union');
+            
+        end
+        
+        function [dat,eof,evts]=get_data_by_start_end(varargin)
+            eof=[];
+            evts=[];
+            dat=[];
+            if nargin==3
+                obj=varargin{1};
+                if ischar(obj)
+                    if exist(obj,'file')~=2
+                        return
+                    else
+                        obj=matfile(obj);
+                    end
+                end
+                ind_start=varargin{end-1};
+                ind_end=varargin{end};
+            elseif nargin==2
+                [FileName,FilePath,FilterIndex]=uigetfile({...
+                    '*.cds';...
+                    'Supported formats (*.cds)'},...
+                    'Select your data file','DataInfo.mat');
+                if ~FileName
+                    return
+                end
+                obj=matfile(fullfile(FilePath,FileName));
+                ind_start=varargin{end-1};
+                ind_end=varargin{end};
+            else
+                return
+            end
+            eof=false;
+            current_data_info=obj.DataInfo;
+            
+            if isempty(current_data_info.NextFile)&&isempty(current_data_info.PrevFile)
+                dat=obj.Data(ind_start:ind_end,:);
+                return
+            end
+            
+            if isfield(current_data_info,'AllFiles')&&isfield(current_data_info,'FileSample')...
+                    &&~isempty(current_data_info.AllFiles)&&~isempty(current_data_info.FileSample)
+                filenames=current_data_info.AllFiles;
+                
+                [pathstr,~,~]=fileparts(current_data_info.FileName);
+                filesample=current_data_info.FileSample;
+            else
+                fileinfo=CommonDataStructure.get_file_info(obj);
+                filesample=fileinfo.filesample;
+                pathstr=fileinfo.path;
+                filenames=fileinfo.filenames;
+            end
+            
+            f_start=find(filesample(:,1)<=ind_start);
+            f_start=f_start(end);
+            
+            f_end=find(filesample(:,2)>=ind_end);
+            f_end=f_end(1);
+            
+            for f=f_start:f_end
+                i_start=1;
+                i_end=filesample(f,2)-filesample(f,1)+1;
+                if f==f_start
+                    i_start=ind_start-filesample(f,1)+1;
+                elseif f==f_end
+                    i_end=ind_end-filesample(f,1)+1;
+                end
+                
+                fullname=fullfile(pathstr,filenames{f});
+                switch CommonDataStructure.dataStructureCheck(fullname)
+                    case 2
+                        fileobj=matfile(fullname);
+                        dat=cat(1,dat,fileobj.Data(i_start:i_end,:));
+                    otherwise
+                        fileobj=CommonDataStructure.Load(fullname);
+                        dat=cat(1,dat,fileobj.Data(i_start:i_end,:));
+                end
+            end
+            
         end
         
         function [dat,eof,evts]=get_data_segment(varargin)
-            %t_start, t_end will be the start and end time in seconds, if
-            %t_start is empty, will start from the begining; if t_end is
-            %empty, will extend to the end
-            %if negative , start from the end
-            dat=[];
+            wait_bar_h = waitbar(0,'Retrieving data from file...');
             eof=[];
             evts=[];
             if nargin==3
@@ -1098,6 +1335,8 @@ classdef CommonDataStructure < handle
                         obj=matfile(obj);
                     end
                 end
+                sample=varargin{end-1};
+                channel=varargin{end};
             elseif nargin==2
                 [FileName,FilePath,FilterIndex]=uigetfile({...
                     '*.cds';...
@@ -1107,79 +1346,118 @@ classdef CommonDataStructure < handle
                     return
                 end
                 obj=matfile(fullfile(FilePath,FileName));
+                sample=varargin{end-1};
+                channel=varargin{end};
             else
+                try
+                    close(wait_bar_h)
+                catch
+                end
+                return
+            end
+
+            %**************************************************************
+            eof=false;
+            current_data_info=obj.DataInfo;
+            
+            if isempty(sample)
+                sample=1:size(obj.Data,1);
+            end
+            
+            if isempty(channel)
+                channel=1:length(obj.Data(1,:));
+            end
+            
+            if isempty(current_data_info.NextFile)&&isempty(current_data_info.PrevFile)
+                dat=obj.Data(sample,channel);
+                try
+                    close(wait_bar_h)
+                catch
+                end
                 return
             end
             
-            t_start=varargin{end-1};
-            t_end=varargin{end};
-            current_data_info=obj.DataInfo;
-            fs=current_data_info.SampleRate;
-            %**************************************************************
-            eof=false;
-            [filenames,pathstr,filetime,evts]=CommonDataStructure.get_file_info(obj);
-            
-            if isempty(t_start)
-                f_start=1;
-            else
-                if t_start<0
-                    t_start=filetime(end,2)+t_start;
-                end
-                tmp=find(t_start>=filetime(:,1));
-                if isempty(tmp)
-                    eof=true;
-                    if all(t_start<filetime(:,1))
-                        t_start=0;
-                        f_start=1;
-                    else
-                        return
-                    end
-                else
-                    f_start=tmp(end);
-                end
-            end
-            if isempty(t_end)
-                f_end=length(filenames);
-            else
-                if t_end<0
-                    t_end=filetime(end,2)+t_end;
-                end
-                tmp=find(t_end<=filetime(:,2));
-                if isempty(tmp)
-                    eof=true;
-                    
-                    if all(t_end>filetime(:,2))
-                        t_end=max(filetime(:,2));
-                        f_end=length(filenames);
-                    else
-                        return;
-                    end
+            if isfield(current_data_info,'AllFiles')&&isfield(current_data_info,'FileSample')...
+                    &&~isempty(current_data_info.AllFiles)&&~isempty(current_data_info.FileSample)
+                filenames=current_data_info.AllFiles;
                 
-                else
-                    f_end=tmp(1);
+                [pathstr,~,~]=fileparts(current_data_info.FileName);
+                filesample=current_data_info.FileSample;
+            else
+                fileinfo=CommonDataStructure.get_file_info(obj);
+                filenames=fileinfo.filenames;
+                filesample=fileinfo.filesample;
+                pathstr=fileinfo.path;
+            end
+
+            dat=zeros(length(sample),length(channel));
+            
+            for f=1:length(filenames)
+                waitbar(f/length(filenames));
+                f_ind_start=filesample(f,1);
+                f_ind_end=filesample(f,2);
+                ind=ismember(sample,f_ind_start:f_ind_end);
+                if any(ind)
+                    fullname=fullfile(pathstr,filenames{f});
+                    switch CommonDataStructure.dataStructureCheck(fullname)
+                        case 2
+                            fileobj=matfile(fullname);
+                            data=fileobj.Data;
+                            dat(logical(ind),:)=data(sample(ind)-f_ind_start+1,channel);
+                        otherwise
+                            fileobj=CommonDataStructure.Load(fullname);
+                            dat(logical(ind),:)=fileobj.Data(sample(ind)-f_ind_start+1,channel);
+                    end
                 end
             end
             
-            if t_start>t_end
-                tmp=t_start;
-                t_start=t_end;
-                t_end=tmp;
+            
+            try
+                close(wait_bar_h)
+            catch
+            end
+        end
+        
+        function create_new_data_from_mat(input_filenames,output_filename,fs,varargin)
+            %input_filenames must be a cell arry in sequence
+            %output_filename must a single string, the rest will be
+            %automatically indexed
+            %The mat files must have a single field -- data
+            %sample rate must be specified along with creating the data
+            
+            chan=[];
+            if length(varargin)==1
+                %Only load specific channel
+                chan=varargin{1};
             end
             
-            for f=f_start:f_end
-                fileobj=matfile(fullfile(pathstr,filenames{f}));
-                if f==f_end
-                    ind_end=max(1,floor((t_end-filetime(f,1))*fs));
-                else
-                    ind_end=round((filetime(f,2)-filetime(f,1))*fs);
+            [out_path,out_name,~]=fileparts(output_filename);
+            for i=1:length(input_filenames)
+                f_in=input_filenames{i};
+                
+                %needs to be modified if a single file contains too much
+                %data
+                
+                oname=[out_name,'_',num2str(i),'.cds'];
+                
+                cds=CommonDataStructure.Load(f_in);
+                cds.prevf=[out_name,'_',num2str(i-1),'.cds'];
+                cds.nextf=[out_name,'_',num2str(i+1),'.cds'];
+                
+                if i==1
+                    cds.prevf=[];
+                end
+                if i==length(input_filenames)
+                    cds.nextf=[];
                 end
                 
-                if f==f_start
-                    ind_start=max(1,floor((t_start-filetime(f,1))*fs));
-                else
-                    ind_start=1;
+                if ~isempty(chan)
+                    cds.Data=cds.Data(:,chan);
                 end
-                dat=cat(1,dat,fileobj.Data(ind_start:ind_end,:));
+                cds.fs=fs;
+                cds.DataInfo.TimeStamps=(1:size(cds.Data,1))/fs;
+                
+                cds.save(oname);
             end
         end
     end

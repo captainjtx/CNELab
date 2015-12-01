@@ -201,18 +201,24 @@ classdef ExportSingleTrialWin<handle
             nR=round(obj.ms_after*obj.fs/1000);
             
             i_event=round(t_label*obj.fs);
-            i_event=min(max(1,i_event),size(obj.bsp.Data{1},1));
+            i_event=min(max(1,i_event),obj.bsp.TotalSample);
             
-            i_event((i_event+nR)>size(obj.bsp.Data{1},1))=[];
+            i_event((i_event+nR)>obj.bsp.TotalSample)=[];
             i_event((i_event-nL)<1)=[];
             
-            [~,chanNames,~,channel,~,~,~,~]=get_selected_data(obj.bsp,true);
+            [chanNames,~,channel,~,~,~,~]=get_selected_datainfo(obj.bsp,true);
             
             data=zeros(nL+nR+1,length(channel),length(i_event));
             
+            sel=[];
             for i=1:length(i_event)
-                tmp_sel=[i_event(i)-nL;i_event(i)+nR];
-                data(:,:,i)=get_selected_data(obj.bsp,true,tmp_sel);
+                sel=cat(2,sel,[i_event(i)-nL;i_event(i)+nR]);
+            end
+            [alldata,~,~,~,sample,~,~,~]=get_selected_data(obj.bsp,true,sel);
+            
+            for i=1:length(i_event)
+                tmp_sel=i_event(i)-nL:i_event(i)+nR;
+                data(:,:,i)=alldata(ismember(sample,tmp_sel),:);
             end
             
             output.channame=chanNames;

@@ -1,4 +1,4 @@
-function [data,chanNames,dataset,channel,sample,evts,groupnames,pos]=get_selected_data(obj,varargin)
+function [chanNames,dataset,channel,sample,evts,groupnames,pos]=get_selected_datainfo(obj,varargin)
 %This function returns the selected data and the corresponding channel
 %names
 
@@ -9,13 +9,11 @@ function [data,chanNames,dataset,channel,sample,evts,groupnames,pos]=get_selecte
 %get_selected_data(obj,omitMask,cat_output)
 
 dd=obj.DisplayedData;
-data=[];
 selection=[];
 dataset=[];
 channel=[];
 events=[];
 evts=[];
-sorted_bsp_selection=[];
 bsp_selection=obj.Selection;
 
 fs=obj.SRate;
@@ -63,12 +61,10 @@ if ~isempty(bsp_selection)
         end
         
         selection=cat(2,selection,startInd:endInd);
-        sorted_bsp_selection=cat(2,sorted_bsp_selection,[startInd;endInd]);
     end
       
 else
-    selection=1:obj.TotalSample;
-    sorted_bsp_selection=[1;selection(end)];
+    selection=1:floor(obj.TotalTime*fs);
     evts=events;
 end
 sample=selection;
@@ -86,32 +82,14 @@ for i=1:length(dd)
     
     if omitMask
        %Omit the mask channels
-       if ~isempty(obj.Mask{dd(i)})
-           chan=intersect(find(obj.Mask{dd(i)}~=0),chan);
-       end
+        chan=intersect(find(obj.Mask{dd(i)}~=0),chan);
     end
-    
-    if any(sorted_bsp_selection(1,:)<obj.BufferStartSample)||any(sorted_bsp_selection(2,:)>obj.BufferEndSample)
-        alldata=CommonDataStructure.get_data_segment(obj.CDS{dd(i)},selection,chan);
-    else
-        %if all ready loaded into the buffer, no need to reload from the
-        %file
-        selection=selection-obj.BufferStartSample+1;
-        alldata=obj.PreprocData{dd(1)}(selection,chan);
-    end
-    %filter before merge trial segments
-    count=1;
-    d=[];
-    for t=1:size(sorted_bsp_selection,2)
-        len=sorted_bsp_selection(2,t)-sorted_bsp_selection(1,t)+1;
-        tmpd=preprocessedData(obj,dd(i),alldata(count:count+len-1,:));
-        d=cat(1,d,tmpd);
-        count=count+sorted_bsp_selection(2,t)-sorted_bsp_selection(1,t)+1;
-    end
+    %very costly
+%     d=preprocessedData(obj,dd(i),CommonDataStructure.get_data_segment(obj.CDS{dd(i)},selection,chan));
 
-    dataset=cat(2,dataset,dd(i)*ones(1,size(d,2)));
+    dataset=cat(2,dataset,dd(i)*ones(1,length(chan)));
     channel=cat(2,channel,reshape(chan,1,length(chan)));
-    data=cat(2,data,d);
+%     data=cat(2,data,d);
     
     chanNames=cat(1,chanNames,reshape(obj.MontageChanNames{dd(i)}(chan),length(obj.MontageChanNames{dd(i)}(chan)),1));
     if ~isempty(obj.Montage{dd(i)}(obj.MontageRef(dd(i))).groupnames)

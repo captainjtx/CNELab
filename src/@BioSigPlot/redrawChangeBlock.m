@@ -1,12 +1,13 @@
 function redrawChangeBlock(obj,opt)
+%This will load new data if necessary
 dd=obj.DisplayedData;
-t=round(max(1,obj.Time*obj.SRate+1):min((obj.Time+obj.WinLength)*obj.SRate,size(obj.Data{1},1)));
-
+ind=round(max(1,(obj.Time-obj.BufferTime)*obj.SRate+1):min(((obj.Time-obj.BufferTime)+obj.WinLength)*obj.SRate+1,size(obj.PreprocData{dd(1)},1)));
+ind=ind(1:obj.VisualDownSample:end);
 for i=1:length(dd)
     if ~isempty(obj.PreprocData)
         Nchan=obj.MontageChanNumber(dd(i));
         
-        updateChannelLines(obj.ChannelLines{dd(i)},t-t(1)+1,obj.PreprocData{dd(i)}(t,:),...
+        updateChannelLines(obj.ChannelLines{dd(i)},ind-ind(1)+1,obj.PreprocData{dd(i)}(ind,:),...
             obj.Gain{dd(i)},obj.Mask{dd(i)},Nchan:-1:1,obj.ChanSelect2Display{dd(i)},...
             obj.FirstDispChans(dd(i)),obj.DispChans(dd(i)));
         if length(obj.Axes)==1
@@ -49,7 +50,7 @@ highlightSelectedChannel(obj);
 redrawSelection(obj);
 end
 
-function updateChannelLines(channellines,t,data,gain,mask,posY,ChanSelect2Display,FirstDispChan,DispChans)
+function updateChannelLines(channellines,ind,data,gain,mask,posY,ChanSelect2Display,FirstDispChan,DispChans)
 
 if ~isempty(FirstDispChan)&&~isempty(DispChans)
     if ~isempty(ChanSelect2Display)
@@ -72,9 +73,9 @@ end
 
 data=data+(posY'*ones(1,size(data,1)))';
 
-t=linspace(t(1),t(end),size(data,1));
+ind=linspace(ind(1),ind(end),size(data,1));
 
-x=[t NaN]'*ones(1,size(data,2));
+x=[ind NaN]'*ones(1,size(data,2));
 
 y=[data;NaN*ones(1,size(data,2))];
 

@@ -1,7 +1,8 @@
 function gainChangeSelectedChannels(obj)
 %hightlight the selection on channels
 dd=obj.DisplayedData;
-t=round(max(1,obj.Time*obj.SRate+1):min((obj.Time+obj.WinLength)*obj.SRate,size(obj.Data{1},1)));
+ind=round(max(1,(obj.Time-obj.BufferTime)*obj.SRate+1):min(((obj.Time-obj.BufferTime)+obj.WinLength)*obj.SRate,size(obj.PreprocData{1},1)));
+ind=ind(1:obj.VisualDownSample:end);
 
 if obj.IsChannelSelected
     for i=1:length(dd)
@@ -13,7 +14,7 @@ if obj.IsChannelSelected
         else
             axes=obj.Axes(dd(i));
         end
-        gainChangeChannels(axes,dd(i),obj.PreprocData{dd(i)}(t,:),obj.Gain{dd(i)},obj.Mask{dd(i)},obj.MontageChanNumber(dd(i)):-1:1,obj.ChannelLines{dd(i)},...
+        gainChangeChannels(axes,dd(i),obj.PreprocData{dd(i)}(ind,:),obj.Gain{dd(i)},obj.Mask{dd(i)},obj.MontageChanNumber(dd(i)):-1:1,obj.ChannelLines{dd(i)},...
             obj.ChanSelect2Display{dd(i)},obj.FirstDispChans(dd(i)),obj.DispChans(dd(i)),obj.ChanSelect2Edit{dd(i)});
         
     end
@@ -29,7 +30,7 @@ else
         else
             axes=obj.Axes(dd(i));
         end
-        gainChangeChannels(axes,dd(i),obj.PreprocData{dd(i)}(t,:),obj.Gain{dd(i)},obj.Mask{dd(i)},obj.MontageChanNumber(dd(i)):-1:1,obj.ChannelLines{dd(i)},...
+        gainChangeChannels(axes,dd(i),obj.PreprocData{dd(i)}(ind,:),obj.Gain{dd(i)},obj.Mask{dd(i)},obj.MontageChanNumber(dd(i)):-1:1,obj.ChannelLines{dd(i)},...
             obj.ChanSelect2Display{dd(i)},obj.FirstDispChans(dd(i)),obj.DispChans(dd(i)),obj.ChanSelect2Display{dd(i)});
         
     end

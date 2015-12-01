@@ -1,25 +1,48 @@
 function SaveData(obj,src)
-
-[data,chanNames,dataset,~,~,evts,groupnames,pos]=get_selected_data(obj);
-dd=unique(dataset);
-
-downsample=1;
-if obj.DownSample~=1
-    choice=questdlg( sprintf('Are you sure you wanna DOWNSAMPLE the data by %d ?',obj.DownSample),'CNELab','Yes','No','No');
-    
-    if strcmpi(choice,'Yes')
-        downsample=obj.DownSample;
-        %applying low pass filter
-        freq=obj.SRate/downsample/2*0.95;
-        order=3;
-        
-        [b,a]=butter(order,freq/(obj.SRate/downsample/2),'low');
-        data=filter_symmetric(b,a,data,obj.SRate/downsample,0,'iir');
+if src==obj.MenuSaveSettings
+    [chanNames,dataset,~,~,evts,groupnames,pos]=get_datainfo(obj,false);
+    for i=1:length(obj.CDS)
+        if obj.CDS{i}.file_type==2
+            if ~isempty(pos)
+                chanpos=pos(dataset==i,:);
+            else
+                chanpos=[];
+            end
+            
+            CommonDataStructure.write_file_info(obj.CDS{i},...
+                'SampleRate',obj.SRate,...
+                'Annotations',obj.Evts,...
+                'ChannelNames',chanNames(dataset==i),...
+                'GroupNames',groupnames(dataset==i),...
+                'MontageName',obj.Montage{i}(obj.MontageRef(i)).name,...
+                'MaskChanNames',obj.MontageChanNames{i}(obj.Mask{i}==0),...
+                'ChannelPosition',chanpos);
+        else
+            
+        end
     end
-end
-
-switch src
-    case obj.MenuSaveData
+elseif src==obj.MenuSaveData
+    
+else
+    [data,chanNames,dataset,~,~,evts,groupnames,pos]=get_selected_data(obj);
+    dd=unique(dataset);
+    
+    downsample=1;
+    if obj.DownSample~=1
+        choice=questdlg( sprintf('Are you sure you wanna DOWNSAMPLE the data by %d ?',obj.DownSample),'CNELab','Yes','No','No');
+        
+        if strcmpi(choice,'Yes')
+            downsample=obj.DownSample;
+            %applying low pass filter
+            freq=obj.SRate/downsample/2*0.95;
+            order=3;
+            
+            [b,a]=butter(order,freq/(obj.SRate/downsample/2),'low');
+            data=filter_symmetric(b,a,data,obj.SRate/downsample,0,'iir');
+        end
+    end
+    
+    if src==obj.MenuSaveAsData
         for i=1:length(dd)
             cds=CommonDataStructure;
             
@@ -28,7 +51,7 @@ switch src
             cds.Data.SampleRate=obj.SRate/downsample;
             cds.Data.Units=obj.Units{dd(i)};
             cds.Data.VideoName=obj.VideoFile;
-            cds.Data.TimeStamps=linspace(0,obj.DataTime,size(cds.Data.Data,1))+obj.StartTime;
+            cds.Data.TimeStamps=linspace(0,obj.DataTime,size(cds.Data.Data,1));
             cds.Data.FileName=obj.FileNames{dd(i)};
             cds.Data.NextFile=obj.NextFiles{dd(i)};
             cds.Data.PrevFile=obj.PrevFiles{dd(i)};
@@ -50,7 +73,7 @@ switch src
             cds.save('title',['DataSet-',num2str(dd(i))]);
         end
         
-    case obj.MenuMergeData
+    elseif src==obj.MenuSaveAsMergeData
         
         cds=CommonDataStructure;
         
@@ -64,7 +87,7 @@ switch src
         cds.Data.Units=units;
         
         cds.Data.VideoName=obj.VideoFile;
-        cds.Data.TimeStamps=linspace(0,obj.DataTime,size(cds.Data.Data,1))+obj.StartTime;
+        cds.Data.TimeStamps=linspace(0,obj.DataTime,size(cds.Data.Data,1));
         cds.Data.FileName=obj.FileNames{dd(1)};
         cds.Data.NextFile=obj.NextFiles{dd(1)};
         cds.Data.PrevFile=obj.PrevFiles{dd(1)};
@@ -78,7 +101,7 @@ switch src
         cds.Montage.GroupNames=groupnames;
         cds.Montage.ChannelPosition=pos;
         
-         maskchan=obj.MontageChanNames{dd(1)}(obj.Mask{dd(1)}==0);
+        maskchan=obj.MontageChanNames{dd(1)}(obj.Mask{dd(1)}==0);
         for i=2:length(dd)
             maskchan=cat(2,maskchan,obj.MontageChanNames{dd(i)}(obj.Mask{dd(i)}==0));
         end
@@ -86,9 +109,7 @@ switch src
         cds.Montage.MaskChanNames=maskchan;
         
         cds.save('title','Merged Data');
-
+    end
 end
-
-
 end
 

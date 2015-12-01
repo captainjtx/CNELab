@@ -24,10 +24,19 @@
 % V0.1.1 Beta - 13/02/2013 - Initial Version
 
 
-function d=preprocessedData(obj,n)
+function d=preprocessedData(obj,varargin)
 
 % t=ceil(obj.Time*obj.SRate+1):min(ceil((obj.Time+obj.WinLength)*obj.SRate),size(obj.Data{1},1));
-d=obj.Data{n}*(obj.Montage{n}(obj.MontageRef(n)).mat)';
+if nargin==2
+    n=varargin{1};
+    d=double(obj.Data{n}*(obj.Montage{n}(obj.MontageRef(n)).mat)');
+elseif nargin==3
+    n=varargin{1};
+    d=varargin{2};
+else
+    d=[];
+    return
+end
 
 fs=obj.SRate;
 ext=2*obj.SRate;
