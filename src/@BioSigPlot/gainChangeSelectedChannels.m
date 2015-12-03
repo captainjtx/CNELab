@@ -1,9 +1,16 @@
 function gainChangeSelectedChannels(obj)
 %hightlight the selection on channels
 dd=obj.DisplayedData;
-ind=round(max(1,(obj.Time-obj.BufferTime)*obj.SRate+1):min(((obj.Time-obj.BufferTime)+obj.WinLength)*obj.SRate,size(obj.PreprocData{1},1)));
-ind=ind(1:obj.VisualDownSample:end);
 
+ind_max=size(obj.PreprocData{dd(1)},1);
+ind_start=max(1,min(round((obj.Time-obj.BufferTime)*obj.SRate+1),ind_max));
+ind_end=min(round((obj.Time-obj.BufferTime+obj.WinLength)*obj.SRate+1),ind_max);
+ind=ind_start:ind_end;
+
+ind=ind(1:obj.VisualDownSample:end);
+if isempty(ind)
+    return
+end
 if obj.IsChannelSelected
     for i=1:length(dd)
         if isempty(obj.Gain(dd(i)))
@@ -64,15 +71,12 @@ else
 end
 data=data+(posY'*ones(1,size(data,1)))';
 
-y=[data;NaN*ones(1,size(data,2))];
-
-
+% y=[data;NaN*ones(1,size(data,2))];
 
 if ~isempty(ChanSelect2Edit)
     ChanInd=ChanSelect2Edit(ChanSelect2Edit~=0);
     for i=1:length(ChanInd)
-        set(ChannelLines(ChanInd(i)),'YData',y(:,ChanInd(i)));
-        
+        set(ChannelLines(ChanInd(i)),'YData',data(:,ChanInd(i)));
         h=findobj(axes,'DisplayName',['YGauge' num2str(ChanInd(i))]);
         set(h,'String',num2str(1/gain(ChanInd(i)+FirstDispChan-1),'%0.3g'));
     end

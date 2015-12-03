@@ -1,6 +1,5 @@
 function MouseMovement(obj)
-[nchan,ndata,yvalue]=getMouseInfo(obj);
-time=obj.MouseTime;
+[nchan,ndata,yvalue,time]=getMouseInfo(obj);
 mouseIndex=floor((obj.MouseTime-obj.Time)*obj.SRate);
 pos=get(obj.Fig,'CurrentPoint');
 

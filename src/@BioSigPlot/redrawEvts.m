@@ -52,6 +52,7 @@ EventLines=[];
 EventTexts=[];
 EventIndex=[];
 yl=get(axe,'Ylim');
+xl=get(axe,'Xlim');
 count=0;
 
 for i=1:size(evts,1)
@@ -59,8 +60,8 @@ for i=1:size(evts,1)
         count=count+1;
         x=SRate*(evts{i,1}-t);
         EventLines(count)=line([x x],[0 2000],'parent',axe,'Color',colors{i});
-        EventTexts(count)=text('Parent',axe,'position',[x yl(2)],'BackgroundColor',colors{i},'EdgeColor',colors{i},...
-            'VerticalAlignment','Top','Margin',1,'FontSize',12,'String',evts{i,2},'Editing','off','SelectionHighlight','on',...
+        EventTexts(count)=text('Parent',axe,'position',[x+(xl(2)-xl(1))/400 yl(2)],'Color',colors{i},...
+            'VerticalAlignment','Top','FontSize',12,'String',evts{i,2},'Editing','off','SelectionHighlight','on',...
             'ButtonDownFcn',@(src,evt)openText(obj,src,axenum),'DisplayName',['Event',num2str(count)]);
 %         ...'Interpreter','none');
         EventIndex(count)=i;

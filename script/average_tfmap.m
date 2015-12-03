@@ -1,8 +1,13 @@
 %%
-% sig_chan={'C27','C28','C29','C15','C17','C30','C3','C5','C4'};
 
-sig_chan={'C26_L','C27_L','C17_L','C18_L','C19_L','C20_L','C9_L','C10_L','C11_L'};
-% sig_chan={'C80_S','C81_S','C72_S','C73_S','C74_S','C86_S','C87_S'};
+%s1
+% sig_chan={'C27_L','C19_L','C10_L','C11_L'};
+sig_chan={'C73_S','C74_S','C67_S'};
+
+%s2
+% sig_chan={'C31_L','C32_L','C22_L','C23_L','C24_L'};
+% sig_chan={'C84_S','C85_S'};
+
 
 tfw=bsp.TFMapWin;
 t=tfw.tfmat_t;
@@ -19,6 +24,7 @@ tfmat = TF_Smooth(tfmat,'gaussian',[5,3]);
 
 figure
 imagesc(t-1.5,f,tfmat,[-6,6])
+ylim([0,1000]);
 xlabel('Time (s)')
 ylabel('Frequency (Hz)')
 set(gca,'fontsize',20)
@@ -39,4 +45,6 @@ colormap jet
 % set(gca,'ytick',[8,32,60,200])
 set(gcf,'color','white')
 
- export_fig(gcf,'-png','-nocrop','-opengl','-r300','s2_close');
+[pathstr,~,~]=fileparts(bsp.FileNames{1});
+
+ export_fig(gcf,'-png','-nocrop','-opengl','-r300',[pathstr,'/small']);

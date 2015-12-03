@@ -14,10 +14,9 @@ if obj.UponText||obj.UponAdjustPanel
     return
 end
 
-t=floor((obj.MouseTime-obj.Time)*obj.SRate);
+[nchan,ndata,yvalue,time]=getMouseInfo(obj); %#ok<ASGLU>
+sample=floor((time-obj.Time)*obj.SRate);
 
-[nchan,ndata,yvalue]=getMouseInfo(obj); %#ok<ASGLU>
-time=obj.MouseTime;
 Modifier=get(obj.Fig,'CurrentModifier');
 obj.PrevMouseTime=time;
 
@@ -58,7 +57,7 @@ if isempty(obj.MouseMode)
                         XData=get(obj.EventLines(i),'XData');
                         eventIndex=XData(1);
                         prox_t=max(5,min(obj.WinLength*obj.SRate/50,50));
-                        if abs(t-eventIndex)<prox_t
+                        if abs(sample-eventIndex)<prox_t
                             newSelect=obj.EventDisplayIndex(i);
                             obj.SelectedEvent=newSelect;
                             obj.DragMode=1; 
@@ -87,7 +86,7 @@ if isempty(obj.MouseMode)
                     if ishandle(obj.EventLines(i))
                         XData=get(obj.EventLines(i),'XData');
                         eventIndex=XData(1);
-                        if abs(t-eventIndex)<50
+                        if abs(sample-eventIndex)<50
                             newSelect=obj.EventDisplayIndex(i);
                             if ~isempty(obj.SelectedEvent)
                                 if any(newSelect==obj.SelectedEvent)

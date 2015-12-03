@@ -367,6 +367,8 @@ classdef BioSigPlot < hgsetget
     
     properties (Dependent) %'Public properties which does not requires redrawing
         Position                    %Position of the figure (in pixels)
+        ChanNameMargin
+        GaugeMargin
         
     end
     properties (Dependent) %'Public computed read-only properties
@@ -378,12 +380,6 @@ classdef BioSigPlot < hgsetget
         MouseTime                   %(Read-Only) The Time on which the mouse is in
         MouseChan                   %(Read-Only) The channel on which the mouse is in
         MouseDataset                %(Read-Only) The dataset on which the mouse is in
-    end
-    
-    properties (Dependent)
-        %User friendly named properties
-        
-        sdata                       %(Read-Only)  Selected data
     end
  
     properties
@@ -897,10 +893,10 @@ classdef BioSigPlot < hgsetget
         % ***************** Public computed read-only properties*********
         %*****************************************************************
         function val = get.BufferStartSample(obj)
-            val=min(max(1,round(obj.BufferTime*obj.SRate)),obj.TotalSample);
+            val=min(max(1,round(obj.BufferTime*obj.SRate+1)),obj.TotalSample);
         end
         function val = get.BufferEndSample(obj)
-            val=min(round((obj.BufferTime+obj.BufferLength)*obj.SRate),obj.TotalSample);
+            val=min(round((obj.BufferTime+obj.BufferLength)*obj.SRate+1),obj.TotalSample);
         end
         %******************************************************************
         function val = get.DataTime(obj)
@@ -915,7 +911,21 @@ classdef BioSigPlot < hgsetget
             l=cell2mat(cellfun(@size,obj.Data,'UniformOutput',false)');
             val=l(:,2);
         end
-        
+        %******************************************************************
+        function val = get.ChanNameMargin(obj)
+            mname=obj.MontageChanNames;
+            len=0;
+            for i=1:length(mname)
+                for j=1:length(mname{i})
+                    len=max(len,length(mname{i}{j}));
+                end
+            end
+            val=obj.WinLength*obj.SRate/120*len;
+        end
+        %******************************************************************
+        function val = get.GaugeMargin(obj)
+            val=obj.WinLength*obj.SRate/25;
+        end
         %******************************************************************
         function val = get.MontageChanNumber(obj)
             val=zeros(obj.DataNumber,1);
@@ -948,7 +958,7 @@ classdef BioSigPlot < hgsetget
                 pos=get(obj.Axes(i),'CurrentPoint');
                 ylim=get(obj.Axes(i),'Ylim');
                 if pos(1,1)>=0 && pos(1,1)<=xlim && pos(1,2)>=ylim(1) && pos(1,2)<=ylim(2)
-                    mouseTime=pos(1,1)/xlim*obj.WinLength+obj.Time;
+                    mouseTime=pos(1,1)/obj.SRate+obj.Time;
                 end
             end
         end
@@ -963,9 +973,6 @@ classdef BioSigPlot < hgsetget
             [unused,ndata]=getMouseInfo(obj); %#ok<ASGLU>
         end
         %******************************************************************
-        function d=get.sdata(obj)
-            d=get_selected_data(obj);
-        end
         %*****************************************************************
         %**********************Private Properties*************************
         %*****************************************************************
@@ -1223,10 +1230,12 @@ classdef BioSigPlot < hgsetget
             end
             set(obj.EdtTime,'String',obj.Time_);
             
-            if ~isempty(prevTime)
-                obj.VideoLineTime=obj.Time+obj.VideoLineTime-prevTime;
-            else
-                obj.VideoLineTime=obj.Time;
+            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+                if ~isempty(prevTime)
+                    obj.VideoLineTime=obj.Time+obj.VideoLineTime-prevTime;
+                else
+                    obj.VideoLineTime=obj.Time;
+                end
             end
             
         end
@@ -1699,7 +1708,7 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         %Dynamic return the channel number,dataset number,amplitude in
         %sequence
-        [nchan,ndata,yvalue]=getMouseInfo(obj)
+        [nchan,ndata,yvalue,t]=getMouseInfo(obj)
         %==================================================================
         %******************************************************************
         %**********General functions called when setting properties********

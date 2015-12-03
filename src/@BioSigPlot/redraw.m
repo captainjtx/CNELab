@@ -1,9 +1,15 @@
 function redraw(obj)
-
 channelLines=cell(obj.DataNumber,1);
+dd=obj.DisplayedData;
+ind_max=size(obj.PreprocData{dd(1)},1);
+ind_start=max(1,min(round((obj.Time-obj.BufferTime)*obj.SRate+1),ind_max));
+ind_end=min(round((obj.Time-obj.BufferTime+obj.WinLength)*obj.SRate+1),ind_max);
+ind=ind_start:ind_end;
 
-ind=round(max(1,(obj.Time-obj.BufferTime)*obj.SRate+1):min(((obj.Time-obj.BufferTime)+obj.WinLength)*obj.SRate,size(obj.PreprocData{1},1)));
 ind=ind(1:obj.VisualDownSample:end);
+if isempty(ind)
+    return
+end
 % XIndex=ceil(obj.Time*obj.SRate+1):min(ceil((obj.Time+obj.WinLength)*obj.SRate),size(obj.Data{1},1));
 
 if isempty(obj.FirstDispChans_)
@@ -37,7 +43,7 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
         cla(obj.Axes(i))
         set(obj.Axes(i),'Ylim',ylim,'Ytick',0.5:1:Nchan(i)+0.5,'YTickLabel',{},'XtickLabel',{});
         
-        plotXTicks(obj.Axes(i),obj.Time,obj.WinLength,obj.SRate);
+        plotXTicks(obj,obj.Axes(i),obj.Time,obj.WinLength,obj.SRate);
         if ~isempty(obj.PreprocData)
             
             lhs=plotData(obj.Axes(i),ind-ind(1)+1,obj.PreprocData{i}(ind,:),obj.ChanColors{i},...
@@ -46,7 +52,7 @@ if any(strcmp(obj.DataView,{'Vertical','Horizontal'}))
             
             channelLines{i}=lhs;
         end
-        plotYTicks(obj.Axes(i),obj.MontageChanNames{i},obj.ChanSelect2Edit{i},obj.ChanSelectColor,obj.Gain{i},obj.ChanColors{i});
+        plotYTicks(obj,obj.Axes(i),obj.MontageChanNames{i},obj.ChanSelect2Edit{i},obj.ChanSelectColor,obj.Gain{i},obj.ChanColors{i});
     end
 else
     n=str2double(obj.DataView(4));
@@ -69,9 +75,9 @@ else
             obj.DispChans(i),obj.ChanSelect2Edit{i},obj.ChanSelectColor);
         channelLines{i}=lhs;
     end
-    plotYTicks(obj.Axes,obj.MontageChanNames{i},obj.ChanSelect2Edit{i},obj.ChanSelectColor,obj.Gain{i},obj.ChanColors{i});
+    plotYTicks(obj,obj.Axes,obj.MontageChanNames{i},obj.ChanSelect2Edit{i},obj.ChanSelectColor,obj.Gain{i},obj.ChanColors{i});
     
-    plotXTicks(obj.Axes,obj.Time,obj.WinLength,obj.SRate)
+    plotXTicks(obj,obj.Axes,obj.Time,obj.WinLength,obj.SRate)
 end
 
 obj.ChannelLines=channelLines;
@@ -90,12 +96,12 @@ end
 for i=1:length(obj.Axes)
 %     yl=get(obj.Axes(i),'YLim');
     xl=get(obj.Axes(i),'XLim');
-    obj.LineVideo(i)=line([xl(1)-100,xl(1)-100],[0,1000],'parent',obj.Axes(i),...
+    obj.LineVideo(i)=line([xl(1)-100000,xl(1)-100000],[0,1000],'parent',obj.Axes(i),...
         'Color',[1 0 0],'LineStyle','-.','LineWidth',1.5,'ButtonDownFcn',@(src,evt) LineVideoButtonDown(obj,src));
     
     
     %     drawnow;
-    obj.LineMeasurer(i)=line([xl(1)-100,xl(1)-100],[0,1000],'parent',obj.Axes(i),'Color',[1 0 0]);
+    obj.LineMeasurer(i)=line([xl(1)-100000,xl(1)-100000],[0,1000],'parent',obj.Axes(i),'Color',[1 0 0]);
 
     uistack(obj.LineVideo(i),'top');
 end
@@ -144,10 +150,10 @@ data=data+(posY'*ones(1,size(data,1)))';
 
 ind=linspace(ind(1),ind(end),size(data,1));
 
-x=[ind NaN]'*ones(1,size(data,2));
+x=ind'*ones(1,size(data,2));
 % x=t'*ones(1,size(data,1));
 
-y=[data;NaN*ones(1,size(data,2))];
+y=data;
 % y=data';
 
 h=line(x,y,'parent',axe,'Color',[0 0 0],'linewidth',0.4);
@@ -162,7 +168,7 @@ end
 end
 
 %**************************************************************************
-function plotXTicks(axe,time,WinLength,fs)
+function plotXTicks(obj,axe,time,WinLength,fs)
 % Plot X ticks
 % axe :  axes to plot
 % time : starting time
@@ -179,10 +185,11 @@ startTime=ceil(time/delta)*delta;
 time_labels=startTime:delta:time+WinLength;
 
 set(axe,'XTick',(time_labels-time)*fs);
-
+x_lim=get(axe,'XLim');
+margin=obj.ChanNameMargin;
 for i=1:length(time_labels)
     t=time_labels(i);
-    p=(t-time)/WinLength;
+    p=(t*fs+margin-time*fs)/(x_lim(2)-x_lim(1));
     h=text(p+.002,.002,num2str(t),'Parent',axe,'HorizontalAlignment','left',...
         'VerticalAlignment','bottom','FontWeight','normal','units','normalized',...
         'color',[0 0 1],'DisplayName',['XTick',num2str(i)]);
@@ -192,12 +199,13 @@ end
 end
 
 %**************************************************************************
-function plotYTicks(axe,ChanNames,ChanSelect2Edit,ChanSelectColor,gain,colors)
+function plotYTicks(obj,axe,ChanNames,ChanSelect2Edit,ChanSelectColor,gain,colors)
 % Write channels names on Y Ticks
 %  axe :  axes to plot
 % ChanNames : cell of channel names that will be writted
 
 lim=get(axe,'Ylim');
+x_lim=get(axe,'Xlim');
 % x_lim=get(axe,'Xlim');
 h=findobj(axe,'-regexp','DisplayName','ChanName*');
 if ~isempty(h)
@@ -211,6 +219,8 @@ end
 
 n=length(ChanNames);
 count=0;
+margin=obj.ChanNameMargin;
+gm=obj.GaugeMargin;
 for i=1:n
     p=(n-i+1-lim(1))/(lim(2)-lim(1));
     if p<.99 && p>0
@@ -220,14 +230,14 @@ for i=1:n
         else
             YLabelColor=colors(i,:);
         end
-        h=text(.002,p+.004,ChanNames{i},'Parent',axe,'HorizontalAlignment','left',...
-            'VerticalAlignment','bottom','FontWeight','bold','units','normalized',...
+        h=text(margin/2/(x_lim(2)-x_lim(1)),p,ChanNames{i},'Parent',axe,'HorizontalAlignment','center',...
+            'VerticalAlignment','middle','FontWeight','bold','units','normalized',...
             'color',YLabelColor,'DisplayName',['ChanName' num2str(count)]);
 %             ,'Interpreter','none');
         %         drawnow;
 %         uistack(h,'bottom');
         
-        h=text(0.97,p,num2str(1/gain(i),'%0.3g'),'Parent',axe,'HorizontalAlignment','left',...
+        h=text(1-gm/(x_lim(2)-x_lim(1))/2,p,num2str(1/gain(i),'%0.3g'),'Parent',axe,'HorizontalAlignment','center',...
             'VerticalAlignment','middle','FontWeight','bold','units','normalized',...
             'DisplayName',['YGauge' num2str(count)],'Color',[1 0 1]);
 %             ,'Interpreter','none');

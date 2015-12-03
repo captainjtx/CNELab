@@ -1,9 +1,9 @@
 
-function [nchan,ndata,yvalue]=getMouseInfo(obj)
+function [nchan,ndata,yvalue,t]=getMouseInfo(obj)
 xlim=obj.WinLength*obj.SRate;
 ndata=0;nchan=0;
 yvalue=zeros(1,length(obj.Axes));%for two axes
-
+t=0;
 for i=1:length(obj.Axes)
     pos=get(obj.Axes(i),'CurrentPoint');
     yvalue(i)=pos(1,2); %TODO adjust to the scale
@@ -25,6 +25,8 @@ for i=1:length(obj.Axes)
             if nchan<=0, nchan=1; end
             if nchan>obj.MontageChanNumber(ndata), nchan=obj.MontageChanNumber(ndata); end
         end
+        
+        t=pos(1,1)/obj.SRate+obj.Time;
     end
 end
 

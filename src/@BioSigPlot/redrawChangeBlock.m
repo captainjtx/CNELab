@@ -1,8 +1,15 @@
 function redrawChangeBlock(obj,opt)
 %This will load new data if necessary
 dd=obj.DisplayedData;
-ind=round(max(1,(obj.Time-obj.BufferTime)*obj.SRate+1):min(((obj.Time-obj.BufferTime)+obj.WinLength)*obj.SRate+1,size(obj.PreprocData{dd(1)},1)));
+ind_max=size(obj.PreprocData{dd(1)},1);
+ind_start=max(1,min(round((obj.Time-obj.BufferTime)*obj.SRate+1),ind_max));
+ind_end=min(round((obj.Time-obj.BufferTime+obj.WinLength)*obj.SRate+1),ind_max);
+ind=ind_start:ind_end;
+
 ind=ind(1:obj.VisualDownSample:end);
+if isempty(ind)
+    return
+end
 for i=1:length(dd)
     if ~isempty(obj.PreprocData)
         Nchan=obj.MontageChanNumber(dd(i));
@@ -38,7 +45,7 @@ for i=1:length(dd)
             updateYTicks(axe,obj.MontageChanNames{dd(i)},obj.Gain{dd(i)},obj.ChanColors{dd(i)});
             updateEvents(axe);
         elseif strcmpi(opt,'time')
-            updateXTicks(axe,obj.Time,obj.WinLength,obj.SRate);
+            updateXTicks(obj,axe,obj.Time,obj.WinLength,obj.SRate);
             
         end
         
@@ -75,9 +82,9 @@ data=data+(posY'*ones(1,size(data,1)))';
 
 ind=linspace(ind(1),ind(end),size(data,1));
 
-x=[ind NaN]'*ones(1,size(data,2));
+x=ind'*ones(1,size(data,2));
 
-y=[data;NaN*ones(1,size(data,2))];
+y=data;
 
 for i=1:length(channellines)
     set(channellines(i),'XData',x(:,i));
@@ -85,7 +92,7 @@ for i=1:length(channellines)
 end
 
 end
-function updateXTicks(axe,time,WinLength,fs)
+function updateXTicks(obj,axe,time,WinLength,fs)
 % Plot X ticks
 % axe :  axes to plot
 % time : starting time
@@ -99,11 +106,12 @@ startTime=ceil(time/delta)*delta;
 time_labels=startTime:delta:time+WinLength;
 
 set(axe,'XTick',(time_labels-time)*fs);
-
+x_lim=get(axe,'XLim');
+margin=obj.ChanNameMargin;
 for i=1:length(time_labels)
     h=findobj(axe,'DisplayName',['XTick',num2str(i)]);
     t=time_labels(i);
-    p=(t-time)/WinLength;
+    p=(t*fs+margin-time*fs)/(x_lim(2)-x_lim(1));
     set(h,'Position',[p+0.002,0.002],'String',num2str(t));
 end
 

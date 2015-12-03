@@ -85,7 +85,7 @@ classdef EventWindow  < handle
         function cs=colorEvent(text,color)
             color=round(255*color);
             colorstr=sprintf('rgb(%d,%d,%d)',color(1),color(2),color(3));
-            cs=sprintf('<HTML><FONT bgcolor="%s">%s</FONT></HTML>',colorstr,text);
+            cs=sprintf('<HTML><FONT color="%s">%s</FONT></HTML>',colorstr,['<b> ' text ' </b>']);
         end
         
         function [ind,num]=findIndexOfEvent(txt,time)

@@ -23,6 +23,7 @@ classdef CommonDataStructure < handle
         evt %DataInfo.Annotations
         start_file
         file_type
+        ts
         
     end
     
@@ -92,6 +93,8 @@ classdef CommonDataStructure < handle
         function obj = set.file(obj,val), obj.DataInfo.FileName=val; end
         function val = get.file(obj),     val=obj.DataInfo.FileName; end
         
+        function obj = set.ts(obj,val), obj.DataInfo.TimeStamps=val; end
+        function val = get.ts(obj),     val=obj.DataInfo.TimeStamps; end
         
         function val=get.start_file(obj), val=CommonDataStructure.get_start_file(obj); end
     end
@@ -1322,6 +1325,12 @@ classdef CommonDataStructure < handle
             
         end
         
+        
+        function write_data_segment(cds,data,sample,chan)
+            
+            
+        end
+        
         function [dat,eof,evts]=get_data_segment(varargin)
             wait_bar_h = waitbar(0,'Retrieving data from file...');
             eof=[];
@@ -1458,6 +1467,63 @@ classdef CommonDataStructure < handle
                 cds.DataInfo.TimeStamps=(1:size(cds.Data,1))/fs;
                 
                 cds.save(oname);
+            end
+        end
+    end
+    methods
+        function write_data_by_start_end(obj,data,ind_start)
+            wait_bar_h = waitbar(0,'Writing data into file...');
+            current_data_info=obj.DataInfo;
+            ind_end=ind_start+size(data,1)-1;
+            
+            if isempty(current_data_info.NextFile)&&isempty(current_data_info.PrevFile)
+                obj.Data(ind_start:ind_end,:)=data;
+                try
+                    close(wait_bar_h)
+                catch
+                end
+                return
+            end
+            
+            if isfield(current_data_info,'AllFiles')&&isfield(current_data_info,'FileSample')...
+                    &&~isempty(current_data_info.AllFiles)&&~isempty(current_data_info.FileSample)
+                filenames=current_data_info.AllFiles;
+                
+                [pathstr,~,~]=fileparts(current_data_info.FileName);
+                filesample=current_data_info.FileSample;
+            else
+                fileinfo=CommonDataStructure.get_file_info(obj);
+                filesample=fileinfo.filesample;
+                pathstr=fileinfo.path;
+                filenames=fileinfo.filenames;
+            end
+            
+            f_start=find(filesample(:,1)<=ind_start);
+            f_start=f_start(end);
+            
+            f_end=find(filesample(:,2)>=ind_end);
+            f_end=f_end(1);
+            
+            for f=f_start:f_end
+                i_start=1;
+                i_end=filesample(f,2)-filesample(f,1)+1;
+                if f==f_start
+                    i_start=ind_start-filesample(f,1)+1;
+                elseif f==f_end
+                    i_end=ind_end-filesample(f,1)+1;
+                end
+                
+                fullname=fullfile(pathstr,filenames{f});
+                switch CommonDataStructure.dataStructureCheck(fullname)
+                    case 2
+                        fileobj=matfile(fullname);
+                        fileobj.Data(i_start:i_end,:)=data(i_start+filesample(f,1)-ind_start:i_end+filesample(f,1)-ind_start,:);
+                    otherwise
+                        msgbox('Invalid file format! Please convert your file into CommonDataStructure','CommonDataStructure.save','error');
+                        return
+%                         fileobj=CommonDataStructure.Load(fullname);
+%                         fileobj.Data(i_start:i_end,:)=data(i_start+filesample(f,1)-ind_start:i_end+filesample(f,1)-ind_start,:);
+                end
             end
         end
     end

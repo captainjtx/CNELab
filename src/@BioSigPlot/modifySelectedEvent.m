@@ -56,7 +56,7 @@ elseif strcmpi(opt,'rename')
         for k=1:size(obj.EventDisplayIndex,1)
             for i=1:size(obj.EventDisplayIndex,2)
                 if any(obj.EventDisplayIndex(k,i)==obj.SelectedEvent)
-                    set(obj.EventTexts(k,i),'String',newName);
+                    set(obj.EventTexts(k,i),'String',[' ' newName]);
                 end
             end
         end 

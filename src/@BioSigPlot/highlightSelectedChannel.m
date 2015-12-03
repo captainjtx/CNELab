@@ -17,7 +17,7 @@ end
 end
 
 function highlightChannels(dataNum,ChannelLines,colors,ChanSelect2Display,FirstDispChan,...
-    DispChans,ChanSelect2Edit,ChanSelectColor) %#ok<INUSD>
+    DispChans,ChanSelect2Edit,ChanSelectColor)
 % ChanSelect2Display : list of selected chans
 % FirstDispChan : the first channel to display
 % DispChans : the channel number of one page

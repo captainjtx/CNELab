@@ -2,7 +2,7 @@ function cnelab()
 %Some additional default settings, will be migrated in to configuration
 %file in the future release
 
-buffer_size=100; % in megabytes
+buffer_size=150; % in megabytes
 visual_buffer_size=2; % in megabytes
 %**************************************************************************
 
@@ -38,6 +38,7 @@ buffer_len=0;
 for i=1:length(cds)
     chan_num=length(cds{i}.Data(1,:));
     buffer_len=max(buffer_len,round(buffer_size*1000*1000/8/chan_num/fs));
+    buffer_len=min(buffer_len,fileinfo{i}.filesample(end,2)/fs);
 end
 
 BufferTime=0;
