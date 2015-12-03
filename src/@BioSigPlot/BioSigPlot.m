@@ -913,14 +913,14 @@ classdef BioSigPlot < hgsetget
         end
         %******************************************************************
         function val = get.ChanNameMargin(obj)
-            mname=obj.MontageChanNames;
-            len=0;
-            for i=1:length(mname)
-                for j=1:length(mname{i})
-                    len=max(len,length(mname{i}{j}));
-                end
-            end
-            val=obj.WinLength*obj.SRate/120*len;
+%             mname=obj.MontageChanNames;
+%             len=0;
+%             for i=1:length(mname)
+%                 for j=1:length(mname{i})
+%                     len=max(len,length(mname{i}{j}));
+%                 end
+%             end
+            val=obj.WinLength*obj.SRate/20;
         end
         %******************************************************************
         function val = get.GaugeMargin(obj)

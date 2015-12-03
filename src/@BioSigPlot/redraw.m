@@ -232,7 +232,7 @@ for i=1:n
         end
         h=text(margin/2/(x_lim(2)-x_lim(1)),p,ChanNames{i},'Parent',axe,'HorizontalAlignment','center',...
             'VerticalAlignment','middle','FontWeight','bold','units','normalized',...
-            'color',YLabelColor,'DisplayName',['ChanName' num2str(count)]);
+            'color',YLabelColor,'DisplayName',['ChanName' num2str(count)],'FontSize',min(floor(55/length(ChanNames{i})),12));
 %             ,'Interpreter','none');
         %         drawnow;
 %         uistack(h,'bottom');

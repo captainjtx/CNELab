@@ -131,7 +131,7 @@ for i=1:n
         
         h=findobj(axe,'DisplayName',['ChanName' num2str(count)]);
         
-        set(h,'String',ChanNames{i},'Color',colors(i,:));
+        set(h,'String',ChanNames{i},'Color',colors(i,:),'FontSize',min(floor(55/length(ChanNames{i})),12));
         
         h=findobj(axe,'DisplayName',['YGauge' num2str(count)]);
         set(h,'String',num2str(1/gain(i),'%0.3g'));
