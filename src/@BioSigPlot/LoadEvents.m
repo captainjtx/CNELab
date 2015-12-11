@@ -12,11 +12,18 @@ if strcmpi(choice,'Cancel')
     return
 end
 
+
+if exist([obj.FileDir,'/events'],'dir')==7
+    open_dir=[obj.FileDir,'/events'];
+else
+    open_dir=obj.FileDir;
+end
+            
 [FileName,FilePath,FilterIndex]=uigetfile({'*.txt;*.csv;*.mat;*.evt','Event Files (*.txt;*.csv;*.mat;*.evt)';...
     '*.txt;*csv;*.evt','Text File (*.txt;*csv;*.evt)';
     '*.mat','Matlab Mat File (*.mat)'},...
     'select your events file',...
-    obj.FileDir);
+    open_dir);
 if FileName~=0
     
     if FilterIndex==1

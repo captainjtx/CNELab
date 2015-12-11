@@ -92,7 +92,9 @@ for i=1:length(dd)
     end
     
     if any(sorted_bsp_selection(1,:)<obj.BufferStartSample)||any(sorted_bsp_selection(2,:)>obj.BufferEndSample)
-        alldata=CommonDataStructure.get_data_segment(obj.CDS{dd(i)},selection,chan);
+        alldata=CommonDataStructure.get_data_segment(obj.CDS{dd(i)},selection,[]);
+        alldata=alldata*(obj.Montage{dd(i)}(obj.MontageRef(dd(i))).mat)';
+        alldata=alldata(:,chan);
     else
         %if all ready loaded into the buffer, no need to reload from the
         %file

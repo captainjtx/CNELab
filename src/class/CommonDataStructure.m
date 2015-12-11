@@ -301,6 +301,19 @@ classdef CommonDataStructure < handle
                     
                 end
             end
+            
+            if exist([FilePath,'/montage'],'dir')~=7
+                mkdir(FilePath,'montage');
+            end
+            
+            if exist([FilePath,'/position'],'dir')~=7
+                mkdir(FilePath,'position');
+            end
+            
+            if exist([FilePath,'/events'],'dir')~=7
+                mkdir(FilePath,'events');
+            end
+            
             close(wait_bar_h);
         end
         
@@ -940,8 +953,11 @@ classdef CommonDataStructure < handle
                 end
             end
             
-            mtg=cell(length(montage),1);
+            count=1;
             for i=1:length(montage)
+                if isempty(montage{i})
+                    continue
+                end
                 [pathstr, name, ext] = fileparts(FileName{i});
                 
                 if length(OriginalChanNames)==1
@@ -951,10 +967,11 @@ classdef CommonDataStructure < handle
                 end
                 [montage_channames,mat,groupnames]=parseMontage(montage{i},channame);
                 
-                mtg{i}.name=name;
-                mtg{i}.channames=montage_channames;
-                mtg{i}.mat=mat;
-                mtg{i}.groupnames=groupnames;
+                mtg{count}.name=name;
+                mtg{count}.channames=montage_channames;
+                mtg{count}.mat=mat;
+                mtg{count}.groupnames=groupnames;
+                count=count+1;
                 
             end
         end

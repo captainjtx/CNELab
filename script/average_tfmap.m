@@ -1,12 +1,12 @@
 %%
 
 %s1
-% sig_chan={'C27_L','C19_L','C10_L','C11_L'};
-sig_chan={'C73_S','C74_S','C67_S'};
+% sig_chan={'C27_L'};
+% sig_chan={'C74_S'};
 
 %s2
-% sig_chan={'C31_L','C32_L','C22_L','C23_L','C24_L'};
-% sig_chan={'C84_S','C85_S'};
+% sig_chan={'C23_L'};
+sig_chan={'C85_S','C84_S','C76_S','C91_S','C92_S'};
 
 
 tfw=bsp.TFMapWin;
@@ -47,4 +47,4 @@ set(gcf,'color','white')
 
 [pathstr,~,~]=fileparts(bsp.FileNames{1});
 
- export_fig(gcf,'-png','-nocrop','-opengl','-r300',[pathstr,'/small']);
+ export_fig(gcf,'-png','-nocrop','-opengl','-r300',[pathstr,'/small_ave']);

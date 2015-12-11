@@ -32,6 +32,7 @@ if nargin==2
     d=double(obj.Data{n}*(obj.Montage{n}(obj.MontageRef(n)).mat)');
 elseif nargin==3
     n=varargin{1};
+    %make sure the data is montage transformed
     d=varargin{2};
 else
     d=[];
