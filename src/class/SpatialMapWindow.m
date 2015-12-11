@@ -678,7 +678,7 @@ classdef SpatialMapWindow < handle
         
         function set.normalization_start_event(obj,val)
             if obj.valid
-                ind=find(ismember(val,obj.event_list));
+                ind=find(ismember(obj.event_list,val));
                 if isempty(ind)
                     ind=1;
                 end
@@ -711,7 +711,7 @@ classdef SpatialMapWindow < handle
         
         function set.normalization_end_event(obj,val)
             if obj.valid
-                ind=find(ismember(val,obj.event_list));
+                ind=find(ismember(obj.event_list,val));
                 if isempty(ind)
                     ind=1;
                 end

@@ -14,8 +14,13 @@ for i=1:size(eeg,2)
     tf=abs(tf);
     
     if ~isempty(baseline)
-        
-        [rs,rf,rt,rtf]=spectrogram(baseline(:,i),win,ov,nf,fs);
+        bdata=squeeze(baseline(:,i,:));
+        rtf=0;
+        for b=1:size(bdata,2)
+            [rs,rf,rt,tmp_rtf]=spectrogram(bdata(:,b),win,ov,nf,fs);
+            rtf=rtf+tmp_rtf;
+        end
+        rtf=rtf/size(bdata,2);
         rf=mean(abs(rtf),2);
         tf=tf./repmat(rf,1,size(tf,2));
     elseif ~isempty(nref)

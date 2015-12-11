@@ -1,4 +1,4 @@
-function [data,chanNames,dataset,channel,sample,evts,groupnames,pos]=get_selected_data(obj,varargin)
+function [data,chanNames,dataset,channel,sample,evts,groupnames,pos,segment]=get_selected_data(obj,varargin)
 %This function returns the selected data and the corresponding channel
 %names
 
@@ -16,6 +16,7 @@ channel=[];
 events=[];
 evts=[];
 sorted_bsp_selection=[];
+segment=[];
 bsp_selection=obj.Selection;
 
 fs=obj.SRate;
@@ -104,16 +105,19 @@ for i=1:length(dd)
     %filter before merge trial segments
     count=1;
     d=[];
+    seg=[];
     for t=1:size(sorted_bsp_selection,2)
         len=sorted_bsp_selection(2,t)-sorted_bsp_selection(1,t)+1;
         tmpd=preprocessedData(obj,dd(i),alldata(count:count+len-1,:));
         d=cat(1,d,tmpd);
+        seg=cat(1,seg,t*ones(length(tmpd),1));
         count=count+sorted_bsp_selection(2,t)-sorted_bsp_selection(1,t)+1;
     end
 
     dataset=cat(2,dataset,dd(i)*ones(1,size(d,2)));
     channel=cat(2,channel,reshape(chan,1,length(chan)));
     data=cat(2,data,d);
+    segment=cat(2,segment,seg);
     
     chanNames=cat(1,chanNames,reshape(obj.MontageChanNames{dd(i)}(chan),length(obj.MontageChanNames{dd(i)}(chan)),1));
     if ~isempty(obj.Montage{dd(i)}(obj.MontageRef(dd(i))).groupnames)

@@ -22,13 +22,20 @@ for i=1:size(EventsList,1)
     Events.color(i,:)=EventsList{i,3};
     Events.code(i)=EventsList{i,4};
 end
+
+if exist([obj.FileDir,'/events'],'dir')==7
+    open_dir=[obj.FileDir,'/events'];
+else
+    open_dir=obj.FileDir;
+end
+
 if ~isempty(Events)
     [FileName,FilePath,FilterIndex]=uiputfile({'*.txt;*.csv;*.mat;*.evt','Event Files (*.txt;*.csv;*.mat;*.evt)';...
         '*.evt','Event File (*.evt)';
         '*.txt','Text File(*.txt)';
         '*.csv','Comma Separate File(*.csv)';
         '*.mat','Matlab Mat File (*.mat)'}...
-        ,'save your Events',fullfile(obj.FileDir,'untitled'));
+        ,'save your Events',fullfile(open_dir,'untitled'));
     if FileName~=0
         
         if FilterIndex==1

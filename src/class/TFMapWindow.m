@@ -23,6 +23,8 @@ classdef TFMapWindow < handle
         scale_end_edit
         scale_start_popup
         scale_end_popup
+        scale_event_text
+        scale_event_popup
         stft_winlen_edit
         stft_overlap_edit
         max_freq_edit
@@ -37,6 +39,7 @@ classdef TFMapWindow < handle
         compute_btn
         new_btn
         symmetric_scale_radio
+        
     end
     properties
         fs_
@@ -52,6 +55,7 @@ classdef TFMapWindow < handle
         normalization_end_
         normalization_start_event_
         normalization_end_event_
+        normalization_event_
         display_onset_
         stft_winlen_
         stft_overlap_
@@ -78,6 +82,7 @@ classdef TFMapWindow < handle
         normalization_start_event
         normalization_end
         normalization_end_event
+        normalization_event
         display_onset
         stft_winlen
         stft_overlap
@@ -211,40 +216,67 @@ classdef TFMapWindow < handle
             val=obj.normalization_start_;
         end
         function set.normalization_start(obj,val)
-            val=max(0,min((obj.ms_before+obj.ms_after),val));
+            val=max(-obj.ms_before,min(obj.ms_after,val));
             if obj.valid
                 set(obj.scale_start_edit,'string',num2str(val));
             end
             
             obj.normalization_start_=val;
         end
-        
+        function val=get.normalization_event(obj)
+            val=obj.normalization_event_;
+        end
+        function set.normalization_event(obj,val)
+            if obj.valid
+                ind=find(ismember(obj.event_list,val));
+                if isempty(ind)
+                    ind=1;
+                end
+                set(obj.scale_event_popup,'value',ind);
+                
+                if ~isempty(obj.event_list)
+                    val=obj.event_list{ind};
+                else
+                    val=[];
+                end
+            end
+            obj.normalization_event_=val;
+        end
+            
         function val=get.normalization_start_event(obj)
             val=obj.normalization_start_event_;
         end
         
         function set.normalization_start_event(obj,val)
             if obj.valid
-                ind=find(ismember(val,obj.event_list));
+                ind=find(ismember(obj.event_list,val));
                 if isempty(ind)
                     ind=1;
                 end
                 set(obj.scale_start_popup,'value',ind);
+                if ~isempty(obj.event_list)
+                    val=obj.event_list{ind};
+                else
+                    val=[];
+                end
             end
+            obj.normalization_start_event_=val;
         end
         
         function val=get.normalization_end(obj)
             val=obj.normalization_end_;
         end
         function set.normalization_end(obj,val)
-            val=max(obj.normalization_start+obj.stft_winlen/obj.fs*1000,val);
-            val=max(0,min((obj.ms_before+obj.ms_after),val));
+            if strcmp(obj.normalization_event,obj.event)
+                val=max(obj.normalization_start+obj.stft_winlen/obj.fs*1000,val);
+                val=max(-obj.ms_before,min(obj.ms_after,val));
+            end
             obj.normalization_end_=val;
             if obj.valid
-                if obj.normalization==2||obj.normalization==3
+                if obj.normalization==2
                     set(obj.scale_end_edit,'string',num2str(val));
                     
-                elseif obj.normalization==4
+                elseif obj.normalization==3
                     set(obj.scale_end_edit,'string',val);
                 end
             end
@@ -256,12 +288,18 @@ classdef TFMapWindow < handle
         
         function set.normalization_end_event(obj,val)
             if obj.valid
-                ind=find(ismember(val,obj.event_list));
+                ind=find(ismember(obj.event_list,val));
                 if isempty(ind)
                     ind=1;
                 end
                 set(obj.scale_end_popup,'value',ind);
+                if ~isempty(obj.event_list)
+                    val=obj.event_list{ind};
+                else
+                    val=[];
+                end
             end
+            obj.normalization_end_event_=val;
         end
         
         function val=get.display_onset(obj)
@@ -431,6 +469,7 @@ classdef TFMapWindow < handle
                 set(obj.event_popup,'string',val);
                 set(obj.scale_start_popup,'string',val);
                 set(obj.scale_end_popup,'string',val);
+                set(obj.scale_event_popup,'value',1);
             end
             
             [ia,ib]=ismember(obj.event,val);
@@ -461,9 +500,15 @@ classdef TFMapWindow < handle
                 obj.normalization_end_event=val{1};
             end
             
-            
+            [ia,ib]=ismember(obj.normalization_event,val);
+            if ia
+                if obj.valid
+                    set(obj.scale_event_popup,'value',ib);
+                end
+            else
+                obj.normalization_event=val{1};
+            end
         end
-        
     end
     
     methods
@@ -493,10 +538,11 @@ classdef TFMapWindow < handle
             obj.event_='';
             obj.unit_='dB';
             obj.normalization_=1;%none
-            obj.normalization_start_=0;
-            obj.normalization_end_=500;
+            obj.normalization_start_=-1500;
+            obj.normalization_end_=-1000;
             obj.normalization_start_event_='';
             obj.normalization_end_event_='';
+            obj.normalization_event_='';
             obj.display_onset_=1;
             obj.max_freq_=obj.fs/2;
             obj.min_freq_=0;
@@ -559,24 +605,33 @@ classdef TFMapWindow < handle
             uicontrol('Parent',hp_scale,'style','text','units','normalized','string','Normalization: ',...
                 'position',[0.01,0.6,0.4,0.35],'HorizontalAlignment','left');
             obj.normalization_popup=uicontrol('Parent',hp_scale,'style','popup','units','normalized',...
-                'string',{'None','Individual Within Segment','Average Within Sgement','External Baseline'},'callback',@(src,evts) NormalizationCallback(obj,src),...
+                'string',{'None','Within Segment','External Baseline'},'callback',@(src,evts) NormalizationCallback(obj,src),...
                 'position',[0.4,0.6,0.59,0.35],'value',obj.normalization);
             
-            obj.scale_start_text=uicontrol('Parent',hp_scale,'style','text','units','normalized',...
-                'string','Start (ms): ','position',[0.05,0.3,0.4,0.3],'HorizontalAlignment','center',...
-                'visible','off');
-            obj.scale_end_text=uicontrol('Parent',hp_scale,'style','text','units','normalized',...
-                'string','End (ms): ','position',[0.55,0.3,0.4,0.3],'HorizontalAlignment','center',...
-                'visible','off');
+            obj.scale_event_text=uicontrol('Parent',hp_scale,'Style','text','string','Event: ','units','normalized','position',[0.01,0.3,0.35,0.3],...
+                'HorizontalAlignment','left','visible','off');
+            obj.scale_start_text=uicontrol('Parent',hp_scale,'Style','text','string','Start (ms): ','units','normalized','position',[0.4,0.3,0.3,0.3],...
+                'HorizontalAlignment','left','visible','off');
+            obj.scale_end_text=uicontrol('Parent',hp_scale,'Style','text','string','End (ms): ','units','normalized','position',[0.7,0.3,0.3,0.3],...
+                'HorizontalAlignment','left','visible','off');
+            obj.scale_event_popup=uicontrol('Parent',hp_scale,'Style','popup','string',obj.event_list,'units','normalized','position',[0.01,0.05,0.35,0.3],...
+                'visible','off','callback',@(src,evts) ScaleEventCallback(obj,src));
+%             obj.scale_start_text=uicontrol('Parent',hp_scale,'style','text','units','normalized',...
+%                 'string','Start (ms): ','position',[0.05,0.3,0.4,0.3],'HorizontalAlignment','center',...
+%                 'visible','off');
+%             obj.scale_end_text=uicontrol('Parent',hp_scale,'style','text','units','normalized',...
+%                 'string','End (ms): ','position',[0.55,0.3,0.4,0.3],'HorizontalAlignment','center',...
+%                 'visible','off');
+            
             obj.scale_start_edit=uicontrol('parent',hp_scale,'style','edit','units','normalized',...
-                'string',obj.normalization_start,'position',[0.05,0.05,0.4,0.3],'HorizontalAlignment','center','visible','off',...
+                'string',obj.normalization_start,'position',[0.4,0.05,0.29,0.3],'HorizontalAlignment','center','visible','off',...
                 'callback',@(src,evt)NormalizationStartEndCallback(obj,src));
             obj.scale_start_popup=uicontrol('parent',hp_scale,'style','popup','units','normalized',...
                 'string',obj.event_list,'position',[0.05,0.05,0.4,0.3],'visible','off',...
                 'callback',@(src,evt)NormalizationStartEndCallback(obj,src));
             
             obj.scale_end_edit=uicontrol('parent',hp_scale,'style','edit','units','normalized',...
-                'string',obj.normalization_end,'position',[0.55,0.05,0.4,0.3],'HorizontalAlignment','center','visible','off',...
+                'string',obj.normalization_end,'position',[0.7,0.05,0.29,0.3],'HorizontalAlignment','center','visible','off',...
                 'callback',@(src,evt)NormalizationStartEndCallback(obj,src));
             obj.scale_end_popup=uicontrol('parent',hp_scale,'style','popup','units','normalized',...
                 'string',obj.event_list,'position',[0.55,0.05,0.4,0.3],'visible','off',...
@@ -656,6 +711,7 @@ classdef TFMapWindow < handle
             obj.event=obj.event_;
             obj.normalization_start_event=obj.normalization_start_event_;
             obj.normalization_end_event=obj.normalization_end_event_;
+            obj.normalization_event=obj.event;
         end
         function OnClose(obj)
             obj.valid=0;
@@ -753,33 +809,30 @@ classdef TFMapWindow < handle
                     set(obj.scale_end_edit,'visible','off');
                     set(obj.scale_start_popup,'visible','off');
                     set(obj.scale_end_popup,'visible','off');
+                    set(obj.scale_event_popup,'visible','off');
+                    set(obj.scale_event_text,'visible','off');
                 case 2
-                    set(obj.scale_start_text,'visible','on');
+                    set(obj.scale_start_text,'visible','on','position',[0.4,0.3,0.3,0.3]);
                     set(obj.scale_start_text,'string','Start (ms): ')
-                    set(obj.scale_end_text,'visible','on');
+                    set(obj.scale_end_text,'visible','on','position',[0.7,0.3,0.3,0.3]);
                     set(obj.scale_end_text,'string','End (ms): ')
                     set(obj.scale_start_edit,'visible','on');
                     set(obj.scale_end_edit,'visible','on');
                     set(obj.scale_start_popup,'visible','off');
                     set(obj.scale_end_popup,'visible','off');
+                    set(obj.scale_event_popup,'visible','on');
+                    set(obj.scale_event_text,'visible','on');
                 case 3
-                    set(obj.scale_start_text,'visible','on');
-                    set(obj.scale_start_text,'string','Start (ms): ')
-                    set(obj.scale_end_text,'visible','on');
-                    set(obj.scale_end_text,'string','End (ms): ')
-                    set(obj.scale_start_edit,'visible','on');
-                    set(obj.scale_end_edit,'visible','on');
-                    set(obj.scale_start_popup,'visible','off');
-                    set(obj.scale_end_popup,'visible','off');
-                case 4
-                    set(obj.scale_start_text,'visible','on');
+                    set(obj.scale_start_text,'visible','on','position',[0.05,0.3,0.4,0.3]);
                     set(obj.scale_start_text,'string','Start (event): ')
-                    set(obj.scale_end_text,'visible','on');
+                    set(obj.scale_end_text,'visible','on','position',[0.55,0.3,0.4,0.3]);
                     set(obj.scale_end_text,'string','End (event): ')
                     set(obj.scale_start_edit,'visible','off');
                     set(obj.scale_end_edit,'visible','off');
                     set(obj.scale_start_popup,'visible','on');
                     set(obj.scale_end_popup,'visible','on');
+                    set(obj.scale_event_popup,'visible','off');
+                    set(obj.scale_event_text,'visible','off');
             end
         end
         
@@ -890,8 +943,13 @@ classdef TFMapWindow < handle
         
         function EventCallback(obj,src)
             obj.event_=obj.event_list{get(src,'value')};
+            obj.normalization_event=obj.event_;
         end
         
+        
+        function ScaleEventCallback(obj,src)
+            obj.normalization_event_=obj.event_list{get(src,'value')};
+        end
         function UpdateEventSelected(obj)
             if ~isempty(obj.bsp.SelectedEvent)
                 obj.event=obj.bsp.Evts{obj.bsp.SelectedEvent(1),2};
@@ -995,28 +1053,74 @@ classdef TFMapWindow < handle
             if obj.normalization==1
                 nref=[];
                 baseline=[];
-            elseif obj.normalization==2||obj.normalization==3
-                nref=round([obj.normalization_start,obj.normalization_end]/1000*obj.fs);
+            elseif obj.normalization==2
+                if strcmp(obj.event,obj.normalization_event)
+                    nref=round((obj.ms_before+[obj.normalization_start,obj.normalization_end])/1000*obj.fs);
+                    
+                    needupdate=0;
+                    if nref(2)>=length(sample)
+                        nref(2)=length(sample);
+                        needupdate=1;
+                    end
+                    if nref(1)>=nref(2)
+                        nref(1)=1;
+                        needupdate=1;
+                    end
+                    if nref(1)<0;
+                        nref(1)=1;
+                        needupdate=1;
+                    end
+                    
+                    if needupdate
+                        obj.normalization_start=nref(1)*1000/obj.fs-obj.ms_before;
+                        obj.normalization_end=nref(2)*1000/obj.fs-obj.ms_before;
+                    end
+                else
+                    if obj.normalization_start>obj.normalization_end
+                        obj.normalization_start=obj.normalization_end-1;
+                    end
+                    nref=[];
+                end
                 
-                needupdate=0;
-                if nref(2)>=length(sample)
-                    nref(2)=length(sample);
-                    needupdate=1;
-                end
-                if nref(1)>=nref(2)
-                    nref(1)=1;
-                    needupdate=1;
-                end
-                if nref(1)<0;
-                    nref(1)=1;
-                    needupdate=1;
-                end
                 baseline=[];
-                if needupdate
-                    obj.normalization_start=nref(1)*1000/obj.fs;
-                    obj.normalization_end=nref(2)*1000/obj.fs;
+                
+                if strcmp(obj.normalization_event,obj.event)
+                    rtfm=[];
+                else
+                    bt_evt=[obj.bsp.Evts{:,1}];
+                    bt_label=bt_evt(strcmpi(obj.bsp.Evts(:,2),obj.normalization_event));
+                    if isempty(bt_label)
+                        errordlg(['Event: ',obj.normalization_event,' not found !']);
+                        return
+                    end
+                    bi_event=round(bt_label*obj.fs);
+                    bi_event=min(max(1,bi_event),obj.bsp.TotalSample);
+                    
+                    bi_event((bi_event+round(obj.normalization_start/1000*obj.fs))>obj.bsp.TotalSample)=[];
+                    bi_event((bi_event+round(obj.normalization_end/1000*obj.fs))<1)=[];
+                    sel=[];
+                    for i=1:length(bi_event)
+                        tmp_sel=[bi_event(i)+round(obj.normalization_start/1000*obj.fs);bi_event(i)+round(obj.normalization_end/1000*obj.fs)];
+                        sel=cat(2,sel,tmp_sel);
+                    end
+                    omitMask=true;
+                    [catbaseline,~,~,~,~,~,~,~,segment]=get_selected_data(obj.bsp,omitMask,sel);
+                    
+                    seg=unique(segment);
+                    
+                    rtfm=cell(size(catbaseline,2),1);
+                    for j=1:size(catbaseline,2)
+                        tmp=0;
+                        for i=1:length(seg)
+                            bdata=catbaseline(segment==seg(i),j);
+                            [ttmp,~,~]=bsp_tfmap(obj.TFMapFig,bdata,[],obj.fs,wd,ov,s,[],chanNames,freq,units);
+                            tmp=tmp+ttmp;
+                        end
+                        rtfm{j}=tmp/length(seg);
+                    end
+                    
                 end
-            elseif obj.normalization==4
+            elseif obj.normalization==3
                 nref=[];
                 
                 t_evt=[obj.bsp.Evts{:,1}];
@@ -1154,12 +1258,18 @@ classdef TFMapWindow < handle
                     [data,~,~,~,sample,~,~,~]=get_selected_data(obj.bsp,true,sel);
                     data=data(:,chanind);
                     
+                    if ~isempty(baseline)
+                        baseline=baseline(:,chanind,:);
+                    end
+                    
+                    if ~isempty(rtfm)
+                        rtfm=rtfm(chanind);
+                    end
                     for j=1:length(channames)
                         if obj.data_input==3
                             tfm=0;
-                            tmp_tfm=cell(1,length(i_event));
                                                         
-                            if obj.normalization==3
+                            if obj.normalization==2
                                 nref_tmp=[];
                             end
                             %******************************************************
@@ -1168,23 +1278,23 @@ classdef TFMapWindow < handle
                                 data1=data(ismember(sample,tmp_sel),:);
                                 data2=data1(:,j);
                                 [tf,f,t]=bsp_tfmap(obj.TFMapFig,data2,baseline,obj.fs,wd,ov,s,nref_tmp,channames,freq,units);
-                                tmp_tfm{i}=tf;
                                 tfm=tfm+tf;
                             end
                             tfm=tfm/length(i_event);
+                            
                             %compute the baseline spectrum
                             
-                            if obj.normalization==3
-                                rtfm=0;
-                                for i=1:length(tmp_tfm)
-                                    rtfm=rtfm+mean(tmp_tfm{i}(:,(t>=nref(1)/obj.fs)&(t<=nref(2)/obj.fs)),2);
+                            if obj.normalization==2
+                                if strcmp(obj.normalization_event,obj.event)
+                                    rtfm1=mean(tfm(:,(t>=nref(1)/obj.fs)&(t<=nref(2)/obj.fs)),2);
+                                else
+                                    rtfm1=mean(rtfm{j},2);
                                 end
                                 
-                                rtfm=rtfm/length(i_event);
-                                tfm=tfm./repmat(rtfm,1,size(tfm,2));
+                                tfm=tfm./repmat(rtfm1,1,size(tfm,2));
                             end
                         else
-                            [tfm,f,t]=bsp_tfmap(obj.TFMapFig,data(:,j),baseline,obj.fs,wd,ov,s,nref,channames,freq,units);
+                            [tfm,f,t]=bsp_tfmap(obj.TFMapFig,data(:,j),baseline(:,j,:),obj.fs,wd,ov,s,nref,channames,freq,units);
                         end
                         
                         if strcmpi(units,'dB')

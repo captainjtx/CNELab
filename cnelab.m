@@ -34,12 +34,12 @@ fs=fileinfo{1}.fs;
 %If two dataset is retrieved at the sample time, the buffer needed will be
 %doubled. If future test demonstrate that dynamic buffer had a low cost,
 %automatic memory control might be implemented instead.
-buffer_len=0;
+buffer_len=zeros(length(cds),1);
 for i=1:length(cds)
     chan_num=length(cds{i}.Data(1,:));
-    buffer_len=max(buffer_len,round(buffer_size*1000*1000/8/chan_num/fs));
-    buffer_len=min(buffer_len,fileinfo{i}.filesample(end,2)/fs);
+    buffer_len(i)=min(round(buffer_size*1000*1000/8/chan_num/fs),fileinfo{i}.filesample(end,2)/fs);
 end
+buffer_len=min(buffer_len);
 
 BufferTime=0;
 
