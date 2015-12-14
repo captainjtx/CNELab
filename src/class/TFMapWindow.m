@@ -216,7 +216,7 @@ classdef TFMapWindow < handle
             val=obj.normalization_start_;
         end
         function set.normalization_start(obj,val)
-            val=max(-obj.ms_before,min(obj.ms_after,val));
+
             if obj.valid
                 set(obj.scale_start_edit,'string',num2str(val));
             end
@@ -267,10 +267,6 @@ classdef TFMapWindow < handle
             val=obj.normalization_end_;
         end
         function set.normalization_end(obj,val)
-            if strcmp(obj.normalization_event,obj.event)
-                val=max(obj.normalization_start+obj.stft_winlen/obj.fs*1000,val);
-                val=max(-obj.ms_before,min(obj.ms_after,val));
-            end
             obj.normalization_end_=val;
             if obj.valid
                 if obj.normalization==2
@@ -466,10 +462,11 @@ classdef TFMapWindow < handle
                 set(obj.event_popup,'value',1);
                 set(obj.scale_start_popup,'value',1);
                 set(obj.scale_end_popup,'value',1);
+                set(obj.scale_event_popup,'value',1);
                 set(obj.event_popup,'string',val);
                 set(obj.scale_start_popup,'string',val);
                 set(obj.scale_end_popup,'string',val);
-                set(obj.scale_event_popup,'value',1);
+                set(obj.scale_event_popup,'string',val);
             end
             
             [ia,ib]=ismember(obj.event,val);
@@ -739,6 +736,7 @@ classdef TFMapWindow < handle
                     set(obj.event_popup,'visible','off');
                     set(obj.ms_before_edit,'visible','off');
                     set(obj.ms_after_edit,'visible','off');
+                    set(obj.scale_event_popup,'enable','off');
                 case 2
                     %Single Event
                     set(obj.event_text,'visible','on');
@@ -747,6 +745,7 @@ classdef TFMapWindow < handle
                     set(obj.event_popup,'visible','on','enable','off');
                     set(obj.ms_before_edit,'visible','on');
                     set(obj.ms_after_edit,'visible','on');
+                    set(obj.scale_event_popup,'enable','off');
                 case 3
                     %Average Event
                     set(obj.event_text,'visible','on');
@@ -755,6 +754,7 @@ classdef TFMapWindow < handle
                     set(obj.event_popup,'visible','on','enable','on');
                     set(obj.ms_before_edit,'visible','on');
                     set(obj.ms_after_edit,'visible','on');
+                    set(obj.scale_event_popup,'enable','on');
             end
         end
         
@@ -926,12 +926,21 @@ classdef TFMapWindow < handle
                     if isnan(t)
                        t=obj.normalization_start; 
                     end
+                    if obj.data_input~=1&&strcmp(obj.normalization_event,obj.event)
+                        t=max(-obj.ms_before,min(obj.ms_after,t));
+                    elseif obj.data_input==1
+                        t=max(0,t);
+                    end
                     obj.normalization_start=t;
                 case obj.scale_end_edit
-                    
                     t=str2double(get(src,'string'));
                     if isnan(t)
                        t=obj.normalization_end; 
+                    end
+                    if obj.data_input~=1&&strcmp(obj.normalization_event,obj.event)
+                        t=max(-obj.ms_before,min(obj.ms_after,t));
+                    elseif obj.data_input==1
+                        t=max(0,t);
                     end
                     obj.normalization_end=t;
                 case obj.scale_start_popup
@@ -1053,9 +1062,9 @@ classdef TFMapWindow < handle
             if obj.normalization==1
                 nref=[];
                 baseline=[];
-            elseif obj.normalization==2
-                if strcmp(obj.event,obj.normalization_event)
-                    nref=round((obj.ms_before+[obj.normalization_start,obj.normalization_end])/1000*obj.fs);
+            elseif obj.normalization==2 
+                if obj.data_input~=1&&strcmp(obj.event,obj.normalization_event)
+                    nref=round((obj.ms_before+[obj.normalization_start,obj.normalization_end])/1000*obj.fs); 
                     
                     needupdate=0;
                     if nref(2)>=length(sample)
@@ -1066,27 +1075,44 @@ classdef TFMapWindow < handle
                         nref(1)=1;
                         needupdate=1;
                     end
-                    if nref(1)<0;
+                    if nref(1)<=0;
                         nref(1)=1;
                         needupdate=1;
                     end
                     
                     if needupdate
-                        obj.normalization_start=nref(1)*1000/obj.fs-obj.ms_before;
-                        obj.normalization_end=nref(2)*1000/obj.fs-obj.ms_before;
+                            obj.normalization_start=nref(1)*1000/obj.fs-obj.ms_before;
+                            obj.normalization_end=nref(2)*1000/obj.fs-obj.ms_before;
+                    end
+                elseif obj.data_input==1
+                    nref=round([obj.normalization_start,obj.normalization_end]/1000*obj.fs);
+                    needupdate=0;
+                    if nref(2)>=length(sample)
+                        nref(2)=length(sample);
+                        needupdate=1;
+                    end
+                    if nref(1)>=nref(2)
+                        nref(1)=1;
+                        needupdate=1;
+                    end
+                    if nref(1)<=0;
+                        nref(1)=1;
+                        needupdate=1;
+                    end
+                    
+                    if needupdate
+                            obj.normalization_start=nref(1)*1000/obj.fs;
+                            obj.normalization_end=nref(2)*1000/obj.fs;
                     end
                 else
-                    if obj.normalization_start>obj.normalization_end
-                        obj.normalization_start=obj.normalization_end-1;
-                    end
                     nref=[];
                 end
                 
                 baseline=[];
                 
-                if strcmp(obj.normalization_event,obj.event)
+                if obj.data_input~=1&&strcmp(obj.normalization_event,obj.event)
                     rtfm=[];
-                else
+                elseif obj.data_input==3
                     bt_evt=[obj.bsp.Evts{:,1}];
                     bt_label=bt_evt(strcmpi(obj.bsp.Evts(:,2),obj.normalization_event));
                     if isempty(bt_label)
@@ -1096,8 +1122,8 @@ classdef TFMapWindow < handle
                     bi_event=round(bt_label*obj.fs);
                     bi_event=min(max(1,bi_event),obj.bsp.TotalSample);
                     
-                    bi_event((bi_event+round(obj.normalization_start/1000*obj.fs))>obj.bsp.TotalSample)=[];
-                    bi_event((bi_event+round(obj.normalization_end/1000*obj.fs))<1)=[];
+                    bi_event((bi_event+round(obj.normalization_start/1000*obj.fs))<1)=[];
+                    bi_event((bi_event+round(obj.normalization_end/1000*obj.fs))>obj.bsp.TotalSample)=[];
                     sel=[];
                     for i=1:length(bi_event)
                         tmp_sel=[bi_event(i)+round(obj.normalization_start/1000*obj.fs);bi_event(i)+round(obj.normalization_end/1000*obj.fs)];
@@ -1118,7 +1144,8 @@ classdef TFMapWindow < handle
                         end
                         rtfm{j}=tmp/length(seg);
                     end
-                    
+                else
+                    rtfm=[];
                 end
             elseif obj.normalization==3
                 nref=[];
@@ -1189,8 +1216,6 @@ classdef TFMapWindow < handle
                     else
                         tf=tf-1;
                     end
-                    
-                    
                     
                     imagesc(t,f,tf);
                     
@@ -1266,6 +1291,11 @@ classdef TFMapWindow < handle
                         rtfm=rtfm(chanind);
                     end
                     for j=1:length(channames)
+                        if isempty(baseline)
+                            bdata=[];
+                        else
+                            bdata=baseline(:,j,:);
+                        end
                         if obj.data_input==3
                             tfm=0;
                                                         
@@ -1277,7 +1307,7 @@ classdef TFMapWindow < handle
                                 tmp_sel=i_event(i)-nL:i_event(i)+nR;
                                 data1=data(ismember(sample,tmp_sel),:);
                                 data2=data1(:,j);
-                                [tf,f,t]=bsp_tfmap(obj.TFMapFig,data2,baseline,obj.fs,wd,ov,s,nref_tmp,channames,freq,units);
+                                [tf,f,t]=bsp_tfmap(obj.TFMapFig,data2,bdata,obj.fs,wd,ov,s,nref_tmp,channames,freq,units);
                                 tfm=tfm+tf;
                             end
                             tfm=tfm/length(i_event);
@@ -1294,7 +1324,7 @@ classdef TFMapWindow < handle
                                 tfm=tfm./repmat(rtfm1,1,size(tfm,2));
                             end
                         else
-                            [tfm,f,t]=bsp_tfmap(obj.TFMapFig,data(:,j),baseline(:,j,:),obj.fs,wd,ov,s,nref,channames,freq,units);
+                            [tfm,f,t]=bsp_tfmap(obj.TFMapFig,data(:,j),bdata,obj.fs,wd,ov,s,nref,channames,freq,units);
                         end
                         
                         if strcmpi(units,'dB')
