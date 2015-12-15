@@ -301,14 +301,13 @@ classdef SpatialMapWindow < handle
         
         function val=get.cmax(obj)
             val=-inf;
-            if isempty(obj.active_ievent)
-                tf=obj.tfmat;
-            else
-                tf=obj.tfmat(obj.active_ievent);
-            end
+            tf=obj.tfmat;
+            
             if ~isempty(tf)
-                for i=1:length(tf.mat)
-                    val=max(val,max(max(abs(tf.mat{i}))));
+                for j=1:length(tf)
+                    for i=1:length(tf(j).mat)
+                        val=max(val,max(max(abs(tf(j).mat{i}))));
+                    end
                 end
             end
         end
@@ -316,7 +315,6 @@ classdef SpatialMapWindow < handle
             val=find(strcmpi(obj.event_group,obj.event));
         end
         function val=get.map_val(obj)
-            
             for k=1:length(obj.tfmat)
                 tf=obj.tfmat(k);
                 
@@ -973,7 +971,7 @@ classdef SpatialMapWindow < handle
             obj.ms_before_=1500;
             obj.ms_after_=1500;
             obj.event_='';
-            obj.normalization_=3;%average within segments
+            obj.normalization_=2;%average within segments
             obj.normalization_start_=-1500;
             obj.normalization_end_=-1000;
             obj.normalization_start_event_='';
@@ -992,7 +990,7 @@ classdef SpatialMapWindow < handle
             obj.threshold_=1;
             obj.scale_by_max_=0;
             %             obj.display_mask_channel_=0;
-            obj.act_start_=-obj.ms_before;
+            obj.act_start_=0;
             obj.act_len_=500;
             obj.auto_refresh_=1;
             obj.color_bar_=0;
@@ -1068,7 +1066,7 @@ classdef SpatialMapWindow < handle
             hp_scale=uipanel('Parent',hp,'Title','Baseline','units','normalized','position',[0,0.73,1,0.12]);
             
             obj.normalization_popup=uicontrol('Parent',hp_scale,'style','popup','units','normalized',...
-                'string',{'None','Within Sgement','External Baseline'},'callback',@(src,evts) NormalizationCallback(obj,src),...
+                'string',{'None','Average Event','External Baseline'},'callback',@(src,evts) NormalizationCallback(obj,src),...
                 'position',[0.01,0.6,0.59,0.35],'value',obj.normalization);
             obj.bind_baseline_btn=uicontrol('parent',hp_scale,'style','pushbutton','string','Bind','units','normalized',...
                 'position',[0.79,0.6,0.2,0.35],'callback',@(src,evts) BindCallback(obj,src));
@@ -1518,7 +1516,7 @@ classdef SpatialMapWindow < handle
             if obj.data_input==1
                 evt={'selection'};
                 omitMask=true;
-                [chanNames,dataset,channel,sample,~,~,chanpos]=get_selected_datainfo(obj.bsp,omitMask);
+                [chanNames,dataset,channel,~,~,~,chanpos]=get_selected_datainfo(obj.bsp,omitMask);
             elseif obj.data_input==2
                 if isempty(obj.bsp.SelectedEvent)
                     errordlg('No event selection !');
@@ -1537,7 +1535,7 @@ classdef SpatialMapWindow < handle
                 end
                 data_tmp_sel=[reshape(i_label-nL,1,length(i_label));reshape(i_label+nR,1,length(i_label))];
                 omitMask=true;
-                [chanNames,dataset,channel,sample,~,~,chanpos]=get_selected_datainfo(obj.bsp,omitMask,data_tmp_sel);
+                [chanNames,dataset,channel,~,~,~,chanpos]=get_selected_datainfo(obj.bsp,omitMask,data_tmp_sel);
                 evt={obj.event};
             elseif obj.data_input==3
                 evt=obj.event_group;
@@ -1561,7 +1559,7 @@ classdef SpatialMapWindow < handle
                 txt_evt((i_event-nL)<1)=[];
                 
                 omitMask=true;
-                [chanNames,dataset,channel,sample,~,~,chanpos]=get_selected_datainfo(obj.bsp,omitMask);
+                [chanNames,dataset,channel,~,~,~,chanpos]=get_selected_datainfo(obj.bsp,omitMask);
                 %need to change the data
             end
             %Channel position******************************************************************
@@ -1682,7 +1680,7 @@ classdef SpatialMapWindow < handle
                 sel=cat(2,sel,tmp_sel);
             end
             
-            [data,~,~,~,sample,~,~,~,segment]=get_selected_data(obj.bsp,true,sel);
+            [data,~,~,~,~,~,~,~,segment]=get_selected_data(obj.bsp,true,sel);
             data=data(:,chanind);
             
             if ~isempty(baseline)
@@ -1716,7 +1714,7 @@ classdef SpatialMapWindow < handle
                         [tf,f,t]=bsp_tfmap(obj.SpatialMapFig,data1,tmp_base,obj.fs,wd,ov,[sl,sh],nref,channames,freq,obj.unit);
                         tmp_tfm{i}=tf;
                     end
-                    
+                    t=t-obj.ms_before/1000;
                     for e=1:length(evt)
                         tfm=0;
                         ind=strcmpi(txt_evt,evt{e});
@@ -1738,7 +1736,7 @@ classdef SpatialMapWindow < handle
                         %**************************************************
                         
                         obj.tfmat(e).mat{j}=tfm;
-                        obj.tfmat(e).t=t-obj.ms_before/1000;
+                        obj.tfmat(e).t=t;
                         obj.tfmat(e).f=f;
                         obj.tfmat(e).channel=channel(chanind);
                         obj.tfmat(e).dataset=dataset(chanind);
@@ -1755,10 +1753,9 @@ classdef SpatialMapWindow < handle
                     
                     obj.tfmat.mat{j}=tfm;
                     if obj.data_input==2
-                        obj.tfmat.t=t-obj.ms_before/1000;
-                    else
-                        obj.tfmat.t=t;
-                    end 
+                        t=t-obj.ms_before/1000;
+                    end
+                    obj.tfmat.t=t;
                         
                     obj.tfmat.f=f;
                     obj.tfmat.channel=channel;
@@ -1770,10 +1767,12 @@ classdef SpatialMapWindow < handle
                 end
             end
             
+            
+            
             close(wait_bar_h);
             
-            %             set(obj.act_start_slider,'max',max(t*1000));
-            %             set(obj.act_start_slider,'min',min(t*1000));
+            set(obj.act_start_slider,'max',max(t*1000));
+            set(obj.act_start_slider,'min',min(t*1000));
             step=min(diff(t))/(max(t)-min(t));
             set(obj.act_start_slider,'sliderstep',[step,step*5]);
             

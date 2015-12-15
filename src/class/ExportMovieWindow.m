@@ -121,7 +121,7 @@ classdef ExportMovieWindow < handle
             val=obj.t_start_;
         end
         function set.t_start(obj,val)
-            obj.t_start_=max(0,val);
+            obj.t_start_=val;
             
             if obj.t_start>obj.t_end
                 obj.t_end=val;
@@ -139,7 +139,7 @@ classdef ExportMovieWindow < handle
             val=obj.t_end_;
         end
         function set.t_end(obj,val)
-            obj.t_end_=max(0,val);
+            obj.t_end_=val;
             
             if obj.t_start>obj.t_end
                 obj.t_start=val;
@@ -178,8 +178,8 @@ classdef ExportMovieWindow < handle
             
             obj.res_ppi_=150;
             obj.fps_=20;
-            obj.t_start_=0;
-            obj.t_end_=obj.smw.ms_before+obj.smw.ms_after;
+            obj.t_start_=get(obj.smw.act_start_slider,'min');
+            obj.t_end_=get(obj.smw.act_start_slider,'max');
             obj.t_step_=(obj.smw.stft_winlen-obj.smw.stft_overlap)/obj.smw.fs*1000;
             obj.dest_dir_=obj.smw.bsp.FileDir;
             obj.filename_='Untitled';
@@ -226,7 +226,7 @@ classdef ExportMovieWindow < handle
                 'units','normalized','position',[0.25,0.7,0.2,0.25],'callback',@(src,evt) TCallback(obj,src));
             obj.t_start_slider=uicontrol('parent',dp,'style','slider','units','normalized',...
                 'position',[0.5,0.7,0.45,0.25],...
-                'value',obj.t_start,'min',0,'max',obj.smw.ms_before+obj.smw.ms_after,...
+                'value',obj.t_start,'min',get(obj.smw.act_start_slider,'min'),'max',get(obj.smw.act_start_slider,'max'),...
                 'sliderstep',[0.01,0.05],'callback',@(src,evt) TCallback(obj,src));
             
             uicontrol('parent',dp,'style','text','string','End (ms):','units','normalized','position',[0,0.4,0.25,0.25]);
@@ -234,7 +234,7 @@ classdef ExportMovieWindow < handle
                 'units','normalized','position',[0.25,0.4,0.2,0.25],'callback',@(src,evt) TCallback(obj,src));
             obj.t_end_slider=uicontrol('parent',dp,'style','slider','units','normalized',...
                 'position',[0.5,0.4,0.45,0.25],...
-                'value',obj.t_end,'min',0,'max',obj.smw.ms_before+obj.smw.ms_after,...
+                'value',obj.t_end,'min',get(obj.smw.act_start_slider,'min'),'max',get(obj.smw.act_start_slider,'max'),...
                 'sliderstep',[0.01,0.05],'callback',@(src,evt) TCallback(obj,src));
             
             uicontrol('parent',dp,'style','text','string','Step (ms):','units','normalized','position',[0,0.05,0.25,0.25]);
@@ -284,7 +284,7 @@ classdef ExportMovieWindow < handle
                     if isnan(tmp)
                         return
                     end
-                    obj.t_start=min(tmp,obj.smw.ms_before+obj.smw.ms_after);
+                    obj.t_start=min(max(get(obj.t_start_slider,'min'),t),get(obj.t_start_slider,'max'));
                     
                 case obj.t_end_edit
                     
@@ -292,7 +292,7 @@ classdef ExportMovieWindow < handle
                     if isnan(tmp)
                         return
                     end
-                    obj.t_end=min(tmp,obj.smw.ms_before+obj.smw.ms_after);
+                    obj.t_end=min(max(get(obj.t_end_slider,'min'),t),get(obj.t_end_slider,'max'));
                 case obj.t_step_edit
                     tmp=str2double(get(src,'string'));
                     if isnan(tmp)
@@ -357,10 +357,9 @@ classdef ExportMovieWindow < handle
                 mov_width=mov_width+pos(3)+10;
                 
                 child_axes=findobj(obj.smw.SpatialMapFig(i),'type','axes');
-                for m=1:length(child_axes)
-                    newh=copyobj(child_axes(m),panel(i));
-                    set(newh,'position',get(child_axes(m),'position'));
-                end
+                child_colorbar=findobj(obj.smw.SpatialMapFig(i),'type','colorbar');
+                copyobj([child_axes,child_colorbar],panel(i));
+                
             end
             name_panel=uipanel('parent',mov_fig,'units','pixels','position',[0,45+pos(4),mov_width,30]);
             axes('parent',name_panel,'units','normalized','position',[0,0,1,1],'xlim',[0,1],'ylim',[0,1],'visible','off');
@@ -388,11 +387,7 @@ classdef ExportMovieWindow < handle
             set(mov_fig,'position',[50,50,mov_width,mov_height]);
             set(mov_fig,'visible','off');
             
-            if obj.smw.data_input~=1
-                wait_bar=waitbar(0,['Time: ',num2str(-obj.smw.ms_before),' ms']);
-            else
-                wait_bar=waitbar(0,['Time: ','0',' ms']);
-            end
+            wait_bar=waitbar(0,['Time: ',num2str(t),' ms']);
             
             time_left=uicontrol('parent',wait_bar,'style','text','string','Estimated time left: 0 h 0 min 0 s',...
                 'units','normalized','position',[0,0,1,0.2],...
@@ -414,30 +409,29 @@ classdef ExportMovieWindow < handle
             
             delta_t=[];
             
-            loops=floor((obj.smw.ms_before+obj.smw.ms_after)/step);
-            
+            for i=1:length(panel)
+                new_axes(i)=findobj(panel(i),'-regexp','tag','SpatialMapAxes');
+            end
             for k=loop_start:loop_end
                 
                 tElapsed=clock;
                 
-                if obj.smw.data_input~=1
-                    waitbar(k/loops,wait_bar,['Time: ',num2str(t-obj.smw.ms_before),' ms']);
-                else
-                    waitbar(k/loops,wait_bar,['Time: ',num2str(t),' ms']);
-                end
+                waitbar((k-loop_start)/(loop_end-loop_start),wait_bar,['Time: ',num2str(t),' ms']);
                 
                 delete(allchild(time_panel));
                 
                 new_handle=copyobj(findobj(wait_bar,'type','axes'),time_panel);
                 set(new_handle,'units','normalized','position',[0.02,0.1,0.96,0.3],'FontSize',12);
                 
-                set(obj.smw.act_start_slider,'value',t);
-                obj.smw.ActCallback(obj.smw.act_start_slider);
+                set(obj.smw.act_start_edit,'string',num2str(t));
+                obj.smw.ActCallback(obj.smw.act_start_edit);
                 for i=1:length(obj.smw.SpatialMapFig)
-                    delete(findobj(panel(i),'-regexp','tag','SpatialMapAxes'));
-                    child_axes=findobj(obj.smw.SpatialMapFig(i),'-regexp','tag','SpatialMapAxes');
-                    newh=copyobj(child_axes,panel(i));
-                    set(newh,'position',get(child_axes,'position'));
+                    delete(findobj(panel(i),'-regexp','tag','ImageMap'));
+                    new_h=copyobj(findobj(obj.smw.SpatialMapFig(i),'-regexp','tag','ImageMap'),new_axes(i));
+                    uistack(new_h,'bottom')
+                    
+                    delete(findobj(panel(i),'-regexp','tag','peak'));
+                    copyobj(findobj(obj.smw.SpatialMapFig(i),'-regexp','tag','peak'),new_axes(i));
                 end
                 
                 t=t+step;

@@ -43,8 +43,8 @@ if ~isempty(obj.Evts_)
 end
 
 if ~isempty(bsp_selection)
-    [tmp,ind]=sort(bsp_selection(1,:));
-    SelectionSort=bsp_selection(:,ind);
+    [tmp,sort_ind]=sort(bsp_selection(1,:));
+    SelectionSort=bsp_selection(:,sort_ind);
     interval=0;
     for i=1:size(SelectionSort,2)
         startInd=max(1,SelectionSort(1,i));
@@ -110,7 +110,7 @@ for i=1:length(dd)
         len=sorted_bsp_selection(2,t)-sorted_bsp_selection(1,t)+1;
         tmpd=preprocessedData(obj,dd(i),alldata(count:count+len-1,:));
         d=cat(1,d,tmpd);
-        seg=cat(1,seg,t*ones(length(tmpd),1));
+        seg=cat(1,seg,sort_ind(t)*ones(length(tmpd),1));
         count=count+sorted_bsp_selection(2,t)-sorted_bsp_selection(1,t)+1;
     end
 

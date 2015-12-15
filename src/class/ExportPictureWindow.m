@@ -192,8 +192,8 @@ classdef ExportPictureWindow < handle
             
             obj.multi_exp_=0;
             obj.res_ppi_=300;
-            obj.t_start_=0;
-            obj.t_end_=obj.smw.ms_before+obj.smw.ms_after;
+            obj.t_start_=get(obj.smw.act_start_slider,'min');
+            obj.t_end_=get(obj.smw.act_start_slider,'max');
             obj.t_step_=(obj.smw.stft_winlen-obj.smw.stft_overlap)/obj.smw.fs*1000;
             obj.dest_dir_=obj.smw.bsp.FileDir;
             obj.filename_='Untitled';
@@ -237,7 +237,7 @@ classdef ExportPictureWindow < handle
                 'units','normalized','position',[0.25,0.7,0.2,0.25],'callback',@(src,evt) TCallback(obj,src));
             obj.t_start_slider=uicontrol('parent',dp,'style','slider','units','normalized',...
                 'position',[0.5,0.7,0.45,0.25],...
-                'value',obj.t_start,'min',0,'max',obj.smw.ms_before+obj.smw.ms_after,...
+                'value',obj.t_start,'min',get(obj.smw.act_start_slider,'min'),'max',get(obj.smw.act_start_slider,'max'),...
                 'sliderstep',[0.01,0.05],'callback',@(src,evt) TCallback(obj,src));
             
             uicontrol('parent',dp,'style','text','string','End (ms):','units','normalized','position',[0,0.4,0.25,0.25]);
@@ -245,7 +245,7 @@ classdef ExportPictureWindow < handle
                 'units','normalized','position',[0.25,0.4,0.2,0.25],'callback',@(src,evt) TCallback(obj,src));
             obj.t_end_slider=uicontrol('parent',dp,'style','slider','units','normalized',...
                 'position',[0.5,0.4,0.45,0.25],...
-                'value',obj.t_end,'min',0,'max',obj.smw.ms_before+obj.smw.ms_after,...
+                'value',obj.t_end,'min',get(obj.smw.act_start_slider,'min'),'max',get(obj.smw.act_start_slider,'max'),...
                 'sliderstep',[0.01,0.05],'callback',@(src,evt) TCallback(obj,src));
             
             uicontrol('parent',dp,'style','text','string','Step (ms):','units','normalized','position',[0,0.05,0.25,0.25]);
@@ -301,7 +301,7 @@ classdef ExportPictureWindow < handle
                     if isnan(tmp)
                         return
                     end
-                    obj.t_start=min(tmp,obj.smw.ms_before+obj.smw.ms_after);
+                    obj.t_start=min(max(get(obj.smw.act_start_slider,'min'),t),get(obj.smw.act_start_slider,'max'));
                     
                 case obj.t_end_edit
                     
@@ -309,7 +309,7 @@ classdef ExportPictureWindow < handle
                     if isnan(tmp)
                         return
                     end
-                    obj.t_end=min(tmp,obj.smw.ms_before+obj.smw.ms_after);
+                    obj.t_end=min(max(get(obj.smw.act_start_slider,'min'),t),get(obj.smw.act_start_slider,'max'));
                 case obj.t_step_edit
                     tmp=str2double(get(src,'string'));
                     if isnan(tmp)
@@ -344,18 +344,14 @@ classdef ExportPictureWindow < handle
             
             wait_bar_h = waitbar(0,'Saving Pictures...');
             if obj.multi_exp
-                
                 for t=obj.t_start:obj.t_step:obj.t_end
                     waitbar((t-obj.t_start)/(obj.t_end-obj.t_start));
-                    set(obj.smw.act_start_slider,'value',t);
-                    obj.smw.ActCallback(obj.smw.act_start_slider)
+                    set(obj.smw.act_start_edit,'string',num2str(t));
+                    obj.smw.ActCallback(obj.smw.act_start_edit)
                     for i=1:length(obj.smw.SpatialMapFig)
                         figname=get(obj.smw.SpatialMapFig(i),'Name');
-                        if obj.smw.data_input==1
-                            fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',num2str(t)]);
-                        else
-                           fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',num2str(t-obj.smw.ms_before)]); 
-                        end
+                        fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',num2str(t)]);
+                        
                         set(obj.smw.SpatialMapFig(i),'color','white');
                         export_fig(obj.smw.SpatialMapFig(i),['-',pic_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);
                     end
@@ -366,11 +362,8 @@ classdef ExportPictureWindow < handle
                 for i=1:length(obj.smw.SpatialMapFig)
                     waitbar(i/length(obj.smw.SpatialMapFig));
                     figname=get(obj.smw.SpatialMapFig(i),'Name');
-                    if obj.smw.data_input==1
-                        fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',num2str(t)]);
-                    else
-                        fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',num2str(t-obj.smw.ms_before)]);
-                    end
+                    fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',num2str(t)]);
+                    
                     set(obj.smw.SpatialMapFig(i),'color','white');
                     export_fig(obj.smw.SpatialMapFig(i),['-',pic_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);
                 end
