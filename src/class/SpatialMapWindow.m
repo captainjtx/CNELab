@@ -1773,6 +1773,11 @@ classdef SpatialMapWindow < handle
             
             set(obj.act_start_slider,'max',max(t*1000));
             set(obj.act_start_slider,'min',min(t*1000));
+            if obj.export_movie_win.valid
+                set(obj.export_movie_win.t_start_slider,'max',max(t*1000),'min',min(t*1000),'value',0);
+                set(obj.export_movie_win.t_end_slider,'max',max(t*1000),'min',min(t*1000),'value',0);
+            end
+            
             step=min(diff(t))/(max(t)-min(t));
             set(obj.act_start_slider,'sliderstep',[step,step*5]);
             

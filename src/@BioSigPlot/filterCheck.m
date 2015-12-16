@@ -15,9 +15,7 @@ if isnan(val)
 end
 obj.FilterHigh_=obj.applyPanelVal(obj.FilterHigh_,val);
 
-obj.FilterNotch1_=obj.applyPanelVal(obj.FilterNotch1_,str2double(get(obj.EdtFilterNotch1,'String')));
-
-obj.FilterNotch2_=obj.applyPanelVal(obj.FilterNotch2_,str2double(get(obj.EdtFilterNotch2,'String')));
+obj.FilterNotch_=obj.applyPanelVal(obj.FilterNotch_,str2double(get(obj.EdtFilterNotch,'String')));
 
 obj.FilterCustomIndex_=obj.applyPanelVal(obj.FilterCustomIndex,get(obj.PopFilter,'value'));
 
@@ -29,8 +27,7 @@ obj.Filtering=obj.applyPanelVal(obj.Filtering_,val);
 if val, offon='on'; else offon='off'; end
 set(obj.EdtFilterLow,'Enable',offon)
 set(obj.EdtFilterHigh,'Enable',offon)
-set(obj.EdtFilterNotch1,'Enable',offon)
-set(obj.EdtFilterNotch2,'Enable',offon)
+set(obj.EdtFilterNotch,'Enable',offon)
 set(obj.PopFilter,'Enable',offon)
 
 end

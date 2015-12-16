@@ -178,8 +178,8 @@ classdef ExportMovieWindow < handle
             
             obj.res_ppi_=150;
             obj.fps_=20;
-            obj.t_start_=get(obj.smw.act_start_slider,'min');
-            obj.t_end_=get(obj.smw.act_start_slider,'max');
+            obj.t_start_=0;
+            obj.t_end_=0;
             obj.t_step_=(obj.smw.stft_winlen-obj.smw.stft_overlap)/obj.smw.fs*1000;
             obj.dest_dir_=obj.smw.bsp.FileDir;
             obj.filename_='Untitled';
@@ -280,26 +280,26 @@ classdef ExportMovieWindow < handle
         function TCallback(obj,src)
             switch src
                 case obj.t_start_edit
-                    tmp=str2double(get(src,'string'));
-                    if isnan(tmp)
+                    t=str2double(get(src,'string'));
+                    if isnan(t)
                         return
                     end
                     obj.t_start=min(max(get(obj.t_start_slider,'min'),t),get(obj.t_start_slider,'max'));
                     
                 case obj.t_end_edit
                     
-                    tmp=str2double(get(src,'string'));
-                    if isnan(tmp)
+                    t=str2double(get(src,'string'));
+                    if isnan(t)
                         return
                     end
                     obj.t_end=min(max(get(obj.t_end_slider,'min'),t),get(obj.t_end_slider,'max'));
                 case obj.t_step_edit
-                    tmp=str2double(get(src,'string'));
-                    if isnan(tmp)
+                    t=str2double(get(src,'string'));
+                    if isnan(t)
                         return
                     end
                     obj.t_step=min(obj.smw.ms_before+obj.smw.ms_after,...
-                        max(tmp,(obj.smw.stft_winlen-obj.smw.stft_overlap)/obj.smw.fs*1000));
+                        max(t,(obj.smw.stft_winlen-obj.smw.stft_overlap)/obj.smw.fs*1000));
                 case obj.t_start_slider
                     obj.t_start=get(src,'value');
                 case obj.t_end_slider

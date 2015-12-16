@@ -34,8 +34,7 @@ classdef BioSigPlot < hgsetget
         ChkFilter
         EdtFilterLow
         EdtFilterHigh
-        EdtFilterNotch1
-        EdtFilterNotch2
+        EdtFilterNotch
         
         PopFilter
         
@@ -114,6 +113,8 @@ classdef BioSigPlot < hgsetget
         MenuVideo
         MenuVideoOnTop
         MenuNotchFilter
+        MenuNotchFilterSingle
+        MenuNotchFilterHarmonics
         MenuOverwritePreprocess
         
         MenuChannel
@@ -121,7 +122,6 @@ classdef BioSigPlot < hgsetget
         MenuChannelWidth
         MenuGain
         MenuDetrend
-        MenuNextPrevFile
         MenuDownSample
         MenuSaveDownSample
         MenuVisualDownSample
@@ -224,8 +224,7 @@ classdef BioSigPlot < hgsetget
         Filtering               %True if preprocessing filter are enbaled
         FilterLow               %The low value of filtering: Cut-off frequency of high pass filter
         FilterHigh              %The high value of filtering: Cut-off frequency of low pass filter
-        FilterNotch1             %The 2 notch filter values for 50 or 60Hz rejection. (eg. [58 62]
-        FilterNotch2
+        FilterNotch             %The harmonic notch filter
         FilterCustomIndex
         
         DefaultLineColor         %Colors for view Horizontal, Vertical, or single (DAT*)
@@ -305,8 +304,7 @@ classdef BioSigPlot < hgsetget
         Filtering_
         FilterLow_
         FilterHigh_
-        FilterNotch1_
-        FilterNotch2_
+        FilterNotch_
         FilterCustomIndex_
         
         DefaultLineColor_
@@ -380,6 +378,7 @@ classdef BioSigPlot < hgsetget
         MouseTime                   %(Read-Only) The Time on which the mouse is in
         MouseChan                   %(Read-Only) The channel on which the mouse is in
         MouseDataset                %(Read-Only) The dataset on which the mouse is in
+        FilterOrder
     end
  
     properties
@@ -459,8 +458,8 @@ classdef BioSigPlot < hgsetget
             
             obj.FilterLow_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
             obj.FilterHigh_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
-            obj.FilterNotch1_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
-            obj.FilterNotch2_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
+
+            obj.FilterNotch_=obj.applyPanelVal(cell(1,obj.DataNumber),0);
             obj.FilterCustomIndex_=obj.applyPanelVal(cell(1,obj.DataNumber),1);
             
             resetFilterPanel(obj);
@@ -620,7 +619,7 @@ classdef BioSigPlot < hgsetget
                 if any(strcmpi(g{i},{'Config','SRate','WinLength','Montage',...
                         'DataView','MontageRef','DispChans',...
                         'Filtering','FilterLow',...
-                        'FilterHigh','FilterNotch1','FilterNotch2','FilterCustomIndex'...
+                        'FilterHigh','FilterCustomIndex','FilterNotch'...
                         'ChanNames','GroupNames','ChanPosition','YBorder',...
                         'ChanSelect2Display'}))
                    
@@ -637,7 +636,7 @@ classdef BioSigPlot < hgsetget
                     end
                     if any(strcmpi(g{i},{'SRate','Montage','MontageRef',...
                             'Filtering','FilterLow','FilterHigh',...
-                            'FilterNotch1','FilterNotch2','FilterCustomIndex'}))
+                            'FilterCustomIndex','FilterNotch'}))
                         NeedRecalculate=true;
                     end
                     
@@ -758,11 +757,10 @@ classdef BioSigPlot < hgsetget
         function val = get.FilterLow(obj), val=obj.FilterLow_; end
         function obj = set.FilterHigh(obj,val), set(obj,'FilterHigh',val); end
         function val = get.FilterHigh(obj), val=obj.FilterHigh_; end
-        function obj = set.FilterNotch1(obj,val), set(obj,'FilterNotch1',val); end
-        function val = get.FilterNotch1(obj), val=obj.FilterNotch1_; end
         
-        function obj = set.FilterNotch2(obj,val), set(obj,'FilterNotch2',val); end
-        function val = get.FilterNotch2(obj), val=obj.FilterNotch2_; end
+        
+        function obj = set.FilterNotch(obj,val), set(obj,'FilterNotch',val); end
+        function val = get.FilterNotch(obj), val=obj.FilterNotch_; end
         
         function obj = set.FilterCustomIndex(obj,val), set(obj,'FilterCustomIndex',val); end
         function val = get.FilterCustomIndex(obj), val=obj.FilterCustomIndex_; end
@@ -892,6 +890,10 @@ classdef BioSigPlot < hgsetget
         %*****************************************************************
         % ***************** Public computed read-only properties*********
         %*****************************************************************
+        function val=get.FilterOrder(obj)
+            val=2;
+        end
+        %******************************************************************
         function val = get.BufferStartSample(obj)
             val=min(max(1,round(obj.BufferTime*obj.SRate+1)),obj.TotalSample);
         end
@@ -2120,11 +2122,7 @@ classdef BioSigPlot < hgsetget
                     if str2double(get(src,'String'))==0||isnan(str2double(get(src,'String')))
                         set(src,'String','-');
                     end
-                case obj.EdtFilterNotch1
-                    if str2double(get(src,'String'))==0||isnan(str2double(get(src,'String')))
-                        set(src,'String','-');
-                    end
-                case obj.EdtFilterNotch2
+                case obj.EdtFilterNotch
                     if str2double(get(src,'String'))==0||isnan(str2double(get(src,'String')))
                         set(src,'String','-');
                     end
@@ -2132,7 +2130,12 @@ classdef BioSigPlot < hgsetget
                     if get(obj.PopFilter,'value')==1
                         scanFilterBank(obj);
                     end
-                    
+                case obj.MenuNotchFilterSingle
+                    set(src,'checked','on');
+                    set(obj.MenuNotchFilterHarmonics,'checked','off');
+                case obj.MenuNotchFilterHarmonics
+                    set(src,'checked','on');
+                    set(obj.MenuNotchFilterSingle,'checked','off');
             end
             
             filterCheck(obj);
@@ -2271,12 +2274,11 @@ classdef BioSigPlot < hgsetget
         EventRepeatSelection(obj)
         updateVideo(obj)
         LoadChannelPosition(obj)
-        MnuNextPrevFile(obj)
         SavePosition(obj)
         Interpolate(obj)
         SaveToFigure(obj,opt)
         CrossCorrelation(obj,src)
-        MnuNotchFilter(obj)
+        MnuNotchFilter(obj,src)
         MnuDownSample(obj,src)
         SelectCurrentWindow(obj,src);
         ExportObjToWorkspace(obj);

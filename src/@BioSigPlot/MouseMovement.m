@@ -186,8 +186,7 @@ percent=time/total*100;
 if obj.Filtering{ndata}(nchan)
     fl=num2str(obj.FilterLow{ndata}(nchan));
     fh=num2str(obj.FilterHigh{ndata}(nchan));
-    fn1=num2str(obj.FilterNotch1{ndata}(nchan));
-    fn2=num2str(obj.FilterNotch2{ndata}(nchan));
+    fn=num2str(obj.FilterNotch{ndata}(nchan));
     fci=obj.FilterCustomIndex{ndata}(nchan)-1;
     if fci
         fcum=num2str(fci);
@@ -197,8 +196,7 @@ if obj.Filtering{ndata}(nchan)
 else
     fl='-';
     fh='-';
-    fn1='-';
-    fn2='-';
+    fn='-';
     fcum='-';
 end
 
@@ -218,8 +216,7 @@ s3=['Time: ',num2str(h,'%02d'),':',num2str(m,'%02d'),':',num2str(s,'%0.3f'),...
 
 s4=['FL: ',fl,' , ',...
     'FH: ',fh,'  ;  ',...
-    'FN1: ',fn1,' , ',...
-    'FN2: ',fn2,'  ;  ',...
+    'FN: ',fn,' , ',...
     'FCUM:',fcum];
 
 set(obj.TxtInfo1,'String',s1);

@@ -200,8 +200,6 @@ classdef CommonDataStructure < handle
         
         function save(obj,varargin)
             
-            save_all=false;
-            
             title=[];
             fnames=[];
             if isempty(varargin)
@@ -215,8 +213,6 @@ classdef CommonDataStructure < handle
                         title=varargin{i+1};
                     elseif strcmpi(varargin{i},'FileSize')
                         obj.file_size=varargin{i+1};
-                    elseif strcmpi(varargin{i},'All')
-                        save_all=varargin{i+1};
                     else
                         msgbox('Invalid argument-value pair!','CommonDataStructure.save','error');
                         return
@@ -243,64 +239,25 @@ classdef CommonDataStructure < handle
             
             wait_bar_h = waitbar(0,'Saving data');
             
-            if save_all
-                [filenames,pathstr,filesample,evts]=obj.get_file_info(obj);
-                if isempty(obj.file_size)
-                    %might have problem if a single cds file is too large to fit
-                    %into the memory
-                    for i=1:length(filenames)
-                        [tmp_pathstr, tmp_name, tmp_ext] = fileparts(fnames);
-                        
-                        cds=CommonDataStructure.initial();
-                        tmp=CommonDataStructure.Load(fullfile(pathstr,filenames{i}));
-                        
-                        cds.DataInfo=tmp.DataInfo;
-                        cds.Montage=tmp.Montage;
-                        cds.PatientInfo=tmp.PatientInfo;
-                        
-                        cds.DataInfo.NextFile=[tmp_name,'_',num2str(i+1),tmp_ext];
-                        cds.DataInfo.PrevFile=[tmp_name,'_',num2str(i-1),tmp_ext];
-                        cds.DataInfo.FileName=fullfile(tmp_pathstr,[tmp_name,'_',num2str(i),tmp_ext]);
-                        
-                        if i==1
-                            cds.DataInfo.PrevFile=[];
-                        end
-                        
-                        if i==length(filenames)
-                            cds.DataInfo.NextFile=[];
-                        end
-                        
-                        if obj.save_as_single
-                            cds.Data=single(tmp.Data);
-                        else
-                            cds.Data=tmp.Data;
-                        end
-                        save([fullfile(tmp_pathstr,[tmp_name,'_',num2str(i)]),tmp_ext],'-struct','cds','-mat','-v7.3');
-                        waitbar(i/length(filenames));
-                    end
+            if isempty(obj.file_size)
+                %might have problem if a single cds file is too large to fit
+                %into the memory
+                cds=CommonDataStructure.initial();
+                cds.DataInfo=obj.DataInfo;
+                cds.Montage=obj.Montage;
+                cds.PatientInfo=obj.PatientInfo;
+                if obj.save_as_single
+                    cds.Data=single(obj.Data);
                 else
-                    
+                    cds.Data=obj.Data;
                 end
+                save(fnames,'-struct','cds','-mat','-v7.3');
             else
-                if isempty(obj.file_size)
-                    %might have problem if a single cds file is too large to fit
-                    %into the memory
-                    cds=CommonDataStructure.initial();
-                    cds.DataInfo=obj.DataInfo;
-                    cds.Montage=obj.Montage;
-                    cds.PatientInfo=obj.PatientInfo;
-                    if obj.save_as_single
-                        cds.Data=single(obj.Data);
-                    else
-                        cds.Data=obj.Data;
-                    end
-                    save(fnames,'-struct','cds','-mat','-v7.3');
-                else
-                    %automatic split or merge files when saving using specified
-                    %file_size in megabytes
-                    
-                end
+                %automatic split or merge files when saving using specified
+                %file_size in megabytes
+                
             end
+            
             
             if exist([FilePath,'/montage'],'dir')~=7
                 mkdir(FilePath,'montage');
@@ -924,6 +881,7 @@ classdef CommonDataStructure < handle
         end
         
         function mtg=scanMontageFile(OriginalChanNames,FilePath,FileName)
+            mtg=[];
             if nargin==2
                 FileName={};
                 fn=dir(FilePath);

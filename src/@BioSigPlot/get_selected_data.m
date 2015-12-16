@@ -71,6 +71,7 @@ else
     selection=1:obj.TotalSample;
     sorted_bsp_selection=[1;selection(end)];
     evts=events;
+    sort_ind=1;
 end
 sample=selection;
 chanNames={};

@@ -24,18 +24,20 @@ if src==obj.MenuSaveSettings
 elseif src==obj.MenuSaveData
     %this will save all files, if there are too many files, it would be
     %better to save needed files
+    [chanNames,dataset,~,~,~,~,~]=get_datainfo(obj,false);
     for i=1:length(obj.CDS)
-        if isempty(obj.CDS{i}.DataInfo.FileSample)
-            fileinfo=CommonDataStructure.get_file_info(obj.CDS{i});
-            filesample=fileinfo.filesample;
-        else
-            filesample=obj.CDS{i}.DataInfo.FileSample;
-        end
+        fileinfo=CommonDataStructure.get_file_info(obj.CDS{i});
+        filesample=fileinfo.filesample;
         
-        for f=1:size(filesample,1)
-            data=CommonDataStructure.get_data_by_start_end(obj.CDS{i},filesample(f,1),filesample(f,2));
-            p_data=preprocessedData(obj,i,data);
-            obj.CDS{i}.write_data_by_start_end(p_data,filesample(f,1));
+        if all(ismember(fileinfo.channelnames,chanNames(dataset==i)))&&...
+                all(ismember(chanNames(dataset==i),fileinfo.channelnames))
+            for f=1:size(filesample,1)
+                data=CommonDataStructure.get_data_by_start_end(obj.CDS{i},filesample(f,1),filesample(f,2));
+                p_data=preprocessedData(obj,i,data);
+                obj.CDS{i}.write_data_by_start_end(p_data,filesample(f,1));
+            end
+        else
+            errordlg('Selected data has different channel names with the original one !');
         end
     end
 else

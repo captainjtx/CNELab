@@ -33,7 +33,7 @@ if nargin==2
 elseif nargin==3
     n=varargin{1};
     %make sure the data is montage transformed
-    d=varargin{2};
+    d=double(varargin{2});
 else
     d=[];
     return
@@ -43,7 +43,9 @@ fs=obj.SRate;
 ext=2*obj.SRate;
 phs=0;
 ftyp='iir';
-order=2;
+order=obj.FilterOrder;
+
+notch_single=strcmpi(get(obj.MenuNotchFilterSingle,'checked'),'on');
 
 for i=1:size(d,2)
     if obj.Filtering{n}(i)
@@ -51,8 +53,7 @@ for i=1:size(d,2)
         fl=obj.FilterLow{n}(i);
         fh=obj.FilterHigh{n}(i);
         
-        fn1=obj.FilterNotch1{n}(i);
-        fn2=obj.FilterNotch2{n}(i);
+        fn=obj.FilterNotch{n}(i);
         
         fcum=obj.FilterCustomIndex{n}(i);
         b=[];
@@ -79,9 +80,13 @@ for i=1:size(d,2)
             d(:,i)=filter_symmetric(b,a,d(:,i),ext,phs,ftyp);
         end
         
-        if ~isnan(fn1)&&~isnan(fn2)&&fn1~=0&&fn2~=0&&fn1<fn2
-            [b,a]=butter(order,[fn1,fn2]/(fs/2),'stop');
-            d(:,i)=filter_symmetric(b,a,d(:,i),ext,phs,ftyp);
+        if ~isnan(fn)&&fn~=0
+            if notch_single
+                [b,a]=butter(order,[fn-2,fn+2]/(fs/2),'stop');
+                d(:,i)=filter_symmetric(b,a,d(:,i),ext,phs,ftyp);
+            else
+                d(:,i)=filter_harmonic(d(:,i),fn,fs,order);
+            end
         end
         
         d(:,i)=applyCustomFilters(obj,d(:,i),fcum);

@@ -24,20 +24,12 @@ else
     set(obj.EdtFilterHigh,'String','-');
 end
 
-if all(cellfun(@mode,obj.FilterNotch1(dd))==mode(obj.FilterNotch1{dd(1)}))
-    if mode(obj.FilterNotch1{dd(1)})~=0
-        set(obj.EdtFilterNotch1,'String',mode(obj.FilterNotch1{dd(1)}));
+if all(cellfun(@mode,obj.FilterNotch(dd))==mode(obj.FilterNotch{dd(1)}))
+    if mode(obj.FilterNotch{dd(1)})~=0
+        set(obj.EdtFilterNotch,'String',mode(obj.FilterNotch{dd(1)}));
     end
 else
-    set(obj.EdtFilterNotch1,'String','-');
-end
-
-if all(cellfun(@mode,obj.FilterNotch2(dd))==mode(obj.FilterNotch2{dd(1)}))
-    if mode(obj.FilterNotch2{dd(1)})~=0
-        set(obj.EdtFilterNotch2,'String',mode(obj.FilterNotch2{dd(1)}));
-    end
-else
-    set(obj.EdtFilterNotch2,'String','-');
+    set(obj.EdtFilterNotch,'String','-');
 end
 
 if all(cellfun(@mode,obj.FilterCustomIndex(dd))==mode(obj.FilterCustomIndex{dd(1)}))
@@ -56,9 +48,7 @@ set(obj.EdtFilterLow,'Enable',offon);
 
 set(obj.EdtFilterHigh,'Enable',offon);
 
-set(obj.EdtFilterNotch1,'Enable',offon);
-
-set(obj.EdtFilterNotch2,'Enable',offon);
+set(obj.EdtFilterNotch,'Enable',offon);
 
 set(obj.PopFilter,'Enable',offon);
 

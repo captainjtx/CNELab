@@ -55,8 +55,9 @@ obj.MenuVideo=uimenu(obj.MenuSettings,'Label','Video');
 obj.MenuPlaySpeed=uimenu(obj.MenuVideo,'Label','Speed','Callback',@(src,evt) MnuPlay(obj));
 obj.MenuVideoStartEnd=uimenu(obj.MenuVideo,'Label','Start&End','Callback',@(src,evt) MnuVideoStartEnd(obj));
 obj.MenuVideoOnTop=uimenu(obj.MenuVideo,'Label','Stay On Top','Callback',@(src,evt) MnuVideoOnTop(obj),'checked','on');
-
-obj.MenuNextPrevFile=uimenu(obj.MenuSettings,'Label','Next/Prev File','Callback',@(src,evt)MnuNextPrevFile(obj));
+obj.MenuNotchFilter=uimenu(obj.MenuSettings,'Label','Notch Filter');
+obj.MenuNotchFilterSingle=uimenu(obj.MenuNotchFilter,'Label','Single','checked','off','Callback',@(src,evt) ChangeFilter(obj,src));
+obj.MenuNotchFilterHarmonics=uimenu(obj.MenuNotchFilter,'Label','Harmonics','checked','on','Callback',@(src,evt) ChangeFilter(obj,src));
 
 %**************************************************************************
 %First Order Menu------------------------------------------------------Data
@@ -65,9 +66,6 @@ obj.MenuChannelNumber=uimenu(obj.MenuChannel,'Label','Channels/Page','Callback',
 obj.MenuChannelWidth=uimenu(obj.MenuChannel,'Label','Time/Page','Callback',@(src,evt) MnuWidth2Display(obj));
 obj.MenuGain=uimenu(obj.MenuChannel,'Label','Gain','Callback',@(src,evt) MnuChanGain(obj,src));
 obj.MenuDetrend=uimenu(obj.MenuChannel,'Label','Detrend','Callback',@(src,evt) DetrendData(obj,src));
-
-obj.MenuNotchFilter=uimenu(obj.MenuChannel,'Label','Notch Filter (harmonics)','callback',@(src,evts) MnuNotchFilter(obj));
-
 obj.MenuDownSample=uimenu(obj.MenuChannel,'Label','Downsample');
 obj.MenuSaveDownSample=uimenu(obj.MenuDownSample,'Label','For Save','callback',@(src,evts) MnuDownSample(obj,src));
 obj.MenuVisualDownSample=uimenu(obj.MenuDownSample,'Label','For Visualization','callback',@(src,evts) MnuDownSample(obj,src));
