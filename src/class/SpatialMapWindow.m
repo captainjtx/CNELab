@@ -333,7 +333,6 @@ classdef SpatialMapWindow < handle
                 if strcmpi(obj.unit,'dB')
                     mapv=10*log10(mapv);
                 end
-                
                 if obj.scale_by_max
                     mapv=mapv/max(abs(mapv));
                 end
@@ -341,13 +340,13 @@ classdef SpatialMapWindow < handle
                 if obj.threshold_win.pos
                     ind=find(mapv>0);
                     [abs_val,I]=sort(abs(mapv(ind)),'descend');
-                    cumsum_val=cumsum(abs_val.^2);
+                    cumsum_val=cumsum(abs_val);
                     mapv(ind(I(cumsum_val>cumsum_val(end)*obj.threshold_win.pos_t)))=0;
                 end
                 if obj.threshold_win.neg
                     ind=find(mapv<0);
                     [abs_val,I]=sort(abs(mapv(ind)),'descend');
-                    cumsum_val=cumsum(abs_val.^2);
+                    cumsum_val=cumsum(abs_val);
                     mapv(ind(I(cumsum_val>cumsum_val(end)*obj.threshold_win.neg_t)))=0;
                 end
                 val{k}=mapv;
