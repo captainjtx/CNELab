@@ -15,11 +15,12 @@ w=round(w);
 
 if strcmpi(method,'natural')
     [x,y]=meshgrid((1:w)/w,(1:h)/h);
-    
-    F= scatteredInterpolant(col,row,mapv',method,extrap);
-    % mapvq=griddata(col,row,mapv,x,y,method);
-    
+%     mapvq = gaussInterpolant(col,row,mapv,x,y);
+    F= scatteredInterpolant(col(:),row(:),mapv(:),method,extrap);
     mapvq=F(x,y);
+%     mapvq=griddata(col,row,mapv,x,y,method);
+    
+    
 else
     return
 end

@@ -164,8 +164,7 @@ classdef ExportMovieWindow < handle
             if obj.valid
                 set(obj.t_step_edit,'string',num2str(obj.t_step_));
                 set(obj.t_step_slider,'value',obj.t_step_);
-            end
-                
+            end  
         end
     end
     
@@ -242,7 +241,7 @@ classdef ExportMovieWindow < handle
                 'units','normalized','position',[0.25,0.05,0.2,0.25],'callback',@(src,evt) TCallback(obj,src));
             obj.t_step_slider=uicontrol('parent',dp,'style','slider','units','normalized',...
                 'position',[0.5,0.05,0.45,0.25],...
-                'value',obj.t_step,'min',(obj.smw.stft_winlen-obj.smw.stft_overlap)/obj.smw.fs*1000,'max',obj.smw.ms_before+obj.smw.ms_after,...
+                'value',obj.t_step,'min',0,'max',obj.smw.ms_before+obj.smw.ms_after,...
                 'sliderstep',[0.01,0.05],'callback',@(src,evt) TCallback(obj,src));
             
             outp=uipanel('parent',setp,'units','normalized','position',[0,0,1,2.2/6],'title','Output');
@@ -299,7 +298,7 @@ classdef ExportMovieWindow < handle
                         return
                     end
                     obj.t_step=min(obj.smw.ms_before+obj.smw.ms_after,...
-                        max(t,(obj.smw.stft_winlen-obj.smw.stft_overlap)/obj.smw.fs*1000));
+                        max(t,0));
                 case obj.t_start_slider
                     obj.t_start=get(src,'value');
                 case obj.t_end_slider

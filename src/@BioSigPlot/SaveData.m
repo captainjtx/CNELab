@@ -1,6 +1,6 @@
 function SaveData(obj,src)
 if src==obj.MenuSaveSettings
-    [chanNames,dataset,~,~,evts,groupnames,pos]=get_datainfo(obj,false);
+    [chanNames,dataset,~,~,~,groupnames,pos]=get_datainfo(obj,false);
     for i=1:length(obj.CDS)
         if obj.CDS{i}.file_type==2
             if ~isempty(pos)

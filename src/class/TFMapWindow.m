@@ -1166,7 +1166,7 @@ classdef TFMapWindow < handle
                 tmp_sel=[reshape(baseline_start,1,length(i_event));reshape(baseline_end,1,length(i_event))];
                 omitMask=true;
                 baseline=get_selected_data(obj.bsp,omitMask,tmp_sel);
-
+                rtfm=[];
             end
             %**************************************************************************
             switch option

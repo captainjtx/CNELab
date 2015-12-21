@@ -1,29 +1,41 @@
 %CSP test
 clc
 clear
-fname='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Ma Li/neuroSeg.mat';
+% fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Ma Li/Close.mat';
+% fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Ma Li/Open.mat';
+
+fname1='/Users/tengi/Desktop/Projects/data/BMI/abduction/lima/Abd.mat';
+fname2='/Users/tengi/Desktop/Projects/data/BMI/abduction/lima/Add.mat';
+
+
 % fname='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Xu Yun/neuroSegs_PCA.mat';
 
 % fname='/Users/tengi/Desktop/Projects/data/BMI/abduction/lima/segments.mat';
-segments=load(fname);
 
-fs=segments.samplefreq;
-montage=segments.montage;
-channelnames=montage.channelnames;
-channelindex=montage.channelindex;
+% movements={'Close','Open'};
+movements={'Abd','Add'};
+
+
+segments{1}=load(fname1);
+segments{2}=load(fname2);
+
+fs=segments{1}.(movements{1}).fs;
+
+channelnames=segments{1}.(movements{1}).channame;
+
 for i=1:length(channelnames)
     t=channelnames{i};
     channelindex(i)=str2double(t(2:end));
 end
 
-movements=segments.movements;
+
 
 % csp_max_min='max','min';
 
 %up-gamma band
-% lc=60;
-% hc=200;
-% csp_max_min='max';%CSP--Move/Rest
+lc=60;
+hc=200;
+csp_max_min='max';%CSP--Move/Rest
 
 %alpha band
 % lc=8;
@@ -33,19 +45,19 @@ movements=segments.movements;
 % hc=30;
 
 %alpha&beta band
-lc=8;
-hc=32;
-csp_max_min='min';%CSP--Move/Rest
+% lc=8;
+% hc=30;
+% csp_max_min='min';%CSP--Move/Rest
 
 %all band
 % lc=8;
 % hc=200;
 
 % baseline_time=[0 1.7];
-baseline_time=[1 1.7];
+baseline_time=[0.6 1.3];
 % baseline_time=[1.3,1.7];
 baseline_sample=round(baseline_time(1)*fs+1):round(baseline_time(2)*fs);
-move_time=[1.7 2.7];
+move_time=[1.3 2];
 % move_time=[1.7 2.5];
 move_sample=round(move_time(1)*fs):round(move_time(2)*fs);
 
@@ -53,19 +65,35 @@ NF_oneside=3;
 
 %Filter the data===========================================================
 for i=1:length(movements)
-    seg=segments.(movements{i});
+    seg=segments{i}.(movements{i}).data;
     for j=1:size(seg,3)
         [b,a]=butter(2,[lc hc]/(fs/2));
-        segments.(movements{i})(:,:,j)=filter_symmetric(b,a,seg(:,:,j),fs,0,'iir');
+        segments{i}.(movements{i}).data(:,:,j)=filter_symmetric(b,a,seg(:,:,j),fs,0,'iir');
     end
 end
 %==========================================================================
 for i=1:length(movements)
-    seg=segments.(movements{i});
-    
+    seg=segments{i}.(movements{i}).data;
+    X=[];
+    Y=[];
     %Rest
+
+
+%     for k=1:size(seg,3)
+%         for m=1:size(seg,2)
+%             Y(:,m,k)=abs(hilbert(seg(baseline_sample,m,k)));
+%         end
+%     end
+
     Y=seg(baseline_sample,:,:);
     %Move
+    
+    
+%     for k=1:size(seg,3)
+%         for m=1:size(seg,2)
+%             X(:,m,k)=abs(hilbert(seg(move_sample,m,k)));
+%         end
+%     end
     X=seg(move_sample,:,:);
     
     Cx=0;
@@ -175,8 +203,8 @@ for i=1:length(movements)
         rdata=cat(1,rdata,X(:,:,s));
     end
     
-    bsp=BioSigPlot(data,'Evts',evts,'SRate',fs,'ChanNames',channames,'Title',movements{i},...
-        'WinLength',14,'Position',[0,0,600,200],'Gain',0.24);
+%     bsp=BioSigPlot(data,'Evts',evts,'SRate',fs,'ChanNames',channames,'Title',movements{i},...
+%         'WinLength',14,'Position',[0,0,600,200],'Gain',0.24);
     %     BioSigPlot(rdata,'Evts',evts,'SRate',fs,'Title',movements{i});
     
     dw=30;
@@ -185,12 +213,12 @@ for i=1:length(movements)
     interval=30;
     figpos=[0,0,1220,670];
     %======================================================================
+    chan_order=channelindex;
     if strcmpi(csp_max_min,'min')
         axe1_pattern=zeros(1,NF_oneside);
         axe1_filter=zeros(1,NF_oneside);
         clim1_pattern=[inf,-inf];
         clim1_filter=[inf,-inf];
-        
         
         h=figure('Name',[movements{i}, ' Decrease'],'Position',figpos);
         
@@ -198,7 +226,7 @@ for i=1:length(movements)
             count=m;
             %         subplot(2,NF_oneside,count)
             axe1_pattern(m)=axes('Units','Pixels','Position',[(m-1)*(interval+dw*12)+interval/2,dh*10+interval*1.5,12*dw,10*dh]);
-            [pmax,pmin]=gauss_interpolate_120_grid(axe1_pattern(m),P(:,count)/max(abs(P(:,count))),channelindex,dw,dh);
+            [pmax,pmin]=gauss_interpolate_120_grid(axe1_pattern(m),P(:,count)/max(abs(P(:,count))),chan_order,[],dw,dh);
             title(['CSP ' num2str(m), '  Lambda: ',num2str(Lmd(count)),' Pattern'])
             if pmax>clim1_pattern(2)
                 clim1_pattern(2)=pmax;
@@ -209,7 +237,7 @@ for i=1:length(movements)
             
             %         subplot(2,NF_oneside,count+NF_oneside)
             axe1_filter(m)=axes('Units','Pixels','Position',[(m-1)*(interval+dw*12)+interval/2,interval/2,12*dw,10*dh]);
-            [fmax,fmin]=gauss_interpolate_120_grid(axe1_filter(m),F(:,count)/max(abs(F(:,count))),channelindex,dw,dh);
+            [fmax,fmin]=gauss_interpolate_120_grid(axe1_filter(m),F(:,count)/max(abs(F(:,count))),chan_order,[],dw,dh);
             title(['CSP' num2str(m),' Filter'])
             if fmax>clim1_filter(2)
                 clim1_filter(2)=fmax;
@@ -254,7 +282,7 @@ for i=1:length(movements)
             %         subplot(2,NF_oneside,m)
             
             axe2_pattern(m)=axes('Units','Pixels','Position',[(m-1)*(interval+dw*12)+interval/2,dh*10+interval*1.5,12*dw,10*dh]);
-            [pmax,pmin]=gauss_interpolate_120_grid(axe2_pattern(m),P(:,count)/max(abs(P(:,count))),channelindex,dw,dh);
+            [pmax,pmin]=gauss_interpolate_120_grid(axe2_pattern(m),P(:,count)/max(abs(P(:,count))),chan_order,[],dw,dh);
             title(['CSP ' num2str(-m),' Lambda: ',num2str(Lmd(count)),' Pattern'])
             
             if pmax>clim2_pattern(2)
@@ -266,7 +294,7 @@ for i=1:length(movements)
             
             %         subplot(2,NF_oneside,m+NF_oneside)
             axe2_filter(m)=axes('Units','Pixels','Position',[(m-1)*(interval+dw*12)+interval/2,interval/2,12*dw,10*dh]);
-            [fmax,fmin]=gauss_interpolate_120_grid(axe2_filter(m),F(:,count)/max(abs(F(:,count))),channelindex,dw,dh);
+            [fmax,fmin]=gauss_interpolate_120_grid(axe2_filter(m),F(:,count)/max(abs(F(:,count))),chan_order,[],dw,dh);
             title(['CSP' num2str(-m),' Filter'])
             if fmax>clim2_filter(2)
                 clim2_filter(2)=fmax;

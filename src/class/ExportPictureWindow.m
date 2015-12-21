@@ -172,15 +172,6 @@ classdef ExportPictureWindow < handle
             end
                 
         end
-        
-        
-        function val=get.valid(obj)
-            try
-                val=ishandle(obj.fig)&&isvalid(obj.fig);
-            catch
-                val=0;
-            end
-        end
     end
     
     methods

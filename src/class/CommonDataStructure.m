@@ -115,8 +115,11 @@ classdef CommonDataStructure < handle
         end
         
         function delete(obj)
-            if ishandle(obj)
-                delete(obj);
+            try
+                if ishandle(obj)
+                    delete(obj);
+                end
+            catch
             end
         end
         
@@ -435,14 +438,29 @@ classdef CommonDataStructure < handle
             s.PatientInfo.Time=[];
             s.PatientInfo.Location=[];
         end
+        
+        function s=completeDataInfo(s)
+            
+            fields={'Annotations','Artifact','TimeStamps','Units','Video','PreFilter','DownSample','SampleRate','FileName',...
+                'VideoName','NextFile','PrevFile','AllFiles','FileSample','AllEvents'};
+            for i=1:length(fields)
+                if ~isfield(s,fields{i})
+                    s.(fields{i})=[];
+                end
+            end
+            
+        end
         function s=readFromCDS(filename)
             s=matfile(filename,'Writable',true);
             if ~any(strcmp('DataInfo',who(s)))&&any(strcmp('Data',who(s)))
                 dat=s.Data;
                 %obsolete format Data.Data
                 %get Data.Data outside
-                s.DataInfo=rmfield(dat,'Data');
+                s.DataInfo=CommonDataStructure.completeDataInfo(rmfield(dat,'Data'));
                 s.Data=dat.Data;
+            else
+                di=s.DataInfo;
+                s.DataInfo=CommonDataStructure.completeDataInfo(di);
             end
         end
         

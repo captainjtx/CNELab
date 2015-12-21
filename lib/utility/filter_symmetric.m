@@ -35,6 +35,8 @@ if phs~=0
     phs=1;
 end
 
+ext=min(ext,round(size(eeg,1)/2));
+
 [eeg,ext]=symtrcextend(eeg,ext);
 
 if strcmpi(ftyp, 'iir')

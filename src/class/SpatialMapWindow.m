@@ -12,6 +12,7 @@ classdef SpatialMapWindow < handle
         p_menu
         corr_menu
         xcorr_menu
+        threshold_menu
         
         valid
         bind_valid
@@ -52,8 +53,8 @@ classdef SpatialMapWindow < handle
         ers_edit
         erd_slider
         ers_slider
-        threshold_edit
-        threshold_slider
+        resize_edit
+        resize_slider
         compute_btn
         refresh_btn
         scale_by_max_radio
@@ -71,7 +72,7 @@ classdef SpatialMapWindow < handle
         
         event_list_listbox
         event_group_listbox
-        link_radio
+        interp_missing_radio
         symmetric_scale_radio
         
         center_mass_radio
@@ -105,7 +106,7 @@ classdef SpatialMapWindow < handle
         erd_t_
         ers_t_
         
-        threshold_
+        resize_
         
         scale_by_max_
         
@@ -114,7 +115,7 @@ classdef SpatialMapWindow < handle
         act_len_
         auto_refresh_
         color_bar_
-        link_
+        interp_missing_
         symmetric_scale_
         fs_
         center_mass_
@@ -149,7 +150,7 @@ classdef SpatialMapWindow < handle
         erd_t
         ers_t
         
-        threshold
+        resize
         
         scale_by_max
         
@@ -171,7 +172,7 @@ classdef SpatialMapWindow < handle
         cmax
         
         active_ievent
-        link
+        interp_missing
         symmetric_scale
         center_mass
         peak
@@ -193,6 +194,8 @@ classdef SpatialMapWindow < handle
         pos_y
         radius
         all_chan_pos
+        all_chan_names
+        chan_names
         
         need_recalculate
         
@@ -205,6 +208,7 @@ classdef SpatialMapWindow < handle
         xcorr_win
         export_picture_win
         export_movie_win
+        threshold_win
     end
     methods
         function val=get.event_group(obj)
@@ -288,14 +292,14 @@ classdef SpatialMapWindow < handle
         end
         
         
-        function val=get.link(obj)
-            val=obj.link_;
+        function val=get.interp_missing(obj)
+            val=obj.interp_missing_;
         end
         
-        function set.link(obj,val)
-            obj.link_=val;
+        function set.interp_missing(obj,val)
+            obj.interp_missing_=val;
             if obj.valid
-                set(obj.link_radio,'value',val);
+                set(obj.interp_missing_radio,'value',val);
             end
         end
         
@@ -326,12 +330,25 @@ classdef SpatialMapWindow < handle
                     mapv(i)=mean(mean(tf.mat{i}(fi,ti)));
                 end
                 
+                if strcmpi(obj.unit,'dB')
+                    mapv=10*log10(mapv);
+                end
+                
                 if obj.scale_by_max
                     mapv=mapv/max(abs(mapv));
                 end
                 
-                if strcmpi(obj.unit,'dB')
-                    mapv=10*log10(mapv);
+                if obj.threshold_win.pos
+                    ind=find(mapv>0);
+                    [abs_val,I]=sort(abs(mapv(ind)),'descend');
+                    cumsum_val=cumsum(abs_val.^2);
+                    mapv(ind(I(cumsum_val>cumsum_val(end)*obj.threshold_win.pos_t)))=0;
+                end
+                if obj.threshold_win.neg
+                    ind=find(mapv<0);
+                    [abs_val,I]=sort(abs(mapv(ind)),'descend');
+                    cumsum_val=cumsum(abs_val.^2);
+                    mapv(ind(I(cumsum_val>cumsum_val(end)*obj.threshold_win.neg_t)))=0;
                 end
                 val{k}=mapv;
             end
@@ -514,16 +531,16 @@ classdef SpatialMapWindow < handle
             digits(old);
         end
         
-        function val=get.threshold(obj)
-            val=obj.threshold_;
+        function val=get.resize(obj)
+            val=obj.resize_;
         end
-        function set.threshold(obj,val)
-            oldval=obj.threshold;
-            obj.threshold_=val;
+        function set.resize(obj,val)
+            oldval=obj.resize;
+            obj.resize_=val;
             
             if obj.valid
-                set(obj.threshold_edit,'string',num2str(val));
-                set(obj.threshold_slider,'value',val);
+                set(obj.resize_edit,'string',num2str(val));
+                set(obj.resize_slider,'value',val);
             end
             
             obj.width=round(obj.width/oldval*val);
@@ -558,7 +575,7 @@ classdef SpatialMapWindow < handle
                 ColorBarCallback(obj,obj.color_bar_radio);
             end
             
-            UpdateFigure(obj,obj.threshold_edit);
+            UpdateFigure(obj,obj.resize_edit);
         end
         
         function val=get.scale_by_max(obj)
@@ -987,7 +1004,7 @@ classdef SpatialMapWindow < handle
             obj.ers_=0;
             obj.erd_t_=1;
             obj.ers_t_=1;
-            obj.threshold_=1;
+            obj.resize_=1;
             obj.scale_by_max_=0;
             %             obj.display_mask_channel_=0;
             obj.act_start_=0;
@@ -1003,7 +1020,7 @@ classdef SpatialMapWindow < handle
             obj.interp_method='natural';
             obj.extrap_method='linear';
             obj.bind_valid=0;
-            obj.link_=1;
+            obj.interp_missing_=0;
             obj.symmetric_scale_=1;
             obj.center_mass_=1;
             obj.peak_=1;
@@ -1014,6 +1031,7 @@ classdef SpatialMapWindow < handle
             
             obj.export_picture_win=ExportPictureWindow(obj);
             obj.export_movie_win=ExportMovieWindow(obj);
+            obj.threshold_win=ThresholdWindow(obj);
         end
         function buildfig(obj)
             if obj.valid
@@ -1031,6 +1049,7 @@ classdef SpatialMapWindow < handle
             obj.export_trial_info_menu=uimenu(obj.export_menu,'label','Trial Info','callback',@(src,evts) ExportTrialInfoCallback(obj));
             
             obj.advance_menu=uimenu(obj.fig,'label','Settings');
+            obj.threshold_menu=uimenu(obj.advance_menu,'label','Threshold','callback',@(src,evts) ThresholdCallback(obj));
             obj.stft_menu=uimenu(obj.advance_menu,'label','STFT','callback',@(src,evts) STFTCallback(obj));
             obj.p_menu=uimenu(obj.advance_menu,'label','P-Value','callback',@(src,evts) PCallback(obj));
             obj.corr_menu=uimenu(obj.advance_menu,'label','Correlation','callback',@(src,evts) CorrCallback(obj));
@@ -1166,15 +1185,15 @@ classdef SpatialMapWindow < handle
                 'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.max_clim,'sliderstep',[0.01,0.05]);
             
             
-            hp_threshold=uipanel('parent',hp,'title','Window Scale','units','normalized','position',[0,0.21,1,0.07]);
+            hp_resize=uipanel('parent',hp,'title','Window Scale','units','normalized','position',[0,0.21,1,0.07]);
             
-            uicontrol('parent',hp_threshold,'style','text','string','Ratio','units','normalized',...
+            uicontrol('parent',hp_resize,'style','text','string','Ratio','units','normalized',...
                 'position',[0,0.2,0.1,0.5]);
-            obj.threshold_edit=uicontrol('parent',hp_threshold,'style','edit','string',num2str(obj.threshold),'units','normalized',...
-                'position',[0.15,0.2,0.2,0.6],'horizontalalignment','center','callback',@(src,evts) ThresholdCallback(obj,src));
-            obj.threshold_slider=uicontrol('parent',hp_threshold,'style','slider','units','normalized',...
-                'position',[0.4,0.2,0.55,0.6],'callback',@(src,evts) ThresholdCallback(obj,src),...
-                'min',0.1,'max',2,'value',obj.threshold,'sliderstep',[0.01,0.05]);
+            obj.resize_edit=uicontrol('parent',hp_resize,'style','edit','string',num2str(obj.resize),'units','normalized',...
+                'position',[0.15,0.2,0.2,0.6],'horizontalalignment','center','callback',@(src,evts) ResizeCallback(obj,src));
+            obj.resize_slider=uicontrol('parent',hp_resize,'style','slider','units','normalized',...
+                'position',[0.4,0.2,0.55,0.6],'callback',@(src,evts) ResizeCallback(obj,src),...
+                'min',0.1,'max',2,'value',obj.resize,'sliderstep',[0.01,0.05]);
             
             hp_display=uipanel('parent',hp,'title','Display','units','normalized','position',[0,0.05,1,0.15]);
             
@@ -1192,9 +1211,9 @@ classdef SpatialMapWindow < handle
                 'callback',@(src,evts) ColorBarCallback(obj,src));
             
             
-            obj.link_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Link',...
-                'units','normalized','position',[0,0,0.45,0.25],'value',obj.link,...
-                'callback',@(src,evts) LinkCallback(obj,src));
+            obj.interp_missing_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Interpolate Missing',...
+                'units','normalized','position',[0,0,0.45,0.25],'value',obj.interp_missing,...
+                'callback',@(src,evts) InterpMissingCallback(obj,src));
             
             
             obj.symmetric_scale_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Symmetric Scale',...
@@ -1266,6 +1285,10 @@ classdef SpatialMapWindow < handle
             
             if obj.export_movie_win.valid
                 delete(obj.export_movie_win.fig);
+            end
+            
+            if obj.threshold_win.valid
+                delete(obj.threshold_win.fig);
             end
             
         end
@@ -1420,13 +1443,8 @@ classdef SpatialMapWindow < handle
             if ~NoSpatialMapFig(obj)
                 h=findobj(obj.SpatialMapFig,'-regexp','Tag','SpatialMapAxes');
                 
-                if obj.scale_by_max
-                    sl=obj.min_clim/obj.cmax;
-                    sh=obj.max_clim/obj.cmax;
-                else
-                    sl=obj.min_clim;
-                    sh=obj.max_clim;
-                end
+                sl=obj.min_clim;
+                sh=obj.max_clim;
                 
                 if sl<sh
                     set(h,'CLim',[sl,sh]);
@@ -1559,6 +1577,7 @@ classdef SpatialMapWindow < handle
                 txt_evt((i_event-nL)<1)=[];
                 
                 omitMask=true;
+                
                 [chanNames,dataset,channel,~,~,~,chanpos]=get_selected_datainfo(obj.bsp,omitMask);
                 %need to change the data
             end
@@ -1567,9 +1586,13 @@ classdef SpatialMapWindow < handle
                 errordlg('No channel position in the data !');
                 return
             end
-            [~,~,~,~,~,~,allchanpos]=get_selected_datainfo(obj.bsp);
+            
+            [allchannames,~,~,~,~,~,allchanpos]=get_selected_datainfo(obj.bsp);
+            
             chanind=~isnan(allchanpos(:,1))&~isnan(allchanpos(:,2));
             allchanpos=allchanpos(chanind,:);
+            allchannames=allchannames(chanind);
+            
             [allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),~,~] = ...
                 get_relative_chanpos(allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.width,obj.height);
             
@@ -1785,20 +1808,21 @@ classdef SpatialMapWindow < handle
             obj.pos_y=chanpos(:,2);
             obj.radius=chanpos(:,3);
             
-            
-            if obj.scale_by_max
-                sl=sl/obj.cmax;
-                sh=sh/obj.cmax;
+            if ~obj.scale_by_max
+                obj.clim_slider_max=obj.cmax;
+                obj.clim_slider_min=-obj.cmax;
+            else
+                obj.clim_slider_max=1;
+                obj.clim_slider_min=-1;
             end
-            
-            obj.clim_slider_max=obj.cmax*1.5;
-            obj.clim_slider_min=-obj.cmax*1.5;
             mapv=obj.map_val;
             
             erdchan=obj.erd_chan;
             erschan=obj.ers_chan;
             
             obj.all_chan_pos=allchanpos;
+            obj.all_chan_names=allchannames;
+            obj.chan_names=channames;
             
             if obj.corr_win.pos||obj.corr_win.neg||obj.corr_win.sig||obj.corr_win.multi_pos||obj.corr_win.multi_neg
                 % correlation
@@ -1812,9 +1836,25 @@ classdef SpatialMapWindow < handle
             obj.erd_center=cell(size(evt));
             obj.ers_center=cell(size(evt));
             
+            
+            if obj.interp_missing
+                map_pos=chanpos;
+                map_channames=channames;
+                map_mapv=mapv;
+            else
+                map_pos=allchanpos;
+                map_channames=allchannames;
+                map_mapv=cell(length(mapv),1);
+                for i=1:length(mapv)
+                    %default to zeros
+                    map_mapv{i}=zeros(length(map_channames),1);
+                    ind=ismember(allchannames,channames);
+                    map_mapv{i}(ind)=mapv{i};
+                end
+            end
             for e=1:length(evt)
-                spatialmap_grid(obj.SpatialMapFig(e),mapv{e},obj.interp_method,...
-                    obj.extrap_method,channames,chanpos(:,1),chanpos(:,2),chanpos(:,3),obj.width,obj.height,sl,sh,obj.color_bar,obj.threshold);
+                spatialmap_grid(obj.SpatialMapFig(e),map_mapv{e},obj.interp_method,...
+                    obj.extrap_method,map_channames,map_pos(:,1),map_pos(:,2),map_pos(:,3),obj.width,obj.height,sl,sh,obj.color_bar,obj.resize);
                 h=findobj(obj.SpatialMapFig(e),'-regexp','tag','SpatialMapAxes');
                 if obj.contact
                     plot_contact(h,allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.height,obj.width,[],...
@@ -1822,13 +1862,13 @@ classdef SpatialMapWindow < handle
                 end
                 if obj.peak
                     [~,I]=max(abs(mapv{e}'));
-                    text(obj.pos_x(I)*obj.width,obj.pos_y(I)*obj.height,'p','parent',h,'fontsize',round(20*obj.threshold),'color','w',...
+                    text(obj.pos_x(I)*obj.width,obj.pos_y(I)*obj.height,'p','parent',h,'fontsize',round(20*obj.resize),'color','w',...
                         'tag','peak','horizontalalignment','center','fontweight','bold');
                 end
                 
                 if obj.erd||obj.ers
                     [obj.erd_center{e},obj.ers_center{e}]=plot_mass_center(h,mapv{e},round(chanpos(:,1)*obj.width),...
-                        round(chanpos(:,2)*obj.height),erdchan{e},erschan{e},obj.center_mass,obj.threshold);
+                        round(chanpos(:,2)*obj.height),erdchan{e},erschan{e},obj.center_mass,obj.resize);
                 end
                 
                 %Correlation Network
@@ -1910,18 +1950,18 @@ classdef SpatialMapWindow < handle
             
             UpdateFigure(obj,src);
         end
-        function ThresholdCallback(obj,src)
+        function ResizeCallback(obj,src)
             switch src
-                case obj.threshold_edit
+                case obj.resize_edit
                     t=str2double(get(src,'string'));
                     if isnan(t)
-                        t=obj.threshold;
+                        t=obj.resize;
                     end
                     t=max(0.1,min(t,3));
                     
-                    obj.threshold=t;
-                case obj.threshold_slider
-                    obj.threshold=get(src,'value');
+                    obj.resize=t;
+                case obj.resize_slider
+                    obj.resize=get(src,'value');
             end
         end
         
@@ -1954,6 +1994,13 @@ classdef SpatialMapWindow < handle
         function ScaleByMaxCallback(obj,src)
             obj.scale_by_max_=get(src,'value');
             
+            if obj.scale_by_max
+                obj.clim_slider_max=1;
+                obj.clim_slider_min=-1;
+            else
+                obj.clim_slider_max=obj.cmax;
+                obj.clim_slider_min=-obj.cmax;
+            end
             if ~obj.auto_refresh
                 return
             end
@@ -2025,9 +2072,9 @@ classdef SpatialMapWindow < handle
                         fpos=get(h,'position');
                         if obj.color_bar
                             %optional color bar
-                            cb=colorbar('Units','normalized','FontSize',round(15*obj.threshold));
+                            cb=colorbar('Units','normalized','FontSize',round(15*obj.resize));
                             cbpos=get(cb,'Position');
-                            set(a,'Position',[10/400*obj.width/fpos(3),15/300*obj.height/fpos(4),obj.width/fpos(3),obj.height/fpos(4)],'FontSize',round(15*obj.threshold));
+                            set(a,'Position',[10/400*obj.width/fpos(3),15/300*obj.height/fpos(4),obj.width/fpos(3),obj.height/fpos(4)],'FontSize',round(15*obj.resize));
                             set(cb,'Position',[(obj.width+20/400*obj.width)/fpos(3),15/300*obj.height/fpos(4),0.04,cbpos(4)]);
                         else
                             colorbar('off');
@@ -2109,6 +2156,20 @@ classdef SpatialMapWindow < handle
                     obj.xcorr_win.UpdateCrossCorrelation();
                 end
                 
+                if obj.interp_missing
+                    map_pos=chanpos;
+                    map_mapv=mapv;
+                else
+                    map_pos=obj.all_chan_pos;
+                    map_mapv=cell(length(mapv),1);
+                    for i=1:length(mapv)
+                        %default to zeros
+                        map_mapv{i}=zeros(length(obj.all_chan_names),1);
+                        ind=ismember(obj.all_chan_names,obj.chan_names);
+                        map_mapv{i}(ind)=mapv{i};
+                    end
+                end
+                
                 for i=1:length(obj.SpatialMapFig)
                     h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
                     if ~isempty(h)
@@ -2117,19 +2178,16 @@ classdef SpatialMapWindow < handle
                         if strcmpi(obj.interp_method,'natural')
                             [x,y]=meshgrid((1:obj.width)/obj.width,(1:obj.height)/obj.height);
                             
-                            F= scatteredInterpolant(col,row,mapv{i}',obj.interp_method,obj.extrap_method);
+                            F= scatteredInterpolant(map_pos(:,1),map_pos(:,2),map_mapv{i}(:),obj.interp_method,obj.extrap_method);
                             mapvq=F(x,y);
+%                             mapvq = gaussInterpolant(col,row,mapv{i}',x,y);
+                            
                         else
                             return
                         end
                         
                         imagehandle=findobj(h,'Tag','ImageMap');
-                        
-                        if obj.scale_by_max
-                            set(h,'clim',[obj.min_clim/obj.cmax,obj.max_clim/obj.cmax]);
-                        else
-                            set(h,'clim',[obj.min_clim,obj.max_clim]);
-                        end
+                        set(h,'clim',[obj.min_clim,obj.max_clim]);
                         set(h,'xlim',[1,obj.width]);
                         set(h,'ylim',[1,obj.height]);
                         set(imagehandle,'CData',single(mapvq));
@@ -2147,14 +2205,14 @@ classdef SpatialMapWindow < handle
                         
                         if obj.peak
                             [~,I]=max(abs(mapv{i}'));
-                            text(col(I)*obj.width,row(I)*obj.height,'p','parent',h,'fontsize',round(20*obj.threshold),'color','w',...
+                            text(col(I)*obj.width,row(I)*obj.height,'p','parent',h,'fontsize',round(20*obj.resize),'color','w',...
                                 'tag','peak','horizontalalignment','center','fontweight','bold');
                         end
                         
                         if obj.erd||obj.ers
                             [obj.erd_center{i},obj.ers_center{i}]=plot_mass_center(h,mapv{i},...
                                 round(chanpos(:,1)*obj.width),round(chanpos(:,2)*obj.height),...
-                                erdchan{i},erschan{i},obj.center_mass,obj.threshold,...
+                                erdchan{i},erschan{i},obj.center_mass,obj.resize,...
                                 obj.erd_center{i},obj.ers_center{i});
                         end
                         
@@ -2303,17 +2361,22 @@ classdef SpatialMapWindow < handle
             end
         end
         
-        function LinkCallback(obj,src)
-            obj.link_=get(src,'value');
+        function InterpMissingCallback(obj,src)
+            obj.interp_missing_=get(src,'value');
+            if obj.auto_refresh
+                UpdateFigure(obj,src);
+            end
         end
         function SymmetricScaleCallback(obj,src)
             obj.symmetric_scale_=get(src,'value');
         end
         
         function ExportMovieCallback(obj)
-            
             obj.export_movie_win.buildfig();
             
+        end
+        function ThresholdCallback(obj)
+            obj.threshold_win.buildfig();
         end
         
         function CenterMassCallback(obj,src)
@@ -2332,7 +2395,7 @@ classdef SpatialMapWindow < handle
                         if obj.erd||obj.ers
                             %                             figure(obj.SpatialMapFig(i))
                             [obj.erd_center{i},obj.ers_center{i}]=plot_mass_center(h,mapv{i},round(chanpos(:,1)*obj.width),...
-                                round(chanpos(:,2)*obj.height),erdchan{i},erschan{i},obj.center_mass,obj.threshold,...
+                                round(chanpos(:,2)*obj.height),erdchan{i},erschan{i},obj.center_mass,obj.resize,...
                                 obj.erd_center{i},obj.ers_center{i});
                         end
                     end
@@ -2353,7 +2416,7 @@ classdef SpatialMapWindow < handle
                         delete(findobj(h,'tag','peak'));
                         if obj.peak
                             [~,I]=max(abs(mapv{i}'));
-                            text(col(I)*obj.width,row(I)*obj.height,'p','parent',h,'fontsize',round(20*obj.threshold),'color','w',...
+                            text(col(I)*obj.width,row(I)*obj.height,'p','parent',h,'fontsize',round(20*obj.resize),'color','w',...
                                 'tag','peak','horizontalalignment','center','fontweight','bold');
                         end
                     end

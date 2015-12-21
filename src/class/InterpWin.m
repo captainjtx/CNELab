@@ -38,7 +38,7 @@ classdef InterpWin < handle
             
             obj.interpChan=[];
             
-            [~,~,dataset,channel,~,~,~,~]=get_selected_data(obj.bsp);
+            [~,dataset,channel,~,~,~,~]=get_selected_datainfo(obj.bsp);
             
             if length(channel)~=1
                 errordlg('Must select one channel !');
@@ -49,6 +49,8 @@ classdef InterpWin < handle
             obj.selectChan=channel;
             
             obj.channames=obj.bsp.MontageChanNames{obj.ds};
+%             allchan=obj.channames;
+            
             chanpos=obj.bsp.Montage{obj.ds}(obj.bsp.MontageRef(obj.ds)).position;
             
             chanind=~isnan(chanpos(:,1))&~isnan(chanpos(:,2));
@@ -146,7 +148,7 @@ classdef InterpWin < handle
             
 %             figure(obj.fig);
             
-            [data,chanNames,dataset,channel,sample,evts,groupnames,pos]=get_selected_data(obj.bsp);
+            [~,dataset,channel,~,~,~,~]=get_selected_datainfo(obj.bsp);
             
             if length(channel)~=1||dataset~=obj.ds
                 return
@@ -191,11 +193,9 @@ classdef InterpWin < handle
             if ishandle(h)
                 delete(h);
             end
-            
         end
         
         function interpolate(obj)
-            
             if isempty(obj.selectChan)
                 return
             end
@@ -203,8 +203,6 @@ classdef InterpWin < handle
             
             totalweight=0;
             newdata=0;
-            
-            
             
             if isempty(obj.interpChan)
                 newdata=data;
@@ -214,16 +212,13 @@ classdef InterpWin < handle
                     weight=sqrt(sum(weight.^2));
                     
                     totalweight=totalweight+weight;
-                    newdata=obj.bsp.PreprocData{dataset}(sample,obj.interpChan(i))*weight+newdata;
+                    newdata=obj.bsp.PreprocData{dataset}(sample-obj.bsp.BufferStartSample+1,obj.interpChan(i))*weight+newdata;
                 end
-                
                 newdata=newdata/totalweight;
             end
-            
-            obj.bsp.PreprocData{dataset}(sample,channel)=newdata;
+            obj.bsp.PreprocData{dataset}(sample-obj.bsp.BufferStartSample+1,channel)=newdata;
             
             obj.bsp.redrawChangeBlock('time');
-            
         end
     end
     

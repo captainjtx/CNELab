@@ -330,9 +330,6 @@ classdef CrossCorrMapWindow < handle
             
             obj.neg=obj.neg_;
             obj.multi_neg=obj.multi_neg_;
-            
-            
-            
         end
         
         function OnClose(obj)
