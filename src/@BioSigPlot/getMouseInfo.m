@@ -7,8 +7,9 @@ t=0;
 for i=1:length(obj.Axes)
     pos=get(obj.Axes(i),'CurrentPoint');
     yvalue(i)=pos(1,2); %TODO adjust to the scale
-    ylim=get(obj.Axes(i),'Ylim');
-    if pos(1,1)>=0 && pos(1,1)<=xlim && pos(1,2)>=ylim(1) && pos(1,2)<=ylim(2)
+    y_lim=get(obj.Axes(i),'Ylim');
+    x_lim=get(obj.Axes(i),'Xlim');
+    if pos(1,1)>=x_lim(1) && pos(1,1)<=xlim && pos(1,2)>=y_lim(1) && pos(1,2)<=y_lim(2)
         if strcmpi(obj.DataView,'Alternated')
             nchan=sum(obj.MontageChanNumber)-round(pos(1,2))+1;
             if nchan<=0, nchan=1; end

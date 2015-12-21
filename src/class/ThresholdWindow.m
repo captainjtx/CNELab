@@ -130,11 +130,9 @@ classdef ThresholdWindow <handle
                     obj.neg=get(src,'value');
                 case obj.pos_edit
                     val=str2double(get(src,'string'));
-                    
                     if isnan(val)
                         val=obj.pos_t;
                     end
-                    
                     val=max(0,min(val,1));
                     
                     set(src,'string',num2str(val));

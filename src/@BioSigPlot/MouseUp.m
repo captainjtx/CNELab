@@ -5,8 +5,8 @@ for i=1:length(obj.AxesResizeMode)
     obj.AxesResizeMode(i)=false;
 end
 
-[nchan,ndata,yvalue]=getMouseInfo(obj); %#ok<ASGLU>
-time=obj.MouseTime;
+[nchan,ndata,yvalue,time]=getMouseInfo(obj); %#ok<ASGLU>
+
 Modifier=get(obj.Fig,'CurrentModifier');
 
 if isempty(obj.MouseMode)
