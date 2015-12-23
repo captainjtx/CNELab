@@ -211,7 +211,7 @@ end
 
 if ishandle(obj.PSDFig)
     if needredraw
-        Time_Freq_Map(obj,obj.BtnPSD);
+        Power_Spectrum_Density(obj,obj.BtnPSD);
         return
     end
     

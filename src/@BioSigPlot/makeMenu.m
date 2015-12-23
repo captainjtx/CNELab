@@ -122,26 +122,7 @@ obj.MenuApp=uimenu(obj.Fig,'Label','Apps');
 obj.MenuTFMap=uimenu(obj.MenuApp,'Label','Time Frequency Map','callback',@(src,evt)obj.TFMapWin.buildfig());
 obj.MenuSpatialMap=uimenu(obj.MenuApp,'Label','Spatial Spectral Map','callback',@(src,evt) obj.SpatialMapWin.buildfig());
 
-obj.MenuPSD=uimenu(obj.MenuApp,'Label','Power Spectrum Density');
-obj.MenuPSD_Unit=uimenu(obj.MenuPSD,'Label','Unit');
-obj.MenuPSD_Normal=uimenu(obj.MenuPSD_Unit,'label','Magnitude','checked','off',...
-    'Callback',@(src,evt) Power_Spectrum_Density(obj,src));
-obj.MenuPSD_DB=uimenu(obj.MenuPSD_Unit,'label','dB','checked','on',...
-    'Callback',@(src,evt) Power_Spectrum_Density(obj,src));
-
-obj.MenuLayout=uimenu(obj.MenuPSD,'Label','Layout');
-obj.MenuPSDAverage=uimenu(obj.MenuLayout,'Label','Average',...
-    'Callback', @(src,evt) Power_Spectrum_Density(obj,src),'checked','off');
-obj.MenuPSDChannel=uimenu(obj.MenuLayout,'Label','Overlap',...
-    'Callback', @(src,evt) Power_Spectrum_Density(obj,src),'checked','on');
-obj.MenuPSDGrid=uimenu(obj.MenuLayout,'Label','Grid',...
-    'Callback', @(src,evt) Power_Spectrum_Density(obj,src),'checked','off');
-
-obj.MenuPSDHold=uimenu(obj.MenuPSD,'Label','Hold on',...
-    'Callback',@(src,evt) Power_Spectrum_Density(obj,src),'checked','off');
-
-obj.MenuPSDSettings=uimenu(obj.MenuPSD,'Label','Settings','Separator','on',...
-    'Callback', @(src,evt) Power_Spectrum_Density(obj,src));
+obj.MenuPSD=uimenu(obj.MenuApp,'Label','Power Spectrum Density','callback',@(src,evt)obj.PSDWin.buildfig());
 
 obj.MenuCrossCorr=uimenu(obj.MenuApp,'Label','Cross Correlation');
 
@@ -157,6 +138,9 @@ obj.MenuCohereRaw=uimenu(obj.MenuCohere,'Label','Raw Data',...
 obj.MenuCohereEnv=uimenu(obj.MenuCohere,'Label','Envelope',...
     'Callback',@(src,evt) Coherence(obj,src));
 
+obj.MenuCSP=uimenu(obj.MenuApp,'Label','Common Spatial Pattern',...
+    'Callback', @(src,evt) obj.CSPMapWin.buildfig());
+
 obj.MenuAppDenoise=uimenu(obj.MenuApp,'Label','Denoise','Separator','on');
 obj.MenuMeanRef=uimenu(obj.MenuAppDenoise,'Label','Mean Reference',...
     'Callback', @(src,evt) Mean_Reference_Filter(obj));
@@ -168,8 +152,6 @@ obj.MenuSpatialPCA=uimenu(obj.MenuAppDenoise,'Label','Spatial PCA',...
     'Callback', @(src,evt)Spatial_PCA(obj));
 obj.MenuTemporalPCA=uimenu(obj.MenuAppDenoise,'Label','Temporal PCA',...
     'Callback', @(src,evt) Temporal_PCA(obj));
-
-
 end
 
 

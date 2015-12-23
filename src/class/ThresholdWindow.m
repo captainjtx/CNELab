@@ -32,7 +32,7 @@ classdef ThresholdWindow <handle
         function obj=ThresholdWindow(smw)
             obj.valid=0;
             obj.smw=smw;
-            obj.width=350;
+            obj.width=300;
             obj.height=100;
             
             obj.neg_=0;
@@ -46,8 +46,7 @@ classdef ThresholdWindow <handle
                 figure(obj.fig);
                 return
             end
-            obj.width=300;
-            obj.height=100;
+            
             figpos=get(obj.smw.fig,'Position');
             obj.fig=figure('MenuBar','none','Name','Thresholding','units','pixels',...
                 'Position',[figpos(1)+figpos(3),figpos(2)+figpos(4)-obj.height,obj.width,obj.height],'NumberTitle','off',...

@@ -214,11 +214,10 @@ classdef ExportSingleTrialWin<handle
             for i=1:length(i_event)
                 sel=cat(2,sel,[i_event(i)-nL;i_event(i)+nR]);
             end
-            [alldata,~,~,~,sample,~,~,~]=get_selected_data(obj.bsp,true,sel);
+            [alldata,~,~,~,~,~,~,~,segment]=get_selected_data(obj.bsp,true,sel);
             
             for i=1:length(i_event)
-                tmp_sel=i_event(i)-nL:i_event(i)+nR;
-                data(:,:,i)=alldata(ismember(sample,tmp_sel),:);
+                data(:,:,i)=alldata(segment==i,:);
             end
             
             output.channame=chanNames;

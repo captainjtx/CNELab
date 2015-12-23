@@ -161,15 +161,6 @@ classdef BioSigPlot < hgsetget
         MenuTFMap
         MenuSpatialMap
         MenuPSD
-        MenuPSD_Unit
-        MenuPSD_Normal
-        MenuPSD_DB
-        MenuLayout
-        MenuPSDAverage
-        MenuPSDChannel
-        MenuPSDGrid
-        MenuPSDSettings
-        MenuPSDHold
         MenuCrossCorr
         MenuCrossCorrRaw
         MenuCrossCorrEnv
@@ -185,6 +176,8 @@ classdef BioSigPlot < hgsetget
         MenuSpatialPCA
         
         MenuInterpolate
+        
+        MenuCSP
         
         
         
@@ -272,9 +265,6 @@ classdef BioSigPlot < hgsetget
         
         Evts2Display
         
-        PSDWindowLength
-        PSDOverlap
-        
         FileDir
         
         VisualDownSample
@@ -347,9 +337,6 @@ classdef BioSigPlot < hgsetget
         FastEvts_
         SelectedFastEvt_
         AdvanceEventsFcn_
-        
-        PSDWindowLength_
-        PSDOverlap_
     end
     properties (SetAccess=protected) %Readonly properties
         Data                        %(Read-Only)All the Signals
@@ -385,15 +372,17 @@ classdef BioSigPlot < hgsetget
         Fig
         Axes
         TFMapFig
-        PSDFig
         IconPlay
         IconPause
         WinVideo
         TFMapWin
+        PSDWin
         SpatialMapWin
         InterpolateWin
         
         ExportTrialWin
+        
+        CSPMapWin
         
         PreprocData                 %The currently preprocessed and drawed Data
     end
@@ -428,6 +417,9 @@ classdef BioSigPlot < hgsetget
             obj.InterpolateWin=InterpWin(obj);
             
             obj.ExportTrialWin=ExportSingleTrialWin(obj);
+            
+            obj.CSPMapWin=CSPMapWindow(obj);
+            obj.PSDWin=PSDWindow(obj);
             
             obj.IsInitialize=false;
             
@@ -536,6 +528,10 @@ classdef BioSigPlot < hgsetget
                 obj.ExportTrialWin.OnClose();
             end
             
+            if obj.PSDWin.valid
+                obj.PSDWin.OnClose();
+            end
+            
             if isa(obj.WinFastEvts,'FastEventWindow') && isvalid(obj.WinFastEvts)
                 delete(obj.WinFastEvts);
             end
@@ -544,10 +540,7 @@ classdef BioSigPlot < hgsetget
             if ishandle(h)
                 delete(h);
             end
-            h = obj.PSDFig;
-            if ishandle(h)
-                delete(h);
-            end
+            
             
             if ~isempty(obj.SPFObj)&&isvalid(obj.SPFObj)&&isa(obj.SPFObj,'SPFPlot')
                 delete(obj.SPFObj);
@@ -674,8 +667,8 @@ classdef BioSigPlot < hgsetget
                     NeedDrawSelect=true;
                 elseif any(strcmpi(g{i},{'PlaySpeed','FastEvts','SelectedFastEvt',...
                         'EventDefaultColors','EventsWindowDisplay','AdvanceEventsFcn',...
-                        'AdvanceEventDefaultColor','MouseMode','Title','Version','PSDWindowLength',...
-                        'PSDOverlap','ControlPanelDisplay',...
+                        'AdvanceEventDefaultColor','MouseMode','Title','Version',...
+                        'ControlPanelDisplay',...
                         'LockLayout','ToolbarDisplay','DisplayGauge','XGrid','YGrid',...
                         'VideoTimerPeriod','BadChannels','AxesBackgroundColor',...
                         'DefaultLineColor','Units','TimeUnit','FileNames','AdvanceEventsFcn'}))
@@ -866,12 +859,6 @@ classdef BioSigPlot < hgsetget
         function obj = set.AdvanceEventsFcn(obj,val), set(obj,'AdvanceEventsFcn',val); end
         function val = get.AdvanceEventsFcn(obj), val=obj.AdvanceEventsFcn_; end
         
-        function obj = set.PSDWindowLength(obj,val), set(obj,'PSDWindowLength',val); end
-        function val = get.PSDWindowLength(obj), val=obj.PSDWindowLength_; end
-        
-        function obj = set.PSDOverlap(obj,val), set(obj,'PSDOverlap',val); end
-        function val = get.PSDOverlap(obj), val=obj.PSDOverlap_; end
-        
         function val=get.FileDir(obj) 
             if ~isempty(obj.FileNames)
                 val=fileparts(obj.FileNames{obj.DisplayedData(1)});
@@ -1010,10 +997,10 @@ classdef BioSigPlot < hgsetget
         function obj = set.SRate_(obj,val)
             obj.SRate_=val;
             
-            obj.PSDFreqLow=0;
-            obj.PSDFreqHigh=val/2;
             obj.TFMapWin.fs=val;
             obj.SpatialMapWin.fs=val;
+            obj.PSDWin.fs=val;
+            obj.CSPMapWin.fs=val;
         end
         %******************************************************************
         function val = get.Evts(obj)
@@ -2397,9 +2384,6 @@ classdef BioSigPlot < hgsetget
         SPCA_Event_Label
         SPCA_Seg_Before
         SPCA_Seg_After
-        
-        PSDFreqLow
-        PSDFreqHigh
         
         Montage_
         
