@@ -42,7 +42,6 @@ classdef TFMapWindow < handle
         
     end
     properties
-        fs_
         
         method_
         data_input_
@@ -111,16 +110,11 @@ classdef TFMapWindow < handle
                 val=0;
             end
         end
+
         function val=get.fs(obj)
-            val=obj.fs_;
+            val=obj.bsp.SRate;
         end
-        function set.fs(obj,val)
-            obj.fs_=val;
-            if obj.valid
-                set(obj.max_freq_slider,'max',val/2);
-                set(obj.min_freq_slider,'min',val/2);
-            end
-        end
+        
         function val=get.symmetric_scale(obj)
             val=obj.symmetric_scale_;
         end
@@ -511,7 +505,6 @@ classdef TFMapWindow < handle
     methods
         function obj=TFMapWindow(bsp)
             obj.bsp=bsp;
-            obj.fs_=bsp.SRate;
             if ~isempty(bsp.Evts)
                 obj.event_list_=unique(bsp.Evts(:,2));
             end

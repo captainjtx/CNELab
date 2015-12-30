@@ -117,7 +117,6 @@ classdef SpatialMapWindow < handle
         color_bar_
         interp_missing_
         symmetric_scale_
-        fs_
         center_mass_
         peak_
         contact_
@@ -272,15 +271,15 @@ classdef SpatialMapWindow < handle
         end
         
         function val=get.fs(obj)
-            val=obj.fs_;
+            val=obj.bsp.SRate;
         end
-        function set.fs(obj,val)
-            obj.fs_=val;
-            if obj.valid
-                set(obj.max_freq_slider,'max',val/2);
-                set(obj.min_freq_slider,'min',val/2);
-            end
-        end
+%         function set.fs(obj,val)
+%             obj.fs_=val;
+%             if obj.valid
+%                 set(obj.max_freq_slider,'max',val/2);
+%                 set(obj.min_freq_slider,'min',val/2);
+%             end
+%         end
         function val=get.symmetric_scale(obj)
             val=obj.symmetric_scale_;
         end
@@ -966,7 +965,6 @@ classdef SpatialMapWindow < handle
     methods
         function obj=SpatialMapWindow(bsp)
             obj.bsp=bsp;
-            obj.fs_=bsp.SRate;
             if ~isempty(bsp.Evts)
                 obj.event_list_=unique(bsp.Evts(:,2));
             end

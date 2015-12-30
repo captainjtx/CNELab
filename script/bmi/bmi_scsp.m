@@ -1,11 +1,11 @@
 %CSP test
 clc
 clear
-fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Ma Li/Close.mat';
-fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Ma Li/Open.mat';
+% fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Ma Li/Close.mat';
+% fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Ma Li/Open.mat';
 
-% fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Xu Yun/Close.mat';
-% fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Xu Yun/Open.mat';
+fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Xu Yun/Close.mat';
+fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Xu Yun/Open.mat';
 
 % fname1='/Users/tengi/Desktop/Projects/data/BMI/abduction/lima/Abd.mat';
 % fname2='/Users/tengi/Desktop/Projects/data/BMI/abduction/lima/Add.mat';
@@ -59,7 +59,7 @@ move_sample=round(move_time(1)*fs):round(move_time(2)*fs);
 %CSP parameters
 NF=2;
 %Desired sparsity of the filter
-% SpL=5;
+SpL=2;
 %**************************************************************************
 
 %Filter the data===========================================================
@@ -135,41 +135,41 @@ for i=1:length(movements)
     
     %Sparse CSP, recursive weight elimination
     
-%     if strcmpi(csp_max_min,'max')
-%         [F,Lmd]=recursive_eliminate(Cx,Cy,SpL,NF);
-%     else
-%         [F,Lmd]=recursive_eliminate(Cy,Cx,SpL,NF);
-%     end
+    if strcmpi(csp_max_min,'max')
+        [F,Lmd]=recursive_eliminate(Cx,Cy,SpL,NF);
+    else
+        [F,Lmd]=recursive_eliminate(Cy,Cx,SpL,NF);
+    end
     % Original CSP
     %**********************************************************************
     %Generalized Eigen-Value problem
     %See Simultaneous Diagonalization
     %Lmd=Move/Rest
-    [W,Lmd]=eig(Cx,Cy);
-    
-    [Lmd,id]=sort(diag(Lmd),'descend');
-    
-    Wf=W(:,id);
-    
-    
-    len=size(Wf,2);
-    
-    if strcmpi(csp_max_min,'max')
-        NF_ind=1:NF;
-    elseif strcmpi(csp_max_min,'min')
-        NF_ind=len:-1:len-NF+1;
-    end
-    W=Wf(:,NF_ind);
-    P=inv(Wf)';
-    P=P(:,NF_ind);
-    F=W;
-    
-    Lmd=Lmd(NF_ind);
-    channames=cell(1,length(NF_ind));
-    
-    for n=1:length(NF_ind)
-        channames{n}=['CSP ' num2str(NF_ind(n))];
-    end
+%     [W,Lmd]=eig(Cx,Cy);
+%     
+%     [Lmd,id]=sort(diag(Lmd),'descend');
+%     
+%     Wf=W(:,id);
+%     
+%     
+%     len=size(Wf,2);
+%     
+%     if strcmpi(csp_max_min,'max')
+%         NF_ind=1:NF;
+%     elseif strcmpi(csp_max_min,'min')
+%         NF_ind=len:-1:len-NF+1;
+%     end
+%     W=Wf(:,NF_ind);
+%     P=inv(Wf)';
+%     P=P(:,NF_ind);
+%     F=W;
+%     
+%     Lmd=Lmd(NF_ind);
+%     channames=cell(1,length(NF_ind));
+%     
+%     for n=1:length(NF_ind)
+%         channames{n}=['CSP ' num2str(NF_ind(n))];
+%     end
     %**********************************************************************
     
     
@@ -201,7 +201,7 @@ for i=1:length(movements)
     dh=30;
     
     interval=30;
-    figpos=[0,0,400*NF,335*2];
+    figpos=[0,0,400*NF,335];
     %======================================================================
     chan_order=channelindex;
     
@@ -214,16 +214,18 @@ for i=1:length(movements)
     hf=figure('Name',[movements{i},' ',csp_max_min,' Filter'],'Position',figpos);
     
     for m=1:NF
-        axe1_pattern(m)=axes('Parent',hf,'Units','Pixels','Position',[(m-1)*(interval+dw*12)+interval/2,interval/2+335,12*dw,10*dh]);
-        [pmax,pmin]=gauss_interpolate_120_grid(axe1_pattern(m),P(:,m),chan_order,[],dw,dh);
-        title(['CSP ' num2str(m), '  Lambda: ',num2str(Lmd(m)),' Pattern'])
-        if pmax>clim1_pattern(2)
-            clim1_pattern(2)=pmax;
-        end
-        if pmin<clim1_pattern(1)
-            clim1_pattern(1)=pmin;
-        end
+        %         subplot(2,NF,count)
+%         axe1_pattern(m)=axes('Parent',hp,'Units','Pixels','Position',[(m-1)*(interval+dw*12)+interval/2,interval/2,12*dw,10*dh]);
+%         [pmax,pmin]=gauss_interpolate_120_grid(axe1_pattern(m),P(:,m),chan_order,[],dw,dh);
+%         title(['CSP ' num2str(m), '  Lambda: ',num2str(Lmd(m)),' Pattern'])
+%         if pmax>clim1_pattern(2)
+%             clim1_pattern(2)=pmax;
+%         end
+%         if pmin<clim1_pattern(1)
+%             clim1_pattern(1)=pmin;
+%         end
         
+        %         subplot(2,NF,count+NF)
         axe1_filter(m)=axes('Parent',hf,'Units','Pixels','Position',[(m-1)*(interval+dw*12)+interval/2,interval/2,12*dw,10*dh]);
         [fmax,fmin]=gauss_interpolate_120_grid(axe1_filter(m),F(:,m),chan_order,[],dw,dh);
         title(['CSP' num2str(m),' Filter'])
@@ -256,6 +258,7 @@ for i=1:length(movements)
     %======================================================================
     %======================================================================
     export_fig(hf,'-png','-r300',get(hf,'Name'));
+    close(hf)
     
 end
 

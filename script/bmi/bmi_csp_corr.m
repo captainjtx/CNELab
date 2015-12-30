@@ -1,11 +1,11 @@
 %CSP test
 clc
 clear
-fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Ma Li/Close.mat';
-fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Ma Li/Open.mat';
+% fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Ma Li/Close.mat';
+% fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Ma Li/Open.mat';
 
-% fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Xu Yun/Close.mat';
-% fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Xu Yun/Open.mat';
+fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Xu Yun/Close.mat';
+fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Xu Yun/Open.mat';
 
 % fname1='/Users/tengi/Desktop/Projects/data/BMI/abduction/lima/Abd.mat';
 % fname2='/Users/tengi/Desktop/Projects/data/BMI/abduction/lima/Add.mat';
@@ -97,7 +97,7 @@ for i=1:length(movements)
     Cy=0;
     
     for t=1:size(seg,3)
-        ctmp=cov(X(:,:,t));
+        ctmp=corrcoef(X(:,:,t));
         %         Cx=Cx+ctmp/trace(ctmp);
         %           ctmp=X(:,:,t)'*X(:,:,t);
         Cx=Cx+ctmp/trace(ctmp);
@@ -112,7 +112,7 @@ for i=1:length(movements)
         %         colorbar
         %         title('Movement')
         
-        ctmp=cov(Y(:,:,t));
+        ctmp=corrcoef(Y(:,:,t));
         %         Cy=Cy+ctmp/trace(ctmp);
         %           ctmp=Y(:,:,t)'*Y(:,:,t);
         Cy=Cy+ctmp/trace(ctmp);
@@ -211,7 +211,7 @@ for i=1:length(movements)
     clim1_filter=[inf,-inf];
     
 %     hp=figure('Name',[movements{i}, ' Pattern'],'Position',figpos);
-    hf=figure('Name',[movements{i},' ',csp_max_min,' Filter'],'Position',figpos);
+    hf=figure('Name',[movements{i},' ',csp_max_min],'Position',figpos);
     
     for m=1:NF
         axe1_pattern(m)=axes('Parent',hf,'Units','Pixels','Position',[(m-1)*(interval+dw*12)+interval/2,interval/2+335,12*dw,10*dh]);

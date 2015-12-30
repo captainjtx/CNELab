@@ -36,7 +36,6 @@ for n=1:NF
     v = v/sqrt(v'*Bnew*v); % make A norm to 1
     W(:,n)=v;
     
-    
     D = [D;v'];  %#ok<AGROW>
     eV(n) = (v'*Anew*v)/(v'*B*v); %#ok<AGROW>
     s = find(v);
