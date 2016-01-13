@@ -2,11 +2,11 @@
 
 %s1
 % sig_chan={'C27_L'};
-% sig_chan={'C74_S'};
+sig_chan={'C74_S','C27_L','C11_L'};
 
 %s2
 % sig_chan={'C23_L'};
-sig_chan={'C85_S','C84_S','C76_S','C91_S','C92_S'};
+% sig_chan={'C85_S','C84_S','C76_S','C91_S','C92_S','C23_L'};
 
 
 tfw=bsp.TFMapWin;
@@ -20,7 +20,7 @@ for i=1:length(tfw.tfmat_channame)
 end
 
 tfmat=10*log10(tfmat/length(sig_chan));
-tfmat = TF_Smooth(tfmat,'gaussian',[5,3]);
+tfmat = TF_Smooth(tfmat,'gaussian',[100,100]);
 
 figure
 imagesc(t-1.5,f,tfmat,[-6,6])
@@ -47,4 +47,4 @@ set(gcf,'color','white')
 
 [pathstr,~,~]=fileparts(bsp.FileNames{1});
 
- export_fig(gcf,'-png','-nocrop','-opengl','-r300',[pathstr,'/small_ave']);
+ export_fig(gcf,'-png','-nocrop','-opengl','-r300',[pathstr,'/ave']);

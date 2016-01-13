@@ -28,9 +28,9 @@ end
 % csp_max_min='max','min';
 
 %up-gamma band
-lc=60;
-hc=200;
-csp_max_min='max';%CSP--Move/Rest
+% lc=60;
+% hc=200;
+% csp_max_min='max';%CSP--Move/Rest
 
 %alpha band
 % lc=8;
@@ -40,9 +40,9 @@ csp_max_min='max';%CSP--Move/Rest
 % hc=30;
 
 %alpha&beta band
-% lc=8;
-% hc=30;
-% csp_max_min='min';%CSP--Move/Rest
+lc=8;
+hc=30;
+csp_max_min='min';%CSP--Move/Rest
 
 %all band
 % lc=8;
@@ -174,28 +174,27 @@ for i=1:length(movements)
     
     
     %visualize the transformed data****************************************
-%     data=[];
-%     evts={};
-%     rdata=[];
-%     for s=1:size(seg,3)
-%         
-%         evts=cat(1,evts,{size(data,1)/fs,'Rest'});
-%         d1=Y(:,:,s)*W;
-%         data=cat(1,data,d1);
-%         
-%         rdata=cat(1,rdata,Y(:,:,s));
-%         
-%         evts=cat(1,evts,{size(data,1)/fs,movements{i}});
-%         
-%         d2=X(:,:,s)*W;
-%         data=cat(1,data,d2);
-%         
-%         rdata=cat(1,rdata,X(:,:,s));
-%     end
+    data=[];
+    evts={};
+    rdata=[];
+    for s=1:size(seg,3)
+        evts=cat(1,evts,{size(data,1)/fs,'Rest'});
+        d1=Y(:,:,s)*W;
+        data=cat(1,data,d1);
+        
+        rdata=cat(1,rdata,Y(:,:,s));
+        
+        evts=cat(1,evts,{size(data,1)/fs,movements{i}});
+        
+        d2=X(:,:,s)*W;
+        data=cat(1,data,d2);
+        
+        rdata=cat(1,rdata,X(:,:,s));
+    end
     
-    %     bsp=BioSigPlot(data,'Evts',evts,'SRate',fs,'ChanNames',channames,'Title',movements{i},...
-    %         'WinLength',14,'Position',[0,0,600,200],'Gain',0.24);
-    %     BioSigPlot(rdata,'Evts',evts,'SRate',fs,'Title',movements{i});
+%         bsp=BioSigPlot(data,'Evts',evts,'SRate',fs,'ChanNames',channames,'Title',movements{i},...
+%             'WinLength',14,'Position',[0,0,600,200],'Gain',0.24);
+        BioSigPlot(rdata,'Evts',evts,'SRate',fs,'Title',movements{i});
     %**********************************************************************
     dw=30;
     dh=30;

@@ -472,6 +472,14 @@ classdef BioSigPlot < hgsetget
             
             obj.DisplayGauge=true;
             
+            obj.TotalSample=size(obj.Data{1},1);
+            obj.BufferLength=obj.TotalSample;
+            obj.BufferTime=0;
+            obj.VisualBuffer=inf;
+            obj.WinLength_=15;
+            obj.Version_='CNELAB V1.1';
+            obj.DataView_='Horizontal';
+            
             obj.ChanNames_=cell(1,obj.DataNumber);
             obj.GroupNames_=cell(1,obj.DataNumber);
             obj.MontageRef_=ones(obj.DataNumber,1);
@@ -990,6 +998,9 @@ classdef BioSigPlot < hgsetget
                 val={val};
             end
             
+            if length(obj.DisplayedData)==1
+                set(obj.Fig,'Name',[val{obj.DisplayedData},' -- ',obj.Version]);
+            end
             obj.Title_=val;
         end
         %*****************************************************************
@@ -1244,7 +1255,7 @@ classdef BioSigPlot < hgsetget
         function obj = set.DataView_(obj,val)
             obj.DataView_=val;
             
-            if ~isempty(regexp(val,'DAT','ONCE'))
+            if length(obj.DisplayedData)==1
                 if ~isempty(obj.Title{obj.DisplayedData})
                     set(obj.Fig,'Name',[obj.Title{obj.DisplayedData},' -- ',obj.Version]);
                 end
@@ -1252,12 +1263,10 @@ classdef BioSigPlot < hgsetget
                 set(obj.Fig,'Name',obj.Version);
             end
             
-            
             if ~obj.IsInitialize
                 dd=obj.DisplayedData;
                 if all(cellfun(@isempty,obj.ChanSelect2Edit(dd)))
                     %If there is no channel selected on the current page
-                    
                     resetFilterPanel(obj);
                 end
             end

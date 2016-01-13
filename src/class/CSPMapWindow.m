@@ -106,7 +106,7 @@ classdef CSPMapWindow < handle
             
 %             obj.width=300;
 %             obj.height=700;
-            varinitial(obj);
+%             varinitial(obj);
             obj.fig=figure('MenuBar','none','Name','Common Spatial Pattern','units','pixels',...
                 'Position',[500 100 obj.width obj.height],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
                 'Resize','on','DockControls','off');
