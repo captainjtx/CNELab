@@ -17,7 +17,9 @@ classdef CSPMapWindow < handle
         
         sparsity_edit
         sparsity_txt
-        sparsity_slider
+        
+        filter_number_edit
+        filter_number_txt
         
         ms_t_start_edit1
         ms_t_end_edit1
@@ -25,6 +27,8 @@ classdef CSPMapWindow < handle
         ms_t_start_edit2
         ms_t_end_edit2
         
+        max_radio_btn
+        min_radio_btn
         
         eig_ind%
         
@@ -48,9 +52,13 @@ classdef CSPMapWindow < handle
         low_freq_
         
         sparsity_
+        filter_number_
         
         height
         width
+        
+        rq_max_
+        rq_min_
     end
     
     properties(Dependent)
@@ -73,7 +81,10 @@ classdef CSPMapWindow < handle
         method
         
         sparsity
+        filter_number
         
+        rq_max
+        rq_min
     end
     
     methods
@@ -93,8 +104,17 @@ classdef CSPMapWindow < handle
             obj.width=300;
             obj.height=700;
             obj.sparsity_=5;
+            obj.filter_number_=1;
             obj.low_freq_=0;
             obj.high_freq_=obj.fs/2;
+            
+            obj.ms_t_start1_=-1000;
+            obj.ms_t_end1=0;
+            obj.ms_t_start2=0;
+            obj.ms_t_end2=1000;
+            
+            obj.rq_max_=1;
+            obj.rq_min_=0;
         end
         
         function buildfig(obj)
@@ -123,15 +143,15 @@ classdef CSPMapWindow < handle
             obj.sparsity_edit=uicontrol('parent',hp_method,'style','edit','string',num2str(obj.sparsity),'units','normalized',...
                 'position',[0.2,0.05,0.2,0.4],'callback',@(src,evts) SparsityCallback(obj,src));
             
-            
-            obj.sparsity_slider=uicontrol('parent',hp_method,'style','slider','units','normalized',...
-                'position',[0.45,0.1,0.5,0.3],'callback',@(src,evts) SparsityCallback(obj,src),...
-                'min',1,'max',obj.cnum,'sliderstep',[0.005,0.02],'value',obj.sparsity_);
+             obj.filter_number_txt=uicontrol('Parent',hp_method,'style','text','string','Filter Number','units','normalized','position',[0.45,0.1,0.3,0.3]);
+             
+            obj.filter_number_edit=uicontrol('parent',hp_method,'style','edit','string',num2str(obj.filter_number),'units','normalized',...
+                'position',[0.75,0.05,0.2,0.4],'callback',@(src,evts) FilterNumberCallback(obj,src));
             
             hp_event1=uipanel('parent',hp,'units','normalized','Position',[0,0.8,1,0.09],'title','Event I');
-            uicontrol('Parent',hp_event1,'Style','text','string','Before (ms): ','units','normalized','position',[0.4,0.6,0.3,0.3],...
+            uicontrol('Parent',hp_event1,'Style','text','string','start (ms): ','units','normalized','position',[0.4,0.6,0.3,0.3],...
                 'HorizontalAlignment','left');
-            uicontrol('Parent',hp_event1,'Style','text','string','After (ms): ','units','normalized','position',[0.7,0.6,0.3,0.3],...
+            uicontrol('Parent',hp_event1,'Style','text','string','end (ms): ','units','normalized','position',[0.7,0.6,0.3,0.3],...
                 'HorizontalAlignment','left');
             obj.event_popup1=uicontrol('Parent',hp_event1,'Style','popup','string',obj.event_list,'units','normalized','position',[0.01,0.1,0.35,0.5],...
                 'callback',@(src,evts) EventCallback(obj,src));
@@ -141,9 +161,9 @@ classdef CSPMapWindow < handle
                 'HorizontalAlignment','left','callback',@(src,evts) MsCallback(obj,src));
             
             hp_event2=uipanel('parent',hp,'units','normalized','Position',[0,0.7,1,0.09],'title','Event II');
-            uicontrol('Parent',hp_event2,'Style','text','string','Before (ms): ','units','normalized','position',[0.4,0.6,0.3,0.3],...
+            uicontrol('Parent',hp_event2,'Style','text','string','start (ms): ','units','normalized','position',[0.4,0.6,0.3,0.3],...
                 'HorizontalAlignment','left');
-            uicontrol('Parent',hp_event2,'Style','text','string','After (ms): ','units','normalized','position',[0.7,0.6,0.3,0.3],...
+            uicontrol('Parent',hp_event2,'Style','text','string','end (ms): ','units','normalized','position',[0.7,0.6,0.3,0.3],...
                 'HorizontalAlignment','left');
             obj.event_popup2=uicontrol('Parent',hp_event2,'Style','popup','string',obj.event_list,'units','normalized','position',[0.01,0.1,0.35,0.5],...
                 'callback',@(src,evts) EventCallback(obj,src));
@@ -170,6 +190,12 @@ classdef CSPMapWindow < handle
                 'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) FreqCallback(obj,src),...
                 'min',0,'max',obj.fs/2,'sliderstep',[0.005,0.02],'value',obj.high_freq);
             
+            hp_max=uipanel('parent',hp,'title','Event I/Event II','units','normalized','position',[0,0.52,1,0.06]);
+            
+            obj.max_radio_btn=uicontrol('parent',hp_max,'style','radiobutton','string','Max RQ','units','normalized','position',[0.1,0.1,0.3,0.8],...
+                'callback',@(src,evts) MaxMinCallback(obj,src),'value',obj.rq_max_);
+            obj.min_radio_btn=uicontrol('parent',hp_max,'style','radiobutton','string','Min RQ','units','normalized','position',[0.6,0.1,0.3,0.8],...
+                'callback',@(src,evts) MaxMinCallback(obj,src),'value',obj.rq_min_);
             
             MethodCallback(obj,obj.method_popup);
         end
@@ -182,12 +208,14 @@ classdef CSPMapWindow < handle
                     %CSP
                     set(obj.sparsity_txt,'visible','off');
                     set(obj.sparsity_edit,'visible','off');
-                    set(obj.sparsity_slider,'visible','off');
+                    set(obj.filter_number_txt,'visible','off');
+                    set(obj.filter_number_edit,'visible','off');
                 case 2
                     %Sparse CSP
                     set(obj.sparsity_txt,'visible','on');
                     set(obj.sparsity_edit,'visible','on');
-                    set(obj.sparsity_slider,'visible','on');
+                    set(obj.filter_number_txt,'visible','on');
+                    set(obj.filter_number_edit,'visible','on');
             end
             
         end
@@ -306,10 +334,21 @@ classdef CSPMapWindow < handle
         function set.sparsity(obj,val)
             if obj.valid
                 set(obj.sparsity_edit,'string',num2str(val));
-                set(obj.sparsity_slider,'value',val);
             end
             
             obj.sparsity_=val;
+        end
+        
+        function val=get.filter_number(obj)
+            val=obj.filter_number_;
+        end
+        
+        function set.filter_number(obj,val)
+            if obj.valid
+                set(obj.filter_number_edit,'string',num2str(val));
+            end
+            
+            obj.filter_number_=val;
         end
         
         function val=get.ms_t_start1(obj)
@@ -399,6 +438,25 @@ classdef CSPMapWindow < handle
             obj.low_freq_=val;
         end
         
+        function val=get.rq_max(obj)
+            val=obj.rq_max_;
+        end
+        function set.rq_max(obj,val)
+            obj.rq_max_=val;
+            if obj.valid
+                set(obj.max_radio_btn,'value',val);
+            end
+        end
+        function val=get.rq_min(obj)
+            val=obj.rq_min_;
+        end
+        function set.rq_min(obj,val)
+            obj.rq_min_=val;
+            if obj.valid
+                set(obj.min_radio_btn,'value',val);
+            end
+        end
+        
         function val=get.cnum(obj)
             %the channel number with valid positions
             [~,~,~,~,~,~,chanpos]=get_selected_datainfo(obj.bsp,true);
@@ -412,16 +470,41 @@ classdef CSPMapWindow < handle
                        t=obj.sparisty; 
                     end
                     obj.sparsity=round(t);
-                case obj.sparsity_slider
-                    obj.sparsity=round(get(src,'value'));
             end
-            
         end
         
         function MSCallback(obj,src)
+            switch src
+                case obj.ms_t_start_edit1
+                    val=str2double(get(src,'string'));
+                    if ~isnan(val)
+                        obj.ms_t_start1=val;
+                    end
+                case obj.ms_t_end_edit1
+                    val=str2double(get(src,'string'));
+                    if ~isnan(val)
+                        obj.ms_t_end1=val;
+                    end
+                case obj.ms_t_start_edit2
+                    val=str2double(get(src,'string'));
+                    if ~isnan(val)
+                        obj.ms_t_start2=val;
+                    end
+                case obj.ms_t_end_edit2
+                    val=str2double(get(src,'string'));
+                    if ~isnan(val)
+                        obj.ms_t_end2=val;
+                    end
+            end
         end
         
         function EventCallback(obj,src)
+            switch src
+                case obj.event_popup1
+                    obj.event1_=obj.event_list{get(src,'value')};
+                case obj.event_popup2
+                    obj.event2_=obj.event_list{get(src,'value')};
+            end
         end
         function FreqCallback(obj,src)
             switch src
@@ -441,6 +524,22 @@ classdef CSPMapWindow < handle
                     obj.high_freq=round(get(src,'value')*10)/10;
                 case obj.low_freq_slider
                     obj.low_freq=round(get(src,'value')*10)/10;
+            end
+        end
+        function FilterNumberCallback(obj,src)
+            val=str2double(get(src,'string'));
+            if ~isnan(val)
+                obj.filter_number=max(1,round(val));
+            end  
+        end
+        function MaxMinCallback(obj,src)
+            switch src
+                case obj.max_radio_btn
+                    obj.rq_max=get(src,'value');
+                    obj.rq_min=~obj.rq_max;
+                case obj.min_radio_btn
+                    obj.rq_min=get(src,'value');
+                    obj.rq_max=~obj.rq_min;
             end
         end
     end

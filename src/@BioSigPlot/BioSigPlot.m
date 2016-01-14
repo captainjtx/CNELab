@@ -508,17 +508,17 @@ classdef BioSigPlot < hgsetget
                 delete(obj.WinVideo)
             end
             
-            if ~isempty(obj.Evts)&&~obj.IsEvtsSaved
-                default='yes';
-                choice=questdlg('There are changes in events, do you want to save them before exit?',...
-                    'warning','yes','no',default);
-                switch choice
-                    case 'yes'
-                        SaveEvents(obj);
-                    case 'no'
-                end
-                
-            end
+%             if ~isempty(obj.Evts)&&~obj.IsEvtsSaved
+%                 default='yes';
+%                 choice=questdlg('There are changes in events, do you want to save them before exit?',...
+%                     'warning','yes','no',default);
+%                 switch choice
+%                     case 'yes'
+%                         SaveEvents(obj);
+%                     case 'no'
+%                 end
+%                 
+%             end
             
             if obj.TFMapWin.valid
                 obj.TFMapWin.OnClose();
