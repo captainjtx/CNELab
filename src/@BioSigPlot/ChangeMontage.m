@@ -24,8 +24,7 @@ obj.Mask_{data}=ones(obj.MontageChanNumber(data),1);
 obj.Filtering_{data}=zeros(obj.MontageChanNumber(data),1);
 obj.FilterLow_{data}=zeros(obj.MontageChanNumber(data),1);
 obj.FilterHigh_{data}=zeros(obj.MontageChanNumber(data),1);
-obj.FilterNotch1_{data}=zeros(obj.MontageChanNumber(data),1);
-obj.FilterNotch2_{data}=zeros(obj.MontageChanNumber(data),1);
+obj.FilterNotch_{data}=zeros(obj.MontageChanNumber(data),1);
 resetFilterPanel(obj);
 
 obj.ChanSelect2Display_{data}=1:size(obj.Montage{data}(mtgref).mat,1);
