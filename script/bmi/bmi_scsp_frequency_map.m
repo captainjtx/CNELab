@@ -1,17 +1,17 @@
 %CSP test
 clc
 clear
-fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Close.mat';
-fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Open.mat';
+% fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Close.mat';
+% fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Open.mat';
 
 % fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S2/Close.mat';
 % fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S2/Open.mat';
 
-% fname1='/Users/tengi/Desktop/Projects/data/BMI/abduction/lima/Abd.mat';
-% fname2='/Users/tengi/Desktop/Projects/data/BMI/abduction/lima/Add.mat';
+fname1='/Users/tengi/Desktop/Projects/data/BMI/abduction/S1/Abd.mat';
+fname2='/Users/tengi/Desktop/Projects/data/BMI/abduction/S1/Add.mat';
 
-movements={'Close','Open'};
-% movements={'Abd','Add'};
+% movements={'Close','Open'};
+movements={'Abd','Add'};
 
 segments{1}=load(fname1);
 segments{2}=load(fname2);
@@ -135,8 +135,8 @@ for i=1:length(movements)
     end
 
     set(hf,'color','w');
-%     export_fig(hf,'-png','-r300',get(hf,'Name'));
-%     close(hf)
+    export_fig(hf,'-png','-r300',get(hf,'Name'));
+    close(hf)
     
 end
 
