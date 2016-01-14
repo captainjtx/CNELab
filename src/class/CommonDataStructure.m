@@ -69,7 +69,11 @@ classdef CommonDataStructure < handle
         function obj = set.file_type(obj,val), obj.file_type_=val;end
         function val = get.file_type(obj)
             if isempty(obj.file_type_)
-                val=CommonDataStructure.dataStructureCheck(obj.DataInfo.FileName);
+                if ~isempty(obj.DataInfo.FileName)
+                    val=CommonDataStructure.dataStructureCheck(obj.DataInfo.FileName);
+                else
+                    val=-1;
+                end
             else
                 val=obj.file_type_;
             end

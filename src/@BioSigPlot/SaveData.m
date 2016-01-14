@@ -41,7 +41,7 @@ elseif src==obj.MenuSaveData
         end
     end
 else
-    [data,chanNames,dataset,~,~,evts,groupnames,pos]=get_selected_data(obj);
+    [data,chanNames,dataset,channel,~,evts,groupnames,pos]=get_selected_data(obj);
     dd=unique(dataset);
     
     downsample=1;
@@ -63,19 +63,16 @@ else
         for i=1:length(dd)
             cds=CommonDataStructure;
             
-            cds.Data.Data=data(1:downsample:end,dataset==dd(i));
-            cds.Data.Annotations=evts;
-            cds.Data.SampleRate=obj.SRate/downsample;
-            cds.Data.Units=obj.Units{dd(i)};
-            cds.Data.VideoName=obj.VideoFile;
-            cds.Data.TimeStamps=linspace(0,obj.DataTime,size(cds.Data.Data,1));
-            cds.Data.FileName=obj.FileNames{dd(i)};
-            cds.Data.NextFile=obj.NextFiles{dd(i)};
-            cds.Data.PrevFile=obj.PrevFiles{dd(i)};
+            cds.Data=data(1:downsample:end,dataset==dd(i));
+            cds.DataInfo.Annotations=evts;
+            cds.DataInfo.SampleRate=obj.SRate/downsample;
+%             cds.DataInfo.Units=obj.Units{dd(i)}(channel);
+            cds.DataInfo.VideoName=obj.VideoFile;
+            cds.DataInfo.TimeStamps=linspace(0,obj.DataTime,size(cds.Data,1));
             
-            cds.Data.Video.StartTime=obj.VideoStartTime;
-            cds.Data.Video.TimeFrame=obj.VideoTimeFrame;
-            cds.Data.Video.NumberOfFrame=obj.NumberOfFrame;
+            cds.DataInfo.Video.StartTime=obj.VideoStartTime;
+            cds.DataInfo.Video.TimeFrame=obj.VideoTimeFrame;
+            cds.DataInfo.Video.NumberOfFrame=obj.NumberOfFrame;
             
             cds.Montage.ChannelNames=chanNames(dataset==dd(i));
             cds.Montage.Name=obj.Montage{dd(i)}(obj.MontageRef(dd(i))).name;
@@ -94,24 +91,21 @@ else
         
         cds=CommonDataStructure;
         
-        cds.Data.Data=data(1:downsample:end,:);
-        cds.Data.Annotations=evts;
-        cds.Data.SampleRate=obj.SRate/downsample;
+        cds.Data=data(1:downsample:end,:);
+        cds.DataInfo.Annotations=evts;
+        cds.DataInfo.SampleRate=obj.SRate/downsample;
         units=obj.Units{dd(1)};
         for i=2:length(dd)
             units=cat(2,units,obj.Units{dd(i)});
         end
-        cds.Data.Units=units;
+%         cds.DataInfo.Units=units;
         
-        cds.Data.VideoName=obj.VideoFile;
-        cds.Data.TimeStamps=linspace(0,obj.DataTime,size(cds.Data.Data,1));
-        cds.Data.FileName=obj.FileNames{dd(1)};
-        cds.Data.NextFile=obj.NextFiles{dd(1)};
-        cds.Data.PrevFile=obj.PrevFiles{dd(1)};
+        cds.DataInfo.VideoName=obj.VideoFile;
+        cds.DataInfo.TimeStamps=linspace(0,obj.DataTime,size(cds.Data,1));
         
-        cds.Data.Video.StartTime=obj.VideoStartTime;
-        cds.Data.Video.TimeFrame=obj.VideoTimeFrame;
-        cds.Data.Video.NumberOfFrame=obj.NumberOfFrame;
+        cds.DataInfo.Video.StartTime=obj.VideoStartTime;
+        cds.DataInfo.Video.TimeFrame=obj.VideoTimeFrame;
+        cds.DataInfo.Video.NumberOfFrame=obj.NumberOfFrame;
         
         cds.Montage.ChannelNames=chanNames;
         cds.Montage.Name=obj.Montage{dd(1)}(obj.MontageRef(dd(1))).name;
