@@ -169,9 +169,6 @@ if downsample==4
     % data.timestamps=timestamps;
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-for i=1:size(datamat,2)
-    data.dataMat{i}=datamat(:,i);
-end
 
 count=1;
 annoTime=0;
@@ -202,26 +199,16 @@ for i=1:length(entfile)
     end
 end
 
-for i=1:size(datamat,2)
-    data.info{i}.sampleRate=fs;
-    data.info{i}.unit='mV';
-    data.info{i}.name=channelnames{i};
-    data.info{i}.stamp=[];
-end
-
-data.info{1}.stamp=dataTime/fs/downsample;
-data.info{1}.stamp=data.info{1}.stamp-data.info{1}.stamp(1);
+cds=CommonDataStructure;
+cds.Data=datamat;
+cds.fs=fs;
+cds.DataInfo.Units='mV';
+cds.Montage.ChannelNames=channelnames;
+ts=dataTime/fs/downsample;
+cds.DataInfo.TimeStamps=ts-ts(1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-task.data=data;
-task.info.patientName=[eegfile.Info.Name.FirstName eegfile.Info.Name.MiddleName...
-    eegfile.Info.Name.LastName];
+cds.save
 
-task.info.studyName=studyName;
-task.info.location=[];
-task.info.device='XLTEK EMU 128FS';
-
-[FileName,FilePath]=uiputfile('*.medf','save your neuro task file','neuro.medf');
-save(fullfile(FilePath,FileName),'-struct','task','-mat');
 [FileName,FilePath]=uiputfile('*.mat','save your events file','anno.mat');
 save(fullfile(FilePath,FileName),'-struct','events','-mat');
 
