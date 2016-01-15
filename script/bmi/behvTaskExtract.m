@@ -32,7 +32,7 @@ end
 
 cds.load(fullfile(FilePath,FileName));
 
-sampleRate=cds.Data.SampleRate;
+sampleRate=cds.DataInfo.SampleRate;
 %GUI for synch channel name of neuro system********************************
 while (1)
     synch=[];
@@ -77,7 +77,7 @@ while (1)
 end
 %==========================================================================
 
-stamp=cds.Data.TimeStamps;
+stamp=cds.DataInfo.TimeStamps;
 
 [FileName,FilePath]=uigetfile('*.mat','select the original behavior data file',pwd);
 if ~FileName
