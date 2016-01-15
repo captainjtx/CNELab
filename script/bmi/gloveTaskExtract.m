@@ -59,7 +59,7 @@ while (1)
         else
             
             prompt = {'Name of the synch channel in neuro-system'};
-            dlg_title = 'ok-continue cancel-reak';
+            dlg_title = 'ok-continue cancel-break';
             num_lines = 1;
             def = {'synch'};
             
@@ -110,7 +110,7 @@ behvMat=cat(1,behvSynch,acceleration,fingers,rollPitch);
 behvMat=double(behvMat);
 % behvMat=detrend(behvMat')';
 
-[behvMat,videoStartTime,timeFrame]=neuroBehvSynch(synch,stamp,sampleRate,...
+[behvMat,videoStartTime,timeFrame]=neuroGloveSynch(synch,stamp,sampleRate,...
     behvMat,behvSynch,behvTimeStamp,behvVideoTimeFrame,...
     impulseStart,startEdge,impulseEnd,endEdge);
 

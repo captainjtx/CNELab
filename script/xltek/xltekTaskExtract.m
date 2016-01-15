@@ -210,5 +210,5 @@ cds.DataInfo.TimeStamps=ts-ts(1);
 cds.save
 
 [FileName,FilePath]=uiputfile('*.mat','save your events file','anno.mat');
-save(fullfile(FilePath,FileName),'-struct','events','-mat');
+save(fullfile(FilePath,'events',FileName),'-struct','events','-mat');
 

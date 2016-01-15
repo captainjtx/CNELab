@@ -24,6 +24,7 @@ if src==obj.MenuSaveSettings
 elseif src==obj.MenuSaveData
     %this will save all files, if there are too many files, it would be
     %better to save needed files
+    
     [chanNames,dataset,~,~,~,~,~]=get_datainfo(obj,false);
     for i=1:length(obj.CDS)
         fileinfo=CommonDataStructure.get_file_info(obj.CDS{i});

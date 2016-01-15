@@ -61,6 +61,12 @@ if FileName~=0
                 code=reshape(code,length(code),1);
             end
             NewEventList=cat(2,time,text,col,code);
+            for j=1:length(col)
+                if isempty(col{j})
+                    NewEventList=obj.assignEventColor(NewEventList);
+                    break
+                end
+            end
         case 3
             NewEventList=ReadEventFromMatFile(obj,filename);
         case 4
