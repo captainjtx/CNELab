@@ -39,11 +39,11 @@ while (1)
     for i=1:length(cds.Montage.ChannelNames)
         if isempty(synchName)
             if ismember(cds.Montage.ChannelNames{i},defaultSynchNames)
-                synch=cds.Data.Data(:,i);
+                synch=cds.Data(:,i);
             end
         else
             if strcmpi(cds.Montage.ChannelNames{i},synchName)
-                synch=cds.Data.Data(:,i);
+                synch=cds.Data(:,i);
             end
         end
     end
@@ -118,29 +118,19 @@ channelNames={'Trigger','Acceleration X','Acceleration Y', 'Acceleration Z',...
     'Finger 1','Finger 2','Finger 3','Finger 4','Finger 5',...
     'Roll','Pitch'};
 
-for i=1:size(behvMat,1)
-    task.data.dataMat{i}=detrend(behvMat(i,:));
-    task.data.info{i}.sampleRate=sampleRate;
-    task.data.info{i}.unit=[];
-    task.data.info{i}.name=channelNames{i};
-    task.data.info{i}.stamp=[];cne
-end
-task.data.info{1}.stamp=stamp;
-
+cds=CommonDataStructure;
+cds.Data=behvMat;
+cds.fs=sampleRate;
+cds.Montage.ChannelNames=channelNames;
+cds.DataInfo.TimeStamps=linspace(0,size(behvMat,1)/sampleRate,size(behvMat,1));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-task.info.studyName=studyName;
-task.info.location=[];
-task.info.device='Lenovo';
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-task.info.video.startTime=0;
 timeFrame(:,1)=timeFrame(:,1)+videoStartTime;
-task.info.video.timeFrame=timeFrame;
 
-[FileName,FilePath]=uiputfile('*.medf','save your behv task file','behv.medf');
-save(fullfile(FilePath,FileName),'-struct','task','-mat');
+cds.DataInfo.Video.StartTime=0;
+cds.DataInfo.Video.TimeFrame=timeFrame;
+cds.DataInfo.Video.NumberOfFrame=timeFrame(end,2);
+
+cds.save
 
 
 
