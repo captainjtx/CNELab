@@ -170,7 +170,7 @@ classdef SpatialMapWindow < handle
         ers_chan
         cmax
         
-        active_ievent
+        Act_ievent
         interp_missing
         symmetric_scale
         center_mass
@@ -314,7 +314,7 @@ classdef SpatialMapWindow < handle
                 end
             end
         end
-        function val=get.active_ievent(obj)
+        function val=get.Act_ievent(obj)
             val=find(strcmpi(obj.event_group,obj.event));
         end
         function val=get.map_val(obj)
@@ -1496,8 +1496,8 @@ classdef SpatialMapWindow < handle
             if ~NoSpatialMapFig(obj)
                 for i=1:length(obj.SpatialMapFig)
                     name=get(obj.SpatialMapFig,'Name');
-                    set(obj.SpatialMapFig(i),'Name',[name(1:end-6) 'Obsolete']);
-                    set(obj.SpatialMapFig(i),'Tag','Obsolete');
+                    set(obj.SpatialMapFig(i),'Name',[name ' Old']);
+                    set(obj.SpatialMapFig(i),'Tag','Old');
                 end
                 
             end
@@ -1505,20 +1505,20 @@ classdef SpatialMapWindow < handle
         end
         
         function NewSpatialMapFig(obj)
-            delete(obj.SpatialMapFig(ishandle(obj.SpatialMapFig)));
+%             delete(obj.SpatialMapFig(ishandle(obj.SpatialMapFig)));
             
             fpos=get(obj.fig,'position');
             
             if obj.data_input==3
                 for i=1:length(obj.event_group)
-                    obj.SpatialMapFig(i)=figure('Name',[obj.event_group{i},' Active'],'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
+                    obj.SpatialMapFig(i)=figure('Name',[obj.event_group{i}],'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
                         'units','pixels','position',[fpos(1)+fpos(3)+20+(obj.fig_w+20)*(i-1),fpos(2),obj.fig_w,obj.fig_h],'Resize','off',...
-                        'doublebuffer','off','Tag','Active');
+                        'doublebuffer','off','Tag','Act');
                 end
             else
-                obj.SpatialMapFig=figure('Name',[obj.event,' Active'],'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
+                obj.SpatialMapFig=figure('Name',[obj.event],'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
                     'units','pixels','position',[fpos(1)+fpos(3)+20,fpos(2),obj.fig_w,obj.fig_h],'Resize','off',...
-                    'doublebuffer','off','Tag','Active');
+                    'doublebuffer','off','Tag','Act');
             end
         end
         function ComputeCallback(obj)
@@ -1617,14 +1617,14 @@ classdef SpatialMapWindow < handle
                 obj.min_freq=freq(1);
             end
             
-            NewSpatialMapFig(obj);
+            NewCallback(obj);
             
             wd=obj.stft_winlen;
             ov=obj.stft_overlap;
             
             for i=1:length(obj.SpatialMapFig)
                 clf(obj.SpatialMapFig(i));
-                set(obj.SpatialMapFig(i),'Name',[evt{i} ' Active']);
+                set(obj.SpatialMapFig(i),'Name',evt{i});
             end
             
             %Normalizatin**************************************************************
@@ -2036,7 +2036,7 @@ classdef SpatialMapWindow < handle
         
         
         function KeyPress(obj,src,evt)
-            if strcmpi(get(src,'Name'),'Obsolete SpatialMap')
+            if strcmpi(get(src,'Tag'),'Old')
                 return
             end
             if ~isempty(evt.Modifier)
@@ -2083,7 +2083,7 @@ classdef SpatialMapWindow < handle
         end
         
         function val=NoSpatialMapFig(obj)
-            val=isempty(obj.SpatialMapFig)||~all(ishandle(obj.SpatialMapFig))||~all(strcmpi(get(obj.SpatialMapFig,'Tag'),'Active'));
+            val=isempty(obj.SpatialMapFig)||~all(ishandle(obj.SpatialMapFig))||~all(strcmpi(get(obj.SpatialMapFig,'Tag'),'Act'));
         end
         
         function STFTCallback(obj)

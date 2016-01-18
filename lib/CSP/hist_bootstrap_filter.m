@@ -1,4 +1,4 @@
-function F = hist_bootstrap_filter( datA,datB,SpL,NumTrial,NumRep )
+function F = hist_bootstrap_filter( datA,datB,SpL,NF,NumTrial,NumRep )
 F=zeros(size(datA,1),1);
 for i=1:NumRep
     CA=0;
@@ -17,9 +17,11 @@ for i=1:NumRep
    CA=CA/NumTrial;
    CB=CB/NumTrial;
    
-   [f,~]=oscillating_search(CA,CB,SpL,1,'OS');
+   [f,~]=oscillating_search(CA,CB,SpL,NF,'OS');
    
-   F(f>0)=F(f>0)+1;
+   for n=1:NF
+       F(f(:,n)>0)=F(f(:,n)>0)+1;
+   end
 end
 end
 

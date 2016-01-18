@@ -187,7 +187,7 @@ classdef ExportPictureWindow < handle
             obj.t_end_=get(obj.smw.act_start_slider,'max');
             obj.t_step_=(obj.smw.stft_winlen-obj.smw.stft_overlap)/obj.smw.fs*1000;
             obj.dest_dir_=obj.smw.bsp.FileDir;
-            obj.filename_='Untitled';
+            obj.filename_='';
             obj.format_=1;%png
             
             obj.format_list={'png','jpg','eps'};
@@ -204,7 +204,7 @@ classdef ExportPictureWindow < handle
             
             figpos=get(obj.smw.fig,'Position');
             
-            obj.fig=figure('MenuBar','none','Name','Save Pictures','units','pixels',...
+            obj.fig=figure('MenuBar','none','Name','Export Pictures','units','pixels',...
                 'Position',[figpos(1)+figpos(3),figpos(2)+figpos(4)-obj.height,obj.width,obj.height],'NumberTitle','off',...
                 'CloseRequestFcn',@(src,evts) OnClose(obj),...
                 'Resize','on','DockControls','off');
@@ -214,7 +214,7 @@ classdef ExportPictureWindow < handle
             
             resp=uipanel('parent',setp,'units','normalized','Position',[0,5/6,1,1/6]);
             
-            obj.multi_exp_radio=uicontrol('parent',resp,'style','radiobutton','string','Series Save',...
+            obj.multi_exp_radio=uicontrol('parent',resp,'style','radiobutton','string','Series Export',...
                 'units','normalized','position',[0,0.1,0.5,0.8],'value',obj.multi_exp,...
                 'callback',@(src,evt) MultiExpCallback(obj,src));
             obj.res_edit=uicontrol('parent',resp,'style','edit','string',num2str(obj.res_ppi),...
@@ -265,7 +265,7 @@ classdef ExportPictureWindow < handle
                 'units','normalized','position',[0.75,0.1,0.25,0.35],'value',obj.format,...
                 'callback',@(src,evt)FormatCallback(obj,src));
             
-            obj.export_btn=uicontrol('parent',hp,'style','pushbutton','string','Save',...
+            obj.export_btn=uicontrol('parent',hp,'style','pushbutton','string','Export',...
                 'units','normalized','position',[0.78,0.01,0.2,0.08],...
                 'callback',@(src,evt) ExportCallback(obj));
             
@@ -329,7 +329,10 @@ classdef ExportPictureWindow < handle
             
             obj.filename_=get(src,'string');
         end
-        
+        function fname=auto_file_name(obj)
+            fname=[num2str(obj.smw.min_freq),'-',num2str(obj.smw.max_freq),...
+                '_start',num2str(t),'_len',num2str(obj.smw.act_len)];
+        end
         function ExportCallback(obj)
             pic_format=obj.format_list{obj.format};
             
@@ -341,7 +344,7 @@ classdef ExportPictureWindow < handle
                     obj.smw.ActCallback(obj.smw.act_start_edit)
                     for i=1:length(obj.smw.SpatialMapFig)
                         figname=get(obj.smw.SpatialMapFig(i),'Name');
-                        fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',num2str(t)]);
+                        fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',obj.auto_file_name]);
                         
                         set(obj.smw.SpatialMapFig(i),'color','white');
                         export_fig(obj.smw.SpatialMapFig(i),['-',pic_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);
@@ -349,11 +352,10 @@ classdef ExportPictureWindow < handle
                 end
             
             else
-                t=obj.smw.act_start;
                 for i=1:length(obj.smw.SpatialMapFig)
                     waitbar(i/length(obj.smw.SpatialMapFig));
                     figname=get(obj.smw.SpatialMapFig(i),'Name');
-                    fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',num2str(t)]);
+                    fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',obj.auto_file_name]);
                     
                     set(obj.smw.SpatialMapFig(i),'color','white');
                     export_fig(obj.smw.SpatialMapFig(i),['-',pic_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);

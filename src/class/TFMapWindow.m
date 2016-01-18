@@ -1273,7 +1273,7 @@ classdef TFMapWindow < handle
                         sel=cat(2,sel,tmp_sel);
                     end
                     
-                    [data,~,~,~,sample,~,~,~]=get_selected_data(obj.bsp,true,sel);
+                    [data,~,~,~,~,~,~,~,segment]=get_selected_data(obj.bsp,true,sel);
                     data=data(:,chanind);
                     
                     if ~isempty(baseline)
@@ -1297,10 +1297,8 @@ classdef TFMapWindow < handle
                             end
                             %******************************************************
                             for i=1:length(i_event)
-                                tmp_sel=i_event(i)-nL:i_event(i)+nR;
-                                data1=data(ismember(sample,tmp_sel),:);
-                                data2=data1(:,j);
-                                [tf,f,t]=bsp_tfmap(obj.TFMapFig,data2,bdata,obj.fs,wd,ov,s,nref_tmp,channames,freq,units);
+                                data1=data(segment==i,j);
+                                [tf,f,t]=bsp_tfmap(obj.TFMapFig,data1,bdata,obj.fs,wd,ov,s,nref_tmp,channames,freq,units);
                                 tfm=tfm+tf;
                             end
                             tfm=tfm/length(i_event);

@@ -118,7 +118,7 @@ for i=1:length(dd)
     dataset=cat(2,dataset,dd(i)*ones(1,size(d,2)));
     channel=cat(2,channel,reshape(chan,1,length(chan)));
     data=cat(2,data,d);
-    segment=cat(2,segment,seg);
+    
     
     chanNames=cat(1,chanNames,reshape(obj.MontageChanNames{dd(i)}(chan),length(obj.MontageChanNames{dd(i)}(chan)),1));
     if ~isempty(obj.Montage{dd(i)}(obj.MontageRef(dd(i))).groupnames)
@@ -137,6 +137,8 @@ for i=1:length(dd)
         pos=cat(1,pos,ones(length(chan),3)*nan);
     end
 end
+
+segment=seg;
 
 end
 

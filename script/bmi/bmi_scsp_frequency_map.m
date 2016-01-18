@@ -1,11 +1,11 @@
 %CSP test
 clc
 clear
-fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Close.mat';
-fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Open.mat';
+% fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Close.mat';
+% fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Open.mat';
 
-% fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S2/Close.mat';
-% fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S2/Open.mat';
+fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S2/Close.mat';
+fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S2/Open.mat';
 
 % fname1='/Users/tengi/Desktop/Projects/data/BMI/abduction/S1/Abd.mat';
 % fname2='/Users/tengi/Desktop/Projects/data/BMI/abduction/S1/Add.mat';
@@ -27,9 +27,9 @@ end
 % csp_max_min='max','min';
 
 %up-gamma band
-lc=60;
-hc=200;
-csp_max_min='max';%CSP--Move/Rest
+% lc=60;
+% hc=200;
+% csp_max_min='max';%CSP--Move/Rest
 
 %alpha band
 % lc=8;
@@ -39,9 +39,9 @@ csp_max_min='max';%CSP--Move/Rest
 % hc=30;
 
 %alpha&beta band
-% lc=8;
-% hc=30;
-% csp_max_min='min';%CSP--Move/Rest
+lc=8;
+hc=30;
+csp_max_min='min';%CSP--Move/Rest
 
 %all band
 % lc=8;
@@ -95,9 +95,9 @@ for i=1:length(movements)
     %Sparse CSP, recursive weight elimination
     
     if strcmpi(csp_max_min,'max')
-           F = hist_bootstrap_filter( X,Y,SpL,30,100 );
+           F = hist_bootstrap_filter( X,Y,SpL,2,30,100 );
     else
-           F = hist_bootstrap_filter( Y,X,SpL,30,100 );
+           F = hist_bootstrap_filter( Y,X,SpL,2,30,100 );
     end
 
     channames=cell(1,NF);
@@ -135,8 +135,8 @@ for i=1:length(movements)
     end
 
     set(hf,'color','w');
-%     export_fig(hf,'-png','-r300',get(hf,'Name'));
-%     close(hf)
+    export_fig(hf,'-png','-r300',get(hf,'Name'));
+    close(hf)
     
 end
 

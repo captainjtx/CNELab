@@ -181,7 +181,7 @@ classdef ExportMovieWindow < handle
             obj.t_end_=0;
             obj.t_step_=(obj.smw.stft_winlen-obj.smw.stft_overlap)/obj.smw.fs*1000;
             obj.dest_dir_=obj.smw.bsp.FileDir;
-            obj.filename_='Untitled';
+            obj.filename_='';
             obj.format_=1;%mp4
             
             obj.format_list={'MPEG-4','Motion JPEG AVI'};
@@ -198,7 +198,7 @@ classdef ExportMovieWindow < handle
             
             figpos=get(obj.smw.fig,'Position');
             
-            obj.fig=figure('MenuBar','none','Name','Save Movies','units','pixels',...
+            obj.fig=figure('MenuBar','none','Name','Export Movies','units','pixels',...
                 'Position',[figpos(1)+figpos(3),figpos(2)+figpos(4)-obj.height,obj.width,obj.height],'NumberTitle','off',...
                 'CloseRequestFcn',@(src,evts) OnClose(obj),...
                 'Resize','on','DockControls','off');
@@ -262,7 +262,7 @@ classdef ExportMovieWindow < handle
                 'units','normalized','position',[0.75,0.1,0.25,0.35],'value',obj.format,...
                 'callback',@(src,evt)FormatCallback(obj,src));
             
-            obj.export_btn=uicontrol('parent',hp,'style','pushbutton','string','Save',...
+            obj.export_btn=uicontrol('parent',hp,'style','pushbutton','string','Export',...
                 'units','normalized','position',[0.78,0.01,0.2,0.08],...
                 'callback',@(src,evt) ExportCallback(obj));
         end
@@ -319,6 +319,11 @@ classdef ExportMovieWindow < handle
         function FileNameCallback(obj,src)
             
             obj.filename_=get(src,'string');
+        end
+        function fname=auto_file_name(obj)
+            
+            fname=[num2str(obj.smw.min_freq),'-',num2str(obj.smw.max_freq),...
+                '_len',num2str(obj.smw.act_len),'_step',num2str(obj.t_step)];
         end
         
         function ExportCallback(obj)
@@ -392,8 +397,8 @@ classdef ExportMovieWindow < handle
                 'units','normalized','position',[0,0,1,0.2],...
                 'backgroundcolor',get(wait_bar,'color'),'horizontalalignment','center');
             %**************************************************************
-            
-            fname=fullfile(obj.dest_dir,obj.filename);
+            %l: length; p: step
+            fname=fullfile(obj.dest_dir,[obj.filename,'_',obj.auto_file_name]);
             writerObj = VideoWriter(fname,profile);
             writerObj.FrameRate = framerate;
             writerObj.Quality=quality;

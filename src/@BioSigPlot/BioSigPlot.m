@@ -478,7 +478,7 @@ classdef BioSigPlot < hgsetget
             obj.VisualBuffer=inf;
             obj.WinLength_=15;
             obj.Version_='CNELAB V1.1';
-            obj.DataView_='Horizontal';
+            obj.DataView_='Vertical';
             
             obj.ChanNames_=cell(1,obj.DataNumber);
             obj.GroupNames_=cell(1,obj.DataNumber);

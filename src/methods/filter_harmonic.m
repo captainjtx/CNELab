@@ -6,7 +6,7 @@ if length(varargin)==1
 else
     order=3;
 end
-ext=fs;
+ext=fs*2;
 for i=1:floor(fs/2/freq)
     f=freq*i;
     
