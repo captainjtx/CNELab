@@ -331,7 +331,7 @@ classdef ExportPictureWindow < handle
         end
         function fname=auto_file_name(obj)
             fname=[num2str(obj.smw.min_freq),'-',num2str(obj.smw.max_freq),...
-                '_start',num2str(t),'_len',num2str(obj.smw.act_len)];
+                '_start',num2str(obj.smw.act_start),'_len',num2str(obj.smw.act_len)];
         end
         function ExportCallback(obj)
             pic_format=obj.format_list{obj.format};

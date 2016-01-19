@@ -955,6 +955,7 @@ classdef TFMapWindow < handle
         function UpdateEventSelected(obj)
             if ~isempty(obj.bsp.SelectedEvent)
                 obj.event=obj.bsp.Evts{obj.bsp.SelectedEvent(1),2};
+                obj.normalization_event=obj.event;
             end
         end
         function NewCallback(obj)

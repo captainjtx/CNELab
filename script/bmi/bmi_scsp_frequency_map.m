@@ -4,14 +4,14 @@ clear
 % fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Close.mat';
 % fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Open.mat';
 
-fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S2/Close.mat';
-fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S2/Open.mat';
+% fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S2/Close.mat';
+% fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S2/Open.mat';
 
-% fname1='/Users/tengi/Desktop/Projects/data/BMI/abduction/S1/Abd.mat';
-% fname2='/Users/tengi/Desktop/Projects/data/BMI/abduction/S1/Add.mat';
+fname1='/Users/tengi/Desktop/Projects/data/BMI/abduction/S1/Abd.mat';
+fname2='/Users/tengi/Desktop/Projects/data/BMI/abduction/S1/Add.mat';
 
-movements={'Close','Open'};
-% movements={'Abd','Add'};
+% movements={'Close','Open'};
+movements={'Abd','Add'};
 
 segments{1}=load(fname1);
 segments{2}=load(fname2);
@@ -58,7 +58,7 @@ move_sample=round(move_time(1)*fs):round(move_time(2)*fs);
 %CSP parameters
 NF=1;
 %Desired sparsity of the filter
-SpL=5;
+SpL=7;
 %**************************************************************************
 
 %Filter the data===========================================================
