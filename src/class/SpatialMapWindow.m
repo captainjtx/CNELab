@@ -1617,7 +1617,8 @@ classdef SpatialMapWindow < handle
                 obj.min_freq=freq(1);
             end
             
-            NewCallback(obj);
+            delete(obj.SpatialMapFig(ishandle(obj.SpatialMapFig)));
+            NewSpatialMapFig(obj);
             
             wd=obj.stft_winlen;
             ov=obj.stft_overlap;
