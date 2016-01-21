@@ -30,6 +30,9 @@ classdef CSPMapWindow < handle
         max_radio_btn
         min_radio_btn
         
+        new_btn
+        compute_btn
+        
         eig_ind%
         
         cov1
@@ -196,6 +199,15 @@ classdef CSPMapWindow < handle
                 'callback',@(src,evts) MaxMinCallback(obj,src),'value',obj.rq_max_);
             obj.min_radio_btn=uicontrol('parent',hp_max,'style','radiobutton','string','Min RQ','units','normalized','position',[0.6,0.1,0.3,0.8],...
                 'callback',@(src,evts) MaxMinCallback(obj,src),'value',obj.rq_min_);
+            
+            
+            
+            obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.005,0.2,0.04],...
+                'callback',@(src,evts) ComputeCallback(obj));
+            
+            
+            obj.new_btn=uicontrol('parent',hp,'style','pushbutton','string','New','units','normalized','position',[0.01,0.005,0.2,0.04],...
+                'callback',@(src,evts) NewCallback(obj));
             
             MethodCallback(obj,obj.method_popup);
         end
@@ -541,6 +553,11 @@ classdef CSPMapWindow < handle
                     obj.rq_min=get(src,'value');
                     obj.rq_max=~obj.rq_min;
             end
+        end
+        
+        function ComputeCallback(obj)
+        end
+        function NewCallback(obj)
         end
     end
     

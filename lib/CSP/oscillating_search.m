@@ -61,84 +61,96 @@ for n=1:NF
         eVal(n) = D(EVIx,EVIx);
         
         % Down SWING
-        AddIndx1=AddIndx;
-        AddIndx2=AddIndx;
-        count=0;
-        c=1;
         
-        if SpL>2
-            C=2;
-        else
-            C=1;
-        end
-        
-        while 1;%count<10
-            [AddIndx1,~,~]=backward_search(Anew,B,AddIndx1,SpL-c); %#ok<NASGU,ASGLU>
-            [AddIndx1,W,newEVn]=forward_search(Anew,B,AddIndx1,SpL);
-            %         newEV=max(newEVn(newEVn>0));
+        if SpL>1
+            AddIndx1=AddIndx;
+            AddIndx2=AddIndx;
+            count=0;
+            c=1;
             
-            if ~sum(setdiff(AddIndx2,AddIndx1)) && c<C
-                c=c+1;
-            elseif ~sum(setdiff(AddIndx2,AddIndx1)) && c==C
-                break;
+            if SpL>2
+                C=2;
+            else
+                C=1;
             end
-            AddIndx2=AddIndx1;
-            count=count+1;
             
-            if count>10
-                fprintf('Down Swing %d search',count);
-                break;
+            while 1%count<10
+                if (SpL-c)<1
+                    break;
+                end
+                [AddIndx1,~,~]=backward_search(Anew,B,AddIndx1,SpL-c); %#ok<NASGU,ASGLU>
+                [AddIndx1,W,newEVn]=forward_search(Anew,B,AddIndx1,SpL);
+                %         newEV=max(newEVn(newEVn>0));
+                
+                if ~sum(setdiff(AddIndx2,AddIndx1)) && c<C
+                    c=c+1;
+                elseif ~sum(setdiff(AddIndx2,AddIndx1)) && c==C
+                    break;
+                end
+                AddIndx2=AddIndx1;
+                count=count+1;
+                
+                if count>10
+                    fprintf('Down Swing %d search\n',count);
+                    break;
+                end
             end
-        end
-        
-        if maxEV<newEVn
-            AddIndx=AddIndx1;
-            eVal(n)=newEVn;
-            maxEV=newEVn;
-            eVec(:,n)=W;
+            
+            if maxEV<newEVn
+                AddIndx=AddIndx1;
+                eVal(n)=newEVn;
+                maxEV=newEVn;
+                eVec(:,n)=W;
+            end
         end
         
         
         % UP SWING
-        newEVn=maxEV+1;
-        AddIndx1=AddIndx;
-        AddIndx2=AddIndx;
-        count=0;
-        c=1;
-        
-        if SpL>10
-            C=2;
-        else
-            C=4;
-        end
-        
-        while 1;%count<10
-            [AddIndx1,~,~]=forward_search(Anew,B,AddIndx1,SpL+c);
-            [AddIndx1,W,newEVn]=backward_search(Anew,B,AddIndx1,SpL);
-            %         newEV=min(newEVn(newEVn>0));
+        if SpL<N
+            newEVn=maxEV+1;
+            AddIndx1=AddIndx;
+            AddIndx2=AddIndx;
+            count=0;
+            c=1;
             
-            if ~sum(setdiff(AddIndx2,AddIndx1)) && c<C
-                c=c+1;
-            elseif ~sum(setdiff(AddIndx2,AddIndx1)) && c==C
-                break;
+            if SpL>10
+                C=2;
+            else
+                C=4;
             end
-            AddIndx2=AddIndx1;
-            count=count+1;
             
-            if count>=10
-                fprintf('Up Swing %d search',count);
-                break;
+            
+            while 1;%count<10
+                if (SpL+c)>N
+                    break;
+                end
+                [AddIndx1,~,~]=forward_search(Anew,B,AddIndx1,SpL+c);
+                [AddIndx1,W,newEVn]=backward_search(Anew,B,AddIndx1,SpL);
+                %         newEV=min(newEVn(newEVn>0));
+                
+                if ~sum(setdiff(AddIndx2,AddIndx1)) && c<C
+                    c=c+1;
+                elseif ~sum(setdiff(AddIndx2,AddIndx1)) && c==C
+                    break;
+                end
+                AddIndx2=AddIndx1;
+                count=count+1;
+                
+                if count>=10
+                    fprintf('Up Swing %d search\n',count);
+                    break;
+                end
+            end
+            
+            if maxEV<newEVn
+                eVal(n)=newEVn;
+                eVec(:,n)=W;
             end
         end
         
-        if maxEV<newEVn
-            eVal(n)=newEVn;
-            eVec(:,n)=W;
-        end
-        
-        if OldEV>maxEV
-            fprintf('\nMinimized\n');
-        end
+%         if OldEV>maxEV
+%             fprintf('\nMinimized\n');
+%         end
     end
     
     %Deflation method to remove the effect of the extracted eigenvector

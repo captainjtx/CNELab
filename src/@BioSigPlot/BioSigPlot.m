@@ -1007,11 +1007,6 @@ classdef BioSigPlot < hgsetget
         
         function obj = set.SRate_(obj,val)
             obj.SRate_=val;
-            
-            obj.TFMapWin.fs=val;
-            obj.SpatialMapWin.fs=val;
-            obj.PSDWin.fs=val;
-            obj.CSPMapWin.fs=val;
         end
         %******************************************************************
         function val = get.Evts(obj)

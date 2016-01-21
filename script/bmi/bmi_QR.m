@@ -1,14 +1,16 @@
 %CSP test
 clc
-clear
-% fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Ma Li/Close.mat';
-% fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Ma Li/Open.mat';
+% clear
+% hf=figure;
 
-fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Xu Yun/Close.mat';
-fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/Xu Yun/Open.mat';
+fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Close.mat';
+fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Open.mat';
 
-% fname1='/Users/tengi/Desktop/Projects/data/BMI/abduction/lima/Abd.mat';
-% fname2='/Users/tengi/Desktop/Projects/data/BMI/abduction/lima/Add.mat';
+% fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S2/Close.mat';
+% fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S2/Open.mat';
+
+% fname1='/Users/tengi/Desktop/Projects/data/BMI/abduction/S1/Abd.mat';
+% fname2='/Users/tengi/Desktop/Projects/data/BMI/abduction/S1/Add.mat';
 
 movements={'Close','Open'};
 % movements={'Abd','Add'};
@@ -30,7 +32,7 @@ end
 %up-gamma band
 % lc=60;
 % hc=200;
-% % csp_max_min='max';%CSP--Move/Rest
+% csp_max_min='max';%CSP--Move/Rest
 
 %alpha band
 % lc=8;
@@ -59,7 +61,7 @@ move_sample=round(move_time(1)*fs):round(move_time(2)*fs);
 %CSP parameters
 NF=1;
 %Desired sparsity of the filter
-SpL=[1:6,8,10,12,16,20,30,40,60,80,120];
+SpL=[1:6,8,10,12,16,20,30,40,60,80,100];
 %**************************************************************************
 
 %Filter the data===========================================================
@@ -111,24 +113,32 @@ for i=1:length(movements)
     Cy=Cy/size(seg,3);
     
     %======================================================================
-    hf=figure('Name',[movements{i},' ',csp_max_min,' QR']);
+    if isvalid(hf)
+        figure(hf);
+    else
+        hf=figure('Name',[movements{i},' ',csp_max_min,' QR']);
+    end
+    hold on
     
     Lmd=zeros(size(SpL));
     for f=1:length(SpL)
         if strcmpi(csp_max_min,'max')
-            [~,Lmd(f)]=recursive_eliminate(Cx,Cy,SpL(f),1);
+            [~,Lmd(f)]=oscillating_search(Cx,Cy,SpL(f),1,'OS');
+%             [~,Lmd(f)]=recursive_eliminate(Cx,Cy,SpL(f),1);
         else
-            [~,Lmd(f)]=recursive_eliminate(Cy,Cx,SpL(f),1);
+            [~,Lmd(f)]=oscillating_search(Cy,Cx,SpL(f),1,'OS');
+%             [~,Lmd(f)]=recursive_eliminate(Cy,Cx,SpL(f),1);
         end
     end
     
-    plot(SpL,Lmd/max(Lmd),'-o','linewidth',2,'MarkerSize',8);
+    plot(SpL,Lmd/max(Lmd),'-^','linewidth',2,'MarkerSize',8);
     xlabel('Cardinality')
     ylabel('Normalized RQ')
     set(gca,'Fontsize',14)
     ylim([0,1])
-    export_fig(hf,'-png','-r300',['/Users/tengi/Desktop/publication/grand/scsp/','s2 ',get(hf,'Name')]);
-    close(hf)
+    set(gcf,'Position',[100,100,400,200]);
+%     export_fig(hf,'-png','-r300',['/Users/tengi/Desktop/publication/grand/scsp/','s2 ',get(hf,'Name')]);
+%     close(hf)
 end
 
 
