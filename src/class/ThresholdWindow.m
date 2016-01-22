@@ -158,7 +158,9 @@ classdef ThresholdWindow <handle
                     obj.neg_t=val;
             end
             
-            obj.smw.UpdateFigure(src);
+            if obj.smw.auto_refresh
+                obj.smw.UpdateFigure(src);
+            end
         end
     end
     

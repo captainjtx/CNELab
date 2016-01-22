@@ -58,7 +58,7 @@ move_sample=round(move_time(1)*fs):round(move_time(2)*fs);
 %CSP parameters
 NF=1;
 %Desired sparsity of the filter
-SpL=20;
+SpL=10;
 %**************************************************************************
 
 %Filter the data===========================================================
@@ -95,9 +95,9 @@ for i=1:length(movements)
     %Sparse CSP, recursive weight elimination
     
     if strcmpi(csp_max_min,'max')
-           F = hist_bootstrap_filter( X,Y,SpL,2,30,100 );
+           F = hist_bootstrap_filter( X,Y,SpL,2,40,100 );
     else
-           F = hist_bootstrap_filter( Y,X,SpL,2,30,100 );
+           F = hist_bootstrap_filter( Y,X,SpL,2,40,100 );
     end
 
     channames=cell(1,NF);

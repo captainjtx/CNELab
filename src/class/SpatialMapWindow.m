@@ -1931,22 +1931,23 @@ classdef SpatialMapWindow < handle
                     if isnan(t)
                         t=obj.erd_t;
                     end
-                    t=max(obj.clim_slider_min,min(obj.clim_slider_max,t));
+                    t=max(get(obj.erd_slider,'min'),min(get(obj.erd_slider,'max'),t));
                     obj.erd_t=t;
                 case obj.ers_edit
                     t=str2double(get(src,'string'));
                     if isnan(t)
                         t=obj.ers_t;
                     end
-                    t=max(obj.clim_slider_min,min(obj.clim_slider_max,t));
+                    t=max(get(obj.ers_slider,'min'),min(get(obj.ers_slider,'max'),t));
                     obj.ers_t=t;
                 case obj.erd_slider
                     obj.erd_t=get(src,'value');
                 case obj.ers_slider
                     obj.ers_t=get(src,'value');
             end
-            
-            UpdateFigure(obj,src);
+            if obj.auto_refresh
+                UpdateFigure(obj,src);
+            end
         end
         function ResizeCallback(obj,src)
             switch src

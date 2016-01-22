@@ -56,7 +56,7 @@ move_time=[1.3 2];
 move_sample=round(move_time(1)*fs):round(move_time(2)*fs);
 
 %CSP parameters
-NF=20;
+NF=1;
 %Desired sparsity of the filter
 SpL=5;
 %**************************************************************************
@@ -109,10 +109,12 @@ for i=1:length(movements)
     
     if strcmpi(csp_max_min,'max')
 %         [F,Lmd]=recursive_eliminate(Cx,Cy,SpL,NF);
-           [F,Lmd]=oscillating_search(Cx,Cy,SpL,NF,'OS');
+%            [F,Lmd]=oscillating_search(Cx,Cy,SpL,NF,'OS');
+          [F,Lmd]=fast_scsp(Cx,Cy,SpL);
     else
 %         [F,Lmd]=recursive_eliminate(Cy,Cx,SpL,NF);
-           [F,Lmd]=oscillating_search(Cy,Cx,SpL,NF,'OS');
+%            [F,Lmd]=oscillating_search(Cy,Cx,SpL,NF,'OS');
+           [F,Lmd]=fast_scsp(Cy,Cx,SpL);
     end
 
     channames=cell(1,NF);
@@ -121,57 +123,57 @@ for i=1:length(movements)
         channames{n}=['CSP ' num2str(n)];
     end
 %visualize the transformed data****************************************
-    data=[];
-    evts={};
-    rdata=[];
-    for s=1:size(seg,3)
-        evts=cat(1,evts,{size(data,1)/fs,'Rest'});
-        d1=Y(:,:,s)*F;
-        data=cat(1,data,d1);
-        
-        rdata=cat(1,rdata,Y(:,:,s));
-        
-        evts=cat(1,evts,{size(data,1)/fs,movements{i}});
-        
-        d2=X(:,:,s)*F;
-        data=cat(1,data,d2);
-        
-        rdata=cat(1,rdata,X(:,:,s));
-    end
-    
-    BioSigPlot(data,'Evts',evts,'SRate',fs,'ChanNames',channames,'Title',movements{i},...
-            'WinLength',14,'Gain',0.24);
-    BioSigPlot(rdata,'Evts',evts,'SRate',fs,'Title',movements{i},'WinLength',14,'Gain',0.24);
-    %**********************************************************************
-%     dw=30;
-%     dh=30;
-%     
-%     interval=30;
-%     figpos=[0,0,400*NF,335];
-%     %======================================================================
-%     chan_order=channelindex;
-%     
-%     axe1_pattern=zeros(1,NF);
-%     axe1_filter=zeros(1,NF);
-%     clim1_pattern=[inf,-inf];
-%     clim1_filter=[inf,-inf];
-%     
-%     hf=figure('Name',[movements{i},' ',csp_max_min,' Filter'],'Position',figpos);
-%     
-%     for m=1:NF
-% 
-%         axe1_filter(m)=axes('Parent',hf,'Units','Pixels','Position',[(m-1)*(interval+dw*12)+interval/2,interval/2,12*dw,10*dh]);
-%         [fmax,fmin]=gauss_interpolate_120_grid(axe1_filter(m),F(:,m),chan_order,[],dw,dh);
-%         title(['CSP' num2str(m),' Filter'])
-%         if fmax>clim1_filter(2)
-%             clim1_filter(2)=fmax;
-%         end
-%         if fmin<clim1_filter(1)
-%             clim1_filter(1)=fmin;
-%         end
+%     data=[];
+%     evts={};
+%     rdata=[];
+%     for s=1:size(seg,3)
+%         evts=cat(1,evts,{size(data,1)/fs,'Rest'});
+%         d1=Y(:,:,s)*F;
+%         data=cat(1,data,d1);
+%         
+%         rdata=cat(1,rdata,Y(:,:,s));
+%         
+%         evts=cat(1,evts,{size(data,1)/fs,movements{i}});
+%         
+%         d2=X(:,:,s)*F;
+%         data=cat(1,data,d2);
+%         
+%         rdata=cat(1,rdata,X(:,:,s));
 %     end
-% 
-%     set(hf,'color','w');
+%     
+%     BioSigPlot(data,'Evts',evts,'SRate',fs,'ChanNames',channames,'Title',movements{i},...
+%             'WinLength',14,'Gain',0.24);
+%     BioSigPlot(rdata,'Evts',evts,'SRate',fs,'Title',movements{i},'WinLength',14,'Gain',0.24);
+    %**********************************************************************
+    dw=30;
+    dh=30;
+    
+    interval=30;
+    figpos=[0,0,400*NF,335];
+    %======================================================================
+    chan_order=channelindex;
+    
+    axe1_pattern=zeros(1,NF);
+    axe1_filter=zeros(1,NF);
+    clim1_pattern=[inf,-inf];
+    clim1_filter=[inf,-inf];
+    
+    hf=figure('Name',[movements{i},' ',csp_max_min,' Filter'],'Position',figpos);
+    
+    for m=1:NF
+
+        axe1_filter(m)=axes('Parent',hf,'Units','Pixels','Position',[(m-1)*(interval+dw*12)+interval/2,interval/2,12*dw,10*dh]);
+        [fmax,fmin]=gauss_interpolate_120_grid(axe1_filter(m),F(:,m),chan_order,[],dw,dh);
+        title(['CSP' num2str(m),' Filter'])
+        if fmax>clim1_filter(2)
+            clim1_filter(2)=fmax;
+        end
+        if fmin<clim1_filter(1)
+            clim1_filter(1)=fmin;
+        end
+    end
+
+    set(hf,'color','w');
 %     export_fig(hf,'-png','-r300',get(hf,'Name'));
 %     close(hf)
     
