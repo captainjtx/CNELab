@@ -1,7 +1,6 @@
 function [eVec,eVal] = fast_scsp(A,B,SpL,chanind)
 %A computational efficient sparse common spatial pattern algorithms using
 %divide and conquer approach
-
 if nargin<4
     %should only be executed at the first entry
     chanind=ones(size(A,1),1);
@@ -12,18 +11,15 @@ N=length(chanind);
 eVec=zeros(N,1);
 
 M=size(A,1);
-if SpL==M
-    try
-        [V,D] = eig(A,B);
-    catch
-        display
-    end
+
+if SpL==0
+    eVal=-inf;
+    return
+elseif SpL==M
+    [V,D] = eig(A,B);
     [eVal,id]=max(diag(D));
-    try
-        eVec(chanind)=V(:,id);
-    catch
-        display(id);
-    end
+    eVec(chanind)=V(:,id);
+    
     return
 elseif SpL>M
     eVal=-inf;
@@ -35,7 +31,7 @@ else
     %conquer
     cross_rq=-inf;
     cross_eVec=zeros(N,1);
-    for i=1:SpL-1
+    for i=0:SpL
         tmp=find(chanind);
         chanind_left=zeros(N,1);
         chanind_left(tmp(1:m))=1;
@@ -45,16 +41,19 @@ else
         chanind_right(tmp(m+1:end))=1;
         [eVec_right,~]=fast_scsp(A(m+1:end,m+1:end),B(m+1:end,m+1:end),SpL-i,chanind_right);
         
+        %this can be optimized later, should be directly obtained
         ind=[find(eVec_left);find(eVec_right)];
-   
-        [eVec_tmp,cross_rq_tmp]=eig(A(ind,ind),B(ind,ind));
+        subind=ismember(tmp,ind);
+        try [eVec_tmp,cross_rq_tmp]=eig(A(subind,subind),B(subind,subind));
+        catch
+            display
+        end
         
         [cross_rq_tmp,id]=max(diag(cross_rq_tmp));
         
         cross_eVec_tmp=zeros(N,1);
         cross_eVec_tmp(ind)=eVec_tmp(:,id);
-        
-        
+        %******************************************************************
         if cross_rq_tmp>cross_rq
             cross_rq=cross_rq_tmp;
             cross_eVec=cross_eVec_tmp;
@@ -68,7 +67,7 @@ else
     
     chanind_right=zeros(N,1);
     chanind_right(tmp(m+1:end))=1;
-    [right_eVec,right_rq]=fast_scsp(A(m+1:end),B(m+1:end),SpL,chanind_right);
+    [right_eVec,right_rq]=fast_scsp(A(m+1:end,m+1:end),B(m+1:end,m+1:end),SpL,chanind_right);
     
     %     try
     if cross_rq>=left_rq&&cross_rq>=right_rq

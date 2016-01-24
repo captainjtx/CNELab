@@ -27,9 +27,9 @@ end
 % csp_max_min='max','min';
 
 %up-gamma band
-% lc=60;
-% hc=200;
-% csp_max_min='max';%CSP--Move/Rest
+lc=60;
+hc=200;
+csp_max_min='max';%CSP--Move/Rest
 
 %alpha band
 % lc=8;
@@ -39,9 +39,9 @@ end
 % hc=30;
 
 %alpha&beta band
-lc=8;
-hc=30;
-csp_max_min='min';%CSP--Move/Rest
+% lc=8;
+% hc=30;
+% csp_max_min='min';%CSP--Move/Rest
 
 %all band
 % lc=8;
@@ -106,16 +106,17 @@ for i=1:length(movements)
     Cy=Cy/size(seg,3);
     
     %Sparse CSP, recursive weight elimination
-    
+    tic
     if strcmpi(csp_max_min,'max')
 %         [F,Lmd]=recursive_eliminate(Cx,Cy,SpL,NF);
-%            [F,Lmd]=oscillating_search(Cx,Cy,SpL,NF,'OS');
-          [F,Lmd]=fast_scsp(Cx,Cy,SpL);
+           [F,Lmd]=oscillating_search(Cx,Cy,SpL,NF,'OS');
+%           [F,Lmd]=fast_scsp(Cx,Cy,SpL);
     else
 %         [F,Lmd]=recursive_eliminate(Cy,Cx,SpL,NF);
-%            [F,Lmd]=oscillating_search(Cy,Cx,SpL,NF,'OS');
-           [F,Lmd]=fast_scsp(Cy,Cx,SpL);
+           [F,Lmd]=oscillating_search(Cy,Cx,SpL,NF,'OS');
+%            [F,Lmd]=fast_scsp(Cy,Cx,SpL);
     end
+    toc
 
     channames=cell(1,NF);
     
