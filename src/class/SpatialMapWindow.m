@@ -1558,8 +1558,9 @@ classdef SpatialMapWindow < handle
                 t_evt=[obj.bsp.Evts{:,1}];
                 txt_evt=obj.bsp.Evts(:,2);
                 
-                t_label=t_evt(ismember(txt_evt,evt));
-                txt_evt=txt_evt(ismember(txt_evt,evt));
+                ind=ismember(txt_evt,evt);
+                t_label=t_evt(ind);
+                txt_evt=txt_evt(ind);
                 if isempty(t_label)
                     errordlg('Event not found !');
                     return
@@ -1567,11 +1568,13 @@ classdef SpatialMapWindow < handle
                 i_event=round(t_label*obj.fs);
                 i_event=min(max(1,i_event),obj.bsp.TotalSample);
                 
-                i_event((i_event+nR)>obj.bsp.TotalSample)=[];
-                txt_evt((i_event+nR)>obj.bsp.TotalSample)=[];
+                ind=(i_event+nR)>obj.bsp.TotalSample;
+                i_event(ind)=[];
+                txt_evt(ind)=[];
                 
-                i_event((i_event-nL)<1)=[];
-                txt_evt((i_event-nL)<1)=[];
+                ind=(i_event-nL)<1;
+                i_event(ind)=[];
+                txt_evt(ind)=[];
                 
                 omitMask=true;
                 

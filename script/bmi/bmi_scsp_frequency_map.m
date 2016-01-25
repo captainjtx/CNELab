@@ -1,17 +1,17 @@
 %CSP test
 clc
 clear
-fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Close.mat';
-fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Open.mat';
+% fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Close.mat';
+% fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Open.mat';
 
 % fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S2/Close.mat';
 % fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S2/Open.mat';
 
-% fname1='/Users/tengi/Desktop/Projects/data/BMI/abduction/S1/Abd.mat';
-% fname2='/Users/tengi/Desktop/Projects/data/BMI/abduction/S1/Add.mat';
+fname1='/Users/tengi/Desktop/Projects/data/BMI/abduction/S1/Abd.mat';
+fname2='/Users/tengi/Desktop/Projects/data/BMI/abduction/S1/Add.mat';
 
-movements={'Close','Open'};
-% movements={'Abd','Add'};
+% movements={'Close','Open'};
+movements={'Abd','Add'};
 
 segments{1}=load(fname1);
 segments{2}=load(fname2);
@@ -27,9 +27,9 @@ end
 % csp_max_min='max','min';
 
 %up-gamma band
-% lc=60;
-% hc=200;
-% csp_max_min='max';%CSP--Move/Rest
+lc=60;
+hc=200;
+csp_max_min='max';%CSP--Move/Rest
 
 %alpha band
 % lc=8;
@@ -39,9 +39,9 @@ end
 % hc=30;
 
 %alpha&beta band
-lc=8;
-hc=30;
-csp_max_min='min';%CSP--Move/Rest
+% lc=8;
+% hc=30;
+% csp_max_min='min';%CSP--Move/Rest
 
 %all band
 % lc=8;
@@ -58,7 +58,7 @@ move_sample=round(move_time(1)*fs):round(move_time(2)*fs);
 %CSP parameters
 NF=1;
 %Desired sparsity of the filter
-SpL=10;
+SpL=5;
 %**************************************************************************
 
 %Filter the data===========================================================
@@ -124,8 +124,8 @@ for i=1:length(movements)
     for m=1:NF
 
         axe1_filter(m)=axes('Parent',hf,'Units','Pixels','Position',[(m-1)*(interval+dw*12)+interval/2,interval/2,12*dw,10*dh]);
-        [fmax,fmin]=gauss_interpolate_120_grid(axe1_filter(m),F(:,m),chan_order,[],dw,dh);
-        title(['CSP' num2str(m),' Filter'])
+        [fmax,fmin]=gauss_interpolate_120_grid(axe1_filter(m),F(:,m)/max(F(:,m)),chan_order,[],dw,dh,[],1);
+%         title(['CSP' num2str(m),' Filter'])
         if fmax>clim1_filter(2)
             clim1_filter(2)=fmax;
         end
@@ -135,6 +135,7 @@ for i=1:length(movements)
     end
 
     set(hf,'color','w');
+   
     export_fig(hf,'-png','-r300',get(hf,'Name'));
     close(hf)
     

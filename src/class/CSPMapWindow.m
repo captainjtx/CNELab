@@ -3,6 +3,7 @@ classdef CSPMapWindow < handle
     %   Detailed explanation goes here
     properties
         fig
+        bsp
         
         method_popup
         
@@ -46,7 +47,6 @@ classdef CSPMapWindow < handle
         ms_t_start2_
         ms_t_end2_
         
-        bsp
         event_list_
         event1_
         event2_
@@ -127,9 +127,9 @@ classdef CSPMapWindow < handle
                 return
             end
             
-%             obj.width=300;
-%             obj.height=700;
-%             varinitial(obj);
+            %             obj.width=300;
+            %             obj.height=700;
+            %             varinitial(obj);
             obj.fig=figure('MenuBar','none','Name','Common Spatial Pattern','units','pixels',...
                 'Position',[500 100 obj.width obj.height],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
                 'Resize','on','DockControls','off');
@@ -146,8 +146,8 @@ classdef CSPMapWindow < handle
             obj.sparsity_edit=uicontrol('parent',hp_method,'style','edit','string',num2str(obj.sparsity),'units','normalized',...
                 'position',[0.2,0.05,0.2,0.4],'callback',@(src,evts) SparsityCallback(obj,src));
             
-             obj.filter_number_txt=uicontrol('Parent',hp_method,'style','text','string','Filter Number','units','normalized','position',[0.45,0.1,0.3,0.3]);
-             
+            obj.filter_number_txt=uicontrol('Parent',hp_method,'style','text','string','Filter Number','units','normalized','position',[0.45,0.1,0.3,0.3]);
+            
             obj.filter_number_edit=uicontrol('parent',hp_method,'style','edit','string',num2str(obj.filter_number),'units','normalized',...
                 'position',[0.75,0.05,0.2,0.4],'callback',@(src,evts) FilterNumberCallback(obj,src));
             
@@ -255,7 +255,7 @@ classdef CSPMapWindow < handle
         function val=get.fs(obj)
             val=obj.bsp.SRate;
         end
-
+        
         function val=get.event_list(obj)
             val=obj.event_list_;
         end
@@ -479,7 +479,7 @@ classdef CSPMapWindow < handle
                 case obj.sparsity_edit
                     t=str2double(get(src,'string'));
                     if isnan(t)
-                       t=obj.sparisty; 
+                        t=obj.sparisty;
                     end
                     obj.sparsity=round(t);
             end
@@ -523,13 +523,13 @@ classdef CSPMapWindow < handle
                 case obj.high_freq_edit
                     t=str2double(get(src,'string'));
                     if isnan(t)
-                       t=obj.high_freq; 
+                        t=obj.high_freq;
                     end
                     obj.high_freq=round(t*10)/10;
                 case obj.low_freq_edit
                     t=str2double(get(src,'string'));
                     if isnan(t)
-                       t=obj.low_freq; 
+                        t=obj.low_freq;
                     end
                     obj.low_freq=round(t*10)/10;
                 case obj.high_freq_slider
@@ -542,7 +542,7 @@ classdef CSPMapWindow < handle
             val=str2double(get(src,'string'));
             if ~isnan(val)
                 obj.filter_number=max(1,round(val));
-            end  
+            end
         end
         function MaxMinCallback(obj,src)
             switch src
@@ -556,6 +556,53 @@ classdef CSPMapWindow < handle
         end
         
         function ComputeCallback(obj)
+            %first event
+            evt1=obj.event1;
+            
+            t_evt1=[obj.bsp.Evts{:,1}];
+            txt_evt1=obj.bsp.Evts(:,2);
+            
+            ind=ismember(txt_evt1,evt1);
+            t_label1=t_evt1(ind);
+            txt_evt1=txt_evt1(ind);
+            if isempty(t_label1)
+                errordlg('Event not found !');
+                return
+            end
+            i_event1=round(t_label1*obj.fs);
+            i_event1=min(max(1,i_event1),obj.bsp.TotalSample);
+            
+            ind=(i_event1+nR)>obj.bsp.TotalSample;
+            i_event1(ind)=[];
+            txt_evt1(ind)=[];
+            
+            ind=(i_event1-nL)<1;
+            i_event1(ind)=[];
+            txt_evt1(ind)=[];
+            %second event
+            evt2=obj.event2;
+            
+            t_evt2=[obj.bsp.Evts{:,1}];
+            txt_evt2=obj.bsp.Evts(:,2);
+            
+            ind=ismember(txt_evt2,evt2);
+            t_label2=t_evt2(ind);
+            txt_evt2=txt_evt2(ind);
+            if isempty(t_label2)
+                errordlg('Event not found !');
+                return
+            end
+            i_event2=round(t_label2*obj.fs);
+            i_event2=min(max(1,i_event2),obj.bsp.TotalSample);
+            
+            ind=(i_event2+nR)>obj.bsp.TotalSample;
+            i_event2(ind)=[];
+            txt_evt2(ind)=[];
+            
+            ind=(i_event2-nL)<1;
+            i_event2(ind)=[];
+            txt_evt2(ind)=[];
+            
         end
         function NewCallback(obj)
         end

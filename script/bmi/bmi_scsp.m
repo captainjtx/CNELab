@@ -1,17 +1,17 @@
 %CSP test
 clc
 clear
-fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Close.mat';
-fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Open.mat';
+% fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Close.mat';
+% fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Open.mat';
 
 % fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S2/Close.mat';
 % fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S2/Open.mat';
 
-% fname1='/Users/tengi/Desktop/Projects/data/BMI/abduction/lima/Abd.mat';
-% fname2='/Users/tengi/Desktop/Projects/data/BMI/abduction/lima/Add.mat';
+fname1='/Users/tengi/Desktop/Projects/data/BMI/abduction/S1/Abd.mat';
+fname2='/Users/tengi/Desktop/Projects/data/BMI/abduction/S1/Add.mat';
 
-movements={'Close','Open'};
-% movements={'Abd','Add'};
+% movements={'Close','Open'};
+movements={'Abd','Add'};
 
 segments{1}=load(fname1);
 segments{2}=load(fname2);
@@ -109,12 +109,12 @@ for i=1:length(movements)
     tic
     if strcmpi(csp_max_min,'max')
 %         [F,Lmd]=recursive_eliminate(Cx,Cy,SpL,NF);
-           [F,Lmd]=oscillating_search(Cx,Cy,SpL,NF,'OS');
-%           [F,Lmd]=fast_scsp(Cx,Cy,SpL);
+%            [F,Lmd]=oscillating_search(Cx,Cy,SpL,NF,'BE');
+          [F,Lmd]=fast_scsp(Cx,Cy,SpL);
     else
 %         [F,Lmd]=recursive_eliminate(Cy,Cx,SpL,NF);
-           [F,Lmd]=oscillating_search(Cy,Cx,SpL,NF,'OS');
-%            [F,Lmd]=fast_scsp(Cy,Cx,SpL);
+%            [F,Lmd]=oscillating_search(Cy,Cx,SpL,NF,'BE');
+           [F,Lmd]=fast_scsp(Cy,Cx,SpL);
     end
     toc
 
