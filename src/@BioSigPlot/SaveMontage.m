@@ -5,13 +5,17 @@ function SaveMontage(obj)
 [data,chanNames,dataset,channel,sample,evts,groupnames]=get_selected_data(obj);
 dd=unique(dataset);
 
+if exist([obj.FileDir,'/montage'],'dir')~=7
+    mkdir(obj.FileDir,'montage');
+end
+open_dir=[obj.FileDir,'/montage'];
 
 [FileName,FilePath]=uiputfile({...
     '*.mtg;*.csv;*.txt','Common Data Structure Formats (*.mtg;*.csv;*.txt)';...
     '*.mtg','Montage Text File (*.mtg)';...
     '*.csv','Comma Separated File (*.csv)';...
     '*.txt','Text File (*.txt)'}...
-    ,'Merged Montage File',fullfile(obj.FileDir,obj.Montage{dd(1)}(obj.MontageRef(dd(1))).name));
+    ,'Merged Montage File',fullfile(open_dir,obj.Montage{dd(1)}(obj.MontageRef(dd(1))).name));
 
 if ~FileName
     return

@@ -471,7 +471,7 @@ classdef CSPMapWindow < handle
         
         function val=get.cnum(obj)
             %the channel number with valid positions
-            [~,~,~,~,~,~,chanpos]=get_selected_datainfo(obj.bsp,true);
+            [~,~,~,~,~,~,chanpos]=get_datainfo(obj.bsp,true);
             val=sum(~isnan(chanpos(:,1))&~isnan(chanpos(:,2)));
         end
         function SparsityCallback(obj,src)

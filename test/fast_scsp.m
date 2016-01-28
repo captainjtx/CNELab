@@ -44,10 +44,8 @@ else
         %this can be optimized later, should be directly obtained
         ind=[find(eVec_left);find(eVec_right)];
         subind=ismember(tmp,ind);
-        try [eVec_tmp,cross_rq_tmp]=eig(A(subind,subind),B(subind,subind));
-        catch
-            display
-        end
+        
+        [eVec_tmp,cross_rq_tmp]=eig(A(subind,subind),B(subind,subind));
         
         [cross_rq_tmp,id]=max(diag(cross_rq_tmp));
         
@@ -59,7 +57,6 @@ else
             cross_eVec=cross_eVec_tmp;
         end
     end
-    
 %     tmp=find(chanind);
 %     chanind_left=zeros(N,1);
 %     chanind_left(tmp(1:m))=1;

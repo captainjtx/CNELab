@@ -23,11 +23,10 @@ for i=1:size(EventsList,1)
     Events.code(i)=EventsList{i,4};
 end
 
-if exist([obj.FileDir,'/events'],'dir')==7
-    open_dir=[obj.FileDir,'/events'];
-else
-    open_dir=obj.FileDir;
+if exist([obj.FileDir,'/events'],'dir')~=7
+    mkdir(obj.FileDir,'events');
 end
+open_dir=[obj.FileDir,'/events'];
 
 if ~isempty(Events)
     [FileName,FilePath,FilterIndex]=uiputfile({'*.txt;*.csv;*.mat;*.evt','Event Files (*.txt;*.csv;*.mat;*.evt)';...
@@ -37,7 +36,6 @@ if ~isempty(Events)
         '*.mat','Matlab Mat File (*.mat)'}...
         ,'save your Events',fullfile(open_dir,'untitled'));
     if FileName~=0
-        
         if FilterIndex==1
             [pathstr, name, ext] = fileparts(FileName);
             if strcmpi(ext,'.txt')

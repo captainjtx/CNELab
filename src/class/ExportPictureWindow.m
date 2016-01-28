@@ -54,6 +54,13 @@ classdef ExportPictureWindow < handle
     end
     
     methods
+        function val=get.valid(obj)
+            try
+                val=ishandle(obj.fig)&&isvalid(obj.fig);
+            catch 
+                val=0;
+            end
+        end
         function val=get.res_ppi(obj)
             val=obj.res_ppi_;
         end
@@ -176,7 +183,6 @@ classdef ExportPictureWindow < handle
     
     methods
         function obj=ExportPictureWindow(smw)
-            obj.valid=0;
             obj.smw=smw;
             obj.width=300;
             obj.height=280;
@@ -186,7 +192,11 @@ classdef ExportPictureWindow < handle
             obj.t_start_=get(obj.smw.act_start_slider,'min');
             obj.t_end_=get(obj.smw.act_start_slider,'max');
             obj.t_step_=(obj.smw.stft_winlen-obj.smw.stft_overlap)/obj.smw.fs*1000;
-            obj.dest_dir_=obj.smw.bsp.FileDir;
+            if exist([obj.smw.bsp.FileDir,'/app/spatial map'],'dir')~=7
+                mkdir(obj.smw.bsp.FileDir,'/app/spatial map');
+            end
+            open_dir=[obj.smw.bsp.FileDir,'/app/spatial map'];
+            obj.dest_dir_=open_dir;
             obj.filename_='';
             obj.format_=1;%png
             
@@ -199,8 +209,6 @@ classdef ExportPictureWindow < handle
                 figure(obj.fig);
                 return
             end
-            
-            obj.valid=1;
             
             figpos=get(obj.smw.fig,'Position');
             

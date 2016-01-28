@@ -109,12 +109,12 @@ for i=1:length(movements)
     tic
     if strcmpi(csp_max_min,'max')
 %         [F,Lmd]=recursive_eliminate(Cx,Cy,SpL,NF);
-%            [F,Lmd]=oscillating_search(Cx,Cy,SpL,NF,'BE');
-          [F,Lmd]=fast_scsp(Cx,Cy,SpL);
+           [F,Lmd]=oscillating_search(Cx,Cy,SpL,NF,'OS');
+%           [F,Lmd]=fast_scsp(Cx,Cy,SpL);
     else
 %         [F,Lmd]=recursive_eliminate(Cy,Cx,SpL,NF);
-%            [F,Lmd]=oscillating_search(Cy,Cx,SpL,NF,'BE');
-           [F,Lmd]=fast_scsp(Cy,Cx,SpL);
+           [F,Lmd]=oscillating_search(Cy,Cx,SpL,NF,'OS');
+%            [F,Lmd]=fast_scsp(Cy,Cx,SpL);
     end
     toc
 

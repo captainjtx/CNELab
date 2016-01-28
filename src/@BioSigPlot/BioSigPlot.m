@@ -96,6 +96,7 @@ classdef BioSigPlot < hgsetget
         MenuLoadVideo
         MenuLoadFilter
         MenuLoadChannelPosition
+        MenuLoadSpatialMaps
         
         MenuExport
         MenuExportData
@@ -384,6 +385,8 @@ classdef BioSigPlot < hgsetget
         
         CSPMapWin
         
+        AverageMapWin
+        
         PreprocData                 %The currently preprocessed and drawed Data
     end
     
@@ -420,6 +423,7 @@ classdef BioSigPlot < hgsetget
             
             obj.CSPMapWin=CSPMapWindow(obj);
             obj.PSDWin=PSDWindow(obj);
+            obj.AverageMapWin=AverageMapWindow(obj);
             
             obj.IsInitialize=false;
             
@@ -538,6 +542,10 @@ classdef BioSigPlot < hgsetget
             
             if obj.PSDWin.valid
                 obj.PSDWin.OnClose();
+            end
+            
+            if obj.AverageMapWin.valid
+                obj.AverageMapWin.OnClose();
             end
             
             if isa(obj.WinFastEvts,'FastEventWindow') && isvalid(obj.WinFastEvts)

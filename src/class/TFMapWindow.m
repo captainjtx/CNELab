@@ -549,7 +549,6 @@ classdef TFMapWindow < handle
                 figure(obj.fig);
                 return
             end
-            obj.valid=1;
             obj.fig=figure('MenuBar','none','Name','Time-Frequency Map','units','pixels',...
                 'Position',[500 100 300 600],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
                 'Resize','on');

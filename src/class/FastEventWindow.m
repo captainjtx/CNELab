@@ -8,7 +8,6 @@ classdef FastEventWindow  < handle
         Fig
         Table
         
-        
         BtnDelete
         BtnNew
         

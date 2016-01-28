@@ -6,6 +6,7 @@ classdef SpatialMapWindow < handle
         export_movie_menu
         export_pic_menu
         export_trial_info_menu
+        export_map_menu
         
         advance_menu
         stft_menu
@@ -1044,6 +1045,7 @@ classdef SpatialMapWindow < handle
             obj.export_pic_menu=uimenu(obj.export_menu,'label','Pictures','callback',@(src,evts) ExportPictureCallback(obj));
             obj.export_movie_menu=uimenu(obj.export_menu,'label','Movie','callback',@(src,evts) ExportMovieCallback(obj));
             obj.export_trial_info_menu=uimenu(obj.export_menu,'label','Trial Info','callback',@(src,evts) ExportTrialInfoCallback(obj));
+            obj.export_map_menu=uimenu(obj.export_menu,'label','Map','callback',@(src,evts) ExportMapCallback(obj));
             
             obj.advance_menu=uimenu(obj.fig,'label','Settings');
             obj.threshold_menu=uimenu(obj.advance_menu,'label','Threshold','callback',@(src,evts) ThresholdCallback(obj));
@@ -1853,6 +1855,7 @@ classdef SpatialMapWindow < handle
                     map_mapv{i}(ind)=mapv{i};
                 end
             end
+            
             for e=1:length(evt)
                 spatialmap_grid(obj.SpatialMapFig(e),map_mapv{e},obj.interp_method,...
                     obj.extrap_method,map_channames,map_pos(:,1),map_pos(:,2),map_pos(:,3),obj.width,obj.height,sl,sh,obj.color_bar,obj.resize);
@@ -2456,10 +2459,65 @@ classdef SpatialMapWindow < handle
     end
     
     methods
+        function [events,val,names,pos,erd,ers]=getMapInfo(obj)
+            erdchan=obj.erd_chan;
+            erschan=obj.ers_chan;
+            
+            mapv=obj.map_val;
+            chanpos=[obj.pos_x,obj.pos_y,obj.radius];
+            
+            if obj.interp_missing
+                pos=chanpos;
+                val=mapv;
+                names=obj.chan_names;
+            else
+                pos=obj.all_chan_pos;
+                val=cell(length(mapv),1);
+                for i=1:length(mapv)
+                    %default to zeros
+                    val{i}=zeros(length(obj.all_chan_names),1);
+                    ind=ismember(obj.all_chan_names,obj.chan_names);
+                    val{i}(ind)=mapv{i};
+                end
+                names=obj.all_chan_names;
+            end
+            
+            for i=1:length(obj.tfmat)
+                events{i}=obj.tfmat(i).event;
+                erd{i}=ismember(names,obj.all_chan_names(logical(erdchan{i})));
+                ers{i}=ismember(names,obj.all_chan_names(logical(erschan{i})));
+            end
+        end
         function ExportPictureCallback(obj)
             obj.export_picture_win.buildfig();
         end
-        
+        function ExportMapCallback(obj)
+            %export the map values together with the channel name/position
+            %for further analysis
+            [events,val,names,~,~,~]=getMapInfo(obj);
+            if exist([obj.bsp.FileDir,'/app/spatial map'],'dir')~=7
+                mkdir(obj.bsp.FileDir,'/app/spatial map');
+            end
+            open_dir=[obj.bsp.FileDir,'/app/spatial map'];
+            
+            folder_name = uigetdir(open_dir,'Select a direcotry to export');
+            if ~folder_name
+                return
+            end
+
+            suffix=[num2str(obj.min_freq),'-',num2str(obj.max_freq),...
+                '_start',num2str(obj.act_start),'_len',num2str(obj.act_len)];
+            
+            for i=1:length(events)
+                fname=[events{i},'_',suffix,'.smw'];
+                fid=fopen(fullfile(folder_name,fname),'w');
+                
+                for j=1:length(names)
+                    fprintf(fid,'%s,%f\n',names{j},val{i}(j));
+                end
+                fclose(fid);
+            end
+        end
         function UpdateSelection(obj)
             if obj.data_input==1
                 [~,~,~,sample,~,~,~]=get_selected_datainfo(obj.bsp);

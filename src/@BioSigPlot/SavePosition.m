@@ -1,4 +1,8 @@
 function  SavePosition(obj)
+if exist([obj.FileDir,'/position'],'dir')~=7
+    mkdir(obj.FileDir,'position');
+end
+open_dir=[obj.FileDir,'/position'];
 % [data,chanNames,dataset,channel,sample,evts,groupnames,pos]=get_selected_data(obj);
 % dd=unique(dataset);
 % 
