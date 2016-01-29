@@ -1,4 +1,4 @@
-function h=tfmap_grid(fig,axe,t,f,tf,pos,dw,dh,channame,sl,sh,freq)
+function h=tfmap_grid(fig,axe,t,f,tf,pos,dw,dh,channame,sl,sh,freq,smooth_x,smooth_y)
 %TFMAP_GRID Summary of this function goes here
 %   Detailed explanation goes here
 %Orign of postion is top left corner
@@ -9,6 +9,10 @@ text(x+dw/2,y+dh+0.008,channame,...
     'fontsize',8,'horizontalalignment','center','parent',axe,'interpreter','none')
 
 h=axes('parent',fig,'units','normalized','Position',[x,y,dw,dh],'Visible','off');
+
+if smooth_x~=0&&smooth_y~=0
+tf = TF_Smooth(tf,'gaussian',[smooth_x,smooth_y]);
+end
 
 imagesc('XData',t,'YData',f,'CData',tf,'Parent',h);
 

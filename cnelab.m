@@ -161,7 +161,7 @@ bsp=BioSigPlot(data,'Title',fnames,...
 set(bsp.Fig,'Visible','off');
 %==========================================================================
 %**************************************************************************
-
+uncertainty_code={'hold','cue','go','exit','hit','end'};
 Event={};
 for i=1:length(cds)
     if ~isempty(evts{i})
@@ -193,7 +193,7 @@ for i=1:length(cds)
                     color=[0.5 0.5 0.5];
                     Event=cat(1,Event,{cds{i}.DataInfo.TriggerCodes(r,c)/fs,['0-' num2str(c)],color,2});
                 else
-                    Event=cat(1,Event,{cds{i}.DataInfo.TriggerCodes(r,c)/fs,num2str(c),color,2});
+                    Event=cat(1,Event,{cds{i}.DataInfo.TriggerCodes(r,c)/fs,uncertainty_code{c},color,2});
                 end
             end
         end

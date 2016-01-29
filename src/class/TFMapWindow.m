@@ -40,6 +40,9 @@ classdef TFMapWindow < handle
         new_btn
         symmetric_scale_radio
         
+        settings_menu
+        smooth_menu
+        
     end
     properties
         
@@ -66,6 +69,8 @@ classdef TFMapWindow < handle
         clim_slider_min_
         event_list_
         symmetric_scale_
+        smooth_x_
+        smooth_y_
     end
     
     properties (Dependent)
@@ -93,6 +98,8 @@ classdef TFMapWindow < handle
         clim_slider_min
         event_list
         symmetric_scale
+        smooth_x
+        smooth_y
     end
     properties
         tfmat
@@ -103,14 +110,26 @@ classdef TFMapWindow < handle
         tfmat_channel
     end
     methods
+        function val=get.smooth_x(obj)
+            val=obj.smooth_x_;
+        end
+        function set.smooth_x(obj,val)
+            obj.smooth_x_=val;
+        end
+        function val=get.smooth_y(obj)
+            val=obj.smooth_y_;
+        end
+        function set.smooth_y(obj,val)
+            obj.smooth_y_=val;
+        end
         function val=get.valid(obj)
             try
                 val=ishandle(obj.fig)&&isvalid(obj.fig);
-            catch 
+            catch
                 val=0;
             end
         end
-
+        
         function val=get.fs(obj)
             val=obj.bsp.SRate;
         end
@@ -124,7 +143,7 @@ classdef TFMapWindow < handle
                 set(obj.symmetric_scale_radio,'value',val);
             end
         end
-            
+        
         function val=get.method(obj)
             val=obj.method_;
         end
@@ -176,7 +195,7 @@ classdef TFMapWindow < handle
                     else
                         val=[];
                     end
-                        
+                    
                 end
             end
             obj.event_=val;
@@ -210,7 +229,7 @@ classdef TFMapWindow < handle
             val=obj.normalization_start_;
         end
         function set.normalization_start(obj,val)
-
+            
             if obj.valid
                 set(obj.scale_start_edit,'string',num2str(val));
             end
@@ -236,7 +255,7 @@ classdef TFMapWindow < handle
             end
             obj.normalization_event_=val;
         end
-            
+        
         function val=get.normalization_start_event(obj)
             val=obj.normalization_start_event_;
         end
@@ -418,7 +437,7 @@ classdef TFMapWindow < handle
         function val=get.min_clim(obj)
             val=obj.min_clim_;
         end
-
+        
         function set.min_clim(obj,val)
             if val>obj.clim_slider_max
                 val=obj.clim_slider_max;
@@ -543,6 +562,8 @@ classdef TFMapWindow < handle
             obj.stft_winlen_=round(obj.fs/3);
             obj.stft_overlap_=round(obj.stft_winlen*0.9);
             obj.symmetric_scale_=1;
+            obj.smooth_x_=8;
+            obj.smooth_y_=8;
         end
         function buildfig(obj)
             if obj.valid
@@ -551,7 +572,10 @@ classdef TFMapWindow < handle
             end
             obj.fig=figure('MenuBar','none','Name','Time-Frequency Map','units','pixels',...
                 'Position',[500 100 300 600],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
-                'Resize','on');
+                'Resize','on','DockControls','off');
+            obj.settings_menu=uimenu(obj.fig,'label','Settings');
+            obj.smooth_menu=uimenu(obj.settings_menu,'label','Smooth Kernel','callback',@(src,evts) SmoothCallback(obj));
+            
             
             hp=uipanel('units','normalized','Position',[0,0,1,1]);
             
@@ -559,7 +583,7 @@ classdef TFMapWindow < handle
             uicontrol('Parent',hp_method,'Style','text','String','Method: ','units','normalized','Position',[0.01,0,0.4,0.9],...
                 'HorizontalAlignment','left');
             obj.method_popup=uicontrol('Parent',hp_method,'Style','popup',...
-                'String',{'Average','Channel','Grid'},'units','normalized','Position',[0.4,0,0.59,0.92],'value',obj.method,...
+                'String',{'Average','Grid'},'units','normalized','Position',[0.4,0,0.59,0.92],'value',obj.method,...
                 'callback',@(src,evts) MethodCallback(obj,src));
             
             hp_data=uipanel('Parent',hp,'Title','','Units','normalized','Position',[0,0.78,1,0.15]);
@@ -605,12 +629,12 @@ classdef TFMapWindow < handle
                 'HorizontalAlignment','left','visible','off');
             obj.scale_event_popup=uicontrol('Parent',hp_scale,'Style','popup','string',obj.event_list,'units','normalized','position',[0.01,0.05,0.35,0.3],...
                 'visible','off','callback',@(src,evts) ScaleEventCallback(obj,src));
-%             obj.scale_start_text=uicontrol('Parent',hp_scale,'style','text','units','normalized',...
-%                 'string','Start (ms): ','position',[0.05,0.3,0.4,0.3],'HorizontalAlignment','center',...
-%                 'visible','off');
-%             obj.scale_end_text=uicontrol('Parent',hp_scale,'style','text','units','normalized',...
-%                 'string','End (ms): ','position',[0.55,0.3,0.4,0.3],'HorizontalAlignment','center',...
-%                 'visible','off');
+            %             obj.scale_start_text=uicontrol('Parent',hp_scale,'style','text','units','normalized',...
+            %                 'string','Start (ms): ','position',[0.05,0.3,0.4,0.3],'HorizontalAlignment','center',...
+            %                 'visible','off');
+            %             obj.scale_end_text=uicontrol('Parent',hp_scale,'style','text','units','normalized',...
+            %                 'string','End (ms): ','position',[0.55,0.3,0.4,0.3],'HorizontalAlignment','center',...
+            %                 'visible','off');
             
             obj.scale_start_edit=uicontrol('parent',hp_scale,'style','edit','units','normalized',...
                 'string',obj.normalization_start,'position',[0.4,0.05,0.29,0.3],'HorizontalAlignment','center','visible','off',...
@@ -755,14 +779,14 @@ classdef TFMapWindow < handle
             if isnan(t)
                 t=obj.ms_before;
             end
-           obj.ms_before=t;
+            obj.ms_before=t;
         end
         function MsAfterCallback(obj,src)
             t=str2double(get(src,'string'));
             if isnan(t)
                 t=obj.ms_after;
             end
-           obj.ms_after=t;
+            obj.ms_after=t;
         end
         
         function STFTWinlenCallback(obj,src)
@@ -833,13 +857,13 @@ classdef TFMapWindow < handle
                 case obj.max_freq_edit
                     t=str2double(get(src,'string'));
                     if isnan(t)
-                       t=obj.max_freq; 
+                        t=obj.max_freq;
                     end
                     obj.max_freq=round(t*10)/10;
                 case obj.min_freq_edit
                     t=str2double(get(src,'string'));
                     if isnan(t)
-                       t=obj.min_freq; 
+                        t=obj.min_freq;
                     end
                     obj.min_freq=round(t*10)/10;
                 case obj.max_freq_slider
@@ -852,7 +876,7 @@ classdef TFMapWindow < handle
                 
                 set(h,'YLim',[obj.min_freq,obj.max_freq]);
                 DisplayOnsetCallback(obj,obj.onset_radio);
-%                 figure(obj.TFMapFig);
+                %                 figure(obj.TFMapFig);
             end
         end
         
@@ -882,7 +906,7 @@ classdef TFMapWindow < handle
                 if obj.min_clim<obj.max_clim
                     set(h,'CLim',[obj.min_clim,obj.max_clim]);
                 end
-%                 figure(obj.TFMapFig);
+                %                 figure(obj.TFMapFig);
             end
         end
         
@@ -899,7 +923,7 @@ classdef TFMapWindow < handle
                     for i=1:length(h)
                         tmp=findobj(h(i),'Type','line');
                         delete(tmp);
-%                         axes(h(i))
+                        %                         axes(h(i))
                         line([tonset,tonset],[obj.min_freq,obj.max_freq],'LineStyle',':',...
                             'color','k','linewidth',0.1,'Parent',h(i))
                     end
@@ -916,7 +940,7 @@ classdef TFMapWindow < handle
                 case obj.scale_start_edit
                     t=str2double(get(src,'string'));
                     if isnan(t)
-                       t=obj.normalization_start; 
+                        t=obj.normalization_start;
                     end
                     if obj.data_input~=1&&strcmp(obj.normalization_event,obj.event)
                         t=max(-obj.ms_before,min(obj.ms_after,t));
@@ -927,7 +951,7 @@ classdef TFMapWindow < handle
                 case obj.scale_end_edit
                     t=str2double(get(src,'string'));
                     if isnan(t)
-                       t=obj.normalization_end; 
+                        t=obj.normalization_end;
                     end
                     if obj.data_input~=1&&strcmp(obj.normalization_event,obj.event)
                         t=max(-obj.ms_before,min(obj.ms_after,t));
@@ -961,7 +985,8 @@ classdef TFMapWindow < handle
             if ~isempty(obj.TFMapFig)&&ishandle(obj.TFMapFig)
                 set(obj.TFMapFig,'Name','Obsolete TFMap');
             end
-            obj.TFMapFig=figure('Name','Active TFMap','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt));
+            obj.TFMapFig=figure('Name','Active TFMap','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
+                'color','w','DockControls','pff');
         end
         function ComputeCallback(obj,src)
             
@@ -1045,19 +1070,22 @@ classdef TFMapWindow < handle
             end
             
             if isempty(obj.TFMapFig)||~ishandle(obj.TFMapFig)||~strcmpi(get(obj.TFMapFig,'name'),'Active TFMap')
-                obj.TFMapFig=figure('Name','Active TFMap','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt));
+                obj.TFMapFig=figure('Name','Active TFMap','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
+                    'color','w','DockControls','off');
             end
             figure(obj.TFMapFig)
             
             clf
             
             %Normalizatin**************************************************************
+            i_event=[];
             if obj.normalization==1
                 nref=[];
                 baseline=[];
-            elseif obj.normalization==2 
+                rtfm=[];
+            elseif obj.normalization==2
                 if obj.data_input~=1&&strcmp(obj.event,obj.normalization_event)
-                    nref=round((obj.ms_before+[obj.normalization_start,obj.normalization_end])/1000*obj.fs); 
+                    nref=round((obj.ms_before+[obj.normalization_start,obj.normalization_end])/1000*obj.fs);
                     
                     needupdate=0;
                     if nref(2)>=length(sample)
@@ -1074,8 +1102,8 @@ classdef TFMapWindow < handle
                     end
                     
                     if needupdate
-                            obj.normalization_start=nref(1)*1000/obj.fs-obj.ms_before;
-                            obj.normalization_end=nref(2)*1000/obj.fs-obj.ms_before;
+                        obj.normalization_start=nref(1)*1000/obj.fs-obj.ms_before;
+                        obj.normalization_end=nref(2)*1000/obj.fs-obj.ms_before;
                     end
                 elseif obj.data_input==1
                     nref=round([obj.normalization_start,obj.normalization_end]/1000*obj.fs);
@@ -1094,8 +1122,8 @@ classdef TFMapWindow < handle
                     end
                     
                     if needupdate
-                            obj.normalization_start=nref(1)*1000/obj.fs;
-                            obj.normalization_end=nref(2)*1000/obj.fs;
+                        obj.normalization_start=nref(1)*1000/obj.fs;
+                        obj.normalization_end=nref(2)*1000/obj.fs;
                     end
                 else
                     nref=[];
@@ -1164,77 +1192,25 @@ classdef TFMapWindow < handle
             %**************************************************************************
             switch option
                 case 1
-                    if isempty(data_tmp_sel)
-                        data=get_selected_data(obj.bsp,true);
-                    else
-                        data=get_selected_data(obj.bsp,true,data_tmp_sel);
-                    end
-                    [tf,f,t]=bsp_tfmap(obj.TFMapFig,data,baseline,obj.fs,wd,ov,s,nref,chanNames,freq,units);
-                    
-                    if strcmpi(units,'dB')
-                        tf=10*log10(tf);
-                    else
-                        tf=tf-1;
-                    end
-                    
-                    imagesc(t,f,tf);
-                    
-                    if ~isempty(s)
-                        set(gca,'clim',s);
-                    end
-                    set(gca,'YLim',freq);
-                    set(gca,'Tag','TFMapAxes');
-                    title('Time Frequency Map');
-                    colormap(jet);
-                    xlabel('time (s)');
-                    ylabel('frequency (Hz)')
-                    axis xy;
-                    colorbar
-                    
-                    cmax=max(max(abs(tf)));
-%                     obj.max_clim=cmax*0.8;
-%                     obj.min_clim=-cmax*0.8;
-                    
+                    chanpos=[0.52,0.45];
+                    dw=0.8;
+                    dh=0.85;
+                    chanind=1:length(chanNames);
+                    channames=chanNames;
                 case 2
-                    if isempty(data_tmp_sel)
-                        data=get_selected_data(obj.bsp,true);
-                    else
-                        data=get_selected_data(obj.bsp,true,data_tmp_sel);
-                    end
-                    [tf,f,t]=bsp_tfmap(obj.TFMapFig,data,baseline,obj.fs,wd,ov,s,nref,chanNames,freq,units);
-                    
-                    
-                    if strcmpi(units,'dB')
-                        tf=10*log10(tf);
-                    else
-                        tf=tf-1;
+                    if ~isempty(chanpos)
+                        chanind=~isnan(chanpos(:,1))&~isnan(chanpos(:,2));
                     end
                     
-                    imagesc(t,f,tf);
-                    
-                    if ~isempty(s)
-                        set(gca,'clim',s);
+                    if ~any(chanind)
+                        chanpos=zeros(length(chanNames),2);
+                        chanind=1:length(chanNames);
+                        col=round(sqrt(length(chanNames)));
+                        for i=1:length(chanind)
+                            chanpos(i,1)=mod(i-1,col);
+                            chanpos(i,2)=floor((i-1)/col);
+                        end
                     end
-                    
-                    set(gca,'YLim',freq);
-                    set(gca,'Tag','TFMapAxes');
-                    title('Time Frequency Map');
-                    colormap(jet);
-                    xlabel('time (s)');
-                    ylabel('frequency (Hz)')
-                    axis xy;
-                    colorbar
-                    
-                    cmax=max(max(abs(tf)));
-%                     obj.max_clim=axe_clim(1);
-%                     obj.min_clim=axe_clim(2);
-                case 3
-                    if isempty(chanpos)
-                        errordlg('No channel position in the data !');
-                        return
-                    end
-                    
-                    chanind=~isnan(chanpos(:,1))&~isnan(chanpos(:,2));
                     channames=chanNames(chanind);
                     chanpos=chanpos(chanind,:);
                     
@@ -1262,95 +1238,125 @@ classdef TFMapWindow < handle
                     
                     dw=dx/(x_len+2*dx);
                     dh=dy/(y_len+2*dy);
-                    axe = axes('Parent',obj.TFMapFig,'units','normalized','Position',[0 0 1 1],'XLim',[0,1],'YLim',[0,1],'visible','off');
                     
-                    cmax=-inf;
-                    nref_tmp=nref;
-                    
-                    sel=[];
-                    for i=1:length(i_event)
-                        tmp_sel=[i_event(i)-nL;i_event(i)+nR];
-                        sel=cat(2,sel,tmp_sel);
-                    end
-                    
-                    [data,~,~,~,~,~,~,~,segment]=get_selected_data(obj.bsp,true,sel);
-                    data=data(:,chanind);
-                    
-                    if ~isempty(baseline)
-                        baseline=baseline(:,chanind,:);
-                    end
-                    
-                    if ~isempty(rtfm)
-                        rtfm=rtfm(chanind);
-                    end
-                    for j=1:length(channames)
-                        if isempty(baseline)
-                            bdata=[];
-                        else
-                            bdata=baseline(:,j,:);
-                        end
-                        if obj.data_input==3
-                            tfm=0;
-                                                        
-                            if obj.normalization==2
-                                nref_tmp=[];
-                            end
-                            %******************************************************
-                            for i=1:length(i_event)
-                                data1=data(segment==i,j);
-                                [tf,f,t]=bsp_tfmap(obj.TFMapFig,data1,bdata,obj.fs,wd,ov,s,nref_tmp,channames,freq,units);
-                                tfm=tfm+tf;
-                            end
-                            tfm=tfm/length(i_event);
-                            
-                            %compute the baseline spectrum
-                            
-                            if obj.normalization==2
-                                if strcmp(obj.normalization_event,obj.event)
-                                    rtfm1=mean(tfm(:,(t>=nref(1)/obj.fs)&(t<=nref(2)/obj.fs)),2);
-                                else
-                                    rtfm1=mean(rtfm{j},2);
-                                end
-                                
-                                tfm=tfm./repmat(rtfm1,1,size(tfm,2));
-                            end
-                        else
-                            [tfm,f,t]=bsp_tfmap(obj.TFMapFig,data(:,j),bdata,obj.fs,wd,ov,s,nref,channames,freq,units);
-                        end
-                        
-                        if strcmpi(units,'dB')
-                            %10log10(A/R)
-                            tfm=10*log10(tfm);
-                        else
-                            %(A-R)/R
-                            tfm=tfm-1;
-                        end
-                        tfmap_grid(obj.TFMapFig,axe,t,f,tfm,chanpos(j,:),dw,dh,channames{j},sl,sh,freq);
-                        
-                        obj.tfmat{j}=tfm;
-                        obj.tfmat_t=t;
-                        obj.tfmat_f=f;
-                        obj.tfmat_channel=channel(chanind);
-                        obj.tfmat_dataset=dataset(chanind);
-                        obj.tfmat_channame=channames;
-                        if ~isempty(tfm)
-                            cmax=max(max(max(abs(tfm))),cmax);
-                        end
-                    end
-                    
-                    obj.DisplayOnsetCallback([]);
             end
+            %**************************************************************
+            cmax=-inf;
+            
+            axe = axes('Parent',obj.TFMapFig,'units','normalized','Position',[0 0 1 1],'XLim',[0,1],'YLim',[0,1],'visible','off');
+            
+            
+            nref_tmp=nref;
+            
+            sel=[];
+            for i=1:length(i_event)
+                tmp_sel=[i_event(i)-nL;i_event(i)+nR];
+                sel=cat(2,sel,tmp_sel);
+            end
+            
+            [data,~,~,~,~,~,~,~,segment]=get_selected_data(obj.bsp,true,sel);
+            data=data(:,chanind);
+            
+            if ~isempty(baseline)
+                baseline=baseline(:,chanind,:);
+            end
+            
+            if ~isempty(rtfm)
+                rtfm=rtfm(chanind);
+            end
+            
+            average_tf=0;
+            for j=1:length(channames)
+                if isempty(baseline)
+                    bdata=[];
+                else
+                    bdata=baseline(:,j,:);
+                end
+                if obj.data_input==3
+                    tfm=0;
+                    
+                    if obj.normalization==2
+                        nref_tmp=[];
+                    end
+                    %******************************************************
+                    for i=1:length(i_event)
+                        data1=data(segment==i,j);
+                        [tf,f,t]=bsp_tfmap(obj.TFMapFig,data1,bdata,obj.fs,wd,ov,s,nref_tmp,channames,freq,units);
+                        tfm=tfm+tf;
+                    end
+                    tfm=tfm/length(i_event);
+                    
+                    %compute the baseline spectrum
+                    
+                    if obj.normalization==2
+                        if strcmp(obj.normalization_event,obj.event)
+                            rtfm1=mean(tfm(:,(t>=nref(1)/obj.fs)&(t<=nref(2)/obj.fs)),2);
+                        else
+                            rtfm1=mean(rtfm{j},2);
+                        end
+                        
+                        tfm=tfm./repmat(rtfm1,1,size(tfm,2));
+                    end
+                else
+                    [tfm,f,t]=bsp_tfmap(obj.TFMapFig,data(:,j),bdata,obj.fs,wd,ov,s,nref,channames,freq,units);
+                end
+                
+                average_tf=average_tf+tfm;
+                
+                if strcmpi(units,'dB')
+                    %10log10(A/R)
+                    tfm=10*log10(tfm);
+                else
+                    %(A-R)/R
+%                     tfm=tfm-1;
+                end
+                if option==2
+                    tfmap_grid(obj.TFMapFig,axe,t,f,tfm,chanpos(j,:),dw,dh,channames{j},sl,sh,freq,obj.smooth_x,obj.smooth_y);
+                end
+                
+                obj.tfmat{j}=tfm;
+                obj.tfmat_t=t;
+                obj.tfmat_f=f;
+                obj.tfmat_channel=channel(chanind);
+                obj.tfmat_dataset=dataset(chanind);
+                obj.tfmat_channame=channames;
+                if ~isempty(tfm)&&option==2
+                    cmax=max(max(max(abs(tfm))),cmax);
+                end
+            end
+            
+            if option==1
+                average_tf=average_tf/length(channames);
+                if strcmpi(units,'dB')
+                    %10log10(A/R)
+                    average_tf=10*log10(average_tf);
+                else
+                    %(A-R)/R
+%                     average_tf=average_tf-1;
+                end
+
+                tfmap_grid(obj.TFMapFig,axe,t-obj.ms_before/1000,f,average_tf,chanpos,dw,dh,'',sl,sh,freq,obj.smooth_x,obj.smooth_y);
+                cmax=max(max(abs(average_tf)));
+                colorbar
+                a=findobj(obj.TFMapFig,'Type','Axes');
+                set(a,'visible','on');
+                set(axe,'visible','off');
+                
+                set(a,'fontsize',20);
+                xlabel('Time(s)');
+                ylabel('Frequency(Hz)');
+            end
+            
+            
+            obj.DisplayOnsetCallback([]);
+            
             
             if isnan(cmax)||isempty(cmax)||isinf(cmax)
                 cmax=15;
             end
-            if strcmpi(units,'dB')
-                obj.clim_slider_max=cmax;
-                obj.clim_slider_min=-cmax;
-            else
-                obj.clim_slider_max=cmax;
-                obj.clim_slider_min=-1;
-            end
+            
+            obj.clim_slider_max=cmax;
+            obj.clim_slider_min=-cmax;
         end
         
         function KeyPress(obj,src,evt)
@@ -1371,6 +1377,34 @@ classdef TFMapWindow < handle
         
         function SymmetricScaleCallback(obj,src)
             obj.symmetric_scale_=get(src,'value');
+        end
+        
+        function SmoothCallback(obj)
+            prompt={'Kernel width','Kernel height'};
+            def={num2str(obj.smooth_x),num2str(obj.smooth_y)};
+            
+            title='Gaussian Kernel';
+            
+            
+            answer=inputdlg(prompt,title,1,def);
+            
+            if isempty(answer)
+                return
+            end
+            
+            tmp=str2double(answer{1});
+            if isempty(tmp)||isnan(tmp)
+                tmp=obj.smooth_x;
+            end
+            
+            obj.smooth_x=tmp;
+            
+            tmp=str2double(answer{2});
+            if isempty(tmp)||isnan(tmp)
+                tmp=obj.smooth_y;
+            end
+            
+            obj.smooth_y=tmp;
         end
         
     end
