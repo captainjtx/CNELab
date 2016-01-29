@@ -1,4 +1,4 @@
-function h=tfmap_grid(fig,axe,t,f,tf,pos,dw,dh,channame,sl,sh,freq,smooth_x,smooth_y)
+function h=tfmap_grid(fig,axe,t,f,tf,pos,dw,dh,channame,sl,sh,freq,smooth_x,smooth_y,auto_scale)
 %TFMAP_GRID Summary of this function goes here
 %   Detailed explanation goes here
 %Orign of postion is top left corner
@@ -16,7 +16,10 @@ end
 
 imagesc('XData',t,'YData',f,'CData',tf,'Parent',h);
 
-set(h,'CLim',[sl sh]);
+if ~auto_scale
+    set(h,'CLim',[sl sh]);
+end
+
 set(h,'XLim',[min(t) max(t)]);
 set(h,'YLim',freq);
 

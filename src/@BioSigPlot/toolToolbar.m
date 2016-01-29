@@ -40,7 +40,8 @@ obj.TogAnnotate=uitoggletool(obj.Toolbar,'CData',imread('evts.bmp'),'TooltipStri
     'ClickedCallback',@(src,evt) ChangeMouseMode(obj,src));
 obj.BtnPSD=uipushtool(obj.Toolbar,'CData',imread('psd.png'),'TooltipString','Power Spectrum Density','separator','on',...
     'ClickedCallback',@(src,evt) obj.PSDWin.ComputeCallback());
-obj.BtnTFMap=uipushtool(obj.Toolbar,'CData',imread('tfmap.bmp'),'TooltipString','Time-Frequency Map');
+obj.BtnTFMap=uipushtool(obj.Toolbar,'CData',imread('tfmap.bmp'),'TooltipString','Time-Frequency Map',...
+    'ClickedCallback',@(src,evt) obj.TFMapWin.ComputeCallback());
 
 obj.BtnPCA=uitoggletool(obj.Toolbar,'CData',imread('pca.png'),'TooltipString','Principle Component Analysis',...
     'ClickedCallback',@(src,evt) SPF_Analysis(obj,src));

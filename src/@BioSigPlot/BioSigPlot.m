@@ -414,7 +414,6 @@ classdef BioSigPlot < hgsetget
             redrawEvts(obj);
             
             obj.TFMapWin=TFMapWindow(obj);
-            set(obj.BtnTFMap,'ClickedCallback',@(src,evt) obj.TFMapWin.ComputeCallback(obj.BtnTFMap));
             obj.SpatialMapWin=SpatialMapWindow(obj);
             
             obj.InterpolateWin=InterpWin(obj);

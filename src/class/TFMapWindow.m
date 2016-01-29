@@ -39,6 +39,7 @@ classdef TFMapWindow < handle
         compute_btn
         new_btn
         symmetric_scale_radio
+        auto_scale_radio
         
         settings_menu
         smooth_menu
@@ -69,6 +70,7 @@ classdef TFMapWindow < handle
         clim_slider_min_
         event_list_
         symmetric_scale_
+        auto_scale_
         smooth_x_
         smooth_y_
     end
@@ -98,6 +100,7 @@ classdef TFMapWindow < handle
         clim_slider_min
         event_list
         symmetric_scale
+        auto_scale
         smooth_x
         smooth_y
     end
@@ -141,6 +144,17 @@ classdef TFMapWindow < handle
             obj.symmetric_scale_=val;
             if obj.valid
                 set(obj.symmetric_scale_radio,'value',val);
+            end
+        end
+        
+        
+        function val=get.auto_scale(obj)
+            val=obj.auto_scale_;
+        end
+        function set.auto_scale(obj,val)
+            obj.auto_scale_=val;
+            if obj.valid
+                set(obj.auto_scale_radio,'value',val);
             end
         end
         
@@ -562,6 +576,7 @@ classdef TFMapWindow < handle
             obj.stft_winlen_=round(obj.fs/3);
             obj.stft_overlap_=round(obj.stft_winlen*0.9);
             obj.symmetric_scale_=1;
+            obj.auto_scale_=0;
             obj.smooth_x_=8;
             obj.smooth_y_=8;
         end
@@ -707,6 +722,9 @@ classdef TFMapWindow < handle
                 'units','normalized','position',[0,0.7,0.45,0.3],'callback',@(src,evts) DisplayOnsetCallback(obj,src));
             obj.symmetric_scale_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Symmetric Scale','value',obj.symmetric_scale,...
                 'units','normalized','position',[0,0.4,0.45,0.3],'callback',@(src,evts) SymmetricScaleCallback(obj,src));
+            
+            obj.auto_scale_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Auto Scale','value',obj.auto_scale,...
+                'units','normalized','position',[0,0.1,0.45,0.3],'callback',@(src,evts) AutoScaleCallback(obj,src));
             
             obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.005,0.2,0.05],...
                 'callback',@(src,evts) ComputeCallback(obj));
@@ -1067,8 +1085,6 @@ classdef TFMapWindow < handle
                 s(1)=s(2)-abs(s(2))*0.1;
                 obj.min_clim=s(1);
             end
-            sl=obj.min_clim;
-            sh=obj.max_clim;
             
             freq=[obj.min_freq obj.max_freq];
             if freq(1)>=freq(2)
@@ -1248,6 +1264,8 @@ classdef TFMapWindow < handle
                     
             end
             %**************************************************************
+            sl=obj.min_clim;
+            sh=obj.max_clim;
             cmax=-inf;
             
             axe = axes('Parent',obj.TFMapFig,'units','normalized','Position',[0 0 1 1],'XLim',[0,1],'YLim',[0,1],'visible','off');
@@ -1262,7 +1280,11 @@ classdef TFMapWindow < handle
             end
             
             if isempty(data_tmp_sel)
-                [data,~,~,~,~,~,~,~,segment]=get_selected_data(obj.bsp,true,sel);
+                if ~isempty(sel)
+                    [data,~,~,~,~,~,~,~,segment]=get_selected_data(obj.bsp,true,sel);
+                else
+                    [data,~,~,~,~,~,~,~,segment]=get_selected_data(obj.bsp,true);
+                end
             else
                 [data,~,~,~,~,~,~,~,segment]=get_selected_data(obj.bsp,true,data_tmp_sel);
             end
@@ -1323,7 +1345,7 @@ classdef TFMapWindow < handle
 %                     tfm=tfm-1;
                 end
                 if option==2
-                    tfmap_grid(obj.TFMapFig,axe,t,f,tfm,chanpos(j,:),dw,dh,channames{j},sl,sh,freq,obj.smooth_x,obj.smooth_y);
+                    tfmap_grid(obj.TFMapFig,axe,t,f,tfm,chanpos(j,:),dw,dh,channames{j},sl,sh,freq,obj.smooth_x,obj.smooth_y,obj.auto_scale);
                 end
                 
                 obj.tfmat{j}=tfm;
@@ -1347,7 +1369,7 @@ classdef TFMapWindow < handle
 %                     average_tf=average_tf-1;
                 end
 
-                tfmap_grid(obj.TFMapFig,axe,t-obj.ms_before/1000,f,average_tf,chanpos,dw,dh,'',sl,sh,freq,obj.smooth_x,obj.smooth_y);
+                tfmap_grid(obj.TFMapFig,axe,t-obj.ms_before/1000,f,average_tf,chanpos,dw,dh,'',sl,sh,freq,obj.smooth_x,obj.smooth_y,obj.auto_scale);
                 cmax=max(max(abs(average_tf)));
                 colorbar
                 a=findobj(obj.TFMapFig,'Type','Axes');
@@ -1369,6 +1391,24 @@ classdef TFMapWindow < handle
             
             obj.clim_slider_max=cmax;
             obj.clim_slider_min=-cmax;
+            
+            if obj.auto_scale
+                a=findobj(obj.TFMapFig,'-regexp','Tag','TFMapAxes*');
+                axes_clim=get(a,'CLim');
+                sl=[];
+                sh=[];
+                if iscell(axes_clim)
+                    for i=1:length(axes_clim)
+                        sl=[sl,axes_clim{i}(1)];
+                        sh=[sh,axes_clim{i}(2)];
+                    end
+                else
+                    sl=axes_clim(1);
+                    sh=axes_clim(2);
+                end
+                obj.min_clim=min(sl);
+                obj.max_clim=max(sh);
+            end
         end
         
         function KeyPress(obj,src,evt)
@@ -1389,6 +1429,27 @@ classdef TFMapWindow < handle
         
         function SymmetricScaleCallback(obj,src)
             obj.symmetric_scale_=get(src,'value');
+        end
+        
+        
+        
+        function AutoScaleCallback(obj,src)
+            obj.auto_scale_=get(src,'value');
+            if obj.auto_scale
+                obj.symmetric_scale=0;
+                set(obj.symmetric_scale_radio,'enable','off');
+                set(obj.max_clim_edit,'enable','off');
+                set(obj.min_clim_edit,'enable','off');
+                set(obj.max_clim_slider,'enable','off');
+                set(obj.min_clim_slider,'enable','off');
+            else
+                set(obj.symmetric_scale_radio,'enable','on');
+                set(obj.max_clim_edit,'enable','on');
+                set(obj.min_clim_edit,'enable','on');
+                set(obj.max_clim_slider,'enable','on');
+                set(obj.min_clim_slider,'enable','on');
+            end
+            obj.ComputeCallback();
         end
         
         function SmoothCallback(obj)
