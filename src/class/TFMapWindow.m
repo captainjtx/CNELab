@@ -753,6 +753,8 @@ classdef TFMapWindow < handle
                     set(obj.ms_before_edit,'visible','off');
                     set(obj.ms_after_edit,'visible','off');
                     set(obj.scale_event_popup,'enable','off');
+                    obj.normalization=1;
+                    NormalizationCallback(obj,obj.normalization_popup);
                 case 2
                     %Single Event
                     set(obj.event_text,'visible','on');
@@ -762,6 +764,8 @@ classdef TFMapWindow < handle
                     set(obj.ms_before_edit,'visible','on');
                     set(obj.ms_after_edit,'visible','on');
                     set(obj.scale_event_popup,'enable','off');
+                    obj.normalization=2;
+                    NormalizationCallback(obj,obj.normalization_popup);
                 case 3
                     %Average Event
                     set(obj.event_text,'visible','on');
@@ -771,6 +775,8 @@ classdef TFMapWindow < handle
                     set(obj.ms_before_edit,'visible','on');
                     set(obj.ms_after_edit,'visible','on');
                     set(obj.scale_event_popup,'enable','on');
+                    obj.normalization=2;
+                    NormalizationCallback(obj,obj.normalization_popup);
             end
         end
         
@@ -999,6 +1005,7 @@ classdef TFMapWindow < handle
             
             %Data selection************************************************************
             data_tmp_sel=[];
+            i_event=[];
             if obj.data_input==1
                 omitMask=true;
                 [chanNames,dataset,channel,sample,~,~,chanpos]=get_selected_datainfo(obj.bsp,omitMask);
@@ -1078,7 +1085,7 @@ classdef TFMapWindow < handle
             clf
             
             %Normalizatin**************************************************************
-            i_event=[];
+            
             if obj.normalization==1
                 nref=[];
                 baseline=[];
@@ -1254,7 +1261,12 @@ classdef TFMapWindow < handle
                 sel=cat(2,sel,tmp_sel);
             end
             
-            [data,~,~,~,~,~,~,~,segment]=get_selected_data(obj.bsp,true,sel);
+            if isempty(data_tmp_sel)
+                [data,~,~,~,~,~,~,~,segment]=get_selected_data(obj.bsp,true,sel);
+            else
+                [data,~,~,~,~,~,~,~,segment]=get_selected_data(obj.bsp,true,data_tmp_sel);
+            end
+            
             data=data(:,chanind);
             
             if ~isempty(baseline)
