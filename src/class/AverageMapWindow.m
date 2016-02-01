@@ -30,12 +30,15 @@ classdef AverageMapWindow  < handle
         resize_edit
         resize_slider
         
+        position_txt
+        position_btn
+        
         center_mass_radio
         peak_radio
         contact_radio
         interp_missing_radio
         symmetric_scale_radio
-        auto_refresh_radio
+        average_radio
         color_bar_radio
         scale_by_max_radio
         
@@ -62,7 +65,7 @@ classdef AverageMapWindow  < handle
         resize_
         
         scale_by_max_
-        auto_refresh_
+        average_
         color_bar_
         interp_missing_
         symmetric_scale_
@@ -77,6 +80,10 @@ classdef AverageMapWindow  < handle
         neg_t
         
         position
+        position_file
+        
+        channames
+        
     end
     
     properties (Dependent=true)
@@ -94,7 +101,7 @@ classdef AverageMapWindow  < handle
         clim_slider_min
         resize
         scale_by_max
-        auto_refresh
+        average
         color_bar
         interp_missing
         symmetric_scale
@@ -125,7 +132,7 @@ classdef AverageMapWindow  < handle
             obj.min_clim_=-10;
             obj.resize_=1;
             obj.scale_by_max_=0;
-            obj.auto_refresh_=1;
+            obj.average_=1;
             obj.color_bar_=0;
             obj.width=300;
             obj.height=300;
@@ -142,6 +149,10 @@ classdef AverageMapWindow  < handle
             obj.pos_=0;
             obj.neg_t=1;
             obj.pos_t=1;
+            obj.position_file='None';
+            obj.position=[];
+            
+            obj.average_=1;
         end
         
         function buildfig(obj)
@@ -150,17 +161,16 @@ classdef AverageMapWindow  < handle
                 return
             end
             obj.fig=figure('MenuBar','none','position',[100 100 300 700],...
-                'NumberTitle','off','Name','Average Spatial Maps','DockControls','off',...
+                'NumberTitle','off','Name','Spatial Maps ','DockControls','off',...
                 'CloseRequestFcn',@(src,evts) OnClose(obj));
             obj.file_menu=uimenu(obj.fig,'label','File');
             
             obj.load_menu=uimenu(obj.file_menu,'label','Load');
             
-            
             obj.load_channel_position_menu=uimenu(obj.load_menu,'Label','Position','Callback',@(src,evt) obj.LoadChannelPosition);
-            if ~isempty(obj.bsp)&&obj.bsp.valid
-                set(obj.load_channel_position_menu,'enable','off');
-            end
+%             if ~isempty(obj.bsp)&&obj.bsp.valid
+%                 set(obj.load_channel_position_menu,'enable','off');
+%             end
             obj.save_menu=uimenu(obj.file_menu,'label','Save');
             obj.save_fig_menu=uimenu(obj.save_menu,'label','Figure');
             obj.save_val_menu=uimenu(obj.save_menu,'label','Value');
@@ -171,7 +181,7 @@ classdef AverageMapWindow  < handle
             columnWidth={50,210};
             
             hp=uipanel('parent',obj.fig,'title','','units','normalized','position',[0,0,1,1]);
-            hp_load=uipanel('parent',hp,'title','Spatial Maps','units','normalized','position',[0,0.6,1,0.39]);
+            hp_load=uipanel('parent',hp,'title','Map Files','units','normalized','position',[0,0.59,1,0.4]);
             
             obj.Table=uitable(hp_load,'units','normalized',...
                 'position',[0 0.12 1 0.88],...
@@ -191,6 +201,14 @@ classdef AverageMapWindow  < handle
             obj.BtnLoad=uicontrol(hp_load,'Style','pushbutton','string','load',...
                 'Units','normalized','Position',[0.01,0.01,0.2,0.1],...
                 'tooltipstring','load a new map','callback',@(src,evt) loadMap(obj));
+            
+            hp_pos=uipanel('parent',hp,'title','Channel Position','units','normalized','position',[0,0.51,1,0.07]);
+            
+            obj.position_txt=uicontrol('parent',hp_pos,'style','text','string',obj.position_file,'units','normalized',...
+                'position',[0.05,0.1,0.8,0.8],'HorizontalAlignment','center');
+            obj.position_btn=uicontrol('parent',hp_pos,'style','pushbutton','units','normalized','string','...',...
+                'position',[0.88,0.2,0.1,0.5],'callback',@(src,evts) LoadChannelPosition(obj));
+            
             hp_t=uipanel('parent',hp,'title','Threshold','units','normalized','position',[0,0.4,1,0.1]);
             
             obj.pos_radio=uicontrol('parent',hp_t,'style','radiobutton','string','++ :','units','normalized',...
@@ -226,28 +244,16 @@ classdef AverageMapWindow  < handle
                 'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.max_clim,'sliderstep',[0.01,0.05]);
             
             
-            hp_resize=uipanel('parent',hp,'title','Window Scale','units','normalized','position',[0,0.21,1,0.07]);
+            hp_s=uipanel('parent',hp,'title','Window Scale','units','normalized','position',[0,0.21,1,0.07]);
             
-            uicontrol('parent',hp_resize,'style','text','string','Ratio','units','normalized',...
+            uicontrol('parent',hp_s,'style','text','string','Ratio','units','normalized',...
                 'position',[0,0.2,0.1,0.5]);
-            obj.resize_edit=uicontrol('parent',hp_resize,'style','edit','string',num2str(obj.resize),'units','normalized',...
+            obj.resize_edit=uicontrol('parent',hp_s,'style','edit','string',num2str(obj.resize),'units','normalized',...
                 'position',[0.15,0.2,0.2,0.6],'horizontalalignment','center','callback',@(src,evts) ResizeCallback(obj,src));
-            obj.resize_slider=uicontrol('parent',hp_resize,'style','slider','units','normalized',...
+            obj.resize_slider=uicontrol('parent',hp_s,'style','slider','units','normalized',...
                 'position',[0.4,0.2,0.55,0.6],'callback',@(src,evts) ResizeCallback(obj,src),...
                 'min',0.1,'max',2,'value',obj.resize,'sliderstep',[0.01,0.05]);
             
-            
-            
-            
-            hp_resize=uipanel('parent',hp,'title','Window Scale','units','normalized','position',[0,0.21,1,0.07]);
-            
-            uicontrol('parent',hp_resize,'style','text','string','Ratio','units','normalized',...
-                'position',[0,0.2,0.1,0.5]);
-            obj.resize_edit=uicontrol('parent',hp_resize,'style','edit','string',num2str(obj.resize),'units','normalized',...
-                'position',[0.15,0.2,0.2,0.6],'horizontalalignment','center','callback',@(src,evts) ResizeCallback(obj,src));
-            obj.resize_slider=uicontrol('parent',hp_resize,'style','slider','units','normalized',...
-                'position',[0.4,0.2,0.55,0.6],'callback',@(src,evts) ResizeCallback(obj,src),...
-                'min',0.1,'max',2,'value',obj.resize,'sliderstep',[0.01,0.05]);
             
             hp_display=uipanel('parent',hp,'title','Display','units','normalized','position',[0,0.05,1,0.15]);
             
@@ -257,9 +263,9 @@ classdef AverageMapWindow  < handle
             %             obj.display_mask_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Dispaly Mask Channels',...
             %                 'units','normalized','position',[0,0.5,0.45,0.25],'value',obj.display_mask_channel,...
             %                 'callback',@(src,evts) DisplayMaskCallback(obj,src));
-            obj.auto_refresh_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Auto Refresh',...
-                'units','normalized','position',[0,0.5,0.45,0.25],'value',obj.auto_refresh,...
-                'callback',@(src,evts) AutoRefreshCallback(obj,src));
+            obj.average_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Average',...
+                'units','normalized','position',[0,0.5,0.45,0.25],'value',obj.average,...
+                'callback',@(src,evts) AverageCallback(obj,src));
             obj.color_bar_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Color Bar',...
                 'units','normalized','position',[0,0.25,0.45,0.25],'value',obj.color_bar,...
                 'callback',@(src,evts) ColorBarCallback(obj,src));
@@ -362,59 +368,87 @@ classdef AverageMapWindow  < handle
                 return
             end
             %**************************************************************
-            [allchannames,~,~,~,~,~,allchanpos]=get_datainfo(obj.bsp);
+            allchannames=obj.channames;
+            allchanpos=obj.position;
             
             chanind=~isnan(allchanpos(:,1))&~isnan(allchanpos(:,2));
             allchanpos=allchanpos(chanind,:);
             allchannames=allchannames(chanind);
             
             [allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),~,~] = ...
-                get_relative_chanpos(allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.bsp.SpatialMapWin.width,obj.bsp.SpatialMapWin.height);
+                get_relative_chanpos(allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.width,obj.height);
             %**************************************************************
-            mapv=zeros(length(allchannames),1);
+            mapv=cell(length(obj.select),1);
+            average_mapv=zeros(length(allchannames),1);
+            for i=1:length(mapv)
+                mapv{i}=zeros(length(allchannames),1);
+            end
             ind=[];
             for i=1:length(maps)
                 sm=ReadSpatialMap(maps{i});
                 [~,ib]=ismember(sm.name,allchannames);
                 ind=union(ind,ib);
-                mapv(ib)=mapv(ib)+sm.val;
+                mapv{i}(ib)=sm.val;
+                average_mapv(ib)=average_mapv(ib)+sm.val;
             end
-            mapv=mapv(ind);
             %**************************************************************
-            if obj.bsp.SpatialMapWin.interp_missing
+            if obj.interp_missing
                 map_pos=allchanpos(ind,:);
                 map_channames=allchannames(ind);
-                val=mapv;
+                
+                for i=1:length(mapv)
+                    mapv{i}=mapv{i}(ind);
+                end
             else
                 map_pos=allchanpos;
                 map_channames=allchannames;
-                %default to zeros
-                val=zeros(length(map_channames),1);
-                ind=ismember(allchannames,channames);
-                val(ind)=mapv;
             end
-            
-            spatialmap_grid(obj.SpatialMapFig(e),mapv,obj.bsp.SpatialMapWin.interp_method,...
-                obj.bsp.SpatialMapWin.extrap_method,map_channames,map_pos(:,1),map_pos(:,2),map_pos(:,3),obj.width,obj.height,sl,sh,obj.color_bar,obj.resize);
-            h=findobj(obj.SpatialMapFig(e),'-regexp','tag','SpatialMapAxes');
+            %**************************************************************
+            delete(obj.SpatialMapFig(ishandle(obj.SpatialMapFig)));
+            NewSpatialMapFig(obj);
+            %**************************************************************
+            spatialmap_grid(obj.SpatialMapFig,mapv,obj.interp_method,...
+                obj.extrap_method,map_channames,map_pos(:,1),map_pos(:,2),map_pos(:,3),obj.width,obj.height,sl,sh,obj.color_bar,obj.resize);
+            h=findobj(obj.SpatialMapFig,'-regexp','tag','SpatialMapAxes');
             if obj.contact
                 plot_contact(h,allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.height,obj.width,[],...
                     ~ismember(allchanpos,chanpos,'rows'),erdchan{e},erschan{e});
             end
+            
             if obj.peak
                 [~,I]=max(abs(mapv{e}'));
                 text(obj.pos_x(I)*obj.width,obj.pos_y(I)*obj.height,'p','parent',h,'fontsize',round(20*obj.resize),'color','w',...
                     'tag','peak','horizontalalignment','center','fontweight','bold');
             end
         end
+        function val=NoSpatialMapFig(obj)
+            val=isempty(obj.SpatialMapFig)||~all(ishandle(obj.SpatialMapFig))||~all(strcmpi(get(obj.SpatialMapFig,'Tag'),'Act'));
+        end
         
+        function NewCallback(obj)
+            if ~NoSpatialMapFig(obj)
+                for i=1:length(obj.SpatialMapFig)
+                    name=get(obj.SpatialMapFig,'Name');
+                    set(obj.SpatialMapFig(i),'Name',[name ' Old']);
+                    set(obj.SpatialMapFig(i),'Tag','Old');
+                end
+                
+            end
+            NewSpatialMapFig(obj);
+        end
         function NewSpatialMapFig(obj)
-            
             fpos=get(obj.fig,'position');
-            
-            obj.SpatialMapFig=figure('Name','Average Spatial Maps','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
-                'units','pixels','position',[fpos(1)+fpos(3)+20,fpos(2),obj.fig_w,obj.fig_h],'Resize','off',...
-                'doublebuffer','off','Tag','Act');
+            if obj.average
+                obj.SpatialMapFig=figure('Name','Average','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
+                    'units','pixels','position',[fpos(1)+fpos(3)+20,fpos(2),obj.fig_w,obj.fig_h],'Resize','off',...
+                    'doublebuffer','off','Tag','Act');
+            else
+                for i=1:length(obj.select)
+                    obj.SpatialMapFig(i)=figure('Name',['Map: ',num2str(obj.select(i))],'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
+                        'units','pixels','position',[fpos(1)+fpos(3)+20+(obj.fig_w+20)*(i-1),fpos(2),obj.fig_w,obj.fig_h],'Resize','off',...
+                        'doublebuffer','off','Tag','Act');
+                end
+            end
         end
         
         function KeyPress(obj,src,evt)
@@ -667,13 +701,13 @@ classdef AverageMapWindow  < handle
             end
         end
         
-        function val=get.auto_refresh(obj)
-            val=obj.auto_refresh_;
+        function val=get.average(obj)
+            val=obj.average_;
         end
-        function set.auto_refresh(obj,val)
-            obj.auto_refresh_=val;
+        function set.average(obj,val)
+            obj.average_=val;
             if obj.valid
-                set(obj.auto_refresh_radio,'value',val);
+                set(obj.average_radio,'value',val);
             end
         end
         
@@ -722,17 +756,6 @@ classdef AverageMapWindow  < handle
                 set(obj.neg_slider,'enable','off');
             end
         end
-        function NewCallback(obj)
-            if ~NoSpatialMapFig(obj)
-                for i=1:length(obj.SpatialMapFig)
-                    name=get(obj.SpatialMapFig,'Name');
-                    set(obj.SpatialMapFig(i),'Name',[name ' Old']);
-                    set(obj.SpatialMapFig(i),'Tag','Old');
-                end
-                
-            end
-            NewSpatialMapFig(obj);
-        end
         
         function TCallback(obj,src)
             switch src
@@ -775,6 +798,10 @@ classdef AverageMapWindow  < handle
             %                 obj.smw.UpdateFigure(src);
             %             end
         end
+        
+        function AverageCallback(obj,src)
+            obj.average_=get(src,'value');
+        end
         function LoadChannelPosition(obj)
             %load channel position files
             
@@ -804,10 +831,105 @@ classdef AverageMapWindow  < handle
                 end
             end
             
+            obj.channames=channelname;
             obj.position=p;
-            
+            obj.position_file=fullfile(FilePath,FileName);
+            set(obj.position_txt,'string',obj.position_file);
         end
         
+        function ScaleByMaxCallback(obj,src)
+            obj.scale_by_max_=get(src,'value');
+            
+            if obj.scale_by_max
+                obj.clim_slider_max=1;
+                obj.clim_slider_min=-1;
+            else
+                obj.clim_slider_max=obj.cmax;
+                obj.clim_slider_min=-obj.cmax;
+            end
+            
+            UpdateFigure(obj,src);
+        end
+        
+        
+        function InterpMissingCallback(obj,src)
+            obj.interp_missing_=get(src,'value');
+            UpdateFigure(obj,src);
+        end
+        function SymmetricScaleCallback(obj,src)
+            obj.symmetric_scale_=get(src,'value');
+        end
+        
+        function PeakCallback(obj,src)
+            obj.peak_=get(src,'value');
+            if ~NoSpatialMapFig(obj)
+                mapv=obj.map_val;
+                for i=1:length(obj.SpatialMapFig)
+                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                    if ~isempty(h)
+                        col=obj.pos_x;
+                        row=obj.pos_y;
+                        delete(findobj(h,'tag','peak'));
+                        if obj.peak
+                            [~,I]=max(abs(mapv{i}'));
+                            text(col(I)*obj.width,row(I)*obj.height,'p','parent',h,'fontsize',round(20*obj.resize),'color','w',...
+                                'tag','peak','horizontalalignment','center','fontweight','bold');
+                        end
+                    end
+                end
+            end
+        end
+        
+        function ContactCallback(obj,src)
+            obj.contact_=get(src,'value');
+            chanpos=[obj.pos_x,obj.pos_y,obj.radius];
+            if ~NoSpatialMapFig(obj)
+                for i=1:length(obj.SpatialMapFig)
+                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                    if ~isempty(h)
+                        delete(findobj(h,'Tag','contact'));
+                        figure(obj.SpatialMapFig(i))
+                        if obj.contact
+                            plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
+                                ~ismember(obj.all_chan_pos,chanpos,'rows'),obj.erd_chan{i},obj.ers_chan{i});
+                        end
+                        
+                    end
+                end
+            end
+        end
+        
+        function ColorBarCallback(obj,src)
+            obj.color_bar_=get(src,'value');
+            
+            %             if ~obj.auto_refresh
+            %                 return
+            %             end
+            
+            if ~NoSpatialMapFig(obj)
+                for i=1:length(obj.SpatialMapFig)
+                    pos=get(obj.SpatialMapFig(i),'position');
+                    set(obj.SpatialMapFig(i),'position',...
+                        [pos(1),pos(2),obj.fig_w,obj.fig_h]);
+                    
+                    a=findobj(obj.SpatialMapFig(i),'Tag','SpatialMapAxes');
+                    if ~isempty(a)
+                        h=figure(obj.SpatialMapFig(i));
+                        fpos=get(h,'position');
+                        if obj.color_bar
+                            %optional color bar
+                            cb=colorbar('Units','normalized','FontSize',round(15*obj.resize));
+                            cbpos=get(cb,'Position');
+                            set(a,'Position',[10/400*obj.width/fpos(3),15/300*obj.height/fpos(4),obj.width/fpos(3),obj.height/fpos(4)],'FontSize',round(15*obj.resize));
+                            set(cb,'Position',[(obj.width+20/400*obj.width)/fpos(3),15/300*obj.height/fpos(4),0.04,cbpos(4)]);
+                        else
+                            colorbar('off');
+                            set(a,'Position',[10/400*obj.width/fpos(3),15/300*obj.height/fpos(4),obj.width/fpos(3),obj.height/fpos(4)]);
+                        end
+                    end
+                end
+            end
+        end
     end
     
 end

@@ -5,8 +5,8 @@ function h=tfmap_grid(fig,axe,t,f,tf,pos,dw,dh,channame,sl,sh,freq,smooth_x,smoo
 x=pos(1)-dw/2;
 y=1-(pos(2)+dh/2);
 
-text(x+dw/2,y+dh+0.008,channame,...
-    'fontsize',8,'horizontalalignment','center','parent',axe,'interpreter','none')
+text(x+dw/2,y+1.1*dh,channame,...
+    'fontsize',80*dh,'horizontalalignment','center','parent',axe,'interpreter','none')
 
 h=axes('parent',fig,'units','normalized','Position',[x,y,dw,dh],'Visible','off');
 

@@ -186,14 +186,16 @@ for i=1:length(cds)
                 color=[0.8 0 0];
             end
             
-            for c=1:6
-                if show_cue_time-center_hold_time<2.8%...
-                    %                         ||fill_target_time-show_cue_time<0.8...
-                    %                         ||fill_target_time-show_cue_time>1.7
-                    color=[0.5 0.5 0.5];
-                    Event=cat(1,Event,{cds{i}.DataInfo.TriggerCodes(r,c)/fs,['0-' num2str(c)],color,2});
-                else
-                    Event=cat(1,Event,{cds{i}.DataInfo.TriggerCodes(r,c)/fs,uncertainty_code{c},color,2});
+            if ~errorCode
+                for c=1:6
+                    if show_cue_time-center_hold_time<2.8%...
+                        %                         ||fill_target_time-show_cue_time<0.8...
+                        %                         ||fill_target_time-show_cue_time>1.7
+                        color=[0.5 0.5 0.5];
+                        Event=cat(1,Event,{cds{i}.DataInfo.TriggerCodes(r,c)/fs,['0-' num2str(c)],color,2});
+                    else
+                        Event=cat(1,Event,{cds{i}.DataInfo.TriggerCodes(r,c)/fs,uncertainty_code{c},color,2});
+                    end
                 end
             end
         end

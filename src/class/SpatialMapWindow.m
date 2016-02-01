@@ -1632,7 +1632,6 @@ classdef SpatialMapWindow < handle
                 clf(obj.SpatialMapFig(i));
                 set(obj.SpatialMapFig(i),'Name',evt{i});
             end
-            
             %Normalizatin**************************************************************
             if obj.normalization==1
                 nref=[];
@@ -2319,7 +2318,6 @@ classdef SpatialMapWindow < handle
         
         
         function AddCallback(obj,h)
-            
             ievent=get(obj.event_list_listbox,'value');
             if isempty(ievent)
                 return
