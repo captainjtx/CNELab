@@ -272,6 +272,8 @@ classdef BioSigPlot < hgsetget
         TotalTime
         BufferStartSample
         BufferEndSample
+        
+        valid
     end
     properties (Access=protected,Hidden)%Storage of public properties
         Version_
@@ -1697,6 +1699,14 @@ classdef BioSigPlot < hgsetget
         function obj=set.VisualDownSample(obj,val)
             totalchan=sum(obj.DispChans);
             obj.VisualBuffer=obj.WinLength*obj.SRate*totalchan*8/val/1000/1000;
+        end
+        
+        function val=get.valid(obj)
+            try
+                val=ishandle(obj.Fig)&&isvalid(obj.Fig);
+            catch
+                val=0;
+            end
         end
     end
     

@@ -1,4 +1,4 @@
-function LoadChannelPosition( obj )
+function LoadChannelPosition(obj)
 %load channel position files
 
 if exist([obj.FileDir,'/position'],'dir')==7
