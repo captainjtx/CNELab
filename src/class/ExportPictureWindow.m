@@ -281,7 +281,6 @@ classdef ExportPictureWindow < handle
         end
         
         function OnClose(obj)
-            obj.valid=0;
             
             h = obj.fig;
             if ishandle(h)
@@ -326,7 +325,8 @@ classdef ExportPictureWindow < handle
             end
         end
         
-        function DirCallback(obj)
+        function DirCallback(obj,src)
+            obj.dest_dir_=get(src,'string');
         end
         
         function FormatCallback(obj,src)
@@ -338,8 +338,8 @@ classdef ExportPictureWindow < handle
             obj.filename_=get(src,'string');
         end
         function fname=auto_file_name(obj)
-            fname=[num2str(obj.smw.min_freq),'-',num2str(obj.smw.max_freq),...
-                '_start',num2str(obj.smw.act_start),'_len',num2str(obj.smw.act_len)];
+            fname=[num2str(obj.smw.min_freq),'_',num2str(obj.smw.max_freq),...
+                '_s',num2str(obj.smw.act_start),'_l',num2str(obj.smw.act_len)];
         end
         function ExportCallback(obj)
             pic_format=obj.format_list{obj.format};

@@ -1497,7 +1497,7 @@ classdef SpatialMapWindow < handle
         function NewCallback(obj)
             if ~NoSpatialMapFig(obj)
                 for i=1:length(obj.SpatialMapFig)
-                    name=get(obj.SpatialMapFig,'Name');
+                    name=get(obj.SpatialMapFig(i),'Name');
                     set(obj.SpatialMapFig(i),'Name',[name ' Old']);
                     set(obj.SpatialMapFig(i),'Tag','Old');
                 end

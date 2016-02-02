@@ -43,6 +43,12 @@ classdef TFMapWindow < handle
         
         settings_menu
         smooth_menu
+        file_menu
+        save_menu
+        save_fig_menu
+        TFMapSaveWin
+        
+        disp_axis_radio
         
     end
     properties
@@ -73,6 +79,7 @@ classdef TFMapWindow < handle
         auto_scale_
         smooth_x_
         smooth_y_
+        disp_axis_
     end
     
     properties (Dependent)
@@ -103,6 +110,7 @@ classdef TFMapWindow < handle
         auto_scale
         smooth_x
         smooth_y
+        disp_axis
     end
     properties
         tfmat
@@ -113,6 +121,15 @@ classdef TFMapWindow < handle
         tfmat_channel
     end
     methods
+        function val=get.disp_axis(obj)
+            val=obj.disp_axis_;
+        end
+        function set.disp_axis(obj,val)
+            obj.disp_axis_=val;
+            if obj.valid
+                set(obj.disp_axis_radio,'value',val);
+            end
+        end
         function val=get.smooth_x(obj)
             val=obj.smooth_x_;
         end
@@ -579,6 +596,8 @@ classdef TFMapWindow < handle
             obj.auto_scale_=0;
             obj.smooth_x_=8;
             obj.smooth_y_=8;
+            obj.disp_axis_=0;
+            obj.TFMapSaveWin=FigureSaveWindow(obj);
         end
         function buildfig(obj)
             if obj.valid
@@ -586,8 +605,13 @@ classdef TFMapWindow < handle
                 return
             end
             obj.fig=figure('MenuBar','none','Name','Time-Frequency Map','units','pixels',...
-                'Position',[500 100 300 600],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
+                'Position',[100 100 300 600],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
                 'Resize','on','DockControls','off');
+            
+            obj.file_menu=uimenu(obj.fig,'label','File');
+            obj.save_menu=uimenu(obj.file_menu,'label','Save');
+            obj.save_fig_menu=uimenu(obj.save_menu,'label','Figure','callback',@(src,evts) obj.TFMapSaveWin.buildfig());
+            
             obj.settings_menu=uimenu(obj.fig,'label','Settings');
             obj.smooth_menu=uimenu(obj.settings_menu,'label','Smooth Kernel','callback',@(src,evts) SmoothCallback(obj));
             
@@ -725,7 +749,8 @@ classdef TFMapWindow < handle
             
             obj.auto_scale_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Auto Scale','value',obj.auto_scale,...
                 'units','normalized','position',[0,0.1,0.45,0.3],'callback',@(src,evts) AutoScaleCallback(obj,src));
-            
+            obj.disp_axis_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Axis','value',obj.disp_axis,...
+                'units','normalized','position',[0.5,0.7,0.45,0.3],'callback',@(src,evts) AxisCallback(obj,src));
             obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.005,0.2,0.05],...
                 'callback',@(src,evts) ComputeCallback(obj));
             
@@ -754,6 +779,12 @@ classdef TFMapWindow < handle
             h = obj.TFMapFig;
             if ishandle(h)
                 delete(h);
+            end
+            
+            h=obj.TFMapSaveWin;
+            
+            if h.valid
+                delete(h.fig);
             end
         end
         function MethodCallback(obj,src)
@@ -949,7 +980,7 @@ classdef TFMapWindow < handle
                         delete(tmp);
                         %                         axes(h(i))
                         line([tonset,tonset],[obj.min_freq,obj.max_freq],'LineStyle',':',...
-                            'color','k','linewidth',0.1,'Parent',h(i))
+                            'color','k','linewidth',1,'Parent',h(i))
                     end
                 else
                     for i=1:length(h)
@@ -1007,10 +1038,12 @@ classdef TFMapWindow < handle
         end
         function NewCallback(obj)
             if ~isempty(obj.TFMapFig)&&ishandle(obj.TFMapFig)
-                set(obj.TFMapFig,'Name','Obsolete TFMap');
+                name=get(obj.TFMapFig,'Name');
+                set(obj.TFMapFig,'Tag','Old');
+                set(obj.TFMapFig,'name',[name,' Old'])
             end
-            obj.TFMapFig=figure('Name','Active TFMap','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
-                'color','w','DockControls','pff');
+            obj.TFMapFig=figure('Name',obj.event,'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
+                'color','w','DockControls','off','Tag','Act');
         end
         function ComputeCallback(obj,src)
             
@@ -1092,13 +1125,10 @@ classdef TFMapWindow < handle
                 obj.min_freq=freq(1);
             end
             
-            if isempty(obj.TFMapFig)||~ishandle(obj.TFMapFig)||~strcmpi(get(obj.TFMapFig,'name'),'Active TFMap')
-                obj.TFMapFig=figure('Name','Active TFMap','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
-                    'color','w','DockControls','off');
-            end
-            figure(obj.TFMapFig)
+            delete(obj.TFMapFig(ishandle(obj.TFMapFig)));
+            obj.TFMapFig=figure('Name',obj.event,'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
+                'color','w','DockControls','off','Tag','Act');
             
-            clf
             
             %Normalizatin**************************************************************
             
@@ -1478,6 +1508,21 @@ classdef TFMapWindow < handle
             end
             
             obj.smooth_y=tmp;
+        end
+        
+        function AxisCallback(obj,src)
+            if src==obj.disp_axis_radio
+                obj.disp_axis_=get(src,'value');
+            end
+            
+            if ~isempty(obj.TFMapFig)&&ishandle(obj.TFMapFig)
+                h=findobj(obj.TFMapFig,'-regexp','Tag','TFMapAxes*');
+                if obj.disp_axis
+                    set(h,'visible','on');
+                else
+                    set(h,'visible','off');
+                end
+            end
         end
         
     end
