@@ -338,13 +338,13 @@ classdef SpatialMapWindow < handle
                 end
                 
                 if obj.threshold_win.pos
-                    ind=find(mapv>0);
+                    ind=find(mapv>=0);
                     [abs_val,I]=sort(abs(mapv(ind)),'descend');
                     cumsum_val=cumsum(abs_val);
                     mapv(ind(I(cumsum_val>cumsum_val(end)*obj.threshold_win.pos_t)))=0;
                 end
                 if obj.threshold_win.neg
-                    ind=find(mapv<0);
+                    ind=find(mapv<=0);
                     [abs_val,I]=sort(abs(mapv(ind)),'descend');
                     cumsum_val=cumsum(abs_val);
                     mapv(ind(I(cumsum_val>cumsum_val(end)*obj.threshold_win.neg_t)))=0;
@@ -1042,8 +1042,8 @@ classdef SpatialMapWindow < handle
                 'Resize','on','DockControls','off');
             
             obj.export_menu=uimenu(obj.fig,'label','Export');
-            obj.export_pic_menu=uimenu(obj.export_menu,'label','Pictures','callback',@(src,evts) ExportPictureCallback(obj));
-            obj.export_movie_menu=uimenu(obj.export_menu,'label','Movie','callback',@(src,evts) ExportMovieCallback(obj));
+            obj.export_pic_menu=uimenu(obj.export_menu,'label','Pictures','callback',@(src,evts) ExportPictureCallback(obj),'Accelerator','p');
+            obj.export_movie_menu=uimenu(obj.export_menu,'label','Movie','callback',@(src,evts) ExportMovieCallback(obj),'Accelerator','m');
             obj.export_trial_info_menu=uimenu(obj.export_menu,'label','Trial Info','callback',@(src,evts) ExportTrialInfoCallback(obj));
             obj.export_map_menu=uimenu(obj.export_menu,'label','Map','callback',@(src,evts) ExportMapCallback(obj));
             

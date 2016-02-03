@@ -83,7 +83,13 @@ classdef AverageMapWindow  < handle
         position_file
         
         channames
+        map_val_
         
+        all_chan_pos
+        chan_ind
+        all_chan_names
+        
+        export_picture_win
     end
     
     properties (Dependent=true)
@@ -111,6 +117,9 @@ classdef AverageMapWindow  < handle
         
         pos
         neg
+        map_val
+        
+        
     end
     
     methods
@@ -153,6 +162,8 @@ classdef AverageMapWindow  < handle
             obj.position=[];
             
             obj.average_=1;
+            
+            obj.export_picture_win=AverageMapSaveWindow(obj);
         end
         
         function buildfig(obj)
@@ -167,17 +178,19 @@ classdef AverageMapWindow  < handle
             
             obj.load_menu=uimenu(obj.file_menu,'label','Load');
             
-            obj.load_channel_position_menu=uimenu(obj.load_menu,'Label','Position','Callback',@(src,evt) obj.LoadChannelPosition);
+            obj.load_channel_position_menu=uimenu(obj.load_menu,'Label','Position','Callback',@(src,evt) obj.LoadChannelPosition,...
+                'Accelerator','n');
 %             if ~isempty(obj.bsp)&&obj.bsp.valid
 %                 set(obj.load_channel_position_menu,'enable','off');
 %             end
             obj.save_menu=uimenu(obj.file_menu,'label','Save');
-            obj.save_fig_menu=uimenu(obj.save_menu,'label','Figure');
+            obj.save_fig_menu=uimenu(obj.save_menu,'label','Figure','callback',@(src,evt) obj.export_picture_win.buildfig(),...
+                'Accelerator','p');
             obj.save_val_menu=uimenu(obj.save_menu,'label','Value');
             
             columnName={'Selected','FileName'};
             columnFormat={'logical','char'};
-            columnEditable=[true,true];
+            columnEditable=[true,false];
             columnWidth={50,210};
             
             hp=uipanel('parent',obj.fig,'title','','units','normalized','position',[0,0,1,1]);
@@ -217,10 +230,10 @@ classdef AverageMapWindow  < handle
                 'position',[0,0.1,0.18,0.3],'value',obj.neg,'callback',@(src,evts) TCallback(obj,src),'interruptible','off');
             obj.pos_edit=uicontrol('parent',hp_t,'style','edit','string',num2str(obj.pos_t),'units','normalized',...
                 'position',[0.2,0.55,0.15,0.4],'horizontalalignment','center','callback',@(src,evts) TCallback(obj,src),'interruptible','off');
-            obj.neg_slider=uicontrol('parent',hp_t,'style','slider','units','normalized',...
+            obj.pos_slider=uicontrol('parent',hp_t,'style','slider','units','normalized',...
                 'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) TCallback(obj,src),...
                 'min',0,'max',1,'value',obj.neg_t,'sliderstep',[0.01,0.05],'interruptible','off');
-            obj.pos_edit=uicontrol('parent',hp_t,'style','edit','string',num2str(obj.pos_t),'units','normalized',...
+            obj.neg_edit=uicontrol('parent',hp_t,'style','edit','string',num2str(obj.pos_t),'units','normalized',...
                 'position',[0.2,0.05,0.15,0.4],'horizontalalignment','center','callback',@(src,evts) TCallback(obj,src),'interruptible','off');
             obj.neg_slider=uicontrol('parent',hp_t,'style','slider','units','normalized',...
                 'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) TCallback(obj,src),...
@@ -302,6 +315,9 @@ classdef AverageMapWindow  < handle
             
             obj.refresh_btn=uicontrol('parent',hp,'style','pushbutton','string','Refresh','units','normalized','position',[0.4,0.005,0.2,0.04],...
                 'callback',@(src,evts) UpdateFigure(obj,src));
+            
+            obj.pos=obj.pos_;
+            obj.neg=obj.neg_;
         end
         
         function OnClose(obj)
@@ -309,8 +325,17 @@ classdef AverageMapWindow  < handle
             h = obj.fig;
             if ishandle(h)
                 delete(h);
-            else
-                return
+            end
+            
+            
+            h = obj.SpatialMapFig;
+            if ishandle(h)
+                delete(h);
+            end
+            
+            
+            if obj.export_picture_win.valid
+                delete(obj.export_picture_win.fig);
             end
         end
         
@@ -375,30 +400,25 @@ classdef AverageMapWindow  < handle
             allchanpos=allchanpos(chanind,:);
             allchannames=allchannames(chanind);
             
-            [allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),~,~] = ...
+            [allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.width,obj.height] = ...
                 get_relative_chanpos(allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.width,obj.height);
             %**************************************************************
-            mapv=cell(length(obj.select),1);
-            average_mapv=zeros(length(allchannames),1);
-            for i=1:length(mapv)
-                mapv{i}=zeros(length(allchannames),1);
-            end
+            mapv=zeros(length(allchannames),length(obj.select));
             ind=[];
             for i=1:length(maps)
                 sm=ReadSpatialMap(maps{i});
                 [~,ib]=ismember(sm.name,allchannames);
                 ind=union(ind,ib);
-                mapv{i}(ib)=sm.val;
-                average_mapv(ib)=average_mapv(ib)+sm.val;
+                mapv(ib,i)=sm.val;
             end
+            obj.map_val=mapv;
+            obj.all_chan_pos=allchanpos;
+            obj.chan_ind=ind;
+            obj.all_chan_names=allchannames;
             %**************************************************************
             if obj.interp_missing
                 map_pos=allchanpos(ind,:);
                 map_channames=allchannames(ind);
-                
-                for i=1:length(mapv)
-                    mapv{i}=mapv{i}(ind);
-                end
             else
                 map_pos=allchanpos;
                 map_channames=allchannames;
@@ -407,19 +427,33 @@ classdef AverageMapWindow  < handle
             delete(obj.SpatialMapFig(ishandle(obj.SpatialMapFig)));
             NewSpatialMapFig(obj);
             %**************************************************************
-            spatialmap_grid(obj.SpatialMapFig,mapv,obj.interp_method,...
-                obj.extrap_method,map_channames,map_pos(:,1),map_pos(:,2),map_pos(:,3),obj.width,obj.height,sl,sh,obj.color_bar,obj.resize);
-            h=findobj(obj.SpatialMapFig,'-regexp','tag','SpatialMapAxes');
-            if obj.contact
-                plot_contact(h,allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.height,obj.width,[],...
-                    ~ismember(allchanpos,chanpos,'rows'),erdchan{e},erschan{e});
+            mv=obj.map_val;
+            %**************************************************************
+            for i=1:size(mv,2)
+                %*********************
+                if obj.interp_missing
+                    val=mv(ind,i);
+                else
+                    val=mv(:,i);
+                end
+                %*********************
+                spatialmap_grid(obj.SpatialMapFig(i),val,obj.interp_method,...
+                    obj.extrap_method,map_channames,map_pos(:,1),map_pos(:,2),map_pos(:,3),obj.width,obj.height,...
+                    obj.min_clim,obj.max_clim,obj.color_bar,obj.resize);
+                h=findobj(obj.SpatialMapFig(i),'-regexp','tag','SpatialMapAxes');
+                if obj.contact
+                    plot_contact(h,allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.height,obj.width,[],...
+                        ~ismember(allchanpos,map_pos,'rows'),[],[]);
+                end
+                
+                if obj.peak
+                    [~,I]=max(abs(val'));
+                    text(map_pos(I,1)*obj.width,map_pos(I,2)*obj.height,'p','parent',h,'fontsize',round(20*obj.resize),'color','w',...
+                        'tag','peak','horizontalalignment','center','fontweight','bold');
+                end
             end
             
-            if obj.peak
-                [~,I]=max(abs(mapv{e}'));
-                text(obj.pos_x(I)*obj.width,obj.pos_y(I)*obj.height,'p','parent',h,'fontsize',round(20*obj.resize),'color','w',...
-                    'tag','peak','horizontalalignment','center','fontweight','bold');
-            end
+            obj.map_val=mapv;
         end
         function val=NoSpatialMapFig(obj)
             val=isempty(obj.SpatialMapFig)||~all(ishandle(obj.SpatialMapFig))||~all(strcmpi(get(obj.SpatialMapFig,'Tag'),'Act'));
@@ -444,7 +478,8 @@ classdef AverageMapWindow  < handle
                     'doublebuffer','off','Tag','Act');
             else
                 for i=1:length(obj.select)
-                    obj.SpatialMapFig(i)=figure('Name',['Map: ',num2str(obj.select(i))],'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
+                    [~,name,~]=fileparts(obj.MapFiles{obj.select(i)});
+                    obj.SpatialMapFig(i)=figure('Name',name,'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
                         'units','pixels','position',[fpos(1)+fpos(3)+20+(obj.fig_w+20)*(i-1),fpos(2),obj.fig_w,obj.fig_h],'Resize','off',...
                         'doublebuffer','off','Tag','Act');
                 end
@@ -482,7 +517,7 @@ classdef AverageMapWindow  < handle
                 tmp=cell(length(val),2);
                 for i=1:length(val)
                     tmp{i,1}=false;
-                    tmp{i,2}=val{i};
+                    [~,tmp{i,2},~]=fileparts(val{i});
                 end
                 if ~isempty(obj.select)
                     [tmp{obj.select,1}]=deal(true);
@@ -715,6 +750,46 @@ classdef AverageMapWindow  < handle
             val=obj.resize_;
         end
         function set.resize(obj,val)
+            
+            oldval=obj.resize;
+            obj.resize_=val;
+            
+            if obj.valid
+                set(obj.resize_edit,'string',num2str(val));
+                set(obj.resize_slider,'value',val);
+            end
+            
+            obj.width=round(obj.width/oldval*val);
+            obj.height=round(obj.height/oldval*val);
+            
+            chanpos=obj.all_chan_pos(obj.chan_ind,:);
+            
+            if ~NoSpatialMapFig(obj)
+                for i=1:length(obj.SpatialMapFig)
+                    if ishandle(obj.SpatialMapFig(i))
+                        fpos=get(obj.SpatialMapFig(i),'position');
+                        set(obj.SpatialMapFig(i),'position',[fpos(1),fpos(2),obj.fig_w,obj.fig_h]);
+                        h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                        if ~isempty(h)
+                            delete(findobj(h,'Tag','contact'));
+                            figure(obj.SpatialMapFig(i))
+                            if obj.contact
+                                plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
+                                    ~ismember(obj.all_chan_pos,chanpos,'rows'));
+                            end
+                        end
+                    end
+                end
+            end
+            
+            if obj.color_bar
+                obj.color_bar=0;
+                ColorBarCallback(obj,obj.color_bar_radio);
+                obj.color_bar=1;
+                ColorBarCallback(obj,obj.color_bar_radio);
+            end
+            
+            UpdateFigure(obj,obj.resize_edit);
         end
         
         
@@ -793,10 +868,7 @@ classdef AverageMapWindow  < handle
                     set(obj.neg_edit,'string',num2str(val));
                     obj.neg_t=val;
             end
-            
-            %             if obj.smw.auto_refresh
-            %                 obj.smw.UpdateFigure(src);
-            %             end
+            obj.UpdateFigure(src);
         end
         
         function AverageCallback(obj,src)
@@ -805,7 +877,7 @@ classdef AverageMapWindow  < handle
         function LoadChannelPosition(obj)
             %load channel position files
             
-            [FileName,FilePath,FilterIndex]=uigetfile({...
+            [FileName,FilePath,~]=uigetfile({...
                 '*.csv;*.txt;*.pos;*.mat',...
                 'Supported formats (*.csv;*.txt;*.pos;*.mat)';...
                 '*.csv;*.txt;*.pos','Text File';...
@@ -863,16 +935,15 @@ classdef AverageMapWindow  < handle
         function PeakCallback(obj,src)
             obj.peak_=get(src,'value');
             if ~NoSpatialMapFig(obj)
+                chanpos=obj.all_chan_pos(obj.chan_ind,:);
                 mapv=obj.map_val;
                 for i=1:length(obj.SpatialMapFig)
                     h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
                     if ~isempty(h)
-                        col=obj.pos_x;
-                        row=obj.pos_y;
                         delete(findobj(h,'tag','peak'));
                         if obj.peak
-                            [~,I]=max(abs(mapv{i}'));
-                            text(col(I)*obj.width,row(I)*obj.height,'p','parent',h,'fontsize',round(20*obj.resize),'color','w',...
+                            [~,I]=max(abs(mapv(:,i)'));
+                            text(chanpos(I,1)*obj.width,chanpos(I,2)*obj.height,'p','parent',h,'fontsize',round(20*obj.resize),'color','w',...
                                 'tag','peak','horizontalalignment','center','fontweight','bold');
                         end
                     end
@@ -882,7 +953,7 @@ classdef AverageMapWindow  < handle
         
         function ContactCallback(obj,src)
             obj.contact_=get(src,'value');
-            chanpos=[obj.pos_x,obj.pos_y,obj.radius];
+            chanpos=obj.all_chan_pos(obj.chan_ind,:);
             if ~NoSpatialMapFig(obj)
                 for i=1:length(obj.SpatialMapFig)
                     h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
@@ -891,7 +962,7 @@ classdef AverageMapWindow  < handle
                         figure(obj.SpatialMapFig(i))
                         if obj.contact
                             plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
-                                ~ismember(obj.all_chan_pos,chanpos,'rows'),obj.erd_chan{i},obj.ers_chan{i});
+                                ~ismember(obj.all_chan_pos,chanpos,'rows'),[],[]);
                         end
                         
                     end
@@ -908,9 +979,9 @@ classdef AverageMapWindow  < handle
             
             if ~NoSpatialMapFig(obj)
                 for i=1:length(obj.SpatialMapFig)
-                    pos=get(obj.SpatialMapFig(i),'position');
+                    posi=get(obj.SpatialMapFig(i),'position');
                     set(obj.SpatialMapFig(i),'position',...
-                        [pos(1),pos(2),obj.fig_w,obj.fig_h]);
+                        [posi(1),posi(2),obj.fig_w,obj.fig_h]);
                     
                     a=findobj(obj.SpatialMapFig(i),'Tag','SpatialMapAxes');
                     if ~isempty(a)
@@ -926,6 +997,152 @@ classdef AverageMapWindow  < handle
                             colorbar('off');
                             set(a,'Position',[10/400*obj.width/fpos(3),15/300*obj.height/fpos(4),obj.width/fpos(3),obj.height/fpos(4)]);
                         end
+                    end
+                end
+            end
+        end
+        function ClimCallback(obj,src)
+            switch src
+                case obj.max_clim_slider
+                    obj.max_clim=get(src,'value');
+                case obj.min_clim_slider
+                    obj.min_clim=get(src,'value');
+                case obj.max_clim_edit
+                    t=str2double(get(src,'string'));
+                    if isnan(t)
+                        t=obj.max_clim;
+                    end
+                    obj.max_clim=t;
+                case obj.min_clim_edit
+                    t=str2double(get(src,'string'));
+                    if isnan(t)
+                        t=obj.min_clim;
+                    end
+                    obj.min_clim=t;
+            end
+            
+            if ~NoSpatialMapFig(obj)
+                h=findobj(obj.SpatialMapFig,'-regexp','Tag','SpatialMapAxes');
+                
+                sl=obj.min_clim;
+                sh=obj.max_clim;
+                
+                if sl<sh
+                    set(h,'CLim',[sl,sh]);
+                end
+                %                 figure(obj.SpatialMapFig);
+            end
+        end
+        function set.map_val(obj,val)
+            obj.map_val_=val;
+        end
+        
+        function val=get.map_val(obj)
+            if obj.average
+                val=mean(obj.map_val_,2);
+            else
+                val=obj.map_val_;
+            end
+            
+            for k=1:size(val,2)
+                if obj.scale_by_max
+                    val(:,k)=val(:,k)/max(abs(val(:,k)));
+                end
+                
+                if obj.pos
+                    ind=find(val(:,k)>=0);
+                    [abs_val,I]=sort(abs(val(ind,k)),'descend');
+                    cumsum_val=cumsum(abs_val);
+                    val(ind(I(cumsum_val>cumsum_val(end)*obj.pos_t)),k)=0;
+                end
+                if obj.neg
+                    ind=find(val(:,k)<=0);
+                    [abs_val,I]=sort(abs(val(ind,k)),'descend');
+                    cumsum_val=cumsum(abs_val);
+                    val(ind(I(cumsum_val>cumsum_val(end)*obj.neg_t)),k)=0;
+                end
+            end
+        end
+        function UpdateFigure(obj,src)
+             if ~NoSpatialMapFig(obj)
+                mapv=obj.map_val;
+                ind=obj.chan_ind;
+                
+                if obj.interp_missing
+                    map_pos=obj.all_chan_pos(ind,:);
+%                     map_channames=obj.all_chan_names(ind);
+                else
+                    map_pos=obj.all_chan_pos;
+%                     map_channames=obj.all_chan_names;
+                end
+                
+                for i=1:length(obj.SpatialMapFig)
+                    %*********************
+                    if obj.interp_missing
+                        val=mapv(ind,i);
+                    else
+                        val=mapv(:,i);
+                    end
+                    %*********************
+                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                    if ~isempty(h)
+                        if strcmpi(obj.interp_method,'natural')
+                            [x,y]=meshgrid((1:obj.width)/obj.width,(1:obj.height)/obj.height);
+                            
+                            F= scatteredInterpolant(map_pos(:,1),map_pos(:,2),val,obj.interp_method,obj.extrap_method);
+                            mapvq=F(x,y);
+%                             mapvq = gaussInterpolant(col,row,mapv{i}',x,y);
+                        else
+                            return
+                        end
+                        
+                        imagehandle=findobj(h,'Tag','ImageMap');
+                        set(h,'clim',[obj.min_clim,obj.max_clim]);
+                        set(h,'xlim',[1,obj.width]);
+                        set(h,'ylim',[1,obj.height]);
+                        set(imagehandle,'CData',single(mapvq));
+                        delete(findobj(h,'tag','peak'));
+                        drawnow
+                        
+                        if obj.peak
+                            [~,I]=max(abs(val'));
+                            text(map_pos(I,1)*obj.width,map_pos(I,2)*obj.height,'p','parent',h,'fontsize',round(20*obj.resize),'color','w',...
+                                'tag','peak','horizontalalignment','center','fontweight','bold');
+                        end
+                    end
+                end
+            end
+        end
+        
+        function ResizeCallback(obj,src)
+            switch src
+                case obj.resize_edit
+                    t=str2double(get(src,'string'));
+                    if isnan(t)
+                        t=obj.resize;
+                    end
+                    t=max(0.1,min(t,3));
+                    
+                    obj.resize=t;
+                case obj.resize_slider
+                    obj.resize=get(src,'value');
+            end
+        end
+        function CenterMassCallback(obj,src)
+            obj.center_mass_=get(src,'value');
+            
+            if ~NoSpatialMapFig(obj)
+                mapv=obj.map_val;
+                chanpos=obj.all_chan_pos(obj.chan_ind,:);
+                
+                for i=1:length(obj.SpatialMapFig)
+                    delete(findobj(obj.SpatialMapFig(i),'tag','mass'));
+                    
+                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                    if ~isempty(h)
+                        %                             figure(obj.SpatialMapFig(i))
+                        plot_mass_center(h,mapv(:,i),round(chanpos(:,1)*obj.width),...
+                            round(chanpos(:,2)*obj.height),mapv(:,i)<0,mapv(:,i)>0,obj.center_mass,obj.resize);
                     end
                 end
             end

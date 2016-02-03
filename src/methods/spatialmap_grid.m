@@ -19,8 +19,6 @@ if strcmpi(method,'natural')
     F= scatteredInterpolant(col(:),row(:),mapv(:),method,extrap);
     mapvq=F(x,y);
 %     mapvq=griddata(col,row,mapv,x,y,method);
-    
-    
 else
     return
 end

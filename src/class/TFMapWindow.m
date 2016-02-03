@@ -610,7 +610,7 @@ classdef TFMapWindow < handle
             
             obj.file_menu=uimenu(obj.fig,'label','File');
             obj.save_menu=uimenu(obj.file_menu,'label','Save');
-            obj.save_fig_menu=uimenu(obj.save_menu,'label','Figure','callback',@(src,evts) obj.TFMapSaveWin.buildfig());
+            obj.save_fig_menu=uimenu(obj.save_menu,'label','Figure','callback',@(src,evts) obj.TFMapSaveWin.buildfig(),'Accelerator','p');
             
             obj.settings_menu=uimenu(obj.fig,'label','Settings');
             obj.smooth_menu=uimenu(obj.settings_menu,'label','Smooth Kernel','callback',@(src,evts) SmoothCallback(obj));
@@ -641,17 +641,9 @@ classdef TFMapWindow < handle
             obj.event_popup=uicontrol('Parent',hp_data,'Style','popup','string',obj.event_list,'units','normalized','position',[0.01,0.05,0.35,0.3],...
                 'visible','off','callback',@(src,evts) EventCallback(obj,src));
             obj.ms_before_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_before),'units','normalized','position',[0.4,0.05,0.29,0.3],...
-                'HorizontalAlignment','left','visible','off','callback',@(src,evts) MsBeforeCallback(obj,src));
+                'HorizontalAlignment','center','visible','off','callback',@(src,evts) MsBeforeCallback(obj,src));
             obj.ms_after_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_after),'units','normalized','position',[0.7,0.05,0.29,0.3],...
-                'HorizontalAlignment','left','visible','off','callback',@(src,evts) MsAfterCallback(obj,src));
-            
-            hp_mag=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.46,1,0.04]);
-            uicontrol('Parent',hp_mag,'style','text','units','normalized','string','Unit: ','position',[0.01,0,0.3,1],...
-                'HorizontalAlignment','left');
-            obj.unit_mag_radio=uicontrol('Parent',hp_mag,'Style','radiobutton','units','normalized','string','Mag','position',[0.4,0,0.29,1],...
-                'HorizontalAlignment','left','callback',@(src,evts) UnitRadioCallback(obj,src),'value',1);
-            obj.unit_db_radio=uicontrol('Parent',hp_mag,'Style','radiobutton','units','normalized','string','dB','position',[0.7,0,0.29,1],...
-                'HorizontalAlignment','left','callback',@(src,evts) UnitRadioCallback(obj,src));
+                'HorizontalAlignment','center','visible','off','callback',@(src,evts) MsAfterCallback(obj,src));
             
             hp_scale=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.62,1,0.15]);
             uicontrol('Parent',hp_scale,'style','text','units','normalized','string','Normalization: ',...
@@ -701,7 +693,13 @@ classdef TFMapWindow < handle
                 'units','normalized','position',[0.55,0.1,0.4,0.46],'HorizontalAlignment','center',...
                 'callback',@(src,evts) STFTOverlapCallback(obj,src));
             
-            
+            hp_mag=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.46,1,0.04]);
+            uicontrol('Parent',hp_mag,'style','text','units','normalized','string','Unit: ','position',[0.01,0,0.3,1],...
+                'HorizontalAlignment','left');
+            obj.unit_mag_radio=uicontrol('Parent',hp_mag,'Style','radiobutton','units','normalized','string','Mag','position',[0.4,0,0.29,1],...
+                'HorizontalAlignment','left','callback',@(src,evts) UnitRadioCallback(obj,src),'value',1);
+            obj.unit_db_radio=uicontrol('Parent',hp_mag,'Style','radiobutton','units','normalized','string','dB','position',[0.7,0,0.29,1],...
+                'HorizontalAlignment','left','callback',@(src,evts) UnitRadioCallback(obj,src));
             
             
             hp_freq=uipanel('parent',hp,'title','Frequency','units','normalized','position',[0,0.33,1,0.12]);
@@ -789,6 +787,12 @@ classdef TFMapWindow < handle
         end
         function MethodCallback(obj,src)
             obj.method=get(src,'value');
+            switch obj.method
+                case 1
+                case 2
+                    obj.data_input=3;
+                    DataPopUpCallback(obj,obj.data_popup);
+            end
         end
         function DataPopUpCallback(obj,src)
             obj.data_input=get(src,'value');
@@ -970,7 +974,7 @@ classdef TFMapWindow < handle
                 obj.display_onset_=get(src,'value');
             end
             
-            tonset=obj.ms_before/1000;
+            tonset=0;
             if ~isempty(obj.TFMapFig)&&ishandle(obj.TFMapFig)
                 
                 h=findobj(obj.TFMapFig,'-regexp','Tag','TFMapAxes*');
@@ -1126,6 +1130,7 @@ classdef TFMapWindow < handle
             end
             
             delete(obj.TFMapFig(ishandle(obj.TFMapFig)));
+            figpos=get(obj.fig,'position');
             obj.TFMapFig=figure('Name',obj.event,'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
                 'color','w','DockControls','off','Tag','Act');
             
@@ -1375,7 +1380,7 @@ classdef TFMapWindow < handle
 %                     tfm=tfm-1;
                 end
                 if option==2
-                    tfmap_grid(obj.TFMapFig,axe,t,f,tfm,chanpos(j,:),dw,dh,channames{j},sl,sh,freq,obj.smooth_x,obj.smooth_y,obj.auto_scale);
+                    tfmap_grid(obj.TFMapFig,axe,t-obj.ms_before/1000,f,tfm,chanpos(j,:),dw,dh,channames{j},sl,sh,freq,obj.smooth_x,obj.smooth_y,obj.auto_scale);
                 end
                 
                 obj.tfmat{j}=tfm;
@@ -1387,6 +1392,8 @@ classdef TFMapWindow < handle
                 if ~isempty(tfm)&&option==2
                     cmax=max(max(max(abs(tfm))),cmax);
                 end
+                
+                AxisCallback(obj,[]);
             end
             
             if option==1

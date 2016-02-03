@@ -12,7 +12,7 @@ obj.MenuLoadEvents=uimenu(obj.MenuLoad,'Label','Events','Callback',@(src,evt) ob
 obj.MenuLoadMontage=uimenu(obj.MenuLoad,'Label','Montage','Callback',@(src,evt) obj.LoadMontage);
 obj.MenuLoadFilter=uimenu(obj.MenuLoad,'Label','Filter','Callback',@(src,evt) obj.LoadFilter);
 obj.MenuLoadVideo=uimenu(obj.MenuLoad,'Label','Video','Callback',@(src,evt) obj.LoadVideo);
-obj.MenuLoadChannelPosition=uimenu(obj.MenuLoad,'Label','Position','Callback',@(src,evt) obj.LoadChannelPosition);
+obj.MenuLoadChannelPosition=uimenu(obj.MenuLoad,'Label','Position','Callback',@(src,evt) obj.LoadChannelPosition,'Accelerator','n');
 obj.MenuLoadSpatialMaps=uimenu(obj.MenuLoad,'Label','Spatial Maps','Callback',@(src,evt) obj.AverageMapWin.buildfig());
 
 obj.MenuSave=uimenu(obj.MenuFile,'Label','Save');
@@ -26,9 +26,7 @@ obj.MenuSaveAsMergeData=uimenu(obj.MenuSaveAs,'Label','Merge Data','Callback',@(
 obj.MenuSaveAsEvents=uimenu(obj.MenuSaveAs,'Label','Events','Callback',@(src,evt) obj.SaveEvents);
 obj.MenuSaveAsMontage=uimenu(obj.MenuSaveAs,'Label','Montage','Callback',@(src,evt) obj.SaveMontage);
 obj.MenuSaveAsPosition=uimenu(obj.MenuSaveAs,'Label','Position','Callback',@(src,evt) obj.SavePosition);
-obj.MenuSaveAsFigure=uimenu(obj.MenuSaveAs,'Label','Figure');
-obj.MenuSaveAsFigureData=uimenu(obj.MenuSaveAsFigure,'Label','Data','Callback',@(src,evt) SaveToFigure(obj,'data'),'Accelerator','p');
-obj.MenuSaveAsFigureMirror=uimenu(obj.MenuSaveAsFigure,'Label','Mirror','Callback',@(src,evt) SaveToFigure(obj,'mirror'));
+obj.MenuSaveAsFigure=uimenu(obj.MenuSaveAs,'Label','Figure','Callback',@(src,evt) SaveToFigure(obj,'data'),'Accelerator','p');
 
 obj.MenuExport=uimenu(obj.MenuFile,'Label','Export');
 obj.MenuExportObj=uimenu(obj.MenuExport,'Label','Object','Callback',@(src,evt) ExportObjToWorkspace(obj));

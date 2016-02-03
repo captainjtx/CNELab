@@ -81,8 +81,6 @@ classdef BioSigPlot < hgsetget
         
         MenuSaveAs
         MenuSaveAsFigure
-        MenuSaveAsFigureMirror
-        MenuSaveAsFigureData
         MenuSaveAsEvents
         MenuSaveAsData
         MenuSaveAsMergeData
