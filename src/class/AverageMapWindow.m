@@ -14,7 +14,7 @@ classdef AverageMapWindow  < handle
         load_channel_position_menu
         save_menu
         save_fig_menu
-        save_val_menu
+        save_map_menu
         
         pos_edit
         pos_radio
@@ -186,7 +186,8 @@ classdef AverageMapWindow  < handle
             obj.save_menu=uimenu(obj.file_menu,'label','Save');
             obj.save_fig_menu=uimenu(obj.save_menu,'label','Figure','callback',@(src,evt) obj.export_picture_win.buildfig(),...
                 'Accelerator','p');
-            obj.save_val_menu=uimenu(obj.save_menu,'label','Value');
+            
+            obj.save_map_menu=uimenu(obj.save_menu,'label','Map','callback',@(src,evts) ExportMapCallback(obj));
             
             columnName={'Selected','FileName'};
             columnFormat={'logical','char'};
@@ -207,9 +208,9 @@ classdef AverageMapWindow  < handle
                 'CellEditCallback',@(src,evt) cellEdit(obj,src,evt));
             obj.MapFiles=obj.MapFiles_;
             
-            obj.BtnDelete=uicontrol(hp_load,'Style','pushbutton','string','delete',...
+            obj.BtnDelete=uicontrol(hp_load,'Style','pushbutton','string','remove',...
                 'Units','normalized','Position',[0.79,0.01,0.2,0.1],...
-                'tooltipstring','delete the selected event','callback',@(src,evt) deleteMap(obj));
+                'tooltipstring','remove the selected event','callback',@(src,evt) deleteMap(obj));
             
             obj.BtnLoad=uicontrol(hp_load,'Style','pushbutton','string','load',...
                 'Units','normalized','Position',[0.01,0.01,0.2,0.1],...
@@ -1145,6 +1146,28 @@ classdef AverageMapWindow  < handle
                             round(chanpos(:,2)*obj.height),mapv(:,i)<0,mapv(:,i)>0,obj.center_mass,obj.resize);
                     end
                 end
+            end
+        end
+        
+        function ExportMapCallback(obj)
+            %export the map values together with the channel name/position
+            %for further analysis
+            
+            folder_name = uigetdir('.','Select a direcotry to export');
+            if ~folder_name
+                return
+            end
+            
+            mapv=obj.map_val;
+            chan_names=obj.all_chan_names(obj.chan_ind);
+            for i=1:size(mapv,2)
+                fname=[get(obj.SpatialMapFig(i),'name'),'.smw'];
+                fid=fopen(fullfile(folder_name,fname),'w');
+                
+                for j=1:length(chan_names)
+                    fprintf(fid,'%s,%f\n',chan_names{j},mapv(j,i));
+                end
+                fclose(fid);
             end
         end
     end
