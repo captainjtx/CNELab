@@ -2118,18 +2118,19 @@ classdef BioSigPlot < hgsetget
         end
         
         function ChangeFilter(obj,src)
+            tmp=str2double(get(src,'String'));
             switch src
                 case obj.EdtFilterLow
-                    if str2double(get(src,'String'))==0||isnan(str2double(get(src,'String')))
+                    if tmp<=0||isnan(tmp)||tmp>=obj.SRate/2
                         set(src,'String','-');
                     end
                     
                 case obj.EdtFilterHigh
-                    if str2double(get(src,'String'))==0||isnan(str2double(get(src,'String')))
+                    if tmp<=0||isnan(tmp)||tmp>=obj.SRate/2
                         set(src,'String','-');
                     end
                 case obj.EdtFilterNotch
-                    if str2double(get(src,'String'))==0||isnan(str2double(get(src,'String')))
+                    if tmp<=0||isnan(tmp)||tmp>=obj.SRate/2
                         set(src,'String','-');
                     end
                 case obj.PopFilter

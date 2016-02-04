@@ -16,12 +16,12 @@ obj.MenuLoadChannelPosition=uimenu(obj.MenuLoad,'Label','Position','Callback',@(
 obj.MenuLoadSpatialMaps=uimenu(obj.MenuLoad,'Label','Spatial Maps','Callback',@(src,evt) obj.AverageMapWin.buildfig());
 
 obj.MenuSave=uimenu(obj.MenuFile,'Label','Save');
-obj.MenuSaveSettings=uimenu(obj.MenuSave,'Label','Settings','Callback',@(src,evt) SaveData(obj,src),'Accelerator','s');
+obj.MenuSaveSettings=uimenu(obj.MenuSave,'Label','Settings','Callback',@(src,evt) SaveData(obj,src),'Accelerator','e');
 obj.MenuSaveData=uimenu(obj.MenuSave,'Label','Data','Callback',@(src,evt) SaveData(obj,src));
 
 
 obj.MenuSaveAs=uimenu(obj.MenuFile,'Label','Save As...');
-obj.MenuSaveAsData=uimenu(obj.MenuSaveAs,'Label','Data(sel)','Callback',@(src,evt) SaveData(obj,src));
+obj.MenuSaveAsData=uimenu(obj.MenuSaveAs,'Label','Data(sel)','Callback',@(src,evt) SaveData(obj,src),'Accelerator','s');
 obj.MenuSaveAsMergeData=uimenu(obj.MenuSaveAs,'Label','Merge Data','Callback',@(src,evt) SaveData(obj,src));
 obj.MenuSaveAsEvents=uimenu(obj.MenuSaveAs,'Label','Events','Callback',@(src,evt) obj.SaveEvents);
 obj.MenuSaveAsMontage=uimenu(obj.MenuSaveAs,'Label','Montage','Callback',@(src,evt) obj.SaveMontage);
