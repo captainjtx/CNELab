@@ -1670,7 +1670,7 @@ classdef SpatialMapWindow < handle
                     tmp=0;
                     for i=1:length(seg)
                         bdata=catbaseline(segment==seg(i),j);
-                        [ttmp,~,~]=bsp_tfmap(obj.SpatialMapFig,bdata,[],obj.fs,wd,ov,s,[],chanNames,freq,obj.unit);
+                        [ttmp,~,~]=tfpower(bdata,[],obj.fs,wd,ov,[]);
                         tmp=tmp+ttmp;
                     end
                     rtfm{j}=tmp/length(seg);
@@ -1736,7 +1736,7 @@ classdef SpatialMapWindow < handle
                         
                         raw_data=cat(2,raw_data,data1);
                         
-                        [tf,f,t]=bsp_tfmap(obj.SpatialMapFig,data1,tmp_base,obj.fs,wd,ov,[sl,sh],nref,channames,freq,obj.unit);
+                        [tf,f,t]=tfpower(data1,tmp_base,obj.fs,wd,ov,nref);
                         tmp_tfm{i}=tf;
                     end
                     t=t-obj.ms_before/1000;
@@ -1774,7 +1774,7 @@ classdef SpatialMapWindow < handle
             else
                 for j=1:length(channames)
                     waitbar(j/length(channames));
-                    [tfm,f,t]=bsp_tfmap(obj.SpatialMapFig,data(:,j),baseline(:,j),obj.fs,wd,ov,[sl,sh],nref,channames,freq,obj.unit);
+                    [tfm,f,t]=tfpower(data(:,j),baseline(:,j),obj.fs,wd,ov,nref);
                     
                     obj.tfmat.mat{j}=tfm;
                     if obj.data_input==2

@@ -768,10 +768,10 @@ classdef CommonDataStructure < handle
             
             if size(data,2)>size(data,1)
                 
-%                 choice=questdlg('The data seems to be row-wise, do you want to transpose it?','CommonDataStructure','Yes','No','Yes');
-%                 if strcmpi(choice,'Yes')
-                    data=data';
-%                 end
+                %                 choice=questdlg('The data seems to be row-wise, do you want to transpose it?','CommonDataStructure','Yes','No','Yes');
+                %                 if strcmpi(choice,'Yes')
+                data=data';
+                %                 end
             end
             %default
             s.DataInfo.SampleRate=256;
@@ -984,7 +984,7 @@ classdef CommonDataStructure < handle
             elseif strcmpi(structure,'montage')
                 structure='Montage';
             end
-                
+            
             current_structure=obj.(structure);
             
             if isfield(current_structure,field)
@@ -992,7 +992,7 @@ classdef CommonDataStructure < handle
             else
                 val=[];
             end
-                
+            
             
             if ~isempty(val)
                 if strcmpi(field,'ChannelPosition')
@@ -1218,8 +1218,8 @@ classdef CommonDataStructure < handle
                     break
                 end
                 
-%                 current_data_info.FileName=filenames{end};
-%                 current_file.DataInfo=current_data_info;
+                %                 current_data_info.FileName=filenames{end};
+                %                 current_file.DataInfo=current_data_info;
                 filenames=cat(1,filenames,current_data_info.NextFile);
                 
                 current_file=matfile(fname,'Writable',true);
@@ -1322,12 +1322,6 @@ classdef CommonDataStructure < handle
             
         end
         
-        
-        function write_data_segment(cds,data,sample,chan)
-            
-            
-        end
-        
         function [dat,eof,evts]=get_data_segment(varargin)
             wait_bar_h = waitbar(0,'Retrieving data from file...');
             eof=[];
@@ -1361,7 +1355,7 @@ classdef CommonDataStructure < handle
                 end
                 return
             end
-
+            
             %**************************************************************
             eof=false;
             current_data_info=obj.DataInfo;
@@ -1395,7 +1389,7 @@ classdef CommonDataStructure < handle
                 filesample=fileinfo.filesample;
                 pathstr=fileinfo.path;
             end
-
+            
             dat=zeros(length(sample),length(channel));
             
             for f=1:length(filenames)
@@ -1518,11 +1512,71 @@ classdef CommonDataStructure < handle
                     otherwise
                         msgbox('Invalid file format! Please convert your file into CommonDataStructure','CommonDataStructure.save','error');
                         return
-%                         fileobj=CommonDataStructure.Load(fullname);
-%                         fileobj.Data(i_start:i_end,:)=data(i_start+filesample(f,1)-ind_start:i_end+filesample(f,1)-ind_start,:);
+                        %                         fileobj=CommonDataStructure.Load(fullname);
+                        %                         fileobj.Data(i_start:i_end,:)=data(i_start+filesample(f,1)-ind_start:i_end+filesample(f,1)-ind_start,:);
+                end
+            end
+        end
+        
+        function [dat,channames]=get_trials(obj,event,sbefore,safter)
+            dat=[];
+            channames=[];
+            if isempty(obj.evt)
+                errordlg('Event not found in CommonDataStructure !');
+                return
+            end
+            t_evt=[obj.evt{:,1}];
+            t_label=t_evt(strcmpi(obj.evt(:,2),event));
+            
+            if isempty(t_label)
+                errordlg(['Event: ',event,' not found !']);
+                return
+            end
+            nL=round(sbefore*obj.fs);
+            
+            nR=round(safter*obj.fs);
+            
+            i_event=round(t_label*obj.fs);
+            
+            current_data_info=obj.DataInfo;
+            
+            if isfield(current_data_info,'AllFiles')&&isfield(current_data_info,'FileSample')...
+                    &&~isempty(current_data_info.AllFiles)&&~isempty(current_data_info.FileSample)
+                filenames=current_data_info.AllFiles;
+                
+                [pathstr,~,~]=fileparts(current_data_info.FileName);
+                filesample=current_data_info.FileSample;
+            else
+                fileinfo=CommonDataStructure.get_file_info(obj);
+                filenames=fileinfo.filenames;
+                filesample=fileinfo.filesample;
+                pathstr=fileinfo.path;
+            end
+            channames=obj.Montage.ChannelNames;
+            for f=1:length(filenames)
+                f_ind_start=filesample(f,1);
+                f_ind_end=filesample(f,2);
+                ind=((i_event-nL)>=f_ind_start)&((i_event+nR)<=f_ind_end);
+                ie=i_event(ind);
+                
+                fullname=fullfile(pathstr,filenames{f});
+                switch CommonDataStructure.dataStructureCheck(fullname)
+                    case 2
+                        fileobj=matfile(fullname);
+                        data=fileobj.Data;
+                        for i=1:length(ie)
+                            dat=cat(3,dat,data(ie(i)-nL-f_ind_start+1:ie(i)+nR-f_ind_start+1,:));
+                        end
+                    otherwise
+                        fileobj=CommonDataStructure.Load(fullname);
+                        for i=1:length(ie)
+                            dat=cat(3,dat,fileobj.Data(ie(i)-nL-f_ind_start+1:ie(i)+nR-f_ind_start+1,:));
+                        end
                 end
             end
         end
     end
+    
+    
 end
 

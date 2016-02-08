@@ -1,23 +1,13 @@
 function SaveData(obj,src)
 if src==obj.MenuSaveSettings
-    [chanNames,dataset,~,~,~,groupnames,pos]=get_datainfo(obj,false);
+    [~,dataset,~,~,~,~,pos]=get_datainfo(obj,false);
     for i=1:length(obj.CDS)
         if obj.CDS{i}.file_type==2
             if ~isempty(pos)
                 chanpos=pos(dataset==i,:);
             else
                 chanpos=[];
-            end
-            
-%             CommonDataStructure.write_file_info(obj.CDS{i},...
-%                 'SampleRate',obj.SRate,...
-%                 'Annotations',obj.Evts,...
-%                 'ChannelNames',chanNames(dataset==i),...
-%                 'GroupNames',groupnames(dataset==i),...
-%                 'MontageName',obj.Montage{i}(obj.MontageRef(i)).name,...
-%                 'MaskChanNames',obj.MontageChanNames{i}(obj.Mask{i}==0),...
-%                 'ChannelPosition',chanpos);
-            
+            end            
             
             CommonDataStructure.write_file_info(obj.CDS{i},...
                 'SampleRate',obj.SRate,...
@@ -29,6 +19,14 @@ if src==obj.MenuSaveSettings
             %                 'MontageName',obj.Montage{i}(obj.MontageRef(i)).name,...
         else
             
+        end
+    end
+elseif src==obj.MenuSaveEvents
+    for i=1:length(obj.CDS)
+        if obj.CDS{i}.file_type==2
+            CommonDataStructure.write_file_info(obj.CDS{i},...
+                'Annotations',obj.Evts);        
+        else
         end
     end
 elseif src==obj.MenuSaveData

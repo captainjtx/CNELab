@@ -16,7 +16,8 @@ obj.MenuLoadChannelPosition=uimenu(obj.MenuLoad,'Label','Position','Callback',@(
 obj.MenuLoadSpatialMaps=uimenu(obj.MenuLoad,'Label','Spatial Maps','Callback',@(src,evt) obj.AverageMapWin.buildfig());
 
 obj.MenuSave=uimenu(obj.MenuFile,'Label','Save');
-obj.MenuSaveSettings=uimenu(obj.MenuSave,'Label','Settings','Callback',@(src,evt) SaveData(obj,src),'Accelerator','e');
+obj.MenuSaveEvents=uimenu(obj.MenuSave,'Label','Events','Callback',@(src,evt) SaveData(obj,src),'Accelerator','e');
+obj.MenuSaveSettings=uimenu(obj.MenuSave,'Label','Settings','Callback',@(src,evt) SaveData(obj,src));
 obj.MenuSaveData=uimenu(obj.MenuSave,'Label','Data','Callback',@(src,evt) SaveData(obj,src));
 
 

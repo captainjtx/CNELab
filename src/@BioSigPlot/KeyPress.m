@@ -59,12 +59,13 @@ if ~isempty(evt.Modifier)
                 end
                 ChangeMouseMode(obj,obj.TogAnnotate);
             elseif strcmpi(evt.Key,'e')
-                if strcmpi(get(obj.TogSelection,'State'),'on')
-                    set(obj.TogSelection,'State','off');
-                else
-                    set(obj.TogSelection,'State','on');
-                end
-                ChangeMouseMode(obj,obj.TogSelection);
+                %conflict with saving settings
+%                 if strcmpi(get(obj.TogSelection,'State'),'on')
+%                     set(obj.TogSelection,'State','off');
+%                 else
+%                     set(obj.TogSelection,'State','on');
+%                 end
+%                 ChangeMouseMode(obj,obj.TogSelection);
             else
                 
                 m=min(9,size(obj.FastEvts,1));

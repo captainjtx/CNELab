@@ -1218,7 +1218,7 @@ classdef TFMapWindow < handle
                         tmp=0;
                         for i=1:length(seg)
                             bdata=catbaseline(segment==seg(i),j);
-                            [ttmp,~,~]=bsp_tfmap(obj.TFMapFig,bdata,[],obj.fs,wd,ov,s,[],chanNames,freq,units);
+                            [ttmp,~,~]=tfpower(bdata,[],obj.fs,wd,ov,[]);
                             tmp=tmp+ttmp;
                         end
                         rtfm{j}=tmp/length(seg);
@@ -1350,7 +1350,7 @@ classdef TFMapWindow < handle
                     %******************************************************
                     for i=1:length(i_event)
                         data1=data(segment==i,j);
-                        [tf,f,t]=bsp_tfmap(obj.TFMapFig,data1,bdata,obj.fs,wd,ov,s,nref_tmp,channames,freq,units);
+                        [tf,f,t]=tfpower(data1,bdata,obj.fs,wd,ov,nref_tmp);
                         tfm=tfm+tf;
                     end
                     tfm=tfm/length(i_event);
@@ -1367,7 +1367,7 @@ classdef TFMapWindow < handle
                         tfm=tfm./repmat(rtfm1,1,size(tfm,2));
                     end
                 else
-                    [tfm,f,t]=bsp_tfmap(obj.TFMapFig,data(:,j),bdata,obj.fs,wd,ov,s,nref,channames,freq,units);
+                    [tfm,f,t]=tfpower(data(:,j),bdata,obj.fs,wd,ov,nref);
                 end
                 
                 average_tf=average_tf+tfm;
