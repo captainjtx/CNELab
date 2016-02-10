@@ -1,6 +1,8 @@
 function [eVec,eVal,stat] = fast_scsp(A,B,SpL,chanind,varargin)
 %A computational efficient sparse common spatial pattern algorithms using
 %divide and conquer approach
+
+%Been proved not to be optimal...:(
 if nargin<4
     %should only be executed at the first entry
     chanind=true(size(A,1),1);

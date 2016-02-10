@@ -17,27 +17,24 @@ if obj.DownSample~=1
         data=filter_symmetric(b,a,data,obj.SRate/downsample,0,'iir');
     end
 end
-
+% The same as save merged data*********************************************
 cds=CommonDataStructure;
 
-cds.Data.Data=data(1:downsample:end,:);
-cds.Data.Annotations=evts;
-cds.Data.SampleRate=obj.SRate/downsample;
+cds.Data=data(1:downsample:end,:);
+cds.DataInfo.Annotations=evts;
+cds.DataInfo.SampleRate=obj.SRate/downsample;
 units=obj.Units{dd(1)};
 for i=2:length(dd)
     units=cat(2,units,obj.Units{dd(i)});
 end
-cds.Data.Units=units;
+%         cds.DataInfo.Units=units;
 
-cds.Data.VideoName=obj.VideoFile;
-cds.Data.TimeStamps=linspace(0,obj.DataTime,size(cds.Data.Data,1))+obj.StartTime;
-cds.Data.FileName=obj.FileNames{dd(1)};
-cds.Data.NextFile=obj.NextFiles{dd(1)};
-cds.Data.PrevFile=obj.PrevFiles{dd(1)};
+cds.DataInfo.VideoName=obj.VideoFile;
+cds.DataInfo.TimeStamps=linspace(0,obj.DataTime,size(cds.Data,1));
 
-cds.Data.Video.StartTime=obj.VideoStartTime;
-cds.Data.Video.TimeFrame=obj.VideoTimeFrame;
-cds.Data.Video.NumberOfFrame=obj.NumberOfFrame;
+cds.DataInfo.Video.StartTime=obj.VideoStartTime;
+cds.DataInfo.Video.TimeFrame=obj.VideoTimeFrame;
+cds.DataInfo.Video.NumberOfFrame=obj.NumberOfFrame;
 
 cds.Montage.ChannelNames=chanNames;
 cds.Montage.Name=obj.Montage{dd(1)}(obj.MontageRef(dd(1))).name;
@@ -51,8 +48,7 @@ end
 
 cds.Montage.MaskChanNames=maskchan;
 
-cds.save('title','Merged Data');
-
+%**************************************************************************
 prompt={'Assign a name:'};
 title='Export Selection';
 

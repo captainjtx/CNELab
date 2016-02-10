@@ -1,5 +1,5 @@
 %CSP test
-clc
+% clc
 clear
 fname1='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Close.mat';
 fname2='/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Open.mat';
@@ -58,7 +58,7 @@ move_sample=round(move_time(1)*fs):round(move_time(2)*fs);
 %CSP parameters
 NF=1;
 %Desired sparsity of the filter
-SpL=10;
+SpL=5;
 %**************************************************************************
 %Filter the data===========================================================
 for i=1:length(movements)
@@ -108,12 +108,14 @@ for i=1:length(movements)
     tic
     if strcmpi(csp_max_min,'max')
 %         [F,Lmd]=recursive_eliminate(Cx,Cy,SpL,NF);
-%            [F,Lmd]=oscillating_search(Cx,Cy,SpL,NF,'OS');
-          [F,Lmd,stat{i}]=fast_scsp(Cx,Cy,SpL);
+           [F,Lmd]=oscillating_search(Cx,Cy,SpL,NF,'FS');
+%           [F,Lmd,stat{i}]=fast_scsp(Cx,Cy,SpL);
+          disp(['lambda max: ',num2str(Lmd)]);
     else
 %         [F,Lmd]=recursive_eliminate(Cy,Cx,SpL,NF);
-%            [F,Lmd]=oscillating_search(Cy,Cx,SpL,NF,'OS');
-           [F,Lmd,stat{i}]=fast_scsp(Cy,Cx,SpL);
+           [F,Lmd]=oscillating_search(Cy,Cx,SpL,NF,'FS');
+%            [F,Lmd,stat{i}]=fast_scsp(Cy,Cx,SpL);
+           disp(['lambda min: ',num2str(Lmd)]);
     end
     toc
 
