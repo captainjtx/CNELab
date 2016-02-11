@@ -11,6 +11,7 @@ classdef AverageMapWindow  < handle
         
         file_menu
         load_menu
+        load_map_menu
         load_channel_position_menu
         save_menu
         save_fig_menu
@@ -90,6 +91,7 @@ classdef AverageMapWindow  < handle
         all_chan_names
         
         export_picture_win
+        cmax
     end
     
     properties (Dependent=true)
@@ -135,12 +137,13 @@ classdef AverageMapWindow  < handle
         end
         
         function varinitial(obj)
-            obj.clim_slider_max_=10;
-            obj.clim_slider_min_=-10;
-            obj.max_clim_=10;
-            obj.min_clim_=-10;
+            obj.cmax=10;
+            obj.clim_slider_max_=1;
+            obj.clim_slider_min_=-1;
+            obj.max_clim_=1;
+            obj.min_clim_=-1;
             obj.resize_=1;
-            obj.scale_by_max_=0;
+            obj.scale_by_max_=1;
             obj.average_=1;
             obj.color_bar_=0;
             obj.width=300;
@@ -161,6 +164,8 @@ classdef AverageMapWindow  < handle
             obj.position_file='None';
             obj.position=[];
             
+            
+            
             obj.average_=1;
             
             obj.export_picture_win=AverageMapSaveWindow(obj);
@@ -178,6 +183,7 @@ classdef AverageMapWindow  < handle
             
             obj.load_menu=uimenu(obj.file_menu,'label','Load');
             
+            obj.load_map_menu=uimenu(obj.load_menu,'Label','Map','Callback',@(src,evt) loadMap(obj),'Accelerator','l');
             obj.load_channel_position_menu=uimenu(obj.load_menu,'Label','Position','Callback',@(src,evt) obj.LoadChannelPosition,...
                 'Accelerator','n');
 %             if ~isempty(obj.bsp)&&obj.bsp.valid
@@ -397,6 +403,11 @@ classdef AverageMapWindow  < handle
             allchannames=obj.channames;
             allchanpos=obj.position;
             
+            if isempty(allchanpos)
+                errordlg('Channel Position Missing !');
+                return
+            end
+            
             chanind=~isnan(allchanpos(:,1))&~isnan(allchanpos(:,2));
             allchanpos=allchanpos(chanind,:);
             allchannames=allchannames(chanind);
@@ -430,6 +441,7 @@ classdef AverageMapWindow  < handle
             %**************************************************************
             mv=obj.map_val;
             %**************************************************************
+            vmax=-inf;
             for i=1:size(mv,2)
                 %*********************
                 if obj.interp_missing
@@ -452,9 +464,11 @@ classdef AverageMapWindow  < handle
                     text(map_pos(I,1)*obj.width,map_pos(I,2)*obj.height,'p','parent',h,'fontsize',round(20*obj.resize),'color','w',...
                         'tag','peak','horizontalalignment','center','fontweight','bold');
                 end
+                vmax=max(vmax,max(abs(val)));
             end
-            
-            obj.map_val=mapv;
+            obj.clim_slider_max=vmax;
+            obj.clim_slider_min=-vmax;
+            obj.cmax=vmax;
         end
         function val=NoSpatialMapFig(obj)
             val=isempty(obj.SpatialMapFig)||~all(ishandle(obj.SpatialMapFig))||~all(strcmpi(get(obj.SpatialMapFig,'Tag'),'Act'));

@@ -517,7 +517,7 @@ classdef CorrMapWindow < handle
         end
         
         function UpdateCorrelation(obj)
-            t1=round(obj.smw.act_start/1000*obj.smw.fs);
+            t1=round((obj.smw.act_start+obj.smw.ms_before)/1000*obj.smw.fs);
             t2=t1+round(obj.smw.act_len/1000*obj.smw.fs);
             for i=1:length(obj.smw.tfmat)
                 %different movement

@@ -31,6 +31,9 @@ classdef CSPMapWindow < handle
         max_radio_btn
         min_radio_btn
         
+        resize_edit
+        resize_slider
+        
         new_btn
         compute_btn
         
@@ -62,6 +65,8 @@ classdef CSPMapWindow < handle
         
         rq_max_
         rq_min_
+        
+        resize_
     end
     
     properties(Dependent)
@@ -88,6 +93,8 @@ classdef CSPMapWindow < handle
         
         rq_max
         rq_min
+        
+        resize
     end
     
     methods
@@ -118,6 +125,8 @@ classdef CSPMapWindow < handle
             
             obj.rq_max_=1;
             obj.rq_min_=0;
+            
+            obj.resize_=1;
         end
         
         function buildfig(obj)
@@ -200,11 +209,18 @@ classdef CSPMapWindow < handle
             obj.min_radio_btn=uicontrol('parent',hp_max,'style','radiobutton','string','Min RQ','units','normalized','position',[0.6,0.1,0.3,0.8],...
                 'callback',@(src,evts) MaxMinCallback(obj,src),'value',obj.rq_min_);
             
+            hp_s=uipanel('parent',hp,'title','Window Scale','units','normalized','position',[0,0.44,1,0.07]);
             
+            uicontrol('parent',hp_s,'style','text','string','Ratio','units','normalized',...
+                'position',[0,0.2,0.1,0.5]);
+            obj.resize_edit=uicontrol('parent',hp_s,'style','edit','string',num2str(obj.resize),'units','normalized',...
+                'position',[0.15,0.2,0.2,0.6],'horizontalalignment','center','callback',@(src,evts) ResizeCallback(obj,src));
+            obj.resize_slider=uicontrol('parent',hp_s,'style','slider','units','normalized',...
+                'position',[0.4,0.2,0.55,0.6],'callback',@(src,evts) ResizeCallback(obj,src),...
+                'min',0.1,'max',2,'value',obj.resize,'sliderstep',[0.01,0.05]);
             
             obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.005,0.2,0.04],...
                 'callback',@(src,evts) ComputeCallback(obj));
-            
             
             obj.new_btn=uicontrol('parent',hp,'style','pushbutton','string','New','units','normalized','position',[0.01,0.005,0.2,0.04],...
                 'callback',@(src,evts) NewCallback(obj));
@@ -474,6 +490,52 @@ classdef CSPMapWindow < handle
             [~,~,~,~,~,~,chanpos]=get_datainfo(obj.bsp,true);
             val=sum(~isnan(chanpos(:,1))&~isnan(chanpos(:,2)));
         end
+        
+        function val=get.resize(obj)
+            val=obj.resize_;
+        end
+        function set.resize(obj,val)
+            
+            oldval=obj.resize;
+            obj.resize_=val;
+            
+            if obj.valid
+                set(obj.resize_edit,'string',num2str(val));
+                set(obj.resize_slider,'value',val);
+            end
+            
+            obj.width=round(obj.width/oldval*val);
+            obj.height=round(obj.height/oldval*val);
+            
+            chanpos=obj.all_chan_pos(obj.chan_ind,:);
+            
+            if ~NoSpatialMapFig(obj)
+                for i=1:length(obj.SpatialMapFig)
+                    if ishandle(obj.SpatialMapFig(i))
+                        fpos=get(obj.SpatialMapFig(i),'position');
+                        set(obj.SpatialMapFig(i),'position',[fpos(1),fpos(2),obj.fig_w,obj.fig_h]);
+                        h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                        if ~isempty(h)
+                            delete(findobj(h,'Tag','contact'));
+                            figure(obj.SpatialMapFig(i))
+                            if obj.contact
+                                plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
+                                    ~ismember(obj.all_chan_pos,chanpos,'rows'));
+                            end
+                        end
+                    end
+                end
+            end
+            
+            if obj.color_bar
+                obj.color_bar=0;
+                ColorBarCallback(obj,obj.color_bar_radio);
+                obj.color_bar=1;
+                ColorBarCallback(obj,obj.color_bar_radio);
+            end
+            
+            UpdateFigure(obj,obj.resize_edit);
+        end
         function SparsityCallback(obj,src)
             switch src
                 case obj.sparsity_edit
@@ -605,6 +667,21 @@ classdef CSPMapWindow < handle
             
         end
         function NewCallback(obj)
+        end
+        
+        function ResizeCallback(obj,src)
+            switch src
+                case obj.resize_edit
+                    t=str2double(get(src,'string'));
+                    if isnan(t)
+                        t=obj.resize;
+                    end
+                    t=max(0.1,min(t,3));
+                    
+                    obj.resize=t;
+                case obj.resize_slider
+                    obj.resize=get(src,'value');
+            end
         end
     end
     
