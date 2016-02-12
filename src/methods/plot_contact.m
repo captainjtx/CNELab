@@ -4,6 +4,9 @@ col=round(col*w);
 row=round(row*h);
 r=round(r*w);
 
+all_col=col;
+all_row=row;
+
 badchan=zeros(size(col));
 erdchan=[];
 erschan=[];
@@ -57,7 +60,9 @@ row=row(~erdchan&~erschan);
 r=r(~erdchan&~erschan);
 
 if ~isempty(channames)
-    channames=channames(~badchan);
+    all_channames=channames;
+else
+    all_channames=[];
 end
 
 background=uint8(ones(h,w,3)*255);
@@ -118,9 +123,15 @@ A=rgb2gray(I);
 set(imgh,'AlphaData',255-A);
 set(imgh,'Tag','contact');
 
-for i=1:length(channames)
-    text(col(i),row(i)-10,channames{i},...
-    'fontsize',8,'horizontalalignment','center','parent',axe,'interpreter','none');
+
+for i=1:length(all_channames)
+    if badchan(i)
+        c=[0.5,0.5,0.5];
+    else
+        c=[0,0,0];
+    end
+    text(all_col(i),all_row(i)-10,all_channames{i},...
+    'fontsize',8,'horizontalalignment','center','parent',axe,'interpreter','none','tag','names','color',c);
 end
 
 drawnow

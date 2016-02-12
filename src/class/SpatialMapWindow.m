@@ -79,6 +79,7 @@ classdef SpatialMapWindow < handle
         center_mass_radio
         peak_radio
         contact_radio
+        names_radio
     end
     properties
         
@@ -121,6 +122,7 @@ classdef SpatialMapWindow < handle
         center_mass_
         peak_
         contact_
+        disp_channel_names_
     end
     
     properties (Dependent)
@@ -177,6 +179,7 @@ classdef SpatialMapWindow < handle
         center_mass
         peak
         contact
+        disp_channel_names
     end
     properties
         width
@@ -256,6 +259,17 @@ classdef SpatialMapWindow < handle
             
             if obj.valid
                 set(obj.contact_radio,'value',val);
+            end
+        end
+        
+        function val=get.disp_channel_names(obj)
+            val=obj.disp_channel_names_;
+        end
+        
+        function set.disp_channel_names(obj,val)
+            obj.disp_channel_names_=val;
+            if obj.valid
+                set(obj.names_radio,'value',val);
             end
         end
         
@@ -556,11 +570,18 @@ classdef SpatialMapWindow < handle
                         if ~isempty(h)
                             if ~obj.erd&&~obj.ers
                                 delete(findobj(h,'Tag','contact'));
+                                delete(findobj(h,'Tag','names'));
                                 figure(obj.SpatialMapFig(i))
+                                if obj.disp_channel_names
+                                    channames=obj.all_chan_names;
+                                else
+                                    channames=[];
+                                end
                                 if obj.contact
-                                    plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
+                                    plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,channames,...
                                         ~ismember(obj.all_chan_pos,chanpos,'rows'));
                                 end
+                                
                             end
                         end
                     end
@@ -1023,6 +1044,7 @@ classdef SpatialMapWindow < handle
             obj.center_mass_=1;
             obj.peak_=1;
             obj.contact_=1;
+            obj.disp_channel_names_=0;
             
             obj.corr_win=CorrMapWindow(obj);
             obj.xcorr_win=CrossCorrMapWindow(obj);
@@ -1194,43 +1216,45 @@ classdef SpatialMapWindow < handle
                 'position',[0.4,0.2,0.55,0.6],'callback',@(src,evts) ResizeCallback(obj,src),...
                 'min',0.1,'max',2,'value',obj.resize,'sliderstep',[0.01,0.05]);
             
-            hp_display=uipanel('parent',hp,'title','Display','units','normalized','position',[0,0.05,1,0.15]);
-            
-            obj.scale_by_max_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Scale By Maximum',...
-                'units','normalized','position',[0,0.75,0.45,0.25],'value',obj.scale_by_max,...
-                'callback',@(src,evts) ScaleByMaxCallback(obj,src));
-            %             obj.display_mask_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Dispaly Mask Channels',...
-            %                 'units','normalized','position',[0,0.5,0.45,0.25],'value',obj.display_mask_channel,...
-            %                 'callback',@(src,evts) DisplayMaskCallback(obj,src));
-            obj.auto_refresh_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Auto Refresh',...
-                'units','normalized','position',[0,0.5,0.45,0.25],'value',obj.auto_refresh,...
-                'callback',@(src,evts) AutoRefreshCallback(obj,src));
-            obj.color_bar_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Color Bar',...
-                'units','normalized','position',[0,0.25,0.45,0.25],'value',obj.color_bar,...
+            setgp=uitabgroup(obj.fig,'units','normalized','position',[0,0.05,1,0.15]);
+            disp_tab=uitab(setgp,'title','Display');
+            obj.color_bar_radio=uicontrol('parent',disp_tab,'style','radiobutton','string','Color Bar',...
+                'units','normalized','position',[0,0.66,0.45,0.33],'value',obj.color_bar,...
                 'callback',@(src,evts) ColorBarCallback(obj,src));
-            
-            
-            obj.interp_missing_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Interpolate Missing',...
-                'units','normalized','position',[0,0,0.45,0.25],'value',obj.interp_missing,...
-                'callback',@(src,evts) InterpMissingCallback(obj,src));
-            
-            
-            obj.symmetric_scale_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Symmetric Scale',...
-                'units','normalized','position',[0.5,0.75,0.45,0.25],'value',obj.symmetric_scale,...
-                'callback',@(src,evts) SymmetricScaleCallback(obj,src));
-            
-            obj.center_mass_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Center Mass',...
-                'units','normalized','position',[0.5,0.5,0.45,0.25],'value',obj.center_mass>0,...
-                'callback',@(src,evts) CenterMassCallback(obj,src));
-            
-            
-            obj.peak_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Peak',...
-                'units','normalized','position',[0.5,0.25,0.45,0.25],'value',obj.peak,...
+                        
+            obj.peak_radio=uicontrol('parent',disp_tab,'style','radiobutton','string','Peak',...
+                'units','normalized','position',[0.5,0.66,0.45,0.33],'value',obj.peak,...
                 'callback',@(src,evts) PeakCallback(obj,src));
             
-            obj.contact_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Contact',...
-                'units','normalized','position',[0.5,0,0.45,0.25],'value',obj.contact,...
+            obj.contact_radio=uicontrol('parent',disp_tab,'style','radiobutton','string','Contact',...
+                'units','normalized','position',[0,0.33,0.45,0.33],'value',obj.contact,...
                 'callback',@(src,evts) ContactCallback(obj,src));
+            
+            obj.center_mass_radio=uicontrol('parent',disp_tab,'style','radiobutton','string','Center Mass',...
+                'units','normalized','position',[0.5,0.33,0.45,0.33],'value',obj.center_mass>0,...
+                'callback',@(src,evts) CenterMassCallback(obj,src));
+            
+            obj.names_radio=uicontrol('parent',disp_tab,'style','radiobutton','string','Channel Names',...
+                'units','normalized','position',[0,0,0.45,0.33],'value',obj.disp_channel_names,...
+                'callback',@(src,evts) ChannelNamesCallback(obj,src));
+            
+            advance_tab=uitab(setgp,'title','Advance');
+            
+            obj.scale_by_max_radio=uicontrol('parent',advance_tab,'style','radiobutton','string','Scale By Maximum',...
+                'units','normalized','position',[0,0.66,0.45,0.33],'value',obj.scale_by_max,...
+                'callback',@(src,evts) ScaleByMaxCallback(obj,src));
+            
+            obj.symmetric_scale_radio=uicontrol('parent',advance_tab,'style','radiobutton','string','Symmetric Scale',...
+                'units','normalized','position',[0.5,0.66,0.45,0.33],'value',obj.symmetric_scale,...
+                'callback',@(src,evts) SymmetricScaleCallback(obj,src));
+            
+            obj.interp_missing_radio=uicontrol('parent',advance_tab,'style','radiobutton','string','Interpolate Missing',...
+                'units','normalized','position',[0,0.33,0.45,0.33],'value',obj.interp_missing,...
+                'callback',@(src,evts) InterpMissingCallback(obj,src));
+
+            obj.auto_refresh_radio=uicontrol('parent',advance_tab,'style','radiobutton','string','Auto Refresh',...
+                'units','normalized','position',[0.5,0.33,0.45,0.33],'value',obj.auto_refresh,...
+                'callback',@(src,evts) AutoRefreshCallback(obj,src));
             
             obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.005,0.2,0.04],...
                 'callback',@(src,evts) ComputeCallback(obj));
@@ -1860,7 +1884,13 @@ classdef SpatialMapWindow < handle
                     obj.extrap_method,map_channames,map_pos(:,1),map_pos(:,2),map_pos(:,3),obj.width,obj.height,sl,sh,obj.color_bar,obj.resize);
                 h=findobj(obj.SpatialMapFig(e),'-regexp','tag','SpatialMapAxes');
                 if obj.contact
-                    plot_contact(h,allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.height,obj.width,[],...
+                    if obj.disp_channel_names
+                        channames=obj.all_chan_names;
+                    else
+                        channames=[];
+                    end
+                        
+                    plot_contact(h,allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.height,obj.width,channames,...
                         ~ismember(allchanpos,chanpos,'rows'),erdchan{e},erschan{e});
                 end
                 if obj.peak
@@ -2200,9 +2230,15 @@ classdef SpatialMapWindow < handle
                         
                         if obj.erd||obj.ers||ismember(src,[obj.erd_radio,obj.ers_radio])
                             delete(findobj(h,'Tag','contact'));
+                            delete(findobj(h,'Tag','names'));
                             figure(obj.SpatialMapFig(i))
                             if obj.contact
-                                plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
+                                if obj.disp_channel_names
+                                    channames=obj.all_chan_names;
+                                else
+                                    channames=[];
+                                end
+                                plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,channames,...
                                     ~ismember(obj.all_chan_pos,chanpos,'rows'),erdchan{i},erschan{i});
                             end
                         end
@@ -2437,22 +2473,35 @@ classdef SpatialMapWindow < handle
         end
         
         function ContactCallback(obj,src)
-            obj.contact_=get(src,'value');
+            if ~isempty(src)
+                obj.contact_=get(src,'value');
+            end
             chanpos=[obj.pos_x,obj.pos_y,obj.radius];
             if ~NoSpatialMapFig(obj)
                 for i=1:length(obj.SpatialMapFig)
                     h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
                     if ~isempty(h)
                         delete(findobj(h,'Tag','contact'));
+                        delete(findobj(h,'Tag','names'));
                         figure(obj.SpatialMapFig(i))
                         if obj.contact
-                            plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
-                                ~ismember(obj.all_chan_pos,chanpos,'rows'),obj.erd_chan{i},obj.ers_chan{i});
+                            if obj.disp_channel_names
+                                plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,obj.all_chan_names,...
+                                    ~ismember(obj.all_chan_pos,chanpos,'rows'),obj.erd_chan{i},obj.ers_chan{i});
+                            else
+                                plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
+                                    ~ismember(obj.all_chan_pos,chanpos,'rows'),obj.erd_chan{i},obj.ers_chan{i});
+                            end
                         end
                         
                     end
                 end
             end
+        end
+        
+        function ChannelNamesCallback(obj,src)
+            obj.disp_channel_names_=get(src,'value');
+            ContactCallback(obj,[]);
         end
     end
     
