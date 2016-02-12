@@ -789,6 +789,8 @@ classdef TFMapWindow < handle
             obj.method=get(src,'value');
             switch obj.method
                 case 1
+                    obj.data_input=1;
+                    DataPopUpCallback(obj,obj.data_popup);
                 case 2
                     obj.data_input=3;
                     DataPopUpCallback(obj,obj.data_popup);
@@ -872,6 +874,7 @@ classdef TFMapWindow < handle
                 set(obj.unit_db_radio,'value',0);
                 obj.unit_='Mag';
             end
+            ComputeCallback(obj);
         end
         
         function NormalizationCallback(obj,src)
@@ -1130,9 +1133,9 @@ classdef TFMapWindow < handle
             end
             
             delete(obj.TFMapFig(ishandle(obj.TFMapFig)));
-            figpos=get(obj.fig,'position');
+            fpos=get(obj.fig,'position');
             obj.TFMapFig=figure('Name',obj.event,'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
-                'color','w','DockControls','off','Tag','Act');
+                'color','w','DockControls','off','Tag','Act','position',[fpos(1)+fpos(3)+20,fpos(2),650,450]);
             
             
             %Normalizatin**************************************************************
