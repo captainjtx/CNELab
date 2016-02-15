@@ -1,6 +1,6 @@
 function ExportDataToWorkspace(obj)
 
-[data,chanNames,dataset,~,~,evts,groupnames,pos]=get_selected_data(obj);
+[data,chanNames,dataset,~,sample,evts,groupnames,pos,segments]=get_selected_data(obj);
 dd=unique(dataset);
 
 downsample=1;
@@ -18,35 +18,44 @@ if obj.DownSample~=1
     end
 end
 % The same as save merged data*********************************************
-cds=CommonDataStructure;
+seg=unique(segments);
 
-cds.Data=data(1:downsample:end,:);
-cds.DataInfo.Annotations=evts;
-cds.DataInfo.SampleRate=obj.SRate/downsample;
-units=obj.Units{dd(1)};
-for i=2:length(dd)
-    units=cat(2,units,obj.Units{dd(i)});
+for s=1:length(seg)
+    dat=data(segments==seg(1));
+    sam=sample(segments==seg(1));
+    
+    cds=CommonDataStructure;
+    
+    cds.Data=dat(1:downsample:end,:);
+    cds.DataInfo.Annotations=evts;
+    cds.DataInfo.SampleRate=obj.SRate/downsample;
+    units=obj.Units{dd(1)};
+    for i=2:length(dd)
+        units=cat(2,units,obj.Units{dd(i)});
+    end
+    %         cds.DataInfo.Units=units;
+    
+    cds.DataInfo.VideoName=obj.VideoFile;
+    cds.DataInfo.TimeStamps=sam(1:downsample:end)/obj.SRate;
+    
+%     cds.DataInfo.Video.StartTime=obj.VideoStartTime;
+%     cds.DataInfo.Video.TimeFrame=obj.VideoTimeFrame;
+%     cds.DataInfo.Video.NumberOfFrame=obj.NumberOfFrame;
+    
+    cds.Montage.ChannelNames=chanNames;
+    cds.Montage.Name=obj.Montage{dd(1)}(obj.MontageRef(dd(1))).name;
+    cds.Montage.GroupNames=groupnames;
+    cds.Montage.ChannelPosition=pos;
+    
+    maskchan=obj.MontageChanNames{dd(1)}(obj.Mask{dd(1)}==0);
+    for i=2:length(dd)
+        maskchan=cat(2,maskchan,obj.MontageChanNames{dd(i)}(obj.Mask{dd(i)}==0));
+    end
+    
+    cds.Montage.MaskChanNames=maskchan;
+    
+    sel{s}=cds;
 end
-%         cds.DataInfo.Units=units;
-
-cds.DataInfo.VideoName=obj.VideoFile;
-cds.DataInfo.TimeStamps=linspace(0,obj.DataTime,size(cds.Data,1));
-
-cds.DataInfo.Video.StartTime=obj.VideoStartTime;
-cds.DataInfo.Video.TimeFrame=obj.VideoTimeFrame;
-cds.DataInfo.Video.NumberOfFrame=obj.NumberOfFrame;
-
-cds.Montage.ChannelNames=chanNames;
-cds.Montage.Name=obj.Montage{dd(1)}(obj.MontageRef(dd(1))).name;
-cds.Montage.GroupNames=groupnames;
-cds.Montage.ChannelPosition=pos;
-
-maskchan=obj.MontageChanNames{dd(1)}(obj.Mask{dd(1)}==0);
-for i=2:length(dd)
-    maskchan=cat(2,maskchan,obj.MontageChanNames{dd(i)}(obj.Mask{dd(i)}==0));
-end
-
-cds.Montage.MaskChanNames=maskchan;
 
 %**************************************************************************
 prompt={'Assign a name:'};
@@ -59,7 +68,7 @@ if isempty(answer)
     return
 end
 
-assignin('base',answer{1},cds);
+assignin('base',answer{1},sel);
 
 end
 

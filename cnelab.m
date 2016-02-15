@@ -2,7 +2,7 @@ function cnelab()
 %Some additional default settings, will be migrated in to configuration
 %file in the future release
 
-buffer_size=500; % in megabytes, if you want to load the entire data, set it to inf
+buffer_size=300; % in megabytes, if you want to load the entire data, set it to inf
 %entire data loading can enable more advanced analysis tools
 
 visual_buffer_size=2; % in megabytes

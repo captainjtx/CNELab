@@ -757,9 +757,11 @@ classdef TFMapWindow < handle
             DataPopUpCallback(obj,obj.data_popup);
             NormalizationCallback(obj,obj.normalization_popup);
             if strcmpi(obj.unit,'dB')
-                UnitRadioCallback(obj,obj.unit_db_radio);
+                set(obj.unit_db_radio,'value',1);
+                set(obj.unit_mag_radio,'value',0);
             else
-                UnitRadioCallback(obj,obj.unit_mag_radio);
+                set(obj.unit_db_radio,'value',0);
+                set(obj.unit_mag_radio,'value',1);
             end
             
             obj.event=obj.event_;
@@ -1133,7 +1135,12 @@ classdef TFMapWindow < handle
             end
             
             delete(obj.TFMapFig(ishandle(obj.TFMapFig)));
-            fpos=get(obj.fig,'position');
+            
+            if obj.valid
+                fpos=get(obj.fig,'position');
+            else
+                fpos=[100 100 300 600];
+            end
             obj.TFMapFig=figure('Name',obj.event,'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
                 'color','w','DockControls','off','Tag','Act','position',[fpos(1)+fpos(3)+20,fpos(2),650,450]);
             

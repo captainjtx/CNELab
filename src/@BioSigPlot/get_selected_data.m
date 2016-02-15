@@ -16,7 +16,7 @@ channel=[];
 events=[];
 evts=[];
 sorted_bsp_selection=[];
-segment=[];
+
 bsp_selection=obj.Selection;
 
 fs=obj.SRate;

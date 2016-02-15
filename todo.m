@@ -183,4 +183,10 @@ implement next and previous frame in wmplayer/vlc arrow press callback
 Differentiate left click and right click in video
 
 
-Can not save selected data
+% Can not save selected data
+
+%Feb12 2016
+power spectrum analysis (weighted sum of PSD of segments)
+Save selected data into separate segments
+Insert annotation by timestamp
+P_File for publication in github
