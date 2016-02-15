@@ -348,17 +348,23 @@ classdef PSDWindow < handle
         
         function ComputeCallback(obj)
             omitMask=true;
-            [data,chanNames]=get_selected_data(obj.bsp,omitMask);
+            [data,chanNames,~,~,~,~,~,~,segments]=get_selected_data(obj.bsp,omitMask);
             
             wd=round(obj.winlen);
             ov=round(obj.overlap);
-            if isempty(wd)||wd>size(data,1)
-                wd=round(obj.fs);
-                ov=round(wd*0.5);
-            end
             
-            if ov>wd
-                ov=round(wd*0.5);
+            seg=unique(segments);
+            
+            for s=1:length(seg)
+                len=sum(segments==seg(s));
+                if isempty(wd)||wd>len
+                    wd=min(obj.fs,len);
+                    ov=round(wd*0.5);
+                end
+                
+                if ov>wd
+                    ov=round(wd*0.5);
+                end
             end
             
             obj.winlen=wd;
@@ -380,11 +386,15 @@ classdef PSDWindow < handle
             switch obj.layout
                 case 1
                     psd=0;
-                    for i=1:size(data,2)
-                        [tmp,f]=pwelch(data(:,i),wd,ov,nfft,obj.fs,'onesided');
-                        psd=psd+tmp;
+                    for s=1:length(seg)
+                        dat=data(segments==seg(s),:);
+                        tmp_psd=0;
+                        for i=1:size(dat,2)
+                            [tmp,f]=pwelch(dat(:,i),wd,ov,nfft,obj.fs,'onesided');
+                            tmp_psd=tmp_psd+tmp;
+                        end
+                        psd=tmp_psd/size(dat,2)*size(dat,1)/size(data,1)+psd;
                     end
-                    psd=psd/size(data,2);
                     
                     if strcmpi(obj.unit,'dB')
                         obj.line=plot(f,10*log10(psd));
@@ -403,10 +413,14 @@ classdef PSDWindow < handle
                     obj.pow=psd;
                     
                 case 2
-                    psd=[];
-                    for i=1:size(data,2)
-                        [tmp,f]=pwelch(data(:,i),wd,ov,nfft,obj.fs,'onesided');
-                        psd=cat(2,psd,tmp(:));
+                    psd=zeros(round(nfft/2)+1,size(data,2));
+                    
+                    for s=1:length(seg)
+                        dat=data(segments==seg(s),:);
+                        for i=1:size(dat,2)
+                            [tmp,f]=pwelch(dat(:,i),wd,ov,nfft,obj.fs,'onesided');
+                            psd(:,i)=psd(:,i)+tmp*size(dat,1)/size(data,1);
+                        end
                     end
                     
                     if strcmpi(obj.unit,'dB')

@@ -21,8 +21,8 @@ end
 seg=unique(segments);
 
 for s=1:length(seg)
-    dat=data(segments==seg(1));
-    sam=sample(segments==seg(1));
+    dat=data(segments==seg(s),:);
+    sam=sample(segments==seg(s));
     
     cds=CommonDataStructure;
     
