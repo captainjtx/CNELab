@@ -573,13 +573,13 @@ classdef TFMapWindow < handle
             obj.valid=0;
             obj.method_=1;
             obj.data_input_=1;%selection
-            obj.ms_before_=1000;
-            obj.ms_after_=1000;
+            obj.ms_before_=1500;
+            obj.ms_after_=1500;
             obj.event_='';
             obj.unit_='dB';
             obj.normalization_=1;%none
-            obj.normalization_start_=-1000;
-            obj.normalization_end_=0;
+            obj.normalization_start_=-1500;
+            obj.normalization_end_=-1000;
             obj.normalization_start_event_='';
             obj.normalization_end_event_='';
             obj.normalization_event_='';
@@ -588,8 +588,8 @@ classdef TFMapWindow < handle
             obj.min_freq_=0;
             obj.clim_slider_max_=10;
             obj.clim_slider_min_=-10;
-            obj.max_clim_=3;
-            obj.min_clim_=-3;
+            obj.max_clim_=6;
+            obj.min_clim_=-6;
             obj.stft_winlen_=round(obj.fs/3);
             obj.stft_overlap_=round(obj.stft_winlen*0.9);
             obj.symmetric_scale_=1;
@@ -1134,15 +1134,22 @@ classdef TFMapWindow < handle
                 obj.min_freq=freq(1);
             end
             
-            delete(obj.TFMapFig(ishandle(obj.TFMapFig)));
+            
             
             if obj.valid
                 fpos=get(obj.fig,'position');
             else
                 fpos=[100 100 300 600];
             end
-            obj.TFMapFig=figure('Name',obj.event,'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
-                'color','w','DockControls','off','Tag','Act','position',[fpos(1)+fpos(3)+20,fpos(2),650,450]);
+            
+            if isempty(obj.TFMapFig)||~ishandle(obj.TFMapFig)
+                delete(obj.TFMapFig(ishandle(obj.TFMapFig)));
+                obj.TFMapFig=figure('Name',obj.event,'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
+                    'color','w','DockControls','off','Tag','Act','position',[fpos(1)+fpos(3)+20,fpos(2),650,450]);
+            else
+                figure(obj.TFMapFig);
+                clf
+            end
             
             
             %Normalizatin**************************************************************

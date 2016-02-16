@@ -49,11 +49,13 @@ erschan=logical(erschan);
 
 erdcol=col(erdchan);
 erdrow=row(erdchan);
-erdr=r(erdchan);
+% erdr=r(erdchan);
+erdr=ones(size(erdchan))*max(r);
 
 erscol=col(erschan);
 ersrow=row(erschan);
-ersr=r(erschan);
+% ersr=r(erschan);
+ersr=ones(size(erschan))*max(r);
 
 col=col(~erdchan&~erschan);
 row=row(~erdchan&~erschan);

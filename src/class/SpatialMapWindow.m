@@ -13,7 +13,6 @@ classdef SpatialMapWindow < handle
         p_menu
         corr_menu
         xcorr_menu
-        threshold_menu
         
         valid
         bind_valid
@@ -80,6 +79,15 @@ classdef SpatialMapWindow < handle
         peak_radio
         contact_radio
         names_radio
+        
+        
+        pos_radio
+        pos_edit
+        pos_slider
+        
+        neg_radio
+        neg_edit
+        neg_slider
     end
     properties
         
@@ -123,6 +131,12 @@ classdef SpatialMapWindow < handle
         peak_
         contact_
         disp_channel_names_
+        
+        neg_t
+        pos_t
+        
+        pos_
+        neg_
     end
     
     properties (Dependent)
@@ -180,6 +194,9 @@ classdef SpatialMapWindow < handle
         peak
         contact
         disp_channel_names
+        
+        pos
+        neg
     end
     properties
         width
@@ -211,7 +228,6 @@ classdef SpatialMapWindow < handle
         xcorr_win
         export_picture_win
         export_movie_win
-        threshold_win
     end
     methods
         function val=get.event_group(obj)
@@ -288,13 +304,13 @@ classdef SpatialMapWindow < handle
         function val=get.fs(obj)
             val=obj.bsp.SRate;
         end
-%         function set.fs(obj,val)
-%             obj.fs_=val;
-%             if obj.valid
-%                 set(obj.max_freq_slider,'max',val/2);
-%                 set(obj.min_freq_slider,'min',val/2);
-%             end
-%         end
+        %         function set.fs(obj,val)
+        %             obj.fs_=val;
+        %             if obj.valid
+        %                 set(obj.max_freq_slider,'max',val/2);
+        %                 set(obj.min_freq_slider,'min',val/2);
+        %             end
+        %         end
         function val=get.symmetric_scale(obj)
             val=obj.symmetric_scale_;
         end
@@ -351,17 +367,17 @@ classdef SpatialMapWindow < handle
                     mapv=mapv/max(abs(mapv));
                 end
                 
-                if obj.threshold_win.pos
+                if obj.pos
                     ind=find(mapv>=0);
                     [abs_val,I]=sort(abs(mapv(ind)),'descend');
                     cumsum_val=cumsum(abs_val);
-                    mapv(ind(I(cumsum_val>cumsum_val(end)*obj.threshold_win.pos_t)))=0;
+                    mapv(ind(I(cumsum_val>cumsum_val(end)*obj.pos_t)))=0;
                 end
-                if obj.threshold_win.neg
+                if obj.neg
                     ind=find(mapv<=0);
                     [abs_val,I]=sort(abs(mapv(ind)),'descend');
                     cumsum_val=cumsum(abs_val);
-                    mapv(ind(I(cumsum_val>cumsum_val(end)*obj.threshold_win.neg_t)))=0;
+                    mapv(ind(I(cumsum_val>cumsum_val(end)*obj.neg_t)))=0;
                 end
                 val{k}=mapv;
             end
@@ -982,6 +998,41 @@ classdef SpatialMapWindow < handle
                 obj.normalization_event=val{1};
             end
         end
+        
+        
+        function val=get.pos(obj)
+            val=obj.pos_;
+        end
+        
+        function set.pos(obj,val)
+            obj.pos_=val;
+            if obj.valid
+                if obj.pos
+                    set(obj.pos_edit,'enable','on');
+                    set(obj.pos_slider,'enable','on');
+                else
+                    set(obj.pos_edit,'enable','off');
+                    set(obj.pos_slider,'enable','off');
+                end
+            end
+        end
+        
+        function val=get.neg(obj)
+            val=obj.neg_;
+        end
+        
+        function set.neg(obj,val)
+            obj.neg_=val;
+            if obj.valid
+                if obj.neg
+                    set(obj.neg_edit,'enable','on');
+                    set(obj.neg_slider,'enable','on');
+                else
+                    set(obj.neg_edit,'enable','off');
+                    set(obj.neg_slider,'enable','off');
+                end
+            end
+        end
     end
     
     methods
@@ -1021,8 +1072,8 @@ classdef SpatialMapWindow < handle
             obj.min_clim_=-10;
             obj.erd_=0;
             obj.ers_=0;
-            obj.erd_t_=1;
-            obj.ers_t_=1;
+            obj.erd_t_=0.5;
+            obj.ers_t_=1.5;
             obj.resize_=1;
             obj.scale_by_max_=0;
             %             obj.display_mask_channel_=0;
@@ -1046,12 +1097,16 @@ classdef SpatialMapWindow < handle
             obj.contact_=1;
             obj.disp_channel_names_=0;
             
+            obj.neg_=0;
+            obj.pos_=0;
+            obj.neg_t=1;
+            obj.pos_t=1;
+            
             obj.corr_win=CorrMapWindow(obj);
             obj.xcorr_win=CrossCorrMapWindow(obj);
             
             obj.export_picture_win=ExportPictureWindow(obj);
             obj.export_movie_win=ExportMovieWindow(obj);
-            obj.threshold_win=ThresholdWindow(obj);
         end
         function buildfig(obj)
             if obj.valid
@@ -1070,7 +1125,6 @@ classdef SpatialMapWindow < handle
             obj.export_map_menu=uimenu(obj.export_menu,'label','Map','callback',@(src,evts) ExportMapCallback(obj));
             
             obj.advance_menu=uimenu(obj.fig,'label','Settings');
-            obj.threshold_menu=uimenu(obj.advance_menu,'label','Threshold','callback',@(src,evts) ThresholdCallback(obj));
             obj.stft_menu=uimenu(obj.advance_menu,'label','STFT','callback',@(src,evts) STFTCallback(obj));
             obj.p_menu=uimenu(obj.advance_menu,'label','P-Value','callback',@(src,evts) PCallback(obj));
             obj.corr_menu=uimenu(obj.advance_menu,'label','Correlation','callback',@(src,evts) CorrCallback(obj));
@@ -1171,24 +1225,8 @@ classdef SpatialMapWindow < handle
                 'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) FreqCallback(obj,src),...
                 'min',0,'max',obj.fs/2,'sliderstep',[0.005,0.02],'value',obj.max_freq);
             
-            hp_erds=uipanel('parent',hp,'title','ERD/ERS T-Test','units','normalized','position',[0,0.4,1,0.1]);
             
-            obj.erd_radio=uicontrol('parent',hp_erds,'style','radiobutton','string','ERD','units','normalized',...
-                'position',[0,0.6,0.18,0.3],'value',obj.erd,'callback',@(src,evts) ERDSCallback(obj,src),'interruptible','off');
-            obj.ers_radio=uicontrol('parent',hp_erds,'style','radiobutton','string','ERS','units','normalized',...
-                'position',[0,0.1,0.18,0.3],'value',obj.ers,'callback',@(src,evts) ERDSCallback(obj,src),'interruptible','off');
-            obj.erd_edit=uicontrol('parent',hp_erds,'style','edit','string',num2str(obj.erd_t),'units','normalized',...
-                'position',[0.2,0.55,0.15,0.4],'horizontalalignment','center','callback',@(src,evts) ERDSCallback(obj,src),'interruptible','off');
-            obj.erd_slider=uicontrol('parent',hp_erds,'style','slider','units','normalized',...
-                'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) ERDSCallback(obj,src),...
-                'min',0,'max',1,'value',obj.erd_t,'sliderstep',[0.01,0.05],'interruptible','off');
-            obj.ers_edit=uicontrol('parent',hp_erds,'style','edit','string',num2str(obj.ers_t),'units','normalized',...
-                'position',[0.2,0.05,0.15,0.4],'horizontalalignment','center','callback',@(src,evts) ERDSCallback(obj,src),'interruptible','off');
-            obj.ers_slider=uicontrol('parent',hp_erds,'style','slider','units','normalized',...
-                'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) ERDSCallback(obj,src),...
-                'min',1,'max',10,'value',obj.ers_t,'sliderstep',[0.01,0.05],'interruptible','off');
-            
-            hp_clim=uipanel('parent',hp,'title','Scale','units','normalized','position',[0,0.29,1,0.1]);
+            hp_clim=uipanel('parent',hp,'title','Scale','units','normalized','position',[0,0.4,1,0.1]);
             
             uicontrol('parent',hp_clim,'style','text','string','Min','units','normalized',...
                 'position',[0,0.6,0.1,0.3]);
@@ -1205,23 +1243,61 @@ classdef SpatialMapWindow < handle
                 'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
                 'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.max_clim,'sliderstep',[0.01,0.05]);
             
+            tgp=uitabgroup(obj.fig,'units','normalized','position',[0,0.22,1,0.16],'tablocation','top');
             
-            hp_resize=uipanel('parent',hp,'title','Window Scale','units','normalized','position',[0,0.21,1,0.07]);
+            
+            
+            tab_t=uitab(tgp,'title','Threshold');
+            
+            obj.pos_radio=uicontrol('parent',tab_t,'style','radiobutton','string','++','units','normalized',...
+                'position',[0,0.6,0.18,0.3],'value',obj.pos,'callback',@(src,evts) TCallback(obj,src),'fontsize',10);
+            obj.pos_edit=uicontrol('parent',tab_t,'style','edit','string',num2str(obj.pos_t),'units','normalized',...
+                'position',[0.2,0.6,0.15,0.3],'horizontalalignment','center','callback',@(src,evts) TCallback(obj,src));
+            obj.pos_slider=uicontrol('parent',tab_t,'style','slider','units','normalized',...
+                'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) TCallback(obj,src),...
+                'min',0,'max',1,'value',obj.pos_t,'sliderstep',[0.01,0.05]);
+            
+            obj.neg_radio=uicontrol('parent',tab_t,'style','radiobutton','string','---','units','normalized',...
+                'position',[0,0.1,0.18,0.3],'value',obj.neg,'callback',@(src,evts) TCallback(obj,src),'fontsize',10);
+            obj.neg_edit=uicontrol('parent',tab_t,'style','edit','string',num2str(obj.neg_t),'units','normalized',...
+                'position',[0.2,0.1,0.15,0.3],'horizontalalignment','center','callback',@(src,evts) TCallback(obj,src));
+            obj.neg_slider=uicontrol('parent',tab_t,'style','slider','units','normalized',...
+                'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) TCallback(obj,src),...
+                'min',0,'max',1,'value',obj.neg_t,'sliderstep',[0.01,0.05]);
+            
+            tab_erds=uitab(tgp,'title','T-Test');
+            
+            obj.erd_radio=uicontrol('parent',tab_erds,'style','radiobutton','string','ERD','units','normalized',...
+                'position',[0,0.1,0.18,0.3],'value',obj.erd,'callback',@(src,evts) ERDSCallback(obj,src),'interruptible','off');
+            obj.ers_radio=uicontrol('parent',tab_erds,'style','radiobutton','string','ERS','units','normalized',...
+                'position',[0,0.6,0.18,0.3],'value',obj.ers,'callback',@(src,evts) ERDSCallback(obj,src),'interruptible','off');
+            obj.erd_edit=uicontrol('parent',tab_erds,'style','edit','string',num2str(obj.erd_t),'units','normalized',...
+                'position',[0.2,0.1,0.15,0.3],'horizontalalignment','center','callback',@(src,evts) ERDSCallback(obj,src),'interruptible','off');
+            obj.erd_slider=uicontrol('parent',tab_erds,'style','slider','units','normalized',...
+                'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) ERDSCallback(obj,src),...
+                'min',0,'max',1,'value',obj.erd_t,'sliderstep',[0.01,0.05],'interruptible','off');
+            obj.ers_edit=uicontrol('parent',tab_erds,'style','edit','string',num2str(obj.ers_t),'units','normalized',...
+                'position',[0.2,0.6,0.15,0.3],'horizontalalignment','center','callback',@(src,evts) ERDSCallback(obj,src),'interruptible','off');
+            obj.ers_slider=uicontrol('parent',tab_erds,'style','slider','units','normalized',...
+                'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) ERDSCallback(obj,src),...
+                'min',1,'max',10,'value',obj.ers_t,'sliderstep',[0.01,0.05],'interruptible','off');
+            
+            hp_resize=uitab(tgp,'title','Resize');
             
             uicontrol('parent',hp_resize,'style','text','string','Ratio','units','normalized',...
-                'position',[0,0.2,0.1,0.5]);
+                'position',[0,0.5,0.1,0.25]);
             obj.resize_edit=uicontrol('parent',hp_resize,'style','edit','string',num2str(obj.resize),'units','normalized',...
-                'position',[0.15,0.2,0.2,0.6],'horizontalalignment','center','callback',@(src,evts) ResizeCallback(obj,src));
+                'position',[0.15,0.5,0.2,0.3],'horizontalalignment','center','callback',@(src,evts) ResizeCallback(obj,src));
             obj.resize_slider=uicontrol('parent',hp_resize,'style','slider','units','normalized',...
-                'position',[0.4,0.2,0.55,0.6],'callback',@(src,evts) ResizeCallback(obj,src),...
+                'position',[0.4,0.5,0.55,0.3],'callback',@(src,evts) ResizeCallback(obj,src),...
                 'min',0.1,'max',2,'value',obj.resize,'sliderstep',[0.01,0.05]);
             
-            setgp=uitabgroup(obj.fig,'units','normalized','position',[0,0.05,1,0.15]);
+            setgp=uitabgroup(obj.fig,'units','normalized','position',[0,0.05,1,0.16]);
             disp_tab=uitab(setgp,'title','Display');
             obj.color_bar_radio=uicontrol('parent',disp_tab,'style','radiobutton','string','Color Bar',...
                 'units','normalized','position',[0,0.66,0.45,0.33],'value',obj.color_bar,...
                 'callback',@(src,evts) ColorBarCallback(obj,src));
-                        
+            
             obj.peak_radio=uicontrol('parent',disp_tab,'style','radiobutton','string','Peak',...
                 'units','normalized','position',[0.5,0.66,0.45,0.33],'value',obj.peak,...
                 'callback',@(src,evts) PeakCallback(obj,src));
@@ -1251,7 +1327,7 @@ classdef SpatialMapWindow < handle
             obj.interp_missing_radio=uicontrol('parent',advance_tab,'style','radiobutton','string','Interpolate Missing',...
                 'units','normalized','position',[0,0.33,0.45,0.33],'value',obj.interp_missing,...
                 'callback',@(src,evts) InterpMissingCallback(obj,src));
-
+            
             obj.auto_refresh_radio=uicontrol('parent',advance_tab,'style','radiobutton','string','Auto Refresh',...
                 'units','normalized','position',[0.5,0.33,0.45,0.33],'value',obj.auto_refresh,...
                 'callback',@(src,evts) AutoRefreshCallback(obj,src));
@@ -1275,6 +1351,8 @@ classdef SpatialMapWindow < handle
             obj.erd=obj.erd_;
             obj.ers=obj.ers_;
             obj.normalization_event=obj.event;
+            obj.pos=obj.pos_;
+            obj.neg=obj.neg_;
         end
         function OnClose(obj)
             obj.valid=0;
@@ -1308,10 +1386,6 @@ classdef SpatialMapWindow < handle
             
             if obj.export_movie_win.valid
                 delete(obj.export_movie_win.fig);
-            end
-            
-            if obj.threshold_win.valid
-                delete(obj.threshold_win.fig);
             end
             
         end
@@ -1531,7 +1605,7 @@ classdef SpatialMapWindow < handle
         end
         
         function NewSpatialMapFig(obj)
-%             delete(obj.SpatialMapFig(ishandle(obj.SpatialMapFig)));
+            %             delete(obj.SpatialMapFig(ishandle(obj.SpatialMapFig)));
             
             fpos=get(obj.fig,'position');
             
@@ -1805,7 +1879,7 @@ classdef SpatialMapWindow < handle
                         t=t-obj.ms_before/1000;
                     end
                     obj.tfmat.t=t;
-                        
+                    
                     obj.tfmat.f=f;
                     obj.tfmat.channel=channel;
                     obj.tfmat.dataset=dataset;
@@ -1889,7 +1963,7 @@ classdef SpatialMapWindow < handle
                     else
                         channames=[];
                     end
-                        
+                    
                     plot_contact(h,allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.height,obj.width,channames,...
                         ~ismember(allchanpos,chanpos,'rows'),erdchan{e},erschan{e});
                 end
@@ -2214,7 +2288,7 @@ classdef SpatialMapWindow < handle
                             
                             F= scatteredInterpolant(map_pos(:,1),map_pos(:,2),map_mapv{i}(:),obj.interp_method,obj.extrap_method);
                             mapvq=F(x,y);
-%                             mapvq = gaussInterpolant(col,row,mapv{i}',x,y);
+                            %                             mapvq = gaussInterpolant(col,row,mapv{i}',x,y);
                             
                         else
                             return
@@ -2414,9 +2488,6 @@ classdef SpatialMapWindow < handle
             obj.export_movie_win.buildfig();
             
         end
-        function ThresholdCallback(obj)
-            obj.threshold_win.buildfig();
-        end
         
         function CenterMassCallback(obj,src)
             obj.center_mass_=get(src,'value');
@@ -2551,7 +2622,7 @@ classdef SpatialMapWindow < handle
             if ~folder_name
                 return
             end
-
+            
             suffix=[num2str(obj.min_freq),'-',num2str(obj.max_freq),...
                 '_start',num2str(obj.act_start),'_len',num2str(obj.act_len)];
             
@@ -2627,8 +2698,48 @@ classdef SpatialMapWindow < handle
             else
                 return
             end
+        end
+        
+        function TCallback(obj,src)
+            switch src
+                case obj.pos_radio
+                    obj.pos=get(src,'value');
+                case obj.neg_radio
+                    obj.neg=get(src,'value');
+                case obj.pos_edit
+                    val=str2double(get(src,'string'));
+                    if isnan(val)
+                        val=obj.pos_t;
+                    end
+                    val=max(0,min(val,1));
+                    
+                    set(src,'string',num2str(val));
+                    set(obj.pos_slider,'value',val);
+                    obj.pos_t=val;
+                case obj.neg_edit
+                    val=str2double(get(src,'string'));
+                    if isnan(val)
+                        val=obj.neg_t;
+                    end
+                    val=max(0,min(val,1));
+                    
+                    set(src,'string',num2str(val));
+                    set(obj.neg_slider,'value',val);
+                    obj.neg_t=val;
+                    
+                case obj.pos_slider
+                    val=get(src,'value');
+                    set(obj.pos_edit,'string',num2str(val));
+                    obj.pos_t=val;
+                case obj.neg_slider
+                    val=get(src,'value');
+                    set(obj.neg_edit,'string',num2str(val));
+                    obj.neg_t=val;
+            end
             
-            
+            if obj.auto_refresh
+                obj.UpdateFigure(src);
+            end
         end
     end
     
