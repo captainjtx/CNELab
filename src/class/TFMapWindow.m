@@ -41,14 +41,15 @@ classdef TFMapWindow < handle
         symmetric_scale_radio
         auto_scale_radio
         
-        settings_menu
-        smooth_menu
         file_menu
         save_menu
         save_fig_menu
         TFMapSaveWin
         
         disp_axis_radio
+        
+        smooth_x_edit
+        smooth_y_edit
         
     end
     properties
@@ -135,12 +136,20 @@ classdef TFMapWindow < handle
         end
         function set.smooth_x(obj,val)
             obj.smooth_x_=val;
+            
+            if obj.valid
+                set(obj.smooth_x_edit,'string',num2str(val));
+            end
         end
         function val=get.smooth_y(obj)
             val=obj.smooth_y_;
         end
         function set.smooth_y(obj,val)
             obj.smooth_y_=val;
+            
+            if obj.valid
+                set(obj.smooth_y_edit,'string',num2str(val));
+            end
         end
         function val=get.valid(obj)
             try
@@ -605,27 +614,23 @@ classdef TFMapWindow < handle
                 return
             end
             obj.fig=figure('MenuBar','none','Name','Time-Frequency Map','units','pixels',...
-                'Position',[100 100 300 600],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
+                'Position',[100 100 300 700],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
                 'Resize','on','DockControls','off');
             
             obj.file_menu=uimenu(obj.fig,'label','File');
             obj.save_menu=uimenu(obj.file_menu,'label','Save');
             obj.save_fig_menu=uimenu(obj.save_menu,'label','Figure','callback',@(src,evts) obj.TFMapSaveWin.buildfig(),'Accelerator','p');
             
-            obj.settings_menu=uimenu(obj.fig,'label','Settings');
-            obj.smooth_menu=uimenu(obj.settings_menu,'label','Smooth Kernel','callback',@(src,evts) SmoothCallback(obj));
-            
-            
             hp=uipanel('units','normalized','Position',[0,0,1,1]);
             
-            hp_method=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.94,1,0.06]);
+            hp_method=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.94,1,0.05]);
             uicontrol('Parent',hp_method,'Style','text','String','Method: ','units','normalized','Position',[0.01,0,0.4,0.9],...
                 'HorizontalAlignment','left');
             obj.method_popup=uicontrol('Parent',hp_method,'Style','popup',...
                 'String',{'Average','Grid'},'units','normalized','Position',[0.4,0,0.59,0.92],'value',obj.method,...
                 'callback',@(src,evts) MethodCallback(obj,src));
             
-            hp_data=uipanel('Parent',hp,'Title','','Units','normalized','Position',[0,0.78,1,0.15]);
+            hp_data=uipanel('Parent',hp,'Title','','Units','normalized','Position',[0,0.8,1,0.13]);
             uicontrol('Parent',hp_data,'Style','text','String','Input Data: ','units','normalized','Position',[0.01,0.6,0.4,0.35],...
                 'HorizontalAlignment','left');
             obj.data_popup=uicontrol('Parent',hp_data,'Style','popup',...
@@ -645,7 +650,7 @@ classdef TFMapWindow < handle
             obj.ms_after_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_after),'units','normalized','position',[0.7,0.05,0.29,0.3],...
                 'HorizontalAlignment','center','visible','off','callback',@(src,evts) MsAfterCallback(obj,src));
             
-            hp_scale=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.62,1,0.15]);
+            hp_scale=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.66,1,0.13]);
             uicontrol('Parent',hp_scale,'style','text','units','normalized','string','Normalization: ',...
                 'position',[0.01,0.6,0.4,0.35],'HorizontalAlignment','left');
             obj.normalization_popup=uicontrol('Parent',hp_scale,'style','popup','units','normalized',...
@@ -660,12 +665,6 @@ classdef TFMapWindow < handle
                 'HorizontalAlignment','left','visible','off');
             obj.scale_event_popup=uicontrol('Parent',hp_scale,'Style','popup','string',obj.event_list,'units','normalized','position',[0.01,0.05,0.35,0.3],...
                 'visible','off','callback',@(src,evts) ScaleEventCallback(obj,src));
-            %             obj.scale_start_text=uicontrol('Parent',hp_scale,'style','text','units','normalized',...
-            %                 'string','Start (ms): ','position',[0.05,0.3,0.4,0.3],'HorizontalAlignment','center',...
-            %                 'visible','off');
-            %             obj.scale_end_text=uicontrol('Parent',hp_scale,'style','text','units','normalized',...
-            %                 'string','End (ms): ','position',[0.55,0.3,0.4,0.3],'HorizontalAlignment','center',...
-            %                 'visible','off');
             
             obj.scale_start_edit=uicontrol('parent',hp_scale,'style','edit','units','normalized',...
                 'string',obj.normalization_start,'position',[0.4,0.05,0.29,0.3],'HorizontalAlignment','center','visible','off',...
@@ -681,19 +680,7 @@ classdef TFMapWindow < handle
                 'string',obj.event_list,'position',[0.55,0.05,0.4,0.3],'visible','off',...
                 'callback',@(src,evt)NormalizationStartEndCallback(obj,src));
             
-            hp_stft=uipanel('parent',hp,'title','','units','normalized','position',[0,0.51,1,0.1]);
-            uicontrol('parent',hp_stft,'style','text','string','STFT Window (sample): ','units','normalized',...
-                'position',[0,0.6,0.5,0.3]);
-            obj.stft_winlen_edit=uicontrol('parent',hp_stft,'style','edit','string',num2str(obj.stft_winlen),...
-                'units','normalized','position',[0.05,0.1,0.4,0.46],'HorizontalAlignment','center',...
-                'callback',@(src,evts) STFTWinlenCallback(obj,src));
-            uicontrol('parent',hp_stft,'style','text','string','STFT Overlap (sample): ',...
-                'units','normalized','position',[0.5,0.6,0.5,0.3]);
-            obj.stft_overlap_edit=uicontrol('parent',hp_stft,'style','edit','string',num2str(obj.stft_overlap),...
-                'units','normalized','position',[0.55,0.1,0.4,0.46],'HorizontalAlignment','center',...
-                'callback',@(src,evts) STFTOverlapCallback(obj,src));
-            
-            hp_mag=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.46,1,0.04]);
+            hp_mag=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.6,1,0.05]);
             uicontrol('Parent',hp_mag,'style','text','units','normalized','string','Unit: ','position',[0.01,0,0.3,1],...
                 'HorizontalAlignment','left');
             obj.unit_mag_radio=uicontrol('Parent',hp_mag,'Style','radiobutton','units','normalized','string','Mag','position',[0.4,0,0.29,1],...
@@ -702,7 +689,7 @@ classdef TFMapWindow < handle
                 'HorizontalAlignment','left','callback',@(src,evts) UnitRadioCallback(obj,src));
             
             
-            hp_freq=uipanel('parent',hp,'title','Frequency','units','normalized','position',[0,0.33,1,0.12]);
+            hp_freq=uipanel('parent',hp,'title','Frequency','units','normalized','position',[0,0.48,1,0.11]);
             
             uicontrol('parent',hp_freq,'style','text','string','Min','units','normalized',...
                 'position',[0,0.6,0.1,0.3]);
@@ -722,7 +709,7 @@ classdef TFMapWindow < handle
             
             
             
-            hp_clim=uipanel('parent',hp,'title','Scale','units','normalized','position',[0,0.2,1,0.12]);
+            hp_clim=uipanel('parent',hp,'title','Scale','units','normalized','position',[0,0.36,1,0.11]);
             
             uicontrol('parent',hp_clim,'style','text','string','Min','units','normalized',...
                 'position',[0,0.6,0.1,0.3]);
@@ -739,20 +726,47 @@ classdef TFMapWindow < handle
                 'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
                 'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.max_clim,'sliderstep',[0.01,0.05]);
             
-            hp_display=uipanel('parent',hp,'title','Display','units','normalized','position',[0,0.06,1,0.13]);
-            obj.onset_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Onset','value',obj.display_onset,...
-                'units','normalized','position',[0,0.7,0.45,0.3],'callback',@(src,evts) DisplayOnsetCallback(obj,src));
-            obj.symmetric_scale_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Symmetric Scale','value',obj.symmetric_scale,...
-                'units','normalized','position',[0,0.4,0.45,0.3],'callback',@(src,evts) SymmetricScaleCallback(obj,src));
+            resgp=uitabgroup(hp,'units','normalized','position',[0,0.22,1,0.13]);
+            tab_stft=uitab(resgp,'title','STFT');
+            uicontrol('parent',tab_stft,'style','text','string','Window (sample): ','units','normalized',...
+                'position',[0,0.6,0.5,0.3]);
+            obj.stft_winlen_edit=uicontrol('parent',tab_stft,'style','edit','string',num2str(obj.stft_winlen),...
+                'units','normalized','position',[0.1,0.1,0.3,0.45],'HorizontalAlignment','center',...
+                'callback',@(src,evts) STFTWinlenCallback(obj,src));
+            uicontrol('parent',tab_stft,'style','text','string','Overlap (sample): ',...
+                'units','normalized','position',[0.5,0.6,0.5,0.3]);
+            obj.stft_overlap_edit=uicontrol('parent',tab_stft,'style','edit','string',num2str(obj.stft_overlap),...
+                'units','normalized','position',[0.6,0.1,0.3,0.45],'HorizontalAlignment','center',...
+                'callback',@(src,evts) STFTOverlapCallback(obj,src));
             
-            obj.auto_scale_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Auto Scale','value',obj.auto_scale,...
-                'units','normalized','position',[0,0.1,0.45,0.3],'callback',@(src,evts) AutoScaleCallback(obj,src));
-            obj.disp_axis_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Axis','value',obj.disp_axis,...
-                'units','normalized','position',[0.5,0.7,0.45,0.3],'callback',@(src,evts) AxisCallback(obj,src));
-            obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.005,0.2,0.05],...
+            tab_smooth=uitab(resgp,'title','Smooth');
+            
+            uicontrol('parent',tab_smooth,'style','text','string','Width : ','units','normalized',...
+                'position',[0,0.6,0.5,0.3]);
+            obj.smooth_x_edit=uicontrol('parent',tab_smooth,'style','edit','string',num2str(obj.smooth_x),...
+                'units','normalized','position',[0.1,0.1,0.3,0.45],'HorizontalAlignment','center',...
+                'callback',@(src,evts) SmoothCallback(obj,src));
+            uicontrol('parent',tab_smooth,'style','text','string','Height : ',...
+                'units','normalized','position',[0.5,0.6,0.5,0.3]);
+            obj.smooth_y_edit=uicontrol('parent',tab_smooth,'style','edit','string',num2str(obj.smooth_y),...
+                'units','normalized','position',[0.6,0.1,0.3,0.45],'HorizontalAlignment','center',...
+                'callback',@(src,evts) SmoothCallback(obj,src));
+            
+            tabgp=uitabgroup(hp,'units','normalized','position',[0,0.06,1,0.15]);
+            tab_display=uitab(tabgp,'title','Display');
+            obj.onset_radio=uicontrol('parent',tab_display,'style','radiobutton','string','Onset','value',obj.display_onset,...
+                'units','normalized','position',[0,0.66,0.45,0.33],'callback',@(src,evts) DisplayOnsetCallback(obj,src));
+            obj.symmetric_scale_radio=uicontrol('parent',tab_display,'style','radiobutton','string','Symmetric Scale','value',obj.symmetric_scale,...
+                'units','normalized','position',[0,0.33,0.45,0.33],'callback',@(src,evts) SymmetricScaleCallback(obj,src));
+            
+            obj.auto_scale_radio=uicontrol('parent',tab_display,'style','radiobutton','string','Auto Scale','value',obj.auto_scale,...
+                'units','normalized','position',[0,0,0.45,0.33],'callback',@(src,evts) AutoScaleCallback(obj,src));
+            obj.disp_axis_radio=uicontrol('parent',tab_display,'style','radiobutton','string','Axis','value',obj.disp_axis,...
+                'units','normalized','position',[0.5,0.66,0.45,0.33],'callback',@(src,evts) AxisCallback(obj,src));
+            obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.01,0.2,0.04],...
                 'callback',@(src,evts) ComputeCallback(obj));
             
-            obj.new_btn=uicontrol('parent',hp,'style','pushbutton','string','New','units','normalized','position',[0.01,0.005,0.2,0.05],...
+            obj.new_btn=uicontrol('parent',hp,'style','pushbutton','string','New','units','normalized','position',[0.01,0.01,0.2,0.04],...
                 'callback',@(src,evts) NewCallback(obj));
             DataPopUpCallback(obj,obj.data_popup);
             NormalizationCallback(obj,obj.normalization_popup);
@@ -1506,32 +1520,26 @@ classdef TFMapWindow < handle
             obj.ComputeCallback();
         end
         
-        function SmoothCallback(obj)
-            prompt={'Kernel width','Kernel height'};
-            def={num2str(obj.smooth_x),num2str(obj.smooth_y)};
+        function SmoothCallback(obj,src)
             
-            title='Gaussian Kernel';
-            
-            
-            answer=inputdlg(prompt,title,1,def);
-            
-            if isempty(answer)
-                return
+            tmp=str2double(get(src,'string'));
+            switch src
+                case obj.smooth_x_edit
+                    
+                    if isempty(tmp)||isnan(tmp)
+                        tmp=obj.smooth_x;
+                    end
+                    
+                    obj.smooth_x=tmp;
+                    
+                case obj.smooth_y_edit
+                    
+                    if isempty(tmp)||isnan(tmp)
+                        tmp=obj.smooth_y;
+                    end
+                    
+                    obj.smooth_y=tmp;
             end
-            
-            tmp=str2double(answer{1});
-            if isempty(tmp)||isnan(tmp)
-                tmp=obj.smooth_x;
-            end
-            
-            obj.smooth_x=tmp;
-            
-            tmp=str2double(answer{2});
-            if isempty(tmp)||isnan(tmp)
-                tmp=obj.smooth_y;
-            end
-            
-            obj.smooth_y=tmp;
         end
         
         function AxisCallback(obj,src)

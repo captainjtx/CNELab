@@ -1137,7 +1137,7 @@ classdef SpatialMapWindow < handle
             end
             obj.valid=1;
             obj.fig=figure('MenuBar','none','Name','Spatial-Spectral Map','units','pixels',...
-                'Position',[100 100 300 600],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
+                'Position',[100 100 300 700],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
                 'Resize','on','DockControls','off');
             
             obj.export_menu=uimenu(obj.fig,'label','Export');
@@ -1153,13 +1153,11 @@ classdef SpatialMapWindow < handle
             
             hp=uipanel('units','normalized','Position',[0,0,1,1]);
             
-            hp_data=uipanel('Parent',hp,'Title','Raw Data','Units','normalized','Position',[0,0.865,1,0.135]);
+            hp_data=uipanel('Parent',hp,'Title','Raw Data','Units','normalized','Position',[0,0.86,1,0.13]);
             
             obj.data_popup=uicontrol('Parent',hp_data,'Style','popup',...
                 'String',{'Selection','Single Event','Average Event'},'units','normalized','position',[0.01,0.6,0.59,0.35],...
                 'Callback',@(src,evts) DataPopUpCallback(obj,src),'value',obj.data_input);
-            
-            
             
             obj.event_text=uicontrol('Parent',hp_data,'Style','text','string','Event: ','units','normalized','position',[0.01,0.3,0.35,0.3],...
                 'HorizontalAlignment','left','visible','off');
@@ -1178,7 +1176,7 @@ classdef SpatialMapWindow < handle
             obj.ms_after_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_after),'units','normalized','position',[0.7,0.05,0.29,0.3],...
                 'HorizontalAlignment','left','visible','off','callback',@(src,evts) MsAfterCallback(obj,src));
             
-            hp_scale=uipanel('Parent',hp,'Title','Baseline','units','normalized','position',[0,0.73,1,0.135]);
+            hp_scale=uipanel('Parent',hp,'Title','Baseline','units','normalized','position',[0,0.72,1,0.13]);
             
             obj.normalization_popup=uicontrol('Parent',hp_scale,'style','popup','units','normalized',...
                 'string',{'None','Average Event','External Baseline'},'callback',@(src,evts) NormalizationCallback(obj,src),...
@@ -1210,7 +1208,7 @@ classdef SpatialMapWindow < handle
                 'string',obj.event_list,'position',[0.55,0.05,0.4,0.3],'visible','off',...
                 'callback',@(src,evt)NormalizationStartEndCallback(obj,src));
             
-            hp_act=uipanel('parent',hp,'title','Activation (ms)','units','normalized','position',[0,0.62,1,0.11]);
+            hp_act=uipanel('parent',hp,'title','Activation (ms)','units','normalized','position',[0,0.61,1,0.1]);
             
             uicontrol('parent',hp_act,'style','text','string','Start','units','normalized',...
                 'position',[0,0.6,0.1,0.3]);
@@ -1228,7 +1226,7 @@ classdef SpatialMapWindow < handle
                 'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) ActCallback(obj,src),...
                 'min',1,'max',obj.ms_before+obj.ms_after,'sliderstep',[0.005,0.02],'value',obj.act_len);
             
-            hp_freq=uipanel('parent',hp,'title','Frequency','units','normalized','position',[0,0.51,1,0.11]);
+            hp_freq=uipanel('parent',hp,'title','Frequency','units','normalized','position',[0,0.5,1,0.1]);
             
             uicontrol('parent',hp_freq,'style','text','string','Min','units','normalized',...
                 'position',[0,0.6,0.1,0.3]);
@@ -1247,7 +1245,7 @@ classdef SpatialMapWindow < handle
                 'min',0,'max',obj.fs/2,'sliderstep',[0.005,0.02],'value',obj.max_freq);
             
             
-            hp_clim=uipanel('parent',hp,'title','Scale','units','normalized','position',[0,0.4,1,0.11]);
+            hp_clim=uipanel('parent',hp,'title','Scale','units','normalized','position',[0,0.39,1,0.1]);
             
             uicontrol('parent',hp_clim,'style','text','string','Min','units','normalized',...
                 'position',[0,0.6,0.1,0.3]);
@@ -1264,7 +1262,7 @@ classdef SpatialMapWindow < handle
                 'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
                 'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.max_clim,'sliderstep',[0.01,0.05]);
             
-            tgp=uitabgroup(obj.fig,'units','normalized','position',[0,0.25,1,0.15],'tablocation','top');
+            tgp=uitabgroup(hp,'units','normalized','position',[0,0.24,1,0.14],'tablocation','top');
             
             tab_stft=uitab(tgp,'title','STFT');
             
@@ -1324,7 +1322,7 @@ classdef SpatialMapWindow < handle
                 'position',[0.4,0.55,0.55,0.4],'callback',@(src,evts) ResizeCallback(obj,src),...
                 'min',0.1,'max',2,'value',obj.resize,'sliderstep',[0.01,0.05]);
             
-            setgp=uitabgroup(obj.fig,'units','normalized','position',[0,0.07,1,0.18]);
+            setgp=uitabgroup(hp,'units','normalized','position',[0,0.06,1,0.17]);
             disp_tab=uitab(setgp,'title','Display');
             obj.color_bar_radio=uicontrol('parent',disp_tab,'style','radiobutton','string','Color Bar',...
                 'units','normalized','position',[0,0.66,0.45,0.33],'value',obj.color_bar,...
@@ -1364,14 +1362,14 @@ classdef SpatialMapWindow < handle
                 'units','normalized','position',[0.5,0.33,0.45,0.33],'value',obj.auto_refresh,...
                 'callback',@(src,evts) AutoRefreshCallback(obj,src));
             
-            obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.005,0.2,0.05],...
+            obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.005,0.2,0.04],...
                 'callback',@(src,evts) ComputeCallback(obj));
             
             
-            obj.new_btn=uicontrol('parent',hp,'style','pushbutton','string','New','units','normalized','position',[0.01,0.005,0.2,0.05],...
+            obj.new_btn=uicontrol('parent',hp,'style','pushbutton','string','New','units','normalized','position',[0.01,0.005,0.2,0.04],...
                 'callback',@(src,evts) NewCallback(obj));
             
-            obj.refresh_btn=uicontrol('parent',hp,'style','pushbutton','string','Refresh','units','normalized','position',[0.4,0.005,0.2,0.05],...
+            obj.refresh_btn=uicontrol('parent',hp,'style','pushbutton','string','Refresh','units','normalized','position',[0.4,0.005,0.2,0.04],...
                 'callback',@(src,evts) UpdateFigure(obj,src));
             
             DataPopUpCallback(obj,obj.data_popup);
@@ -2238,13 +2236,13 @@ classdef SpatialMapWindow < handle
                         tmp=obj.stft_winlen;
                     end
                     
-                    obj.stft_winlen_=tmp;
+                    obj.stft_winlen=tmp;
                 case obj.stft_overlap_edit
                     if isempty(tmp)||isnan(tmp)
                         tmp=obj.stft_overlap;
                     end
                     
-                    obj.stft_overlap_=tmp;
+                    obj.stft_overlap=tmp;
             end
         end
         function PCallback(obj)
