@@ -30,15 +30,16 @@ addpath(genpath([pwd '/script']),'-frozen');
 addpath(genpath([pwd '/test']),'-frozen');
 savepath;
 
-a=opengl('data');
-
-if a.Software
-    opengl software;
-    opengl('save','software');
-else
-    opengl hardware;
-    opengl('save','hardware');
-end
+disp('CNELab setup completed !');
+% a=opengl('data');
+% 
+% if a.Software
+%     opengl software;
+%     opengl('save','software');
+% else
+%     opengl hardware;
+%     opengl('save','hardware');
+% end
 
 end
 
