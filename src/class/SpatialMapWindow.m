@@ -1114,7 +1114,7 @@ classdef SpatialMapWindow < handle
             obj.bind_valid=0;
             obj.interp_missing_=0;
             obj.symmetric_scale_=1;
-            obj.center_mass_=1;
+            obj.center_mass_=0;
             obj.peak_=1;
             obj.contact_=1;
             obj.disp_channel_names_=0;
