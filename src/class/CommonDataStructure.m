@@ -24,7 +24,6 @@ classdef CommonDataStructure < handle
         start_file
         file_type
         ts
-        
     end
     
     properties  (Access=protected)
@@ -206,7 +205,6 @@ classdef CommonDataStructure < handle
         end
         
         function save(obj,varargin)
-            
             title=[];
             fnames=[];
             if isempty(varargin)
@@ -265,7 +263,7 @@ classdef CommonDataStructure < handle
                 
             end
             
-            
+            FilePath=fileparts(fnames);
             if exist([FilePath,'/montage'],'dir')~=7
                 mkdir(FilePath,'montage');
             end
@@ -776,6 +774,7 @@ classdef CommonDataStructure < handle
             %default
             s.DataInfo.SampleRate=256;
             s.Data=data;
+%             s.DataInfo.TimeStamps=(1:size(data,1))/256;
         end
         
         function s=readFromEDF(filename)
@@ -1180,12 +1179,16 @@ classdef CommonDataStructure < handle
             %searching forward
             while 1
                 ts=current_data_info.TimeStamps;
+                
+                if isempty(ts)
+                    %this will require to load Data, extremly slow, so it
+                    %is always advisalbe to store timestamp into the data
+                    ts=(1:length(current_file.Data(:,1)))/fs;
+                end
                 %get all events
                 new_evt=current_data_info.Annotations;
                 if ~isempty(new_evt)
-                    if ~isempty(ts)
-                        new_evt(:,1)=num2cell(cell2mat(new_evt(:,1))-ts(1));
-                    end
+                    new_evt(:,1)=num2cell(cell2mat(new_evt(:,1))-ts(1));
                     if ~isempty(filesample)
                         new_evt(:,1)=num2cell(cell2mat(new_evt(:,1))+filesample(end,2)/fs);
                     end
@@ -1193,14 +1196,7 @@ classdef CommonDataStructure < handle
                 
                 evts=cat(1,evts,new_evt);
                 %**********************************************************
-                if ~isempty(ts)
-                    new_t=[1,length(ts)];
-                else
-                    %this will require to load Data, extremly slow, so it
-                    %is always advicalbe to store timestamp into the data
-                    %very costy
-                    new_t=[1,length(current_file.Data(:,1))];
-                end
+                new_t=[1,length(ts)];
                 
                 if ~isempty(filesample)
                     new_t=new_t+filesample(end,2);
@@ -1457,7 +1453,10 @@ classdef CommonDataStructure < handle
                 cds.fs=fs;
                 cds.DataInfo.TimeStamps=(1:size(cds.Data,1))/fs;
                 
-                cds.save(oname);
+                if isempty(out_path)
+                    out_path=fileparts(which(f_in));
+                end
+                cds.save(fullfile(out_path,oname));
             end
         end
     end

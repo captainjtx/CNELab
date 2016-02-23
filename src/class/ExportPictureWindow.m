@@ -192,7 +192,7 @@ classdef ExportPictureWindow < handle
             obj.t_start_=get(obj.smw.act_start_slider,'min');
             obj.t_end_=get(obj.smw.act_start_slider,'max');
             obj.t_step_=(obj.smw.stft_winlen-obj.smw.stft_overlap)/obj.smw.fs*1000;
-            if exist([obj.smw.bsp.FileDir,'/app/spatial map'],'dir')~=7
+            if ~isempty(obj.smw.bsp.FileDir)&&exist([obj.smw.bsp.FileDir,'/app/spatial map'],'dir')~=7
                 mkdir(obj.smw.bsp.FileDir,'/app/spatial map');
             end
             open_dir=[obj.smw.bsp.FileDir,'/app/spatial map'];

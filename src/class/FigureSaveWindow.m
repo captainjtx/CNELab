@@ -45,7 +45,7 @@ classdef FigureSaveWindow<handle
             
             obj.res_ppi_=300;
             
-            if exist([obj.parent.bsp.FileDir,'/app/tfmap'],'dir')~=7
+            if ~isempty(obj.parent.bsp.FileDir)&&exist([obj.parent.bsp.FileDir,'/app/tfmap'],'dir')~=7
                 mkdir(obj.parent.bsp.FileDir,'/app/tfmap');
             end
             open_dir=[obj.parent.bsp.FileDir,'/app/tfmap'];

@@ -85,7 +85,6 @@ ylim([0,48])
 set(gca,'fontsize',20);
 colorbar
 
-
 subplot(1,2,2)
 imagesc(t-1,f,TF_Smooth(10*log10(con),'gaussian',[8,8]),[-2,2]);
 title('Contralateral O1/O2');

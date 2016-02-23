@@ -190,3 +190,13 @@ power spectrum analysis (weighted sum of PSD of segments)
 Save selected data into separate segments
 Insert annotation by timestamp
 P_File for publication in github
+
+save as differnt segs
+export trial bugs
+export betw annos
+
+montage editor
+delete psd figure
+notch order of 2 +-1 Hz
+
+navigate by 1 event bug

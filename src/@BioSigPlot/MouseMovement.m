@@ -169,7 +169,7 @@ h=floor(timestamp/3600);
 c=obj.MontageChanNames{ndata}{nchan};
 c=[c,' -- ',num2str(nchan),' | ',num2str(length(obj.MontageChanNames{ndata}))];
 
-if round(time*obj.SRate)<=size(obj.Data{ndata},1)
+if round(time*obj.SRate)<=obj.TotalSample
     if iscell(obj.PreprocData)
         v=obj.PreprocData{ndata}(max(round((time-obj.Time)*obj.SRate),1),nchan);
     else

@@ -28,6 +28,7 @@ addpath(genpath([pwd '/db']),'-frozen');
 addpath(genpath([pwd '/lib']),'-frozen');
 addpath(genpath([pwd '/script']),'-frozen');
 addpath(genpath([pwd '/test']),'-frozen');
+addpath(genpath([pwd '/demo']),'-frozen');
 savepath;
 
 disp('CNELab setup completed !');
