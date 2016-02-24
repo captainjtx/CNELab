@@ -70,7 +70,7 @@ if src==obj.BtnPrevEvent
     
     if ~isempty(ind)
         if obj.Evts_{ind(I),1}<obj.Time
-            obj.Time=obj.Evts_{ind(I),1}-obj.WinLength+obj.WinLength/3;
+            obj.Time=obj.Evts_{ind(I),1}-9/10*obj.WinLength;
         end
         obj.SelectedEvent=ind(I);
     end
@@ -84,16 +84,28 @@ elseif src==obj.BtnNextEvent
     
     if ~isempty(ind)
         if obj.Evts_{ind(I),1}>obj.Time+obj.WinLength
-            obj.Time=obj.Evts_{ind(I),1}-obj.WinLength/3;
+            obj.Time=obj.Evts_{ind(I),1}-obj.WinLength/10;
         end
         obj.SelectedEvent=ind(I);
     end 
 elseif src==obj.BtnPrevEvent1
     ind=obj.SelectedEvent-1;
     obj.SelectedEvent=max(1,min(ind,size(obj.Evts_,1)));
+    
+    if ind>0
+        if obj.Evts_{ind,1}<obj.Time
+            obj.Time=obj.Evts_{ind,1}-9/10*obj.WinLength;
+        end  
+    end
 elseif src==obj.BtnNextEvent1
     ind=obj.SelectedEvent+1;
     obj.SelectedEvent=max(1,min(ind,size(obj.Evts_,1)));
+    
+    if ind<=size(obj.Evts_,1)
+        if obj.Evts_{ind,1}>obj.Time+obj.WinLength
+            obj.Time=obj.Evts_{ind,1}-1/10*obj.WinLength;
+        end  
+    end
 end
 
 end

@@ -4,14 +4,14 @@ function data = filter_harmonic(data,freq,fs,varargin)
 if length(varargin)==1
     order=varargin{1};
 else
-    order=3;
+    order=2;
 end
 ext=min(fs*2,round(size(data,1)/2));
 for i=1:floor(fs/2/freq)
     f=freq*i;
     
-    w1=(f-2)/fs*2;
-    w2=(f+2)/fs*2;
+    w1=(f-1)/fs*2;
+    w2=(f+1)/fs*2;
     
     if w1<=0&&w2>0&&w2<1
         [b,a]=butter(order,w2,'high');

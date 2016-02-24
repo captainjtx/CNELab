@@ -62,6 +62,7 @@ obj.MenuNotchFilterHarmonics=uimenu(obj.MenuNotchFilter,'Label','Harmonics','che
 %**************************************************************************
 %First Order Menu------------------------------------------------------Data
 obj.MenuChannel=uimenu(obj.Fig,'Label','Data');
+obj.MenuDataBuffer=uimenu(obj.MenuChannel,'Label','Buffer','Callback',@(src,evt)MnuDataBuffer(obj,src));
 obj.MenuChannelNumber=uimenu(obj.MenuChannel,'Label','Channels/Page','Callback',@(src,evt) MnuChan2Display(obj));
 obj.MenuChannelWidth=uimenu(obj.MenuChannel,'Label','Time/Page','Callback',@(src,evt) MnuWidth2Display(obj));
 obj.MenuGain=uimenu(obj.MenuChannel,'Label','Gain','Callback',@(src,evt) MnuChanGain(obj,src));
@@ -91,6 +92,7 @@ obj.MenuAdvanceEventsDisplay=uimenu(obj.MenuAdvanceEvents,'Label','Display',...
 
 %First Order Menu---------------------------------------------------Display
 obj.MenuDisplay=uimenu(obj.Fig,'Label','Display');
+obj.MenuDisplayBuffer=uimenu(obj.MenuDisplay,'Label','Buffer','Callback',@(src,evt)MnuDisplayBuffer(obj,src));
 obj.MenuToolbarDisplay=uimenu(obj.MenuDisplay,'Label','Toolbar',...
     'Callback',@(src,evt) set(obj,'ToolbarDisplay',~obj.ToolbarDisplay));
 obj.MenuEventsDisplay=uimenu(obj.MenuDisplay,'Label','Events',...

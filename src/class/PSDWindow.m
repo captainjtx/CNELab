@@ -146,6 +146,10 @@ classdef PSDWindow < handle
             if ishandle(h)
                 delete(h);
             end
+            
+            if ishandle(obj.PSDFig)
+                delete(obj.PSDFig);
+            end
         end
         
         function val=get.valid(obj)
@@ -244,7 +248,7 @@ classdef PSDWindow < handle
             end
             
             
-            if isempty(obj.PSDFig)||~ishandle(obj.PSDFig)||~strcmpi(get(obj.PSDFig,'name'),'Active PSD')
+            if isempty(obj.PSDFig)||~ishandle(obj.PSDFig)||~strcmpi(get(obj.PSDFig,'Tag'),'Act')
             else
                 
                 if strcmpi(obj.unit,'dB')
@@ -325,9 +329,9 @@ classdef PSDWindow < handle
         
         function NewCallback(obj)
             if ~isempty(obj.PSDFig)&&ishandle(obj.PSDFig)
-                set(obj.PSDFig,'Name','Obsolete PSD');
+                set(obj.PSDFig,'Name','PSD Old');
             end
-            obj.PSDFig=figure('Name','Active PSD','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt));
+            obj.PSDFig=figure('Name','PSD','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'Tag','Act');
         end
         
         function KeyPress(obj,src,evt)
@@ -371,8 +375,8 @@ classdef PSDWindow < handle
             obj.overlap=ov;
             nfft=wd;
             
-            if isempty(obj.PSDFig)||~ishandle(obj.PSDFig)||~strcmpi(get(obj.PSDFig,'name'),'Active PSD')
-                obj.PSDFig=figure('Name','Active PSD','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt));
+            if isempty(obj.PSDFig)||~ishandle(obj.PSDFig)||~strcmpi(get(obj.PSDFig,'Tag'),'Act')
+                obj.PSDFig=figure('Name','PSD','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'Tag','Act');
             end
             figure(obj.PSDFig)
             

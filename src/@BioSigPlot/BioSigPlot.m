@@ -118,6 +118,7 @@ classdef BioSigPlot < hgsetget
         MenuOverwritePreprocess
         
         MenuChannel
+        MenuDataBuffer
         MenuChannelNumber
         MenuChannelWidth
         MenuGain
@@ -136,6 +137,7 @@ classdef BioSigPlot < hgsetget
         MenuEventsDisplay
         
         MenuDisplay
+        MenuDisplayBuffer
         MenuToolbarDisplay
         MenuXGrid
         MenuYGrid
@@ -2263,6 +2265,8 @@ classdef BioSigPlot < hgsetget
         showGauge(obj)
         maskChannel(obj,src)
         MnuChanGain(obj,src)
+        MnuVisualBuffer(obj,src)
+        MnuDataBuffer(obj,src)
         LoadMontage(obj)
         remakeMontageMenu(obj)
         ChangeMontage(obj,src,data,mtgref)

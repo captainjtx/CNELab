@@ -186,7 +186,7 @@ Differentiate left click and right click in video
 % Can not save selected data
 
 %Feb12 2016
-power spectrum analysis (weighted sum of PSD of segments)
+% power spectrum analysis (weighted sum of PSD of segments)
 Save selected data into separate segments
 Insert annotation by timestamp
 P_File for publication in github
@@ -196,7 +196,7 @@ export trial bugs
 export betw annos
 
 montage editor
-delete psd figure
+% delete psd figure
 notch order of 2 +-1 Hz
 
-navigate by 1 event bug
+% navigate by 1 event bug
