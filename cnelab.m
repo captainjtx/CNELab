@@ -20,6 +20,10 @@ while(1)
     if strcmpi(choice,'No')
         break;
     end
+    
+    if tmp.file_type~=2
+        buffer_size=inf;
+    end
 end
 if isempty(cds)
     return;
