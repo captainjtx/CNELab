@@ -14,7 +14,7 @@ ip_tfmap=[];
 con_tfmap=[];
 
 wd=512;
-ov=500;
+ov=256;
 
 n=0;
 
@@ -45,7 +45,7 @@ for i=1:length(files)
         %4, Right/Left STN
         
         cds=CommonDataStructure.Load(fullfile(mdir,files(i).name));
-        [dat,channames]=cds.get_trials('cue',1,1);
+        [dat,channames]=cds.get_trials('cue',3,1);
         dat=double(dat);
         
         dat=dat(:,ismember(channames,eeg),:);
@@ -74,9 +74,9 @@ for i=1:length(files)
                 
                 fprintf(fid ,'%d,%s,%d,%s,%s\n',fnameInfo{1},fnameInfo{2}{:},fnameInfo{3},fnameInfo{4}{:},eeg{c});
                 for fi=1:length(f)-1
-                    fprintf(powid,'%e,',mean(tf(fi,time>=0&time<1)));
+                    fprintf(powid,'%e,',mean(tf(fi,time<=2.5)));
                 end
-                fprintf(powid,'%e',mean(tf(length(f),time>=0&time<1)));
+                fprintf(powid,'%e',mean(tf(length(f),time<=2.5)));
                 fprintf(powid,'\n');
             end
         end
