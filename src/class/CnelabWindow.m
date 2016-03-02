@@ -52,7 +52,7 @@ classdef CnelabWindow < handle
 %             obj.open_btn.setCursor(java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
             set(obj.open_btn, 'MouseEnteredCallback', @(h,e)mouse_enter(obj))
             set(obj.open_btn, 'MouseExitedCallback',  @(h,e)mouse_exit(obj))
-
+            set(obj.open_btn, 'MousePressedCallback', @(h,e)mouse_press(obj))
             [dummy,btContainer] = javacomponent(obj.open_btn,[0 0 1 1],file_p); %#ok
 
             set(btContainer, 'Units','Norm', 'Position',[0.1,0.01,0.5,0.05]);
@@ -86,6 +86,8 @@ classdef CnelabWindow < handle
         function mouse_exit(obj)
             obj.open_btn.setBackground(java.awt.Color(0.94,0.94,0.94));
             obj.open_btn.setForeground(java.awt.Color(0.2,0.2,0.2));
+        end
+        function mouse_press(obj)
         end
     end
     
