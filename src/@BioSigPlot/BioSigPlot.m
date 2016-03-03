@@ -123,6 +123,8 @@ classdef BioSigPlot < hgsetget
         MenuChannelWidth
         MenuGain
         MenuDetrend
+        MenuDetrendConstant
+        MenuDetrendLinear
         MenuDownSample
         MenuSaveDownSample
         MenuVisualDownSample
