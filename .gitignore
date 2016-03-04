@@ -3,3 +3,5 @@ exe
 *.DS_Store
 Thumbs.db
 demo/behv.avi
+*.m~
+

@@ -527,7 +527,6 @@ classdef BioSigPlot < hgsetget
 %                 end
 %                 
 %             end
-            
             if obj.TFMapWin.valid
                 obj.TFMapWin.OnClose();
             end

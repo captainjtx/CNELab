@@ -2,7 +2,7 @@ function SaveMontage(obj)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 
-[data,chanNames,dataset,channel,sample,evts,groupnames]=get_selected_data(obj);
+[chanNames,dataset,~,~,~,groupnames]=get_selected_datainfo(obj);
 dd=unique(dataset);
 
 if exist([obj.FileDir,'/montage'],'dir')~=7

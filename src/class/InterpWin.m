@@ -16,6 +16,9 @@ classdef InterpWin < handle
         bsp
         
         channames
+        
+    end
+    properties (Dependent)
         valid
     end
     
@@ -32,7 +35,8 @@ classdef InterpWin < handle
         
         function buildfig(obj)
             
-            if obj.valid==1
+            if obj.valid
+                figure(obj.fig);
                 return
             end
             
@@ -219,6 +223,15 @@ classdef InterpWin < handle
             obj.bsp.PreprocData{dataset}(sample-obj.bsp.BufferStartSample+1,channel)=newdata;
             
             obj.bsp.redrawChangeBlock('time');
+        end
+        
+        
+        function val=get.valid(obj)
+            try
+                val=ishandle(obj.fig)&&isvalid(obj.fig);
+            catch
+                val=0;
+            end
         end
     end
     

@@ -126,13 +126,22 @@ set(imgh,'AlphaData',255-A);
 set(imgh,'Tag','contact');
 
 
+
+%keep channel name above the contact
+%rotation matrix
+%[cos(a)    -sin(a)]
+%[sin(a)     cos(a)]
+[az,el] = view;
+
+offset=[0;-10];
+offset=[cosd(-az),-sind(-az);sind(-az),cosd(-az)]*offset;
 for i=1:length(all_channames)
     if badchan(i)
         c=[0.5,0.5,0.5];
     else
         c=[0,0,0];
     end
-    text(all_col(i),all_row(i)-10,all_channames{i},...
+    text(all_col(i)+offset(1),all_row(i)+offset(2),all_channames{i},...
     'fontsize',8,'horizontalalignment','center','parent',axe,'interpreter','none','tag','names','color',c);
 end
 

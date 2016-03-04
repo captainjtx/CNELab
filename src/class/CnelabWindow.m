@@ -4,6 +4,7 @@ classdef CnelabWindow < handle
         fig
         
         open_btn
+        file_listbox
     end
     methods
         
@@ -43,6 +44,9 @@ classdef CnelabWindow < handle
                 'Fontsize',20,'HorizontalAlignment','center','Color',[0.5,0.5,0.5]);
             
             file_p=uipanel(obj.fig,'units','normalized','position',[0.6,0,0.4,1],'BorderType','none');
+            obj.file_listbox=uicontrol(file_p,'units','normalized','position',[0,0,1,1],'style','listbox','fontsize',20,...
+                'String',{'tmp1','tmp2'},'value',2);
+            
             obj.open_btn = com.mathworks.mwswing.MJButton('Open another data ...');
             obj.open_btn.setBorder([]);
             
@@ -66,6 +70,7 @@ classdef CnelabWindow < handle
             
             tmp=uipanel(opt,'units','normalized','position',[-0.01,0.16,1.02,0.28],'BorderType','line','backgroundcolor','white',...
                 'highlightcolor',[0.8,0.8,0.8],'borderwidth',2,'ButtonDownFcn',@(src,evt) Reserved(obj));
+            
         end
         
         function OnClose(obj)
