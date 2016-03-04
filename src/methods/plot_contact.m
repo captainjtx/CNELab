@@ -85,16 +85,29 @@ end
 
 alpha=pi/4;
 
+[az,el] = view;
+rotation_m=[cosd(-az),-sind(-az);sind(-az),cosd(-az)];
+
 if ~isempty(erdcol)
     shapeInserter = vision.ShapeInserter('Shape','Polygons','BorderColor','Custom',...
         'CustomBorderColor',[0,0,0],'LineWidth',1.2,'Antialiasing',true);
     triangles=zeros(0,6);
     
     for i=1:length(erdcol)
+        
+        offset1=[0;erdr(i)];
+        offset1=rotation_m*offset1;
+        
+        offset2=[cos(alpha)*erdr(i);-sin(alpha)*erdr(i)];
+        offset2=rotation_m*offset2;
+        
+        offset3=[-cos(alpha)*erdr(i);-sin(alpha)*erdr(i)];
+        offset3=rotation_m*offset3;
+    
         triangles=cat(1,triangles,...
-            int32([erdcol(i),                erdrow(i)+erdr(i),...
-            erdcol(i)+cos(alpha)*erdr(i),   erdrow(i)-sin(alpha)*erdr(i),...
-            erdcol(i)-cos(alpha)*erdr(i),   erdrow(i)-sin(alpha)*erdr(i)]));
+            int32([erdcol(i)+offset1(1),                erdrow(i)+offset1(2),...
+            erdcol(i)+offset2(1),   erdrow(i)+offset2(2),...
+            erdcol(i)+offset3(1),   erdrow(i)+offset3(2)]));
     end
     
     I = step(shapeInserter, I, triangles);
@@ -107,10 +120,19 @@ if ~isempty(erscol)
     triangles=zeros(0,6);
     
     for i=1:length(erscol)
+        offset1=[0;-ersr(i)];
+        offset1=rotation_m*offset1;
+        
+        offset2=[cos(alpha)*ersr(i);sin(alpha)*ersr(i)];
+        offset2=rotation_m*offset2;
+        
+        offset3=[-cos(alpha)*ersr(i);sin(alpha)*ersr(i)];
+        offset3=rotation_m*offset3;
+    
         triangles=cat(1,triangles,...
-            int32([erscol(i),                ersrow(i)-ersr(i),...
-            erscol(i)+cos(alpha)*ersr(i),   ersrow(i)+sin(alpha)*ersr(i),...
-            erscol(i)-cos(alpha)*ersr(i),   ersrow(i)+sin(alpha)*ersr(i)]));
+            int32([erscol(i)+offset1(1),                ersrow(i)+offset1(2),...
+            erscol(i)+offset2(1),   ersrow(i)+offset2(2),...
+            erscol(i)+offset3(1),   ersrow(i)+offset3(2)]));
     end
     
     I = step(shapeInserter, I, triangles);
@@ -131,10 +153,9 @@ set(imgh,'Tag','contact');
 %rotation matrix
 %[cos(a)    -sin(a)]
 %[sin(a)     cos(a)]
-[az,el] = view;
 
 offset=[0;-10];
-offset=[cosd(-az),-sind(-az);sind(-az),cosd(-az)]*offset;
+offset=rotation_m*offset;
 for i=1:length(all_channames)
     if badchan(i)
         c=[0.5,0.5,0.5];
