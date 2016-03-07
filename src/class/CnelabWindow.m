@@ -30,7 +30,7 @@ classdef CnelabWindow < handle
             
             obj.fig=figure('MenuBar','none','Name','Welcome','units','pixels',...
                 'Position',[200 200 750 450],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
-                'Resize','off','DockControls','off','Alphamap',0.5,'color','white');
+                'Resize','off','DockControls','off','Alphamap',0.5,'color','w');
             
             logo=uipanel(obj.fig,'units','normalized','position',[0,0.4,0.6,0.6],'BorderType','none','backgroundcolor','white');
             
@@ -43,14 +43,32 @@ classdef CnelabWindow < handle
             text('parent',logo_a,'position',[0.5,0.15],'string','Version 2.0',...
                 'Fontsize',20,'HorizontalAlignment','center','Color',[0.5,0.5,0.5]);
             
-            file_p=uipanel(obj.fig,'units','normalized','position',[0.6,0,0.4,1],'BorderType','none');
-            obj.file_listbox=uicontrol(file_p,'units','normalized','position',[0,0,1,1],'style','listbox','fontsize',20,...
-                'String',{'tmp1','tmp2'},'value',2);
+            file_p=uipanel(obj.fig,'units','normalized','position',[0.6,0,0.4,1],'BorderType','none','backgroundcolor',[0.96,0.96,0.96]);
+%             obj.file_listbox=uicontrol(file_p,'units','normalized','position',[0,0,1,1],'style','listbox','fontsize',20,...
+%                 'String',{'tmp1','tmp2'},'value',2);
+            data={'test/data.cds'};
             
-            obj.open_btn = com.mathworks.mwswing.MJButton('Open another data ...');
+            
+            obj.file_listbox=javaObjectEDT(javax.swing.JList(data));
+            obj.file_listbox.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+            obj.file_listbox.setLayoutOrientation(javax.swing.JList.VERTICAL);
+            obj.file_listbox.setVisibleRowCount(10);
+            obj.file_listbox.setSelectionBackground(java.awt.Color(0.2,0.6,1));
+            obj.file_listbox.setSelectionForeground(java.awt.Color(1,1,1));
+            obj.file_listbox.setFixedCellHeight(45);
+            obj.file_listbox.setBackground(java.awt.Color(0.96,0.96,0.96));
+            obj.file_listbox.setBorder([]);
+            jRenderer = LabelListBoxRenderer('test','data.cds');
+            obj.file_listbox.setCellRenderer(jRenderer);
+            [jh,gh]=javacomponent(obj.file_listbox,[0,0,1,1],file_p);
+            set(gh,'Units','normalized','position',[0,0.11,1,0.89]);
+            
+
+            
+            obj.open_btn = javaObjectEDT(com.mathworks.mwswing.MJButton('Open another data ...'));
             obj.open_btn.setBorder([]);
             
-            obj.open_btn.setBackground(java.awt.Color(0.94, 0.94, 0.94));
+            obj.open_btn.setBackground(java.awt.Color(0.96, 0.96, 0.96));
             obj.open_btn.setForeground(java.awt.Color(0.2, 0.2, 0.2));
             obj.open_btn.setFlyOverAppearance(true);
 %             obj.open_btn.setCursor(java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));

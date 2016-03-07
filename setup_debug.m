@@ -1,7 +1,9 @@
-function setup()
+function setup_debug()
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
 % set up environment variable for the system
+clear java;
+
 while 1
     olddir=which('cnelab');
     
@@ -30,12 +32,20 @@ addpath(genpath([pwd '/script']),'-frozen');
 addpath(genpath([pwd '/test']),'-frozen');
 addpath(genpath([pwd '/demo']),'-frozen');
 
-%save java class path into static file
-pref_dir=prefdir;
-fid = fopen(fullfile(pref_dir,'javaclasspath.txt'),'w');
-fprintf(fid,'%s\n',[pwd '/src/java']);
-fprintf(fid,'%s\n',[pwd '/test']);
-fclose(fid);
+%save java class path into dynamic file
+f=fullfile(prefdir,'javaclasspath.txt');
+
+if exist(f,'file')==2
+    delete(f);
+end
+
+javaaddpath([pwd '/src/java']);
+javaaddpath([pwd '/test']);
+
+!javac src/java/LabelListBoxRenderer.java src/java/globalVar.java
+% !javac src/java/globalVar.java
+
+% !jar -cf cnel.jar src/java/LabelListBoxRenderer src/java/globalVar.java
 
 savepath;
 
