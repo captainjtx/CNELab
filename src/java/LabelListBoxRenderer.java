@@ -13,16 +13,18 @@ import java.lang.System;
 import java.awt.Image;
 import javax.swing.border.EmptyBorder;
 import java.io.File;
+import java.awt.Dimension;
 // import org.apache.commons.io.FilenameUtils;
 
 // import globalVar;
 
 public class LabelListBoxRenderer extends JLabel implements ListCellRenderer
 {
-	private String filename;
-    private String filepath;
     
-    private ImageIcon icon;
+    private ImageIcon cds_icon;
+    private ImageIcon noncds_icon;
+    
+    private int[] FileType;
     
 	private final Hashtable<String,ImageIcon> iconsCache = new Hashtable<String,ImageIcon>();
     
@@ -31,23 +33,21 @@ public class LabelListBoxRenderer extends JLabel implements ListCellRenderer
 	public LabelListBoxRenderer() {
 		setOpaque(true);
 		setHorizontalAlignment(LEFT);
-		setVerticalAlignment(CENTER);
-//         System.out.print("Hello world");
-	}
-	public LabelListBoxRenderer(String filename,String filepath) {
-		this();
-		this.filename = filename;
-        this.filepath = filepath;
+        setVerticalAlignment(CENTER);
+        
         
         String iconFname = globalVar.CNELAB_PATH;
-            
-        iconFname=iconFname.concat("/db/icon/cds.png");
-        iconFname=iconFname.replace('\\', '/');
         
-        icon = getFileIcon(iconFname);
-//         Image image = icon.getImage(); // transform it
-//         Image newimg = image.getScaledInstance(20, 20,  java.awt.Image.SCALE_SMOOTH); // scale it the smooth way
-//         this.icon = new ImageIcon(newimg);
+        String cdsIconFname=iconFname.concat("/db/icon/cds.png");
+        cdsIconFname=cdsIconFname.replace('\\', '/');
+        
+        cds_icon = getFileIcon(cdsIconFname);
+        
+        String noncdsIconFname=iconFname.concat("/db/icon/noncds.png");
+        noncdsIconFname=noncdsIconFname.replace('\\', '/');
+        
+        noncds_icon=getFileIcon(noncdsIconFname);
+//         System.out.print("Hello world");
 	}
 
 	// Return a label displaying both text and image.
@@ -58,27 +58,51 @@ public class LabelListBoxRenderer extends JLabel implements ListCellRenderer
 			boolean isSelected,
 			boolean cellHasFocus)
 	{
+//         Dimension d=getSize();
+//         d.width=list.getWidth();
+//         setPreferredSize(d);
+        
         String str=value.toString();
+        
         File f=new File(str);
         
-        Font test_font=new Font("TimesRoman", Font.PLAIN, 14);
-		setFont(test_font);
+//         Font test_font=new Font("TimesRoman", Font.PLAIN, 14);
+// 		setFont(test_font);
         String label;
+        String path_str;
+        String name_str;
+        if (str.lastIndexOf(File.separator)==-1)
+        {
+            path_str="";
+            name_str=str;
+        }
+        else
+        {
+            path_str=str.substring(0,str.lastIndexOf(File.separator));
+            name_str=f.getName();
+        }
+        
 		if (isSelected) {
             // Selected cell item
 			setBackground(list.getSelectionBackground());
-            setForeground(list.getSelectionForeground());
-            label="<html>"+"<font size=5 color=white>"+f.getName()+"</font>"+"<br>"+
-            "<font size=4 color=white>"+str.substring(0, str.lastIndexOf(File.separator))+"</font>"+"</html>";
+//             setForeground(list.getSelectionForeground());
+            label="<html>"+"<div style=\"color:white; width:200px; font-size:8px \">"+name_str+"</div>"+
+            "<div style=\"color:white; width:2000px; font-size:6px \">"+path_str+"</div>"+"</html>";
 		} else {
 			// Unselected cell item
             setBackground(list.getBackground());
-            setForeground(list.getForeground());
-            label="<html>"+"<font size=5 color=#434343>"+f.getName()+"</font>"+"<br>"+
-            "<font size=4 color=#646464>"+str.substring(0, str.lastIndexOf(File.separator))+"</font>"+"</html>";
+//             setForeground(list.getForeground());
+            label="<html>"+"<div style=\"color:#232323; width:200px; font-size:8px \">"+name_str+"</div>"+
+            "<div style=\"color:#545454; width:200px; font-size:6px \">"+path_str+"</div>"+"</html>";
 		}
         try {
-			setIcon(icon);
+            if(FileType[index]==1)
+            {
+                setIcon(cds_icon);
+            }
+            else if (FileType[index]==-1)
+            {setIcon(noncds_icon);}
+            
 		} catch (Exception e) {
 			list.setToolTipText(e.getMessage());
 		}
@@ -89,13 +113,10 @@ public class LabelListBoxRenderer extends JLabel implements ListCellRenderer
         setIconTextGap(10);
 		return this;
 	}
-
-	// Modify the folder path (default = current folder)
-	public void setFilePath(String filepath) {
-		this.filepath = filepath;
-    }
-    public void setFileName(String filename) {
-        this.filename = filename;
+    
+    public void setFileType(int[] ft)
+    {
+        FileType=ft;
     }
 
 	// Lazily load the file icons only as needed, later reuse cached data

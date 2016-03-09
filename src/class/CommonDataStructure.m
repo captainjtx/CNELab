@@ -820,7 +820,9 @@ classdef CommonDataStructure < handle
             
         end
         
-        function cds=multiload()
+        function cds=multiload(varargin)
+            cds=[];
+            if nargin==0
             [FileName,FilePath,FilterIndex]=uigetfile({...
                 '*.mat;*.cds;*.cds.old;*.medf;*.fif;*.edf',...
                 'Supported formats (*.mat;*.cds;*.cds.old;*.medf;*.fif;*.edf)';...
@@ -831,6 +833,30 @@ classdef CommonDataStructure < handle
                 '*.edf','Europeon Data Format (*.edf)'},...
                 'Select your data file','DataInfo.mat',...
                 'MultiSelect','on');
+            elseif nargin==1
+                if iscell(varargin{1})
+                    [FilePath,tmp_name,tmp_ext]=fileparts(varargin{1}{1});
+                    FileName{1}=[tmp_name,tmp_ext];
+                    for i=2:length(varargin{1})
+                        [tmp_path,tmp_name,tmp_ext]=fileparts(varargin{1}{i});
+                        if ~strcmp(FilePath,tmp_path)
+                            errordlg('Input files are not in the same directory !');
+                        else
+                            FileName{i}=[tmp_name,tmp_ext];
+                        end
+                    end
+                    FilterIndex=1;
+                    
+                elseif ischar(varargin{1})
+                    [FilePath,FileName,ext]=fileparts(varargin{1});
+                    FileName={[FileName,ext]};
+                    FilterIndex=1;
+                else
+                    return
+                end
+            else
+                return
+            end
             
             if ~iscell(FileName)
                 if ~FileName

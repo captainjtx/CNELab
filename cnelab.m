@@ -1,4 +1,21 @@
 function cnelab()
+cnelab_path=which('cnelab','-all');
+
+if iscell(cnelab_path)&&length(cnelab_path)>1
+    errordlg(['Multiple CNELAB found: ',[cnelab_path{:}]]);
+    return
+end
+
+globalVar.setCnelabPath(fileparts(cnelab_path{1}));
+
+%CNELAB launcher, %inspired by xcode
+cnb=CnelabWindow;
+cnb.buildfig;
+
+addlistener(cnb,'UserChoice',@(src,evts)cnelab_init(cnb));
+end
+
+function cnelab_init(cnb)
 %Some additional default settings, will be migrated in to configuration
 %file in the future release
 
@@ -9,26 +26,37 @@ visual_buffer_size=2; % in megabytes
 %**************************************************************************
 
 cds=[];
-while(1)
-    tmp=CommonDataStructure.multiload();
-    if ~isempty(tmp)
-        cds=[cds,tmp];
-    end
-    
-    choice=questdlg('Do you want to select more datasets?','CNELab','Yes','No','No');
-    
-    if strcmpi(choice,'No')
-        break;
-    end
-    
-    if tmp.file_type~=2
-        buffer_size=inf;
-    end
+
+switch cnb.choice
+    case 1
+        %new data
+        cds=CommonDataStructure.multiload();
+    case 2
+        %select data
+        cds=CommonDataStructure.multiload(cnb.selectedFiles);
 end
 if isempty(cds)
     return;
 end
+%**************************************************************************
+screensize = get(0,'ScreenSize');
 
+info_h = dialog('Position',[screensize(3)/2-100 screensize(4)/2-50 200 100],'Name','Preparing ...');
+axes('parent',info_h,'units','normalized','position',[0,0,1,1],'xlim',[0,1],'ylim',[0,1],'Color','w','visible','off');
+[img,~,alpha] = imread('cnel.png');
+image('XData',[0.28,0.72],'YData',[0.25,0.95],'CData',flipud(img),'AlphaData',flipud(alpha),'AlphaDataMapping','none');
+info_txt = uicontrol('Parent',info_h,'Style','text','units','normalized',...
+    'Position',[0 0 1 0.2],'fontsize',12,'foregroundcolor',[164,19,38]/255,...
+    'String','Creating MatFile 7.4 IO ...');
+drawnow
+%**************************************************************************
+%if there is non-cds files loaded, set the buffer to inf
+for i=1:length(cds)
+    if cds{i}.file_type~=2
+        buffer_size=inf;
+    end
+end
+%**************************************************************************
 fileinfo=cell(length(cds),1);
 for i=1:length(cds)
     fileinfo{i}=cds{i}.get_file_info(cds{i});
@@ -48,7 +76,11 @@ end
 buffer_len=min(buffer_len);
 
 BufferTime=0;
-
+%**************************************************************************
+if isvalid(info_h)
+    set(info_txt,'string','Loading data ...');
+    drawnow
+end
 % cdsmatfiles=cell(1,length(cds));
 data=cell(1,length(cds));
 FileNames=cell(1,length(cds));
@@ -72,13 +104,9 @@ for i=1:length(cds)
     [fpaths{i},fnames{i}]=fileparts(cds{i}.DataInfo.FileName);
     %get the first mat file
 end
-
-%==========================================================================
 if isempty(fs)||(fs==0)
     fs=256;
 end
-
-%==========================================================================
 %**************************************************************************
 ChanNames=cell(1,length(cds));
 for i=1:length(cds)
@@ -94,7 +122,6 @@ ChanPosition=cell(1,length(cds));
 for i=1:length(cds)
     ChanPosition{i}=fileinfo{i}.channelposition;
 end
-%==========================================================================
 %**************************************************************************
 VideoStartTime=0;
 VideoTimeFrame=[];
@@ -123,7 +150,6 @@ end
 
 %VideoTimeFrame Must Contain All Frame Information
 %BioSigPlot will internally interpolate uneven frame
-%==========================================================================
 %**************************************************************************
 Units=cell(length(cds),1);
 for i=1:length(fileinfo)
@@ -136,7 +162,6 @@ for i=1:length(fileinfo)
         [Units{i}{:}]=deal(fileinfo{i}.units);
     end
 end
-%==========================================================================
 %**************************************************************************
 %StartTime will always be zero in the future, means, annotation time and
 %all other time should be consistent with the data. Data always start at
@@ -144,8 +169,11 @@ end
 StartTime=0;
 %extral things need to be prepared for misaligned starting time between two
 %datasets.
-%==========================================================================
 %**************************************************************************
+if isvalid(info_h)
+    set(info_txt,'string','Preparing GUI ...');
+    drawnow
+end
 bsp=BioSigPlot(data,'Title',fnames,...
     'SRate',fs,...
     'ChanNames',ChanNames,...
@@ -163,8 +191,11 @@ bsp=BioSigPlot(data,'Title',fnames,...
     'CDS',cds,...
     'VisualBuffer',visual_buffer_size);
 set(bsp.Fig,'Visible','off');
-%==========================================================================
 %**************************************************************************
+if isvalid(info_h)
+    set(info_txt,'string','Loading annotations ...');
+    drawnow
+end
 uncertainty_code={'hold','cue','go','exit','hit','end'};
 Event={};
 for i=1:length(cds)
@@ -233,6 +264,10 @@ end
 
 bsp.Evts=Event;
 %scan for montage file folder==============================================
+if isvalid(info_h)
+    set(info_txt,'string','Loading montages ...');
+    drawnow
+end
 montage=cell(length(fnames),1);
 if length(fnames)==1
     if isdir(fullfile(fpaths{1},'montage'))
@@ -282,7 +317,6 @@ if ~isempty(regexp(computer,'WIN','ONCE'))
     end
 end
 %put mask==================================================================
-
 for i=1:length(cds)
     if ~isempty(fileinfo{i}.masknames)
         bsp.Mask{i}=~ismember(ChanNames{i},fileinfo{i}.masknames);
@@ -293,5 +327,15 @@ end
 %==========================================================================
 assignin('base','bsp',bsp);
 set(bsp.Fig,'Visible','on')
+%**************************************************************************
+for i=1:length(cnb.cfg.files)
+    if isequal(cnb.cfg.files{i},FileNames)
+        cnb.cfg.files(i)=[];
+        break;
+    end
 end
-
+cnb.cfg.files=[{FileNames},cnb.cfg.files];
+cnb.cfg.files=cnb.cfg.files(1:min(9,length(cnb.cfg.files)));
+cnb.saveConfig();
+close(info_h)
+end

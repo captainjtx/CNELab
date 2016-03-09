@@ -4,4 +4,5 @@ exe
 Thumbs.db
 demo/behv.avi
 *.m~
+db/cfg/cnelab.cfg
 

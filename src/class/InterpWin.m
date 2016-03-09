@@ -28,7 +28,6 @@ classdef InterpWin < handle
             obj.height=350;
             obj.width=350;
             obj.bsp=bsp;
-            obj.valid=0;
             
             addlistener(bsp,'SelectionChange',@(src,evts)UpdateSelection(obj));
         end
