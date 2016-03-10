@@ -42,9 +42,9 @@ end
 screensize = get(0,'ScreenSize');
 
 info_h = dialog('Position',[screensize(3)/2-100 screensize(4)/2-50 200 100],'Name','Preparing ...');
-axes('parent',info_h,'units','normalized','position',[0,0,1,1],'xlim',[0,1],'ylim',[0,1],'Color','w','visible','off');
+a=axes('parent',info_h,'units','normalized','position',[0,0,1,1],'xlim',[0,1],'ylim',[0,1],'Color','w','visible','off');
 [img,~,alpha] = imread('cnel.png');
-image('XData',[0.28,0.72],'YData',[0.25,0.95],'CData',flipud(img),'AlphaData',flipud(alpha),'AlphaDataMapping','none');
+image('Parent',a,'XData',[0.28,0.72],'YData',[0.25,0.95],'CData',flipud(img),'AlphaData',flipud(alpha),'AlphaDataMapping','none');
 info_txt = uicontrol('Parent',info_h,'Style','text','units','normalized',...
     'Position',[0 0 1 0.2],'fontsize',12,'foregroundcolor',[164,19,38]/255,...
     'String','Creating MatFile 7.4 IO ...');

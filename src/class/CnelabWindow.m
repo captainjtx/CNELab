@@ -45,11 +45,6 @@ classdef CnelabWindow < handle
                 return
             end
             
-%             try
-%                 javax.swing.UIManager.setLookAndFeel( javax.swing.UIManager.getCrossPlatformLookAndFeelClassName() );
-%             catch  e
-%                 e.printStackTrace();
-%             end
 
             screensize=get(0,'ScreenSize');
             obj.fig=figure('MenuBar','none','Name','Welcome','units','pixels',...
@@ -133,6 +128,12 @@ classdef CnelabWindow < handle
             [dummy,btContainer] = javacomponent(obj.open_btn,[0 0 1 1],file_p); %#ok
             set(btContainer, 'Units','Norm', 'Position',[0.03,0.01,0.5,0.05]);
             
+            originalLnF = javax.swing.UIManager.getLookAndFeel();  %class
+            try
+                javaMethodEDT('setLookAndFeel',javax.swing.UIManager,javax.swing.UIManager.getCrossPlatformLookAndFeelClassName());
+            catch  e
+                e.printStackTrace();
+            end
             opt=uipanel(obj.fig,'units','normalized','position',[0.1,0,0.5,0.4],'BorderType','none','backgroundcolor','white');
             
             demo_icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/demo.png']));
@@ -180,6 +181,8 @@ classdef CnelabWindow < handle
             set(handle(tmp,'CallbackProperties'),'MousePressedCallback',@(h,e) Reserved(obj));
             [jh,gh]=javacomponent(tmp,[0,0.16,1,0.28],opt);
             set(gh,'Units','Norm','Position',[0,0.16,1,0.28]);
+            javaMethodEDT('setLookAndFeel',javax.swing.UIManager,originalLnF);
+
         end
         
         function OnClose(obj)

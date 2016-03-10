@@ -33,7 +33,7 @@ addpath(genpath([pwd '/demo']),'-frozen');
 % !javac src/java/LabelListBoxRenderer.java src/java/globalVar.java
 %save java class path into static file
 pref_dir=prefdir;
-fid = fopen(fullfile(pref_dir,'javaclasspath.txt'),'a');
+fid = fopen(fullfile(pref_dir,'javaclasspath.txt'),'w');
 fprintf(fid,'%s\n',[pwd '/src/java']);
 fprintf(fid,'%s\n',[pwd '/test']);
 fclose(fid);
