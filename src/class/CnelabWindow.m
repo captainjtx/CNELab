@@ -44,7 +44,6 @@ classdef CnelabWindow < handle
                 figure(obj.fig);
                 return
             end
-            
 
             screensize=get(0,'ScreenSize');
             obj.fig=figure('MenuBar','none','Name','Welcome','units','pixels',...
@@ -53,19 +52,46 @@ classdef CnelabWindow < handle
             set(obj.fig,'WindowKeyPressFcn',@(h,e)key_press(obj,h,e));
             
             logo=uipanel(obj.fig,'units','normalized','position',[0,0.4,0.6,0.6],'BorderType','none','backgroundcolor','white');
+                        
+            logo_icon=javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),filesep,'db',filesep,'icon',filesep,'cnel.png']));
+            logo_label=javaObjectEDT(javax.swing.JLabel());
+            logo_label.setIcon(logo_icon);
+            logo_label.setHorizontalAlignment(javax.swing.JLabel.CENTER);
+            logo_label.setBackground(java.awt.Color(1,1,1));
+            logo_label.setOpaque(true);
+            [jh,gh]=javacomponent(logo_label,[0,0,1,1],logo);
+            set(gh,'Units','Norm','Position',[0.33,0.4,0.34,0.43]);
             
-            logo_a=axes('parent',logo,'units','normalized','position',[0,0,1,1],'xlim',[0,1],'ylim',[0,1],'Color','w','visible','off');
-            [img,~,alpha] = imread('cnel.png');
-            image('XData',[0.35,0.65],'YData',[0.4,0.8],'CData',flipud(img),'AlphaData',flipud(alpha),'AlphaDataMapping','none');
+            logo_txt_label=javaObjectEDT(javax.swing.JLabel());
+            logo_txt_label.setText('Welcome to CNELab');
+            logo_txt_label.setHorizontalAlignment(javax.swing.JLabel.CENTER);
+
+            logo_txt_label.setBackground(java.awt.Color(1,1,1));
+            logo_txt_label.setForeground(java.awt.Color(0.3,0.3,0.3));
+            logo_txt_label.setFont(java.awt.Font('Garamond', java.awt.Font.PLAIN, 34));
+            logo_txt_label.setOpaque(true);
             
-            text('parent',logo_a,'position',[0.5,0.3],'string','Welcome to CNELab',...
-                'FontSize',32,'HorizontalAlignment','center','Color',[0.3,0.3,0.3]);
-            text('parent',logo_a,'position',[0.5,0.15],'string','Version 2.0',...
-                'Fontsize',17,'HorizontalAlignment','center','Color',[0.5,0.5,0.5]);
+            [jh,gh]=javacomponent(logo_txt_label,[0,0,1,1],logo);
+            set(gh,'Units','Norm','Position',[0.1,0.25,0.8,0.12]);
+            
+            version_txt_label=javaObjectEDT(javax.swing.JLabel());
+            version_txt_label.setText('Version 2.0');
+            version_txt_label.setHorizontalAlignment(javax.swing.JLabel.CENTER);
+
+            version_txt_label.setBackground(java.awt.Color(1,1,1));
+            version_txt_label.setForeground(java.awt.Color(0.5,0.5,0.5));
+            version_txt_label.setFont(java.awt.Font('Garamond', java.awt.Font.PLAIN, 20));
+            version_txt_label.setOpaque(true);
+            
+            [jh,gh]=javacomponent(version_txt_label,[0,0,1,1],logo);
+            set(gh,'Units','Norm','Position',[0.1,0.1,0.8,0.12]);
+            
+%             text('parent',logo_a,'position',[0.5,0.3],'string','Welcome to CNELab',...
+%                 'FontSize',32,'HorizontalAlignment','center','Color',[0.3,0.3,0.3]);
+%             text('parent',logo_a,'position',[0.5,0.15],'string','Version 2.0',...
+%                 'Fontsize',17,'HorizontalAlignment','center','Color',[0.5,0.5,0.5]);
             
             file_p=uipanel(obj.fig,'units','normalized','position',[0.6,0,0.4,1],'BorderType','none','backgroundcolor',[0.95,0.95,0.95]);
-            %             obj.file_listbox=uicontrol(file_p,'units','normalized','position',[0,0,1,1],'style','listbox','fontsize',20,...
-            %                 'String',{'tmp1','tmp2'},'value',2);
             
             if isempty(obj.cfg.files)
                 obj.file_listbox=javaObjectEDT(javax.swing.JList());
