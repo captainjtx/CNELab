@@ -44,6 +44,13 @@ classdef CnelabWindow < handle
                 figure(obj.fig);
                 return
             end
+            
+            try
+                javax.swing.UIManager.setLookAndFeel( javax.swing.UIManager.getCrossPlatformLookAndFeelClassName() );
+            catch  e
+                e.printStackTrace();
+            end
+
             screensize=get(0,'ScreenSize');
             obj.fig=figure('MenuBar','none','Name','Welcome','units','pixels',...
                 'Position',[screensize(3)/2-375 screensize(4)/2-225 750 450],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
@@ -133,13 +140,15 @@ classdef CnelabWindow < handle
             demo_label.setIcon(demo_icon);
             demo_label.setText('<html><font size=4.5 color=black><b>Start from demo</b></font> <br> <font size=3.5 color=gray> Quickly learn the features</font></html>');
             demo_label.setIconTextGap(10);
-            demo_label.setOpaque(true);
+            demo_label.setOpaque(false);
             
             demo=javaObjectEDT(javax.swing.JButton());
             demo.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
             demo.setBackground(java.awt.Color(1,1,1));
-            demo.setOpaque(true);
             demo.add(demo_label);
+            demo.setOpaque(false);
+            demo.setBorderPainted(false);
+            
             set(handle(demo,'CallbackProperties'),'MousePressedCallback',@(h,e) Demo(obj));
             [jh,gh]=javacomponent(demo,[0,0.72,1,0.28],opt);
             set(gh,'Units','Norm','Position',[0,0.72,1,0.28]);
@@ -150,13 +159,14 @@ classdef CnelabWindow < handle
             new_cds_label.setText('<html><font size=4.5 color=black><b>Create new CDS files</b></font> <br> <font size=3.5 color=gray> By converting from other data formats</font></html>');
             new_cds_label.setBorder(javax.swing.border.EmptyBorder(0,3,0,0));
             new_cds_label.setIconTextGap(14);
-            new_cds_label.setOpaque(true);
+            new_cds_label.setOpaque(false);
             
             new_cds=javaObjectEDT(javax.swing.JButton());
-            new_cds.setBorder([]);
+            new_cds.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
             new_cds.setBackground(java.awt.Color(1,1,1));
-            new_cds.setOpaque(true);
             new_cds.add(new_cds_label);
+            new_cds.setOpaque(false);
+            new_cds.setBorderPainted(false);
             
             set(handle(new_cds,'CallbackProperties'),'MousePressedCallback',@(h,e) NewCDS(obj));
             [jh,gh]=javacomponent(new_cds,[0,0.44,1,0.28],opt);
@@ -221,11 +231,14 @@ classdef CnelabWindow < handle
         end
                 
         function NewCDS(obj)
+            OnClose(obj);
         end
         function Demo(obj)
+            OnClose(obj);
         end
         
         function Reserved(obj)
+            OnClose(obj);
         end
         
         function saveConfig(obj)
