@@ -133,6 +133,7 @@ classdef CnelabWindow < handle
             demo_label.setIcon(demo_icon);
             demo_label.setText('<html><font size=4.5 color=black><b>Start from demo</b></font> <br> <font size=3.5 color=gray> Quickly learn the features</font></html>');
             demo_label.setIconTextGap(10);
+            demo_label.setOpaque(true);
             
             demo=javaObjectEDT(javax.swing.JButton());
             demo.setBorder([]);
@@ -148,6 +149,7 @@ classdef CnelabWindow < handle
             new_cds_label.setText('<html><font size=4.5 color=black><b>Create new CDS files</b></font> <br> <font size=3.5 color=gray> By converting from other data formats</font></html>');
             new_cds_label.setBorder(javax.swing.border.EmptyBorder(0,3,0,0));
             new_cds_label.setIconTextGap(14);
+            new_cds_label.setOpaque(true);
             
             new_cds=javaObjectEDT(javax.swing.JButton());
             new_cds.setBorder([]);
