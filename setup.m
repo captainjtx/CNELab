@@ -29,8 +29,8 @@ addpath(genpath([pwd '/script']),'-frozen');
 addpath(genpath([pwd '/test']),'-frozen');
 addpath(genpath([pwd '/demo']),'-frozen');
 
-%recompile the java class to local platform
-!javac src/java/LabelListBoxRenderer.java src/java/globalVar.java
+%recompile the java class to local platform, usually do not need
+% !javac src/java/LabelListBoxRenderer.java src/java/globalVar.java
 %save java class path into static file
 pref_dir=prefdir;
 fid = fopen(fullfile(pref_dir,'javaclasspath.txt'),'a');

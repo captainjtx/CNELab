@@ -114,7 +114,7 @@ classdef CnelabWindow < handle
             set(gh,'Units','normalized','position',[0,0.11,1,0.89]);
             
             obj.open_btn = javaObjectEDT(com.mathworks.mwswing.MJButton('Open another data ...'));
-            obj.open_btn.setBorder([]);
+            obj.open_btn.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
             
             obj.open_btn.setBackground(java.awt.Color(0.95, 0.95, 0.95));
             obj.open_btn.setForeground(java.awt.Color(0.2, 0.2, 0.2));
@@ -136,8 +136,9 @@ classdef CnelabWindow < handle
             demo_label.setOpaque(true);
             
             demo=javaObjectEDT(javax.swing.JButton());
-            demo.setBorder([]);
+            demo.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
             demo.setBackground(java.awt.Color(1,1,1));
+            demo.setOpaque(true);
             demo.add(demo_label);
             set(handle(demo,'CallbackProperties'),'MousePressedCallback',@(h,e) Demo(obj));
             [jh,gh]=javacomponent(demo,[0,0.72,1,0.28],opt);
@@ -154,13 +155,15 @@ classdef CnelabWindow < handle
             new_cds=javaObjectEDT(javax.swing.JButton());
             new_cds.setBorder([]);
             new_cds.setBackground(java.awt.Color(1,1,1));
+            new_cds.setOpaque(true);
             new_cds.add(new_cds_label);
+            
             set(handle(new_cds,'CallbackProperties'),'MousePressedCallback',@(h,e) NewCDS(obj));
             [jh,gh]=javacomponent(new_cds,[0,0.44,1,0.28],opt);
             set(gh,'Units','Norm','Position',[0,0.44,1,0.28]);
             
             tmp=javaObjectEDT(javax.swing.JButton());
-            tmp.setBorder([]);
+            tmp.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
             tmp.setBackground(java.awt.Color(1,1,1));
             set(handle(tmp,'CallbackProperties'),'MousePressedCallback',@(h,e) Reserved(obj));
             [jh,gh]=javacomponent(tmp,[0,0.16,1,0.28],opt);
