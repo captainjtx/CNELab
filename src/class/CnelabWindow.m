@@ -45,11 +45,11 @@ classdef CnelabWindow < handle
                 return
             end
             
-            try
-                javax.swing.UIManager.setLookAndFeel( javax.swing.UIManager.getCrossPlatformLookAndFeelClassName() );
-            catch  e
-                e.printStackTrace();
-            end
+%             try
+%                 javax.swing.UIManager.setLookAndFeel( javax.swing.UIManager.getCrossPlatformLookAndFeelClassName() );
+%             catch  e
+%                 e.printStackTrace();
+%             end
 
             screensize=get(0,'ScreenSize');
             obj.fig=figure('MenuBar','none','Name','Welcome','units','pixels',...
@@ -64,9 +64,9 @@ classdef CnelabWindow < handle
             image('XData',[0.35,0.65],'YData',[0.4,0.8],'CData',flipud(img),'AlphaData',flipud(alpha),'AlphaDataMapping','none');
             
             text('parent',logo_a,'position',[0.5,0.3],'string','Welcome to CNELab',...
-                'FontSize',35,'HorizontalAlignment','center','Color',[0.3,0.3,0.3]);
+                'FontSize',32,'HorizontalAlignment','center','Color',[0.3,0.3,0.3]);
             text('parent',logo_a,'position',[0.5,0.15],'string','Version 2.0',...
-                'Fontsize',20,'HorizontalAlignment','center','Color',[0.5,0.5,0.5]);
+                'Fontsize',17,'HorizontalAlignment','center','Color',[0.5,0.5,0.5]);
             
             file_p=uipanel(obj.fig,'units','normalized','position',[0.6,0,0.4,1],'BorderType','none','backgroundcolor',[0.95,0.95,0.95]);
             %             obj.file_listbox=uicontrol(file_p,'units','normalized','position',[0,0,1,1],'style','listbox','fontsize',20,...
@@ -143,11 +143,11 @@ classdef CnelabWindow < handle
             demo_label.setOpaque(false);
             
             demo=javaObjectEDT(javax.swing.JButton());
-            demo.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
+            demo.setBorder(javax.swing.BorderFactory.createMatteBorder(2,0,2,0,java.awt.Color(0.8,0.8,0.8)));
             demo.setBackground(java.awt.Color(1,1,1));
             demo.add(demo_label);
             demo.setOpaque(false);
-            demo.setBorderPainted(false);
+            demo.setBorderPainted(true);
             
             set(handle(demo,'CallbackProperties'),'MousePressedCallback',@(h,e) Demo(obj));
             [jh,gh]=javacomponent(demo,[0,0.72,1,0.28],opt);
@@ -166,15 +166,17 @@ classdef CnelabWindow < handle
             new_cds.setBackground(java.awt.Color(1,1,1));
             new_cds.add(new_cds_label);
             new_cds.setOpaque(false);
-            new_cds.setBorderPainted(false);
+            new_cds.setBorderPainted(true);
             
             set(handle(new_cds,'CallbackProperties'),'MousePressedCallback',@(h,e) NewCDS(obj));
             [jh,gh]=javacomponent(new_cds,[0,0.44,1,0.28],opt);
             set(gh,'Units','Norm','Position',[0,0.44,1,0.28]);
             
             tmp=javaObjectEDT(javax.swing.JButton());
-            tmp.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
+            tmp.setBorder(javax.swing.BorderFactory.createMatteBorder(2,0,2,0,java.awt.Color(0.8,0.8,0.8)));
             tmp.setBackground(java.awt.Color(1,1,1));
+            tmp.setOpaque(false);
+            tmp.setBorderPainted(true);
             set(handle(tmp,'CallbackProperties'),'MousePressedCallback',@(h,e) Reserved(obj));
             [jh,gh]=javacomponent(tmp,[0,0.16,1,0.28],opt);
             set(gh,'Units','Norm','Position',[0,0.16,1,0.28]);
