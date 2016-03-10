@@ -90,6 +90,7 @@ obj.SPFObj=SPFPlot(method,data,subspaceData,reconData,mix,demix,weg,...
 if isempty(obj.SPFObj)
     return
 end
+
 obj.SPFObj.sample=sample;
 obj.SPFObj.channel=channel;
 obj.SPFObj.dataset=dataset;
@@ -100,8 +101,13 @@ end
 
 function spf_selected_data(obj,dataset,channel,sample)
 fdata=obj.SPFObj.PreprocData{3};
+
+%**************************************************************************
+bufferSample=obj.BufferStartSample:obj.BufferEndSample;
+[buf_ind,~]=ismember(bufferSample,sample);
+
 for i=1:size(fdata,2)
-    obj.PreprocData{dataset(i)}(sample,channel(i))=fdata(:,i);
+    obj.PreprocData{dataset(i)}(buf_ind,channel(i))=fdata(bufferSample(buf_ind)-sample(1)+1,i);
 end
 
 obj.redrawChangeBlock('time');

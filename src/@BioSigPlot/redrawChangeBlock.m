@@ -48,8 +48,6 @@ for i=1:length(dd)
             updateXTicks(obj,axe,obj.Time,obj.WinLength,obj.SRate);
             
         end
-        
-        
     end
 end
 

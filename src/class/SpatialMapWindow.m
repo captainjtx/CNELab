@@ -1153,7 +1153,7 @@ classdef SpatialMapWindow < handle
             
             hp=uipanel('units','normalized','Position',[0,0,1,1]);
             
-            hp_data=uipanel('Parent',hp,'Title','Raw Data','Units','normalized','Position',[0,0.86,1,0.13]);
+            hp_data=uipanel('Parent',hp,'Title','Data','Units','normalized','Position',[0,0.86,1,0.13]);
             
             obj.data_popup=uicontrol('Parent',hp_data,'Style','popup',...
                 'String',{'Selection','Single Event','Average Event'},'units','normalized','position',[0.01,0.6,0.59,0.35],...
@@ -1169,7 +1169,7 @@ classdef SpatialMapWindow < handle
                 'visible','off','callback',@(src,evts) EventCallback(obj,src));
             
             obj.bind_event_btn=uicontrol('parent',hp_data,'style','pushbutton','string','Bind','units','normalized',...
-                'position',[0.79,0.6,0.2,0.35],'callback',@(src,evts) BindCallback(obj,src));
+                'position',[0.79,0.65,0.2,0.3],'callback',@(src,evts) BindCallback(obj,src));
             
             obj.ms_before_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_before),'units','normalized','position',[0.4,0.05,0.29,0.3],...
                 'HorizontalAlignment','left','visible','off','callback',@(src,evts) MsBeforeCallback(obj,src));

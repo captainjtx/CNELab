@@ -86,6 +86,10 @@ for i=1:length(dd)
         chan=sort(chan);
     end
     
+    if isempty(chan)
+        continue
+    end
+    
     if omitMask
        %Omit the mask channels
        if ~isempty(obj.Mask{dd(i)})
@@ -101,7 +105,7 @@ for i=1:length(dd)
         %if all ready loaded into the buffer, no need to reload from the
         %file
         selection=selection-obj.BufferStartSample+1;
-        alldata=obj.PreprocData{dd(1)}(selection,chan);
+        alldata=obj.PreprocData{dd(i)}(selection,chan);
     end
     %filter before merge trial segments
     count=1;

@@ -197,6 +197,6 @@ export betw annos
 
 montage editor
 % delete psd figure
-notch order of 2 +-1 Hz
+%notch order of 2 +-1 Hz
 
 % navigate by 1 event bug
