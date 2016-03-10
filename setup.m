@@ -22,21 +22,28 @@ for f=1:length(olddir)
 end
 
 addpath(pwd,'-frozen');
-addpath(genpath([pwd '/src']),'-frozen');
-addpath(genpath([pwd '/db']),'-frozen');
-addpath(genpath([pwd '/lib']),'-frozen');
-addpath(genpath([pwd '/script']),'-frozen');
-addpath(genpath([pwd '/test']),'-frozen');
-addpath(genpath([pwd '/demo']),'-frozen');
+addpath(genpath([pwd filesep 'src']),'-frozen');
+addpath(genpath([pwd filesep 'db']),'-frozen');
+addpath(genpath([pwd filesep 'lib']),'-frozen');
+addpath(genpath([pwd filesep 'script']),'-frozen');
+addpath(genpath([pwd filesep 'test']),'-frozen');
+addpath(genpath([pwd filesep 'demo']),'-frozen');
 
 %recompile the java class to local platform, usually do not need
 % !javac src/java/LabelListBoxRenderer.java src/java/globalVar.java
 %save java class path into static file
+spath = javaclasspath('-static');
+if ~any(strcmp(spath,[pwd filesep 'src' filesep 'java']))
+    javaaddpath([pwd filesep 'src' filesep 'java']);
+end
+
 pref_dir=prefdir;
 fid = fopen(fullfile(pref_dir,'javaclasspath.txt'),'w');
-fprintf(fid,'%s\n',[pwd '/src/java']);
-fprintf(fid,'%s\n',[pwd '/test']);
+fprintf(fid,'%s\n',[pwd filesep 'src' filesep 'java']);
+fprintf(fid,'%s\n',[pwd filesep 'test']);
 fclose(fid);
+
+
 
 try
     savepath;
