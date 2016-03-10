@@ -1,11 +1,11 @@
 function buildfig(obj)
 % Designing of all figure controls
-
+screensize=get(0,'ScreenSize');
 obj.Fig=figure('MenuBar','none','ToolBar','none','DockControls','off','NumberTitle','off','Renderer','opengl','RendererMode','manual',...
     'CloseRequestFcn',@(src,evts) delete(obj),'WindowScrollWheelFcn',@(src,evts) ChangeSliders(obj,src,evts),...
     'WindowButtonMotionFcn',@(src,evt) MouseMovement(obj),'WindowButtonDownFcn',@(src,evt) MouseDown(obj),...
     'WindowButtonUpFcn',@(src,evt) MouseUp(obj),'Renderer','painters','ResizeFcn',@(src,evt) resize(obj),...
-    'WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'WindowKeyReleaseFcn',@(src,evt) KeyRelease(obj,src,evt),'Units','Pixels','Visible','on','position',[0,0,500,400]);
+    'WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'WindowKeyReleaseFcn',@(src,evt) KeyRelease(obj,src,evt),'Units','Pixels','Visible','on','position',[screensize(3)/2-250,screensize(4)/2-200,500,400]);
 
 obj.PanObj=pan(obj.Fig);
 set(obj.PanObj,'Motion','vertical','ActionPostCallback',@(src,evts) ChangeSliders(obj,src,evts))

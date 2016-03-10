@@ -44,9 +44,9 @@ classdef CnelabWindow < handle
                 figure(obj.fig);
                 return
             end
-            
+            screensize=get(0,'ScreenSize');
             obj.fig=figure('MenuBar','none','Name','Welcome','units','pixels',...
-                'Position',[200 200 750 450],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
+                'Position',[screensize(3)/2-375 screensize(4)/2-225 750 450],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
                 'Resize','off','DockControls','off','Alphamap',0.5,'color','w');
             set(obj.fig,'WindowKeyPressFcn',@(h,e)key_press(obj,h,e));
             
@@ -109,7 +109,7 @@ classdef CnelabWindow < handle
             jRenderer = LabelListBoxRenderer();
             jRenderer.setFileType(file_type);
             obj.file_listbox.setCellRenderer(jRenderer);
-            set(obj.file_listbox,'MousePressedCallback',@(h,e)mouse_press_list(obj));
+            set(handle(obj.file_listbox,'CallbackProperties'),'MousePressedCallback',@(h,e)mouse_press_list(obj));
             [jh,gh]=javacomponent(obj.file_listbox,[0,0.11,1,0.89],file_p);
             set(gh,'Units','normalized','position',[0,0.11,1,0.89]);
             
@@ -120,9 +120,9 @@ classdef CnelabWindow < handle
             obj.open_btn.setForeground(java.awt.Color(0.2, 0.2, 0.2));
             obj.open_btn.setFlyOverAppearance(true);
             %             obj.open_btn.setCursor(java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-            set(obj.open_btn, 'MouseEnteredCallback', @(h,e)mouse_enter(obj))
-            set(obj.open_btn, 'MouseExitedCallback',  @(h,e)mouse_exit(obj))
-            set(obj.open_btn, 'MousePressedCallback', @(h,e)mouse_press_btn(obj))
+            set(handle(obj.open_btn,'CallbackProperties'), 'MouseEnteredCallback', @(h,e)mouse_enter(obj))
+            set(handle(obj.open_btn,'CallbackProperties'), 'MouseExitedCallback',  @(h,e)mouse_exit(obj))
+            set(handle(obj.open_btn,'CallbackProperties'), 'MousePressedCallback', @(h,e)mouse_press_btn(obj))
             [dummy,btContainer] = javacomponent(obj.open_btn,[0 0 1 1],file_p); %#ok
             set(btContainer, 'Units','Norm', 'Position',[0.03,0.01,0.5,0.05]);
             
@@ -135,10 +135,10 @@ classdef CnelabWindow < handle
             demo_label.setIconTextGap(10);
             
             demo=javaObjectEDT(javax.swing.JButton());
-            demo.setBorder(javax.swing.BorderFactory.createMatteBorder(2, 0, 2, 0, java.awt.Color(0.8, 0.8, 0.8)));
+            demo.setBorder([]);
             demo.setBackground(java.awt.Color(1,1,1));
             demo.add(demo_label);
-            set(demo,'MousePressedCallback',@(h,e) Demo(obj));
+            set(handle(demo,'CallbackProperties'),'MousePressedCallback',@(h,e) Demo(obj));
             [jh,gh]=javacomponent(demo,[0,0.72,1,0.28],opt);
             set(gh,'Units','Norm','Position',[0,0.72,1,0.28]);
             
@@ -150,17 +150,17 @@ classdef CnelabWindow < handle
             new_cds_label.setIconTextGap(14);
             
             new_cds=javaObjectEDT(javax.swing.JButton());
-            new_cds.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 0, 0, java.awt.Color(0.8, 0.8, 0.8)));
+            new_cds.setBorder([]);
             new_cds.setBackground(java.awt.Color(1,1,1));
             new_cds.add(new_cds_label);
-            set(new_cds,'MousePressedCallback',@(h,e) NewCDS(obj));
+            set(handle(new_cds,'CallbackProperties'),'MousePressedCallback',@(h,e) NewCDS(obj));
             [jh,gh]=javacomponent(new_cds,[0,0.44,1,0.28],opt);
             set(gh,'Units','Norm','Position',[0,0.44,1,0.28]);
             
             tmp=javaObjectEDT(javax.swing.JButton());
-            tmp.setBorder(javax.swing.BorderFactory.createMatteBorder(2, 0, 2, 0, java.awt.Color(0.8, 0.8, 0.8)));
+            tmp.setBorder([]);
             tmp.setBackground(java.awt.Color(1,1,1));
-            set(tmp,'MousePressedCallback',@(h,e) Reserved(obj));
+            set(handle(tmp,'CallbackProperties'),'MousePressedCallback',@(h,e) Reserved(obj));
             [jh,gh]=javacomponent(tmp,[0,0.16,1,0.28],opt);
             set(gh,'Units','Norm','Position',[0,0.16,1,0.28]);
         end

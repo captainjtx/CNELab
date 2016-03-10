@@ -77,7 +77,7 @@ buffer_len=min(buffer_len);
 
 BufferTime=0;
 %**************************************************************************
-if isvalid(info_h)
+if ishandle(info_h)
     set(info_txt,'string','Loading data ...');
     drawnow
 end
@@ -170,7 +170,7 @@ StartTime=0;
 %extral things need to be prepared for misaligned starting time between two
 %datasets.
 %**************************************************************************
-if isvalid(info_h)
+if ishandle(info_h)
     set(info_txt,'string','Preparing GUI ...');
     drawnow
 end
@@ -192,7 +192,7 @@ bsp=BioSigPlot(data,'Title',fnames,...
     'VisualBuffer',visual_buffer_size);
 set(bsp.Fig,'Visible','off');
 %**************************************************************************
-if isvalid(info_h)
+if ishandle(info_h)
     set(info_txt,'string','Loading annotations ...');
     drawnow
 end
@@ -264,7 +264,7 @@ end
 
 bsp.Evts=Event;
 %scan for montage file folder==============================================
-if isvalid(info_h)
+if ishandle(info_h)
     set(info_txt,'string','Loading montages ...');
     drawnow
 end
