@@ -41,13 +41,26 @@ end
 %**************************************************************************
 screensize = get(0,'ScreenSize');
 
-info_h = dialog('Position',[screensize(3)/2-100 screensize(4)/2-50 200 100],'Name','Preparing ...');
-a=axes('parent',info_h,'units','normalized','position',[0,0,1,1],'xlim',[0,1],'ylim',[0,1],'Color','w','visible','off');
-[img,~,alpha] = imread('cnel.png');
-image('Parent',a,'XData',[0.28,0.72],'YData',[0.25,0.95],'CData',flipud(img),'AlphaData',flipud(alpha),'AlphaDataMapping','none');
-info_txt = uicontrol('Parent',info_h,'Style','text','units','normalized',...
-    'Position',[0 0 1 0.2],'fontsize',12,'foregroundcolor',[164,19,38]/255,...
-    'String','Creating MatFile 7.4 IO ...');
+info_h = dialog('Position',[screensize(3)/2-100 screensize(4)/2-50 220 150],'Name','Preparing ...');
+
+logo_icon=javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),filesep,'db',filesep,'icon',filesep,'cnel.png']));
+logo_label=javaObjectEDT(javax.swing.JLabel());
+logo_label.setIcon(logo_icon);
+logo_label.setHorizontalAlignment(javax.swing.JLabel.CENTER);
+logo_label.setOpaque(false);
+[jh,gh]=javacomponent(logo_label,[0,0,1,1],info_h);
+set(gh,'Units','Norm','Position',[0.1,0.3,0.8,0.7]);
+
+info_label=javaObjectEDT(javax.swing.JLabel());
+info_label.setText('Creating MatFile 7.4 IO ...');
+info_label.setHorizontalAlignment(javax.swing.JLabel.CENTER);
+info_label.setForeground(java.awt.Color(0.6431,0.0745,0.149));
+info_label.setFont(java.awt.Font('Garamond', java.awt.Font.PLAIN, 20));
+info_label.setOpaque(false);
+
+[jh,gh]=javacomponent(info_label,[0,0,1,1],info_h);
+set(gh,'Units','Norm','Position',[0,0,1,0.3]);
+
 drawnow
 %**************************************************************************
 %if there is non-cds files loaded, set the buffer to inf
@@ -78,7 +91,7 @@ buffer_len=min(buffer_len);
 BufferTime=0;
 %**************************************************************************
 if ishandle(info_h)
-    set(info_txt,'string','Loading data ...');
+    info_label.setText('Loading data ...');
     drawnow
 end
 % cdsmatfiles=cell(1,length(cds));
@@ -171,7 +184,7 @@ StartTime=0;
 %datasets.
 %**************************************************************************
 if ishandle(info_h)
-    set(info_txt,'string','Preparing GUI ...');
+    info_label.setText('Preparing GUI ...');
     drawnow
 end
 bsp=BioSigPlot(data,'Title',fnames,...
@@ -193,7 +206,7 @@ bsp=BioSigPlot(data,'Title',fnames,...
 set(bsp.Fig,'Visible','off');
 %**************************************************************************
 if ishandle(info_h)
-    set(info_txt,'string','Loading annotations ...');
+    info_label.setText('Loading annotations ...');
     drawnow
 end
 uncertainty_code={'hold','cue','go','exit','hit','end'};
@@ -265,7 +278,7 @@ end
 bsp.Evts=Event;
 %scan for montage file folder==============================================
 if ishandle(info_h)
-    set(info_txt,'string','Loading montages ...');
+    info_label.setText('Loading montages ...');
     drawnow
 end
 montage=cell(length(fnames),1);

@@ -75,7 +75,7 @@ classdef PSDWindow < handle
                 return
             end
             obj.width=300;
-            obj.height=250;
+            obj.height=350;
             
             obj.fig=figure('MenuBar','none','Name','Power Spectrum Density','units','pixels',...
                 'Position',[500 500 obj.width obj.height],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
@@ -83,17 +83,20 @@ classdef PSDWindow < handle
             
             hp=uipanel('units','normalized','Position',[0,0,1,1]);
             
-            hp_layout=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.85,1,0.14],'title','Layout');
+            hp_layout=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.89,1,0.1],'title','Layout');
             
             obj.layout_popup=uicontrol('Parent',hp_layout,'Style','popup',...
-                'String',{'Average','Channel','Grid'},'units','normalized','Position',[0.1,0.2,0.4,0.8],'value',obj.layout,...
+                'String',{'Average','Channel','Grid'},'units','normalized','Position',[0.01,0.2,0.59,0.8],'value',obj.layout,...
                 'callback',@(src,evts) LayoutCallback(obj,src));
             
             obj.hold_radio=uicontrol('Parent',hp_layout,'Style','radiobutton',...
                 'String',{'hold on'},'units','normalized','Position',[0.7,0.2,0.3,0.8],'value',obj.hold,...
                 'callback',@(src,evts) HoldCallback(obj,src));
             
-            hp_unit=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.7,1,0.14],'title','Unit');
+            hp_data=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.58,1,0.3],'title','data');
+            
+            
+            hp_unit=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.5,1,0.12],'title','Unit');
             obj.unit_mag_radio=uicontrol('Parent',hp_unit,'Style','radiobutton','units','normalized','string','Mag','position',[0.1,0,0.3,1],...
                 'HorizontalAlignment','left','callback',@(src,evts) UnitRadioCallback(obj,src),'value',1);
             obj.unit_db_radio=uicontrol('Parent',hp_unit,'Style','radiobutton','units','normalized','string','dB','position',[0.6,0,0.3,1],...
