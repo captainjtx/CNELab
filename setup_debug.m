@@ -43,7 +43,6 @@ javaaddpath([pwd '/src/java']);
 javaaddpath([pwd '/test']);
 
 !javac src/java/LabelListBoxRenderer.java src/java/globalVar.java
-!javac src/java/cnelPrompt.java
 % !javac src/java/globalVar.java
 
 % !jar -cf cnel.jar src/java/LabelListBoxRenderer src/java/globalVar.java

@@ -96,13 +96,13 @@ classdef PSDWindow < handle
             hp_data=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.58,1,0.3],'title','data');
             
             
-            hp_unit=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.5,1,0.12],'title','Unit');
+            hp_unit=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.47,1,0.1],'title','Unit');
             obj.unit_mag_radio=uicontrol('Parent',hp_unit,'Style','radiobutton','units','normalized','string','Mag','position',[0.1,0,0.3,1],...
                 'HorizontalAlignment','left','callback',@(src,evts) UnitRadioCallback(obj,src),'value',1);
             obj.unit_db_radio=uicontrol('Parent',hp_unit,'Style','radiobutton','units','normalized','string','dB','position',[0.6,0,0.3,1],...
                 'HorizontalAlignment','left','callback',@(src,evts) UnitRadioCallback(obj,src));
             
-            hp_psd=uipanel('parent',hp,'title','PWelch','units','normalized','position',[0,0.45,1,0.24]);
+            hp_psd=uipanel('parent',hp,'title','PWelch','units','normalized','position',[0,0.37,1,0.2]);
             uicontrol('parent',hp_psd,'style','text','string','Window (sample): ','units','normalized',...
                 'position',[0,0.6,0.5,0.3]);
             obj.winlen_edit=uicontrol('parent',hp_psd,'style','edit','string',num2str(obj.winlen),...
@@ -114,7 +114,7 @@ classdef PSDWindow < handle
                 'units','normalized','position',[0.55,0.1,0.4,0.46],'HorizontalAlignment','center',...
                 'callback',@(src,evts) OverlapCallback(obj,src));
             
-            hp_freq=uipanel('parent',hp,'title','Frequency','units','normalized','position',[0,0.2,1,0.24]);
+            hp_freq=uipanel('parent',hp,'title','Frequency','units','normalized','position',[0,0.16,1,0.2]);
             
             uicontrol('parent',hp_freq,'style','text','string','Low','units','normalized',...
                 'position',[0,0.6,0.1,0.3]);
@@ -132,10 +132,10 @@ classdef PSDWindow < handle
                 'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) FreqCallback(obj,src),...
                 'min',0,'max',obj.fs/2,'sliderstep',[0.005,0.02],'value',obj.fh);
             
-            obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.01,0.2,0.12],...
+            obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.01,0.2,0.1],...
                 'callback',@(src,evts) ComputeCallback(obj));
             
-            obj.new_btn=uicontrol('parent',hp,'style','pushbutton','string','New','units','normalized','position',[0.01,0.01,0.2,0.12],...
+            obj.new_btn=uicontrol('parent',hp,'style','pushbutton','string','New','units','normalized','position',[0.01,0.01,0.2,0.1],...
                 'callback',@(src,evts) NewCallback(obj));
             if strcmpi(obj.unit,'dB')
                 UnitRadioCallback(obj,obj.unit_db_radio);
