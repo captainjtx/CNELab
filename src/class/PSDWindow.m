@@ -26,10 +26,10 @@ classdef PSDWindow < handle
         data_popup
         event_text
         event_popup
-        ms_before_text
-        ms_before_edit
-        ms_after_text
-        ms_after_edit
+        ms_start_text
+        ms_start_edit
+        ms_end_text
+        ms_end_edit
         
         compute_btn
         new_btn
@@ -46,8 +46,8 @@ classdef PSDWindow < handle
         data_input_
         event_list_
         
-        ms_before_
-        ms_after_
+        ms_start_
+        ms_end_
         event_
         
         fr
@@ -66,8 +66,8 @@ classdef PSDWindow < handle
         data_input
         event_list
         event
-        ms_before
-        ms_after
+        ms_start
+        ms_end
     end
     methods
         function obj=PSDWindow(bsp)
@@ -104,8 +104,8 @@ classdef PSDWindow < handle
             obj.hold_=0;
             obj.unit_='dB';
             obj.data_input_=1;%selection
-            obj.ms_before_=1500;
-            obj.ms_after_=1500;
+            obj.ms_start_=0;
+            obj.ms_end_=1500;
             obj.event_='';
         end
         
@@ -117,7 +117,7 @@ classdef PSDWindow < handle
                 return
             end
             obj.width=300;
-            obj.height=350;
+            obj.height=300;
             
             obj.fig=figure('MenuBar','none','Name','Power Spectrum Density','units','pixels',...
                 'Position',[100 400 obj.width obj.height],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
@@ -125,7 +125,7 @@ classdef PSDWindow < handle
             
             hp=uipanel('units','normalized','Position',[0,0,1,1]);
             
-            hp_layout=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.89,1,0.1],'title','Layout');
+            hp_layout=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.87,1,0.12],'title','Layout');
             
             obj.layout_popup=uicontrol('Parent',hp_layout,'Style','popup',...
                 'String',{'Average','Channel','Grid'},'units','normalized','Position',[0.01,0.2,0.59,0.8],'value',obj.layout,...
@@ -135,57 +135,58 @@ classdef PSDWindow < handle
                 'String',{'hold on'},'units','normalized','Position',[0.7,0.2,0.3,0.8],'value',obj.hold,...
                 'callback',@(src,evts) HoldCallback(obj,src));
             
-            hp_data=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.58,1,0.3],'title','Data');
+            hp_data=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.5,1,0.36],'title','Data');
             obj.data_popup=uicontrol('Parent',hp_data,'Style','popup',...
                 'String',{'Selection','Single Event','Average Event'},'units','normalized','position',[0.01,0.6,0.59,0.35],...
                 'Callback',@(src,evts) DataPopUpCallback(obj,src),'value',obj.data_input);
             
             obj.event_text=uicontrol('Parent',hp_data,'Style','text','string','Event: ','units','normalized','position',[0.01,0.3,0.35,0.3],...
                 'HorizontalAlignment','left','visible','off');
-            obj.ms_before_text=uicontrol('Parent',hp_data,'Style','text','string','Before (ms): ','units','normalized','position',[0.4,0.3,0.3,0.3],...
+            obj.ms_start_text=uicontrol('Parent',hp_data,'Style','text','string','Start (ms): ','units','normalized','position',[0.4,0.3,0.3,0.3],...
                 'HorizontalAlignment','left','visible','off');
-            obj.ms_after_text=uicontrol('Parent',hp_data,'Style','text','string','After (ms): ','units','normalized','position',[0.7,0.3,0.3,0.3],...
+            obj.ms_end_text=uicontrol('Parent',hp_data,'Style','text','string','End (ms): ','units','normalized','position',[0.7,0.3,0.3,0.3],...
                 'HorizontalAlignment','left','visible','off');
-            obj.event_popup=uicontrol('Parent',hp_data,'Style','popup','string',obj.event_list,'units','normalized','position',[0.01,0.05,0.35,0.3],...
+            obj.event_popup=uicontrol('Parent',hp_data,'Style','popup','string',obj.event_list,'units','normalized','position',[0.01,0.05,0.35,0.32],...
                 'visible','off','callback',@(src,evts) EventCallback(obj,src));
-            obj.ms_before_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_before),'units','normalized','position',[0.4,0.05,0.29,0.3],...
+            obj.ms_start_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_start),'units','normalized','position',[0.4,0.1,0.29,0.28],...
                 'HorizontalAlignment','center','visible','off','callback',@(src,evts) MsBeforeCallback(obj,src));
-            obj.ms_after_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_after),'units','normalized','position',[0.7,0.05,0.29,0.3],...
+            obj.ms_end_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_end),'units','normalized','position',[0.7,0.1,0.29,0.28],...
                 'HorizontalAlignment','center','visible','off','callback',@(src,evts) MsAfterCallback(obj,src));
             
-            hp_unit=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.47,1,0.1],'title','Unit');
-            obj.unit_mag_radio=uicontrol('Parent',hp_unit,'Style','radiobutton','units','normalized','string','Mag','position',[0.1,0,0.3,1],...
-                'HorizontalAlignment','left','callback',@(src,evts) UnitRadioCallback(obj,src),'value',1);
-            obj.unit_db_radio=uicontrol('Parent',hp_unit,'Style','radiobutton','units','normalized','string','dB','position',[0.6,0,0.3,1],...
-                'HorizontalAlignment','left','callback',@(src,evts) UnitRadioCallback(obj,src));
-            
-            hp_psd=uipanel('parent',hp,'title','PWelch','units','normalized','position',[0,0.37,1,0.2]);
-            uicontrol('parent',hp_psd,'style','text','string','Window (sample): ','units','normalized',...
+            setgp=uitabgroup(hp,'units','normalized','position',[0,0.12,1,0.37]);
+            pwelch_tab=uitab(setgp,'title','PWelch');
+            uicontrol('parent',pwelch_tab,'style','text','string','Window (sample): ','units','normalized',...
                 'position',[0,0.6,0.5,0.3]);
-            obj.winlen_edit=uicontrol('parent',hp_psd,'style','edit','string',num2str(obj.winlen),...
+            obj.winlen_edit=uicontrol('parent',pwelch_tab,'style','edit','string',num2str(obj.winlen),...
                 'units','normalized','position',[0.05,0.1,0.4,0.46],'HorizontalAlignment','center',...
                 'callback',@(src,evts) WinlenCallback(obj,src));
-            uicontrol('parent',hp_psd,'style','text','string','Overlap (sample): ',...
+            uicontrol('parent',pwelch_tab,'style','text','string','Overlap (sample): ',...
                 'units','normalized','position',[0.5,0.6,0.5,0.3]);
-            obj.overlap_edit=uicontrol('parent',hp_psd,'style','edit','string',num2str(obj.overlap),...
+            obj.overlap_edit=uicontrol('parent',pwelch_tab,'style','edit','string',num2str(obj.overlap),...
                 'units','normalized','position',[0.55,0.1,0.4,0.46],'HorizontalAlignment','center',...
                 'callback',@(src,evts) OverlapCallback(obj,src));
             
-            hp_freq=uipanel('parent',hp,'title','Frequency','units','normalized','position',[0,0.16,1,0.2]);
+            unit_tab=uitab(setgp,'title','Unit');
+            obj.unit_mag_radio=uicontrol('Parent',unit_tab,'Style','radiobutton','units','normalized','string','Mag','position',[0.1,0,0.3,1],...
+                'HorizontalAlignment','left','callback',@(src,evts) UnitRadioCallback(obj,src),'value',1);
+            obj.unit_db_radio=uicontrol('Parent',unit_tab,'Style','radiobutton','units','normalized','string','dB','position',[0.6,0,0.3,1],...
+                'HorizontalAlignment','left','callback',@(src,evts) UnitRadioCallback(obj,src));
             
-            uicontrol('parent',hp_freq,'style','text','string','Low','units','normalized',...
+            freq_tab=uitab(setgp,'title','Frequency');
+            
+            uicontrol('parent',freq_tab,'style','text','string','Low','units','normalized',...
                 'position',[0,0.6,0.1,0.3]);
-            uicontrol('parent',hp_freq,'style','text','string','High','units','normalized',...
+            uicontrol('parent',freq_tab,'style','text','string','High','units','normalized',...
                 'position',[0,0.1,0.1,0.3]);
             
-            obj.fl_edit=uicontrol('parent',hp_freq,'style','edit','string',num2str(obj.fl),'units','normalized',...
+            obj.fl_edit=uicontrol('parent',freq_tab,'style','edit','string',num2str(obj.fl),'units','normalized',...
                 'position',[0.15,0.55,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) FreqCallback(obj,src));
-            obj.fl_slider=uicontrol('parent',hp_freq,'style','slider','units','normalized',...
+            obj.fl_slider=uicontrol('parent',freq_tab,'style','slider','units','normalized',...
                 'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) FreqCallback(obj,src),...
                 'min',0,'max',obj.fs/2,'sliderstep',[0.005,0.02],'value',obj.fl);
-            obj.fh_edit=uicontrol('parent',hp_freq,'style','edit','string',num2str(obj.fh),'units','normalized',...
+            obj.fh_edit=uicontrol('parent',freq_tab,'style','edit','string',num2str(obj.fh),'units','normalized',...
                 'position',[0.15,0.05,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) FreqCallback(obj,src));
-            obj.fh_slider=uicontrol('parent',hp_freq,'style','slider','units','normalized',...
+            obj.fh_slider=uicontrol('parent',freq_tab,'style','slider','units','normalized',...
                 'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) FreqCallback(obj,src),...
                 'min',0,'max',obj.fs/2,'sliderstep',[0.005,0.02],'value',obj.fh);
             
@@ -199,6 +200,7 @@ classdef PSDWindow < handle
             else
                 UnitRadioCallback(obj,obj.unit_mag_radio);
             end
+            DataPopUpCallback(obj,obj.data_popup);
             obj.event=obj.event_;
         end
         
@@ -350,22 +352,22 @@ classdef PSDWindow < handle
                 set(obj.data_popup,'value',val);
             end
         end
-        function val=get.ms_before(obj)
-            val=obj.ms_before_;
+        function val=get.ms_start(obj)
+            val=obj.ms_start_;
         end
-        function set.ms_before(obj,val)
-            obj.ms_before_=val;
+        function set.ms_start(obj,val)
+            obj.ms_start_=val;
             if obj.valid
-                set(obj.ms_before_edit,'string',num2str(val));
+                set(obj.ms_start_edit,'string',num2str(val));
             end
         end
-        function val=get.ms_after(obj)
-            val=obj.ms_after_;
+        function val=get.ms_end(obj)
+            val=obj.ms_end_;
         end
-        function set.ms_after(obj,val)
-            obj.ms_after_=val;
+        function set.ms_end(obj,val)
+            obj.ms_end_=val;
             if obj.valid
-                set(obj.ms_after_edit,'string',num2str(val));
+                set(obj.ms_end_edit,'string',num2str(val));
             end
         end
         function val=get.event(obj)
@@ -486,34 +488,76 @@ classdef PSDWindow < handle
                 case 1
                     %Selection
                     set(obj.event_text,'visible','off');
-                    set(obj.ms_before_text,'visible','off');
-                    set(obj.ms_after_text,'visible','off');
+                    set(obj.ms_start_text,'visible','off');
+                    set(obj.ms_end_text,'visible','off');
                     set(obj.event_popup,'visible','off');
-                    set(obj.ms_before_edit,'visible','off');
-                    set(obj.ms_after_edit,'visible','off');
+                    set(obj.ms_start_edit,'visible','off');
+                    set(obj.ms_end_edit,'visible','off');
                 case 2
                     %Single Event
                     set(obj.event_text,'visible','on');
-                    set(obj.ms_before_text,'visible','on');
-                    set(obj.ms_after_text,'visible','on');
+                    set(obj.ms_start_text,'visible','on');
+                    set(obj.ms_end_text,'visible','on');
                     set(obj.event_popup,'visible','on','enable','off');
-                    set(obj.ms_before_edit,'visible','on');
-                    set(obj.ms_after_edit,'visible','on');
+                    set(obj.ms_start_edit,'visible','on');
+                    set(obj.ms_end_edit,'visible','on');
                 case 3
                     %Average Event
                     set(obj.event_text,'visible','on');
-                    set(obj.ms_before_text,'visible','on');
-                    set(obj.ms_after_text,'visible','on');
+                    set(obj.ms_start_text,'visible','on');
+                    set(obj.ms_end_text,'visible','on');
                     set(obj.event_popup,'visible','on','enable','on');
-                    set(obj.ms_before_edit,'visible','on');
-                    set(obj.ms_after_edit,'visible','on');
+                    set(obj.ms_start_edit,'visible','on');
+                    set(obj.ms_end_edit,'visible','on');
             end
         end
         
         function ComputeCallback(obj)
-            omitMask=true;
-            [data,chanNames,~,~,~,~,~,~,segments]=get_selected_data(obj.bsp,omitMask);
-            
+            %==========================================================================
+            nL=round(obj.ms_start*obj.fs/1000);
+            nR=round(obj.ms_end*obj.fs/1000);
+            %Data selection************************************************************
+            if obj.data_input==1
+                omitMask=true;
+                [data,chanNames,~,~,~,~,~,~,segments]=get_selected_data(obj.bsp,omitMask);
+            elseif obj.data_input==2
+                if isempty(obj.bsp.SelectedEvent)
+                    errordlg('No event selection !');
+                    return
+                elseif length(obj.bsp.SelectedEvent)>1
+                    warndlg('More than one event selected, using the first one !');
+                end
+                i_event=round(obj.bsp.Evts{obj.bsp.SelectedEvent(1),1}*obj.fs);
+                i_event=min(max(1,i_event),obj.bsp.TotalSample);
+                
+                i_event((i_event+nR)>obj.bsp.TotalSample)=[];
+                i_event((i_event+nL)<1)=[];
+                if isempty(i_event)
+                    errordlg('Illegal selection!');
+                    return
+                end
+                data_tmp_sel=[reshape(i_event+nL,1,length(i_event));reshape(i_event+nR,1,length(i_event))];
+                omitMask=true;
+                [data,chanNames,~,~,~,~,~,~,segments]=get_selected_data(obj.bsp,omitMask,data_tmp_sel);
+            elseif obj.data_input==3
+                t_evt=[obj.bsp.Evts{:,1}];
+                t_label=t_evt(strcmpi(obj.bsp.Evts(:,2),obj.event));
+                i_event=round(t_label*obj.fs);
+                i_event=min(max(1,i_event),obj.bsp.TotalSample);
+                
+                i_event((i_event+nR)>obj.bsp.TotalSample)=[];
+                i_event((i_event+nL)<1)=[];
+                
+                if isempty(i_event)
+                    errordlg(['Event: ',obj.event,' not legal !']);
+                    return
+                end
+                data_tmp_sel=[reshape(i_event+nL,1,length(i_event));reshape(i_event+nR,1,length(i_event))];
+                omitMask=true;
+                [data,chanNames,~,~,~,~,~,~,segments]=get_selected_data(obj.bsp,omitMask,data_tmp_sel);
+                %need to change the data
+            end
+            %**************************************************************
             wd=round(obj.winlen);
             ov=round(obj.overlap);
             
@@ -534,16 +578,22 @@ classdef PSDWindow < handle
             obj.winlen=wd;
             obj.overlap=ov;
             nfft=wd;
-            
+            %**************************************************************
+            if obj.valid
+                fpos=get(obj.fig,'position');
+            else
+                fpos=[100 400 obj.width obj.height];
+            end
             if isempty(obj.PSDFig)||~ishandle(obj.PSDFig)||~strcmpi(get(obj.PSDFig,'Tag'),'Act')
-                obj.PSDFig=figure('Name','PSD','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'Tag','Act');
+                obj.PSDFig=figure('Name','PSD','NumberTitle','off',...
+                    'WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'Tag','Act',...
+                    'Position',[fpos(1)+fpos(3)+20,fpos(2),400,300]);
             end
             figure(obj.PSDFig)
-            
             if ~obj.hold
                 %     clf
             else
-                hold on
+                hold all;
             end
             
             freq=[obj.fl obj.fh];
@@ -560,10 +610,16 @@ classdef PSDWindow < handle
                         psd=tmp_psd/size(dat,2)*size(dat,1)/size(data,1)+psd;
                     end
                     
-                    if strcmpi(obj.unit,'dB')
-                        obj.line=plot(f,10*log10(psd));
+                    if obj.data_input==1
+                        dispName='selection';
                     else
-                        obj.line=plot(f,psd);
+                        dispName=[obj.event,' ',num2str(obj.ms_start),' to ',num2str(obj.ms_end)];
+                    end
+                    
+                    if strcmpi(obj.unit,'dB')
+                        obj.line=plot(f,10*log10(psd),'DisplayName',dispName);
+                    else
+                        obj.line=plot(f,psd,'DisplayName',dispName);
                     end
                     
                     xlim([freq(1),freq(2)])
@@ -572,7 +628,8 @@ classdef PSDWindow < handle
                     
                     xlabel('Frequency (Hz)');
                     ylabel(['Power ',obj.unit])
-                    
+                    legend('-DynamicLegend');
+
                     obj.fr=f;
                     obj.pow=psd;
                     
@@ -588,9 +645,9 @@ classdef PSDWindow < handle
                     end
                     
                     if strcmpi(obj.unit,'dB')
-                        obj.line=plot(f(:)*ones(1,size(psd,2)),10*log10(psd));
+                        obj.line=plot(f(:)*ones(1,size(psd,2)),10*log10(psd),'DisplayName',chanNames);
                     else
-                        obj.line=plot(f(:)*ones(1,size(psd,2)),psd);
+                        obj.line=plot(f(:)*ones(1,size(psd,2)),psd,'DisplayName',chanNames);
                     end
                     
                     xlim([freq(1),freq(2)])
@@ -600,13 +657,13 @@ classdef PSDWindow < handle
                     xlabel('Frequency (Hz)');
                     ylabel(['Power ',obj.unit])
                     
-                    legend(chanNames)
-                    
+                    legend('-DynamicLegend');
                     obj.fr=f;
                     obj.pow=psd;
                 case 3
-                    
             end
+            
+            
         end
         
         function EventCallback(obj,src)
@@ -617,16 +674,16 @@ classdef PSDWindow < handle
         function MsBeforeCallback(obj,src)
             t=str2double(get(src,'string'));
             if isnan(t)
-                t=obj.ms_before;
+                t=obj.ms_start;
             end
-            obj.ms_before=t;
+            obj.ms_start=t;
         end
         function MsAfterCallback(obj,src)
             t=str2double(get(src,'string'));
             if isnan(t)
-                t=obj.ms_after;
+                t=obj.ms_end;
             end
-            obj.ms_after=t;
+            obj.ms_end=t;
         end
     end
     
