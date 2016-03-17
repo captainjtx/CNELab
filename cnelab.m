@@ -55,7 +55,7 @@ info_label=javaObjectEDT(javax.swing.JLabel());
 info_label.setText('Creating MatFile 7.4 IO ...');
 info_label.setHorizontalAlignment(javax.swing.JLabel.CENTER);
 info_label.setForeground(java.awt.Color(0.6431,0.0745,0.149));
-info_label.setFont(java.awt.Font('Garamond', java.awt.Font.PLAIN, 20));
+info_label.setFont(java.awt.Font('Arial', java.awt.Font.PLAIN, 15));
 info_label.setOpaque(false);
 
 [jh,gh]=javacomponent(info_label,[0,0,1,1],info_h);

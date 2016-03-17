@@ -23,6 +23,14 @@ classdef PSDWindow < handle
         fh_edit
         fh_slider
         
+        data_popup
+        event_text
+        event_popup
+        ms_before_text
+        ms_before_edit
+        ms_after_text
+        ms_after_edit
+        
         compute_btn
         new_btn
         
@@ -34,6 +42,13 @@ classdef PSDWindow < handle
         unit_
         layout_
         hold_
+        
+        data_input_
+        event_list_
+        
+        ms_before_
+        ms_after_
+        event_
         
         fr
         pow
@@ -48,6 +63,11 @@ classdef PSDWindow < handle
         fh
         layout
         hold
+        data_input
+        event_list
+        event
+        ms_before
+        ms_after
     end
     methods
         function obj=PSDWindow(bsp)
@@ -55,7 +75,25 @@ classdef PSDWindow < handle
             obj.width=300;
             obj.height=250;
             
+            if ~isempty(bsp.Evts)
+                obj.event_list_=unique(bsp.Evts(:,2));
+            end
+            
             varinitial(obj);
+            addlistener(bsp,'EventListChange',@(src,evts)UpdateEventList(obj));
+            addlistener(bsp,'SelectedEventChange',@(src,evts)UpdateEventSelected(obj));
+        end
+        
+        function UpdateEventList(obj)
+            if ~isempty(obj.bsp.Evts)
+                obj.event_list=unique(obj.bsp.Evts(:,2));
+            end
+        end
+        
+        function UpdateEventSelected(obj)
+            if ~isempty(obj.bsp.SelectedEvent)
+                obj.event=obj.bsp.Evts{obj.bsp.SelectedEvent(1),2};
+            end
         end
         function varinitial(obj)
             obj.layout_=1;%average
@@ -65,6 +103,10 @@ classdef PSDWindow < handle
             obj.fl_=0;
             obj.hold_=0;
             obj.unit_='dB';
+            obj.data_input_=1;%selection
+            obj.ms_before_=1500;
+            obj.ms_after_=1500;
+            obj.event_='';
         end
         
         
@@ -78,7 +120,7 @@ classdef PSDWindow < handle
             obj.height=350;
             
             obj.fig=figure('MenuBar','none','Name','Power Spectrum Density','units','pixels',...
-                'Position',[500 500 obj.width obj.height],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
+                'Position',[100 400 obj.width obj.height],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
                 'Resize','on','DockControls','off');
             
             hp=uipanel('units','normalized','Position',[0,0,1,1]);
@@ -93,8 +135,23 @@ classdef PSDWindow < handle
                 'String',{'hold on'},'units','normalized','Position',[0.7,0.2,0.3,0.8],'value',obj.hold,...
                 'callback',@(src,evts) HoldCallback(obj,src));
             
-            hp_data=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.58,1,0.3],'title','data');
+            hp_data=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.58,1,0.3],'title','Data');
+            obj.data_popup=uicontrol('Parent',hp_data,'Style','popup',...
+                'String',{'Selection','Single Event','Average Event'},'units','normalized','position',[0.01,0.6,0.59,0.35],...
+                'Callback',@(src,evts) DataPopUpCallback(obj,src),'value',obj.data_input);
             
+            obj.event_text=uicontrol('Parent',hp_data,'Style','text','string','Event: ','units','normalized','position',[0.01,0.3,0.35,0.3],...
+                'HorizontalAlignment','left','visible','off');
+            obj.ms_before_text=uicontrol('Parent',hp_data,'Style','text','string','Before (ms): ','units','normalized','position',[0.4,0.3,0.3,0.3],...
+                'HorizontalAlignment','left','visible','off');
+            obj.ms_after_text=uicontrol('Parent',hp_data,'Style','text','string','After (ms): ','units','normalized','position',[0.7,0.3,0.3,0.3],...
+                'HorizontalAlignment','left','visible','off');
+            obj.event_popup=uicontrol('Parent',hp_data,'Style','popup','string',obj.event_list,'units','normalized','position',[0.01,0.05,0.35,0.3],...
+                'visible','off','callback',@(src,evts) EventCallback(obj,src));
+            obj.ms_before_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_before),'units','normalized','position',[0.4,0.05,0.29,0.3],...
+                'HorizontalAlignment','center','visible','off','callback',@(src,evts) MsBeforeCallback(obj,src));
+            obj.ms_after_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_after),'units','normalized','position',[0.7,0.05,0.29,0.3],...
+                'HorizontalAlignment','center','visible','off','callback',@(src,evts) MsAfterCallback(obj,src));
             
             hp_unit=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.47,1,0.1],'title','Unit');
             obj.unit_mag_radio=uicontrol('Parent',hp_unit,'Style','radiobutton','units','normalized','string','Mag','position',[0.1,0,0.3,1],...
@@ -142,6 +199,7 @@ classdef PSDWindow < handle
             else
                 UnitRadioCallback(obj,obj.unit_mag_radio);
             end
+            obj.event=obj.event_;
         end
         
         function OnClose(obj)
@@ -283,6 +341,76 @@ classdef PSDWindow < handle
                 set(obj.hold_radio,'value',val);
             end
         end
+        function val=get.data_input(obj)
+            val=obj.data_input_;
+        end
+        function set.data_input(obj,val)
+            obj.data_input_=val;
+            if obj.valid
+                set(obj.data_popup,'value',val);
+            end
+        end
+        function val=get.ms_before(obj)
+            val=obj.ms_before_;
+        end
+        function set.ms_before(obj,val)
+            obj.ms_before_=val;
+            if obj.valid
+                set(obj.ms_before_edit,'string',num2str(val));
+            end
+        end
+        function val=get.ms_after(obj)
+            val=obj.ms_after_;
+        end
+        function set.ms_after(obj,val)
+            obj.ms_after_=val;
+            if obj.valid
+                set(obj.ms_after_edit,'string',num2str(val));
+            end
+        end
+        function val=get.event(obj)
+            val=obj.event_;
+        end
+        function set.event(obj,val)
+            if obj.valid
+                [ia,ib]=ismember(val,obj.event_list);
+                if ia
+                    set(obj.event_popup,'value',ib);
+                else
+                    set(obj.event_popup,'value',1);
+                    if ~isempty(obj.event_list)
+                        val=obj.event_list{1};
+                    else
+                        val=[];
+                    end
+                    
+                end
+            end
+            obj.event_=val;
+        end
+        
+        
+        function val=get.event_list(obj)
+            val=obj.event_list_;
+        end
+        
+        function set.event_list(obj,val)
+            obj.event_list_=val;
+            
+            if obj.valid
+                set(obj.event_popup,'value',1);
+                set(obj.event_popup,'string',val);
+            end
+            
+            [ia,ib]=ismember(obj.event,val);
+            if ia
+                if obj.valid
+                    set(obj.event_popup,'value',ib);
+                end
+            else
+                obj.event=val{1};
+            end
+        end
         
         function LayoutCallback(obj,src)
             obj.layout_=get(src,'value');
@@ -350,6 +478,35 @@ classdef PSDWindow < handle
                         
                     end
                 end
+            end
+        end
+        function DataPopUpCallback(obj,src)
+            obj.data_input=get(src,'value');
+            switch get(src,'value')
+                case 1
+                    %Selection
+                    set(obj.event_text,'visible','off');
+                    set(obj.ms_before_text,'visible','off');
+                    set(obj.ms_after_text,'visible','off');
+                    set(obj.event_popup,'visible','off');
+                    set(obj.ms_before_edit,'visible','off');
+                    set(obj.ms_after_edit,'visible','off');
+                case 2
+                    %Single Event
+                    set(obj.event_text,'visible','on');
+                    set(obj.ms_before_text,'visible','on');
+                    set(obj.ms_after_text,'visible','on');
+                    set(obj.event_popup,'visible','on','enable','off');
+                    set(obj.ms_before_edit,'visible','on');
+                    set(obj.ms_after_edit,'visible','on');
+                case 3
+                    %Average Event
+                    set(obj.event_text,'visible','on');
+                    set(obj.ms_before_text,'visible','on');
+                    set(obj.ms_after_text,'visible','on');
+                    set(obj.event_popup,'visible','on','enable','on');
+                    set(obj.ms_before_edit,'visible','on');
+                    set(obj.ms_after_edit,'visible','on');
             end
         end
         
@@ -450,6 +607,26 @@ classdef PSDWindow < handle
                 case 3
                     
             end
+        end
+        
+        function EventCallback(obj,src)
+            obj.event_=obj.event_list{get(src,'value')};
+        end
+        
+        
+        function MsBeforeCallback(obj,src)
+            t=str2double(get(src,'string'));
+            if isnan(t)
+                t=obj.ms_before;
+            end
+            obj.ms_before=t;
+        end
+        function MsAfterCallback(obj,src)
+            t=str2double(get(src,'string'));
+            if isnan(t)
+                t=obj.ms_after;
+            end
+            obj.ms_after=t;
         end
     end
     

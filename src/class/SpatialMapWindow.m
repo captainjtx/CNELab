@@ -90,6 +90,9 @@ classdef SpatialMapWindow < handle
         
         stft_winlen_edit
         stft_overlap_edit
+        
+        az_edit
+        el_edit
     end
     properties
         
@@ -142,6 +145,8 @@ classdef SpatialMapWindow < handle
         
         stft_winlen_
         stft_overlap_
+        az_
+        el_
     end
     
     properties (Dependent)
@@ -205,6 +210,9 @@ classdef SpatialMapWindow < handle
         
         stft_winlen
         stft_overlap
+        
+        az
+        el
     end
     properties
         width
@@ -303,6 +311,25 @@ classdef SpatialMapWindow < handle
             
             if obj.valid
                 set(obj.contact_radio,'value',val);
+            end
+        end
+        
+        function val=get.az(obj)
+            val=obj.az_;
+        end
+        function set.az(obj,val)
+            obj.az_=val;
+            if obj.valid
+                set(obj.az_edit,'string',num2str(val));
+            end
+        end
+        function val=get.el(obj)
+            val=obj.el_;
+        end
+        function set.el(obj,val)
+            obj.el_=val;
+            if obj.valid
+                set(obj.el_edit,'string',num2str(val));
             end
         end
         
@@ -1124,6 +1151,9 @@ classdef SpatialMapWindow < handle
             obj.neg_t=1;
             obj.pos_t=1;
             
+            obj.az_=0;
+            obj.el_=90;
+            
             obj.corr_win=CorrMapWindow(obj);
             obj.xcorr_win=CrossCorrMapWindow(obj);
             
@@ -1312,15 +1342,27 @@ classdef SpatialMapWindow < handle
                 'position',[0.4,0.55,0.55,0.4],'callback',@(src,evts) ERDSCallback(obj,src),...
                 'min',1,'max',10,'value',obj.ers_t,'sliderstep',[0.01,0.05],'interruptible','off');
             
-            hp_resize=uitab(tgp,'title','Resize');
+            hp_shape=uitab(tgp,'title','Shape');
             
-            uicontrol('parent',hp_resize,'style','text','string','Ratio','units','normalized',...
+            uicontrol('parent',hp_shape,'style','text','string','Size','units','normalized',...
                 'position',[0,0.6,0.18,0.36]);
-            obj.resize_edit=uicontrol('parent',hp_resize,'style','edit','string',num2str(obj.resize),'units','normalized',...
+            obj.resize_edit=uicontrol('parent',hp_shape,'style','edit','string',num2str(obj.resize),'units','normalized',...
                 'position',[0.2,0.55,0.15,0.4],'horizontalalignment','center','callback',@(src,evts) ResizeCallback(obj,src));
-            obj.resize_slider=uicontrol('parent',hp_resize,'style','slider','units','normalized',...
+            obj.resize_slider=uicontrol('parent',hp_shape,'style','slider','units','normalized',...
                 'position',[0.4,0.55,0.55,0.4],'callback',@(src,evts) ResizeCallback(obj,src),...
                 'min',0.1,'max',2,'value',obj.resize,'sliderstep',[0.01,0.05]);
+            
+            uicontrol('parent',hp_shape,'style','text','string','View','units','normalized',...
+                'position',[0,0.1,0.18,0.36]);
+            
+            uicontrol('parent',hp_shape,'style','text','string','az: ','units','normalized',...
+                'position',[0.2,0.1,0.1,0.36]);
+            obj.az_edit=uicontrol('parent',hp_shape,'style','edit','string',num2str(obj.az),'units','normalized',...
+                'position',[0.3,0.05,0.2,0.4],'callback',@(src,evts) ViewCallback(obj,src));
+            uicontrol('parent',hp_shape,'style','text','string','el: ','units','normalized',...
+                'position',[0.6,0.1,0.1,0.36]);
+            obj.el_edit=uicontrol('parent',hp_shape,'style','edit','string',num2str(obj.el),'units','normalized',...
+                'position',[0.7,0.05,0.2,0.4],'callback',@(src,evts) ViewCallback(obj,src));
             
             setgp=uitabgroup(hp,'units','normalized','position',[0,0.06,1,0.17]);
             disp_tab=uitab(setgp,'title','Display');
@@ -2762,6 +2804,29 @@ classdef SpatialMapWindow < handle
             if obj.auto_refresh
                 obj.UpdateFigure(src);
             end
+        end
+        function ViewCallback(obj,src)
+            switch src
+                case obj.az_edit
+                    val=str2double(get(src,'string'));
+                    if isnan(val)
+                        val=obj.az;
+                    end
+                    obj.az=val;
+                case obj.el_edit
+                    val=str2double(get(src,'string'));
+                    if isnan(val)
+                        val=obj.el;
+                    end
+                    obj.el=val;
+            end
+            for i=1:length(obj.SpatialMapFig)
+                h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                if ~isempty(h)
+                    view(h,obj.az,obj.el);
+                end
+            end
+            ContactCallback(obj,[]);
         end
     end
     
