@@ -56,8 +56,8 @@ obj.MenuPlaySpeed=uimenu(obj.MenuVideo,'Label','Speed','Callback',@(src,evt) Mnu
 obj.MenuVideoStartEnd=uimenu(obj.MenuVideo,'Label','Start&End','Callback',@(src,evt) MnuVideoStartEnd(obj));
 obj.MenuVideoOnTop=uimenu(obj.MenuVideo,'Label','Stay On Top','Callback',@(src,evt) MnuVideoOnTop(obj),'checked','on');
 obj.MenuNotchFilter=uimenu(obj.MenuSettings,'Label','Notch Filter');
-obj.MenuNotchFilterSingle=uimenu(obj.MenuNotchFilter,'Label','Single','checked','off','Callback',@(src,evt) ChangeFilter(obj,src));
-obj.MenuNotchFilterHarmonics=uimenu(obj.MenuNotchFilter,'Label','Harmonics','checked','on','Callback',@(src,evt) ChangeFilter(obj,src));
+obj.MenuNotchFilterSingle=uimenu(obj.MenuNotchFilter,'Label','Single','checked','on','Callback',@(src,evt) ChangeFilter(obj,src));
+obj.MenuNotchFilterHarmonics=uimenu(obj.MenuNotchFilter,'Label','Harmonics','checked','off','Callback',@(src,evt) ChangeFilter(obj,src));
 
 %**************************************************************************
 %First Order Menu------------------------------------------------------Data

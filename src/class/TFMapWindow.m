@@ -606,7 +606,7 @@ classdef TFMapWindow < handle
             obj.smooth_x_=8;
             obj.smooth_y_=8;
             obj.disp_axis_=0;
-            obj.TFMapSaveWin=FigureSaveWindow(obj);
+            obj.TFMapSaveWin=TFMapFigureSave(obj);
         end
         function buildfig(obj)
             if obj.valid

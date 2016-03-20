@@ -1,4 +1,4 @@
-classdef FigureSaveWindow<handle
+classdef PSDFigureSave<handle
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -37,18 +37,17 @@ classdef FigureSaveWindow<handle
         
     
     methods
-        function obj=FigureSaveWindow(p)
-            
+        function obj=PSDFigureSave(p)
             obj.parent=p;
             obj.width=300;
             obj.height=180;
             
             obj.res_ppi_=300;
             
-            if ~isempty(obj.parent.bsp.FileDir)&&exist([obj.parent.bsp.FileDir,'/app/tfmap'],'dir')~=7
-                mkdir(obj.parent.bsp.FileDir,'/app/tfmap');
+            if ~isempty(obj.parent.bsp.FileDir)&&exist([obj.parent.bsp.FileDir,'/app/psd'],'dir')~=7
+                mkdir(obj.parent.bsp.FileDir,'/app/psd');
             end
-            open_dir=[obj.parent.bsp.FileDir,'/app/tfmap'];
+            open_dir=[obj.parent.bsp.FileDir,'/app/psd'];
             obj.dest_dir_=open_dir;
             obj.filename_='';
             obj.format_=1;%png
@@ -176,29 +175,22 @@ classdef FigureSaveWindow<handle
         end
         
         function OnClose(obj)
-            
             h = obj.fig;
             if ishandle(h)
                 delete(h);
             end
         end
         
-        function fname=auto_file_name(obj)
-            fname=['f_',num2str(obj.parent.min_freq),'_',num2str(obj.parent.max_freq),...
-                '_c_',num2str(obj.parent.min_clim),'_',num2str(obj.parent.max_clim)];
-        end
-        
         function ExportCallback(obj)
             pic_format=obj.format_list{obj.format};
             
             wait_bar_h = waitbar(0,'Saving Pictures...');
-            for i=1:length(obj.parent.TFMapFig)
-                waitbar(i/length(obj.parent.TFMapFig));
-                figname=get(obj.parent.TFMapFig(i),'Name');
-                fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',obj.auto_file_name]);
+            for i=1:length(obj.parent.PSDFig)
+                waitbar(i/length(obj.parent.PSDFig));
+                fname=fullfile(obj.dest_dir,obj.filename);
                 
-                set(obj.parent.TFMapFig(i),'color','white');
-                export_fig(obj.parent.TFMapFig(i),['-',pic_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);
+                set(obj.parent.PSDFig(i),'color','white');
+                export_fig(obj.parent.PSDFig(i),['-',pic_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);
             end
             close(wait_bar_h);
         end

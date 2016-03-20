@@ -4,6 +4,9 @@ classdef PSDWindow < handle
     properties
         fig
         bsp
+        file_menu
+        save_menu
+        save_fig_menu
         
         PSDFig
         
@@ -52,6 +55,16 @@ classdef PSDWindow < handle
         
         fr
         pow
+        
+        PSDSaveWin
+        harmonic_popup
+        harmonic_radio
+        harmonic_
+        harmonic_val_
+        harmonic_width_edit
+        harmonic_width_
+        custom_mask_edit
+        custom_mask_
     end
     properties(Dependent)
         fs
@@ -68,12 +81,16 @@ classdef PSDWindow < handle
         event
         ms_start
         ms_end
+        harmonic
+        harmonic_val
+        harmonic_width
+        custom_mask
     end
     methods
         function obj=PSDWindow(bsp)
             obj.bsp=bsp;
             obj.width=300;
-            obj.height=250;
+            obj.height=380;
             
             if ~isempty(bsp.Evts)
                 obj.event_list_=unique(bsp.Evts(:,2));
@@ -107,8 +124,13 @@ classdef PSDWindow < handle
             obj.ms_start_=0;
             obj.ms_end_=1500;
             obj.event_='';
+            obj.harmonic_=0;
+            obj.harmonic_val_=2;
+            obj.harmonic_width=1;
+            obj.custom_mask_=[];
+            
+            obj.PSDSaveWin=PSDFigureSave(obj);
         end
-        
         
         function buildfig(obj)
             
@@ -116,16 +138,19 @@ classdef PSDWindow < handle
                 figure(obj.fig);
                 return
             end
+            
             obj.width=300;
-            obj.height=300;
+            obj.height=380;
             
             obj.fig=figure('MenuBar','none','Name','Power Spectrum Density','units','pixels',...
                 'Position',[100 400 obj.width obj.height],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
                 'Resize','on','DockControls','off');
-            
+            obj.file_menu=uimenu(obj.fig,'label','File');
+            obj.save_menu=uimenu(obj.file_menu,'label','Save');
+            obj.save_fig_menu=uimenu(obj.save_menu,'label','Figure','callback',@(src,evts) obj.PSDSaveWin.buildfig(),'Accelerator','p');
             hp=uipanel('units','normalized','Position',[0,0,1,1]);
             
-            hp_layout=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.87,1,0.12],'title','Layout');
+            hp_layout=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.9,1,0.09],'title','Layout');
             
             obj.layout_popup=uicontrol('Parent',hp_layout,'Style','popup',...
                 'String',{'Average','Channel','Grid'},'units','normalized','Position',[0.01,0.2,0.59,0.8],'value',obj.layout,...
@@ -135,7 +160,7 @@ classdef PSDWindow < handle
                 'String',{'hold on'},'units','normalized','Position',[0.7,0.2,0.3,0.8],'value',obj.hold,...
                 'callback',@(src,evts) HoldCallback(obj,src));
             
-            hp_data=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.5,1,0.36],'title','Data');
+            hp_data=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.59,1,0.3],'title','Data');
             obj.data_popup=uicontrol('Parent',hp_data,'Style','popup',...
                 'String',{'Selection','Single Event','Average Event'},'units','normalized','position',[0.01,0.6,0.59,0.35],...
                 'Callback',@(src,evts) DataPopUpCallback(obj,src),'value',obj.data_input);
@@ -153,7 +178,24 @@ classdef PSDWindow < handle
             obj.ms_end_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_end),'units','normalized','position',[0.7,0.1,0.29,0.28],...
                 'HorizontalAlignment','center','visible','off','callback',@(src,evts) MsAfterCallback(obj,src));
             
-            setgp=uitabgroup(hp,'units','normalized','position',[0,0.12,1,0.37]);
+            hp_freq=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.41,1,0.17],'title','Frequency');
+            uicontrol('parent',hp_freq,'style','text','string','Low','units','normalized',...
+                'position',[0,0.6,0.1,0.3]);
+            uicontrol('parent',hp_freq,'style','text','string','High','units','normalized',...
+                'position',[0,0.1,0.1,0.3]);
+            
+            obj.fl_edit=uicontrol('parent',hp_freq,'style','edit','string',num2str(obj.fl),'units','normalized',...
+                'position',[0.15,0.55,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) FreqCallback(obj,src));
+            obj.fl_slider=uicontrol('parent',hp_freq,'style','slider','units','normalized',...
+                'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) FreqCallback(obj,src),...
+                'min',0,'max',obj.fs/2,'sliderstep',[0.005,0.02],'value',obj.fl);
+            obj.fh_edit=uicontrol('parent',hp_freq,'style','edit','string',num2str(obj.fh),'units','normalized',...
+                'position',[0.15,0.05,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) FreqCallback(obj,src));
+            obj.fh_slider=uicontrol('parent',hp_freq,'style','slider','units','normalized',...
+                'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) FreqCallback(obj,src),...
+                'min',0,'max',obj.fs/2,'sliderstep',[0.005,0.02],'value',obj.fh);
+            
+            setgp=uitabgroup(hp,'units','normalized','position',[0,0.1,1,0.3]);
             pwelch_tab=uitab(setgp,'title','PWelch');
             uicontrol('parent',pwelch_tab,'style','text','string','Window (sample): ','units','normalized',...
                 'position',[0,0.6,0.5,0.3]);
@@ -172,28 +214,26 @@ classdef PSDWindow < handle
             obj.unit_db_radio=uicontrol('Parent',unit_tab,'Style','radiobutton','units','normalized','string','dB','position',[0.6,0,0.3,1],...
                 'HorizontalAlignment','left','callback',@(src,evts) UnitRadioCallback(obj,src));
             
-            freq_tab=uitab(setgp,'title','Frequency');
+            mask_tab=uitab(setgp,'title','Mask');
+            obj.harmonic_radio=uicontrol('parent',mask_tab,'style','radiobutton','string','Harmonic','units','normalized',...
+                'position',[0.01,0.55,0.3,0.3],'value',obj.harmonic,'Callback',@(src,evt) MaskCallback(obj,src));
             
-            uicontrol('parent',freq_tab,'style','text','string','Low','units','normalized',...
-                'position',[0,0.6,0.1,0.3]);
-            uicontrol('parent',freq_tab,'style','text','string','High','units','normalized',...
-                'position',[0,0.1,0.1,0.3]);
+            obj.harmonic_popup=uicontrol('Parent',mask_tab,'Style','popup','units','normalized','string',{'50 Hz','60 Hz'},...
+                'value',obj.harmonic_val,'Callback',@(src,evt) MaskCallback(obj,src),'position',[0.3,0.55,0.3,0.3]);
             
-            obj.fl_edit=uicontrol('parent',freq_tab,'style','edit','string',num2str(obj.fl),'units','normalized',...
-                'position',[0.15,0.55,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) FreqCallback(obj,src));
-            obj.fl_slider=uicontrol('parent',freq_tab,'style','slider','units','normalized',...
-                'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) FreqCallback(obj,src),...
-                'min',0,'max',obj.fs/2,'sliderstep',[0.005,0.02],'value',obj.fl);
-            obj.fh_edit=uicontrol('parent',freq_tab,'style','edit','string',num2str(obj.fh),'units','normalized',...
-                'position',[0.15,0.05,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) FreqCallback(obj,src));
-            obj.fh_slider=uicontrol('parent',freq_tab,'style','slider','units','normalized',...
-                'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) FreqCallback(obj,src),...
-                'min',0,'max',obj.fs/2,'sliderstep',[0.005,0.02],'value',obj.fh);
+            uicontrol('parent',mask_tab,'style','text','string','width: ','units','normalized','position',[0.01,0.05,0.24,0.3]);
             
-            obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.01,0.2,0.1],...
+            obj.harmonic_width_edit=uicontrol('parent',mask_tab,'style','edit','units','normalized',...
+                'position',[0.3,0.05,0.25,0.35],'string',num2str(obj.harmonic_width),'Callback',@(src,evt) MaskCallback(obj,src));
+            
+            obj.custom_mask_edit=uicontrol('parent',mask_tab,'style','edit','units','normalized','position',[0.65,0.05,0.3,0.9],...
+                'string',num2str(obj.custom_mask),'callback',@(src,evt) MaskCallback(obj,src),'max',3,'min',1);
+            
+            
+            obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.01,0.2,0.08],...
                 'callback',@(src,evts) ComputeCallback(obj));
             
-            obj.new_btn=uicontrol('parent',hp,'style','pushbutton','string','New','units','normalized','position',[0.01,0.01,0.2,0.1],...
+            obj.new_btn=uicontrol('parent',hp,'style','pushbutton','string','New','units','normalized','position',[0.01,0.01,0.2,0.08],...
                 'callback',@(src,evts) NewCallback(obj));
             if strcmpi(obj.unit,'dB')
                 UnitRadioCallback(obj,obj.unit_db_radio);
@@ -202,6 +242,7 @@ classdef PSDWindow < handle
             end
             DataPopUpCallback(obj,obj.data_popup);
             obj.event=obj.event_;
+            MaskCallback(obj,obj.harmonic_radio);
         end
         
         function OnClose(obj)
@@ -213,6 +254,10 @@ classdef PSDWindow < handle
             if ishandle(obj.PSDFig)
                 delete(obj.PSDFig);
             end
+            
+            if obj.PSDSaveWin.valid
+                delete(obj.PSDSaveWin.fig);
+            end
         end
         
         function val=get.valid(obj)
@@ -222,7 +267,45 @@ classdef PSDWindow < handle
                 val=0;
             end
         end
+        function val=get.custom_mask(obj)
+            val=obj.custom_mask_;
+        end
+        function set.custom_mask(obj,val)
+            obj.custom_mask_=val;
+            if obj.valid
+                set(obj.custom_mask_edit,'string',num2str(val));
+            end
+        end
+        function val=get.harmonic(obj)
+            val=obj.harmonic_;
+        end
         
+        function set.harmonic(obj,val)
+            obj.harmonic_=val;
+            if obj.valid
+                set(obj.harmonic_radio,'value',val);
+            end
+        end
+        
+        function val=get.harmonic_val(obj)
+            val=obj.harmonic_val_;
+        end
+        function set.harmonic_val(obj,val)
+            obj.harmonic_val_=val;
+            if obj.valid
+                set(obj.harmonic_popup,'value',val);
+            end
+        end
+        
+        function val=get.harmonic_width(obj)
+            val=obj.harmonic_width_;
+        end
+        function set.harmonic_width(obj,val)
+            obj.harmonic_width_=val;
+            if obj.valid
+                set(obj.harmonic_width_edit,'string',num2str(val));
+            end
+        end
         function val=get.unit(obj)
             val=obj.unit_;
         end
@@ -591,7 +674,7 @@ classdef PSDWindow < handle
             end
             figure(obj.PSDFig)
             if ~obj.hold
-                %     clf
+                clf
             else
                 hold all;
             end
@@ -684,6 +767,40 @@ classdef PSDWindow < handle
                 t=obj.ms_end;
             end
             obj.ms_end=t;
+        end
+        
+        function MaskCallback(obj,src)
+            switch src
+                case obj.harmonic_radio
+                    val=get(src,'value');
+                    if val
+                        set(obj.harmonic_popup,'enable','on');
+                        set(obj.harmonic_width_edit,'enable','on');
+                    else
+                        set(obj.harmonic_popup,'enable','off');
+                        set(obj.harmonic_width_edit,'enable','off');
+                    end
+                    obj.harmonic_=val;
+                    
+                case obj.harmonic_popup
+                    obj.harmonic_val_=get(src,'value');
+                case obj.harmonic_width_edit
+                    w=str2double(get(src,'string'));
+                    if isnan(w)
+                        w=obj.harmonic_width_;
+                    end
+                    obj.harmonic_width=w;
+                case obj.custom_mask_edit
+                    w=str2num(get(src,'string'));
+                    if ~isempty(w)
+                        if size(w,2)~=2
+                            errordlg('Invalid input !');
+                            w=obj.custom_mask_;
+                        end
+                    end
+                    
+                    obj.custom_mask=w;
+            end
         end
     end
     
