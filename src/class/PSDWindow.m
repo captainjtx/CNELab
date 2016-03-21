@@ -678,6 +678,7 @@ classdef PSDWindow < handle
             else
                 hold all;
             end
+            drawnow
             
             freq=[obj.fl obj.fh];
             switch obj.layout
@@ -696,29 +697,16 @@ classdef PSDWindow < handle
                     if obj.data_input==1
                         dispName='selection';
                     else
-                        dispName=[obj.event,' ',num2str(obj.ms_start),' to ',num2str(obj.ms_end)];
+                        dispName=[obj.event,' ',num2str(obj.ms_start),' to ',num2str(obj.ms_end),' ms'];
                     end
                     
                     if strcmpi(obj.unit,'dB')
-                        obj.line=plot(f,10*log10(psd),'DisplayName',dispName);
+                        hline=plot(f,10*log10(psd),'DisplayName',dispName);
                     else
-                        obj.line=plot(f,psd,'DisplayName',dispName);
+                        hline=plot(f,psd,'DisplayName',dispName);
                     end
-                    
-                    xlim([freq(1),freq(2)])
-                    set(gca,'Tag','PSDAxes');
-                    title('Power Spectrum Density')
-                    
-                    xlabel('Frequency (Hz)');
-                    ylabel(['Power ',obj.unit])
-                    legend('-DynamicLegend');
-
-                    obj.fr=f;
-                    obj.pow=psd;
-                    
                 case 2
                     psd=zeros(round(nfft/2)+1,size(data,2));
-                    
                     for s=1:length(seg)
                         dat=data(segments==seg(s),:);
                         for i=1:size(dat,2)
@@ -728,25 +716,27 @@ classdef PSDWindow < handle
                     end
                     
                     if strcmpi(obj.unit,'dB')
-                        obj.line=plot(f(:)*ones(1,size(psd,2)),10*log10(psd),'DisplayName',chanNames);
+                        hline=plot(f(:)*ones(1,size(psd,2)),10*log10(psd),'DisplayName',chanNames);
                     else
-                        obj.line=plot(f(:)*ones(1,size(psd,2)),psd,'DisplayName',chanNames);
+                        hline=plot(f(:)*ones(1,size(psd,2)),psd,'DisplayName',chanNames);
                     end
-                    
-                    xlim([freq(1),freq(2)])
-                    set(gca,'Tag','PSDAxes');
-                    title('Power Spectrum Density')
-                    
-                    xlabel('Frequency (Hz)');
-                    ylabel(['Power ',obj.unit])
-                    
-                    legend('-DynamicLegend');
-                    obj.fr=f;
-                    obj.pow=psd;
                 case 3
             end
-            
-            
+            xlim([freq(1),freq(2)])
+            set(gca,'Tag','PSDAxes');
+            title('Power Spectrum Density');
+            xlabel('Frequency (Hz)');
+            ylabel(['Power ',obj.unit]);
+            legend('-DynamicLegend');
+            if obj.hold
+                obj.line=cat(1,obj.line,{hline});
+                obj.pow=cat(1,obj.pow,{psd});
+            else
+                obj.line={hline};
+                obj.pow={psd};
+            end
+            obj.fr=f;
+            MaskFrequency(obj);
         end
         
         function EventCallback(obj,src)
@@ -798,8 +788,39 @@ classdef PSDWindow < handle
                             w=obj.custom_mask_;
                         end
                     end
-                    
                     obj.custom_mask=w;
+            end
+            if isempty(obj.PSDFig)||~ishandle(obj.PSDFig)||~strcmpi(get(obj.PSDFig,'Tag'),'Act')
+            else
+                MaskFrequency(obj);
+            end
+        end
+        function MaskFrequency(obj)
+            for l=1:length(obj.line)
+                for m=1:length(obj.line{l})
+                    p=obj.pow{l}(:,m);
+                    h=obj.line{l}(m);
+                    if obj.harmonic
+                        fn=[50,60];
+                        fn=fn(obj.harmonic_val);
+                        for i=1:floor(obj.fs/2/fn)
+                            freq=fn*i;
+                            p((freq-obj.harmonic_width<=obj.fr)&(freq+obj.harmonic_width>=obj.fr))=nan;
+                        end
+                    end
+                    
+                    if ~isempty(obj.custom_mask)
+                        for i=1:size(obj.custom_mask,1)
+                            p((freq-obj.custom_mask(i,1)<=obj.fr)&(freq+obj.custom_mask(i,2)>=obj.fr))=nan;
+                        end
+                    end
+                    
+                    if strcmpi(obj.unit,'dB')
+                        set(h,'YData',10*log10(p));
+                    else
+                        set(h,'YData',p);
+                    end
+                end
             end
         end
     end
