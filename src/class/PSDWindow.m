@@ -65,6 +65,13 @@ classdef PSDWindow < handle
         harmonic_width_
         custom_mask_edit
         custom_mask_
+        
+        sl_edit
+        sl_
+        sh_edit
+        sh_
+        auto_scale_radio
+        auto_scale_
     end
     properties(Dependent)
         fs
@@ -85,6 +92,9 @@ classdef PSDWindow < handle
         harmonic_val
         harmonic_width
         custom_mask
+        sl
+        sh
+        auto_scale
     end
     methods
         function obj=PSDWindow(bsp)
@@ -129,6 +139,11 @@ classdef PSDWindow < handle
             obj.harmonic_width=1;
             obj.custom_mask_=[];
             
+            obj.sl_=-35;
+            obj.sh_=35;
+            
+            obj.auto_scale_=1;
+            
             obj.PSDSaveWin=PSDFigureSave(obj);
         end
         
@@ -140,7 +155,7 @@ classdef PSDWindow < handle
             end
             
             obj.width=300;
-            obj.height=380;
+            obj.height=410;
             
             obj.fig=figure('MenuBar','none','Name','Power Spectrum Density','units','pixels',...
                 'Position',[100 400 obj.width obj.height],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
@@ -160,7 +175,7 @@ classdef PSDWindow < handle
                 'String',{'hold on'},'units','normalized','Position',[0.7,0.2,0.3,0.8],'value',obj.hold,...
                 'callback',@(src,evts) HoldCallback(obj,src));
             
-            hp_data=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.59,1,0.3],'title','Data');
+            hp_data=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.64,1,0.25],'title','Data');
             obj.data_popup=uicontrol('Parent',hp_data,'Style','popup',...
                 'String',{'Selection','Single Event','Average Event'},'units','normalized','position',[0.01,0.6,0.59,0.35],...
                 'Callback',@(src,evts) DataPopUpCallback(obj,src),'value',obj.data_input);
@@ -178,7 +193,7 @@ classdef PSDWindow < handle
             obj.ms_end_edit=uicontrol('Parent',hp_data,'Style','Edit','string',num2str(obj.ms_end),'units','normalized','position',[0.7,0.1,0.29,0.28],...
                 'HorizontalAlignment','center','visible','off','callback',@(src,evts) MsAfterCallback(obj,src));
             
-            hp_freq=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.41,1,0.17],'title','Frequency');
+            hp_freq=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.46,1,0.17],'title','Frequency');
             uicontrol('parent',hp_freq,'style','text','string','Low','units','normalized',...
                 'position',[0,0.6,0.1,0.3]);
             uicontrol('parent',hp_freq,'style','text','string','High','units','normalized',...
@@ -195,7 +210,22 @@ classdef PSDWindow < handle
                 'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) FreqCallback(obj,src),...
                 'min',0,'max',obj.fs/2,'sliderstep',[0.005,0.02],'value',obj.fh);
             
-            setgp=uitabgroup(hp,'units','normalized','position',[0,0.1,1,0.3]);
+            hp_scale=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.36,1,0.09],'title','Scale');
+            
+            obj.auto_scale_radio=uicontrol('parent',hp_scale,'style','radiobutton','string','Auto','units','normalized',...
+                'position',[0,0.1,0.3,0.8],'value',obj.auto_scale_,'Callback',@(src,evt) ScaleCallback(obj,src));
+            
+            uicontrol('parent',hp_scale,'style','text','string','Min','units','normalized',...
+                'position',[0.3,0.2,0.1,0.6]);
+            uicontrol('parent',hp_scale,'style','text','string','Max','units','normalized',...
+                'position',[0.65,0.2,0.1,0.6]);
+            
+            obj.sl_edit=uicontrol('parent',hp_scale,'style','edit','string',num2str(obj.sl),'units','normalized',...
+                'position',[0.4,0.1,0.2,0.8],'horizontalalignment','center','callback',@(src,evts) ScaleCallback(obj,src));
+            obj.sh_edit=uicontrol('parent',hp_scale,'style','edit','string',num2str(obj.sh),'units','normalized',...
+                'position',[0.75,0.1,0.2,0.8],'horizontalalignment','center','callback',@(src,evts) ScaleCallback(obj,src));
+            
+            setgp=uitabgroup(hp,'units','normalized','position',[0,0.09,1,0.26]);
             pwelch_tab=uitab(setgp,'title','PWelch');
             uicontrol('parent',pwelch_tab,'style','text','string','Window (sample): ','units','normalized',...
                 'position',[0,0.6,0.5,0.3]);
@@ -230,10 +260,10 @@ classdef PSDWindow < handle
                 'string',num2str(obj.custom_mask),'callback',@(src,evt) MaskCallback(obj,src),'max',3,'min',1);
             
             
-            obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.01,0.2,0.08],...
+            obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.01,0.2,0.07],...
                 'callback',@(src,evts) ComputeCallback(obj));
             
-            obj.new_btn=uicontrol('parent',hp,'style','pushbutton','string','New','units','normalized','position',[0.01,0.01,0.2,0.08],...
+            obj.new_btn=uicontrol('parent',hp,'style','pushbutton','string','New','units','normalized','position',[0.01,0.01,0.2,0.07],...
                 'callback',@(src,evts) NewCallback(obj));
             if strcmpi(obj.unit,'dB')
                 UnitRadioCallback(obj,obj.unit_db_radio);
@@ -382,6 +412,46 @@ classdef PSDWindow < handle
             end
             obj.fl_=val;
         end
+        function val=get.sl(obj)
+            val=obj.sl_;
+        end
+        
+        function set.sl(obj,val)
+            if obj.sh<val
+                obj.sh_=val+abs(obj.sh_)/10;
+            end
+            if obj.valid
+                set(obj.sl_edit,'string',num2str(val));
+                set(obj.sh_edit,'string',num2str(obj.sh_));
+            end
+            obj.sl_=val;
+        end
+        
+        function val=get.sh(obj)
+            val=obj.sh_;
+        end
+        
+        function set.sh(obj,val)
+            if obj.sl>=val
+                obj.sl_=val-abs(obj.sl_)/10;
+            end
+            
+            if obj.valid
+                set(obj.sh_edit,'string',num2str(val));
+                set(obj.sl_edit,'string',num2str(obj.sl_));
+            end
+            obj.sh_=val;
+        end
+        
+        function val=get.auto_scale(obj)
+            val=obj.auto_scale_;
+        end
+        function set.auto_scale(obj,val)
+            obj.auto_scale_=val;
+            if obj.valid
+                set(obj.auto_scale_radio,'value',val);
+            end
+        end
         function UnitRadioCallback(obj,src)
             if src==obj.unit_db_radio
                 set(src,'value',1);
@@ -392,7 +462,6 @@ classdef PSDWindow < handle
                 set(obj.unit_db_radio,'value',0);
                 obj.unit_='Mag';
             end
-            
             
             if isempty(obj.PSDFig)||~ishandle(obj.PSDFig)||~strcmpi(get(obj.PSDFig,'Tag'),'Act')
             else
@@ -676,9 +745,8 @@ classdef PSDWindow < handle
             if ~obj.hold
                 clf
             else
-                hold all;
+                hold on;
             end
-            drawnow
             
             freq=[obj.fl obj.fh];
             switch obj.layout
@@ -728,6 +796,11 @@ classdef PSDWindow < handle
             xlabel('Frequency (Hz)');
             ylabel(['Power ',obj.unit]);
             legend('-DynamicLegend');
+            if obj.auto_scale
+                ylim(gca,'auto');
+            else
+                set(gca,'YLim',[obj.sl,obj.sh]);
+            end
             if obj.hold
                 obj.line=cat(1,obj.line,{hline});
                 obj.pow=cat(1,obj.pow,{psd});
@@ -794,6 +867,50 @@ classdef PSDWindow < handle
             else
                 MaskFrequency(obj);
             end
+        end
+        
+        function ScaleCallback(obj,src)
+            switch src
+                case obj.auto_scale_radio
+                    val=get(src,'value');
+                    
+                    if val
+                        set(obj.sl_edit,'enable','off');
+                        set(obj.sh_edit,'enable','off');
+                    else
+                        set(obj.sl_edit,'enable','on');
+                        set(obj.sh_edit,'enable','on');
+                    end
+                    obj.auto_scale_=val;
+                case obj.sl_edit
+                    
+                    val=str2double(get(src,'string'));
+                    if isnan(val)
+                        val=obj.sl_;
+                    end
+                    
+                    obj.sl=val;
+                case obj.sh_edit
+                    val=str2double(get(src,'string'));
+                    if isnan(val)
+                        val=obj.sh_;
+                    end
+                    
+                    obj.sh=val;
+            end
+            
+            if ~isempty(obj.PSDFig)&&ishandle(obj.PSDFig)
+                h=findobj(obj.PSDFig,'-regexp','Tag','PSDAxes*');
+                if obj.auto_scale
+                    ylim(h,'auto');
+                    tmp=get(h,'YLim');
+                    obj.sl=tmp(1);
+                    obj.sh=tmp(2);
+                else
+                    set(h,'YLim',[obj.sl,obj.sh]);
+                end
+            end
+            
         end
         function MaskFrequency(obj)
             for l=1:length(obj.line)
