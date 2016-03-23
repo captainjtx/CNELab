@@ -1,7 +1,7 @@
 
-function ChangeGain(obj,src)
+function ChangeGain(obj,opt)
 
-if isempty(src)||src==obj.BtnAutoScale
+if isempty(opt)||opt==0
     %Automatic scaling
     data=obj.PreprocData;
     if isempty(data)
@@ -30,9 +30,9 @@ else
         %If there is no channel celected
         %applied to all channels of current data
         for i=1:length(dd)
-            if src==obj.BtnGainIncrease
+            if opt==1
                 obj.Gain_{dd(i)}=obj.Gain{dd(i)}*2^0.25;
-            elseif src==obj.BtnGainDecrease
+            elseif opt==-1
                 obj.Gain_{dd(i)}=obj.Gain{dd(i)}*2^-0.25;
             end
         end
@@ -42,9 +42,9 @@ else
         %if there are channels selected
         %var will be applied to the selected channels
         for i=1:length(dd)
-            if src==obj.BtnGainIncrease
+            if opt==1
                 obj.Gain_{dd(i)}(obj.ChanSelect2Edit{dd(i)},:)=obj.Gain{dd(i)}(obj.ChanSelect2Edit{dd(i)},:)*2^0.25;
-            elseif src==obj.BtnGainDecrease
+            elseif opt==-1
                 obj.Gain_{dd(i)}(obj.ChanSelect2Edit{dd(i)},:)=obj.Gain{dd(i)}(obj.ChanSelect2Edit{dd(i)},:)*2^-0.25;
             end
         end

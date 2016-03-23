@@ -43,33 +43,35 @@ classdef BioSigPlot < hgsetget
         BtnPCA
         BtnICA
         
-        BtnPlaySlower
-        BtnPlayFaster
-        TogPlay
+        JBtnPlaySlower
+        JBtnPlayFaster
+        JTogPlay
+        JTogVideo
         
-        BtnGainIncrease
-        BtnGainDecrease
+        JBtnGainIncrease
+        JBtnGainDecrease
         
-        BtnWidthIncrease
-        BtnWidthDecrease
+        JBtnWidthIncrease
+        JBtnWidthDecrease
         
-        BtnAutoScale
+        JBtnAutoScale
         BtnMaskChannel
         BtnUnMaskChannel
         
-        BtnHeightIncrease
-        BtnHeightDecrease
+        JBtnHeightIncrease
+        JBtnHeightDecrease
         
         TxtScale
         ArrScale
         Toolbar
+        JToolbar
         TogMontage
         TogComAve
         TogHorizontal
         TogVertical
         TogMeasurer
         TogSelection
-        TogVideo
+        
         TogAnnotate
         
         MenuFile
@@ -135,7 +137,6 @@ classdef BioSigPlot < hgsetget
         MenuEvent
         MenuEventsWindow
         MenuFastEvent
-        MenuRepeatSelect
         MenuEventsDisplay
         
         MenuDisplay
@@ -1917,11 +1918,11 @@ classdef BioSigPlot < hgsetget
         %==================================================================
         %******************************************************************
         %Callback for gain change
-        ChangeGain(obj,src)
+        ChangeGain(obj,opt)
         %==================================================================
         %******************************************************************
         %Callback for channel page change
-        ChangeChan(obj,src)
+        ChangeChan(obj,opt);
         %==================================================================
         moveSelectedEvents(obj,step)
         %==================================================================
@@ -2088,16 +2089,16 @@ classdef BioSigPlot < hgsetget
         
         
         
-        function ChangeDuration(obj,src)
+        function ChangeDuration(obj,opt)
             val=obj.WinLength;
             
             if isnan(val)
                 val=10;
             end
             
-            if src==obj.BtnWidthIncrease
+            if opt==1
                 val=val*(16/15);
-            elseif src==obj.BtnWidthDecrease
+            elseif opt==-1
                 val=val*(14/15);
             end
             
@@ -2285,7 +2286,6 @@ classdef BioSigPlot < hgsetget
         LoadFilter(obj)
         NewMontage(obj)
         MnuFigurePosition(obj)
-        EventRepeatSelection(obj)
         updateVideo(obj)
         LoadChannelPosition(obj)
         SavePosition(obj)
@@ -2301,7 +2301,8 @@ classdef BioSigPlot < hgsetget
     
     methods
         function StartPlay(obj)
-            set(obj.TogPlay,'CData',obj.IconPause,'ClickedCallback',@(src,evt) PausePlay(obj),'State','on');
+            obj.JTogPlay.setIcon(obj.IconPause);
+            set(handle(obj.JTogPlay,'CallbackProperties'),'MousePressedCallback',@(h,e) PausePlay(obj));
             if strcmpi(obj.VideoTimer.Running,'off')
                 start(obj.VideoTimer);
             end
@@ -2311,7 +2312,8 @@ classdef BioSigPlot < hgsetget
         end
         
         function PausePlay(obj)
-            set(obj.TogPlay,'CData',obj.IconPlay,'ClickedCallback',@(src,evt) StartPlay(obj),'State','off');
+            obj.JTogPlay.setIcon(obj.IconPlay);
+            set(handle(obj.JTogPlay,'CallbackProperties'),'MousePressedCallback',@(h,e) StartPlay(obj));
             if strcmpi(obj.VideoTimer.Running,'on')
                 stop(obj.VideoTimer);
             end
@@ -2320,7 +2322,10 @@ classdef BioSigPlot < hgsetget
             end
         end
         function StopPlay(obj)
-            set(obj.TogPlay,'CData',obj.IconPlay,'ClickedCallback',@(src,evt) StartPlay(obj),'State','off');
+            obj.JTogPlay.setIcon(obj.IconPlay);
+            
+            set(handle(obj.JTogPlay,'CallbackProperties'),'MousePressedCallback',@(h,e) StartPlay(obj));
+
             if strcmpi(obj.VideoTimer.Running,'on')
                 stop(obj.VideoTimer);
             end
@@ -2339,12 +2344,16 @@ classdef BioSigPlot < hgsetget
         
         function SynchVideoState(obj)
             if strcmpi(obj.WinVideo.Status,'Playing')
-                set(obj.TogPlay,'CData',obj.IconPause,'ClickedCallback',@(src,evt) PausePlay(obj),'State','on');
+                
+                obj.JTogPlay.setIcon(obj.IconPause);
+                set(handle(obj.JTogPlay,'CallbackProperties'),'MousePressedCallback',@(h,e) PausePlay(obj));
                 if strcmpi(obj.VideoTimer.Running,'off')
                     start(obj.VideoTimer);
                 end
             else
-                set(obj.TogPlay,'CData',obj.IconPlay,'ClickedCallback',@(src,evt) StartPlay(obj),'State','off');
+                
+                obj.JTogPlay.setIcon(obj.IconPlay);
+                set(handle(obj.JTogPlay,'CallbackProperties'),'MousePressedCallback',@(h,e) StartPlay(obj));
                 if strcmpi(obj.VideoTimer.Running,'on')
                     stop(obj.VideoTimer);
                 end

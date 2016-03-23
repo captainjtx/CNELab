@@ -183,9 +183,9 @@ StartTime=0;
 %extral things need to be prepared for misaligned starting time between two
 %datasets.
 %**************************************************************************
-if ishandle(info_h)
-    info_label.setText('Preparing GUI ...');
-    drawnow
+try
+    close(info_h)
+catch
 end
 bsp=BioSigPlot(data,'Title',fnames,...
     'SRate',fs,...
@@ -203,12 +203,7 @@ bsp=BioSigPlot(data,'Title',fnames,...
     'BufferTime',BufferTime,...
     'CDS',cds,...
     'VisualBuffer',visual_buffer_size);
-set(bsp.Fig,'Visible','off');
 %**************************************************************************
-if ishandle(info_h)
-    info_label.setText('Loading annotations ...');
-    drawnow
-end
 uncertainty_code={'hold','cue','go','exit','hit','end'};
 Event={};
 for i=1:length(cds)
@@ -277,10 +272,6 @@ end
 
 bsp.Evts=Event;
 %scan for montage file folder==============================================
-if ishandle(info_h)
-    info_label.setText('Loading montages ...');
-    drawnow
-end
 montage=cell(length(fnames),1);
 if length(fnames)==1
     if isdir(fullfile(fpaths{1},'montage'))
@@ -339,7 +330,7 @@ for i=1:length(cds)
 end
 %==========================================================================
 assignin('base','bsp',bsp);
-set(bsp.Fig,'Visible','on')
+enableDisableFig(bsp.Fig,true);
 %**************************************************************************
 for i=1:length(cnb.cfg.files)
     if isequal(cnb.cfg.files{i},FileNames)
@@ -350,8 +341,5 @@ end
 cnb.cfg.files=[{FileNames},cnb.cfg.files];
 cnb.cfg.files=cnb.cfg.files(1:min(9,length(cnb.cfg.files)));
 cnb.saveConfig();
-try
-    close(info_h)
-catch
-end
+
 end

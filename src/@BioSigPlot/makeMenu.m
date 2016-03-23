@@ -79,7 +79,6 @@ obj.MenuMontage=uimenu(obj.Fig,'Label','Montage');
 %First Order Menu-----------------------------------------------------Event
 obj.MenuEvent=uimenu(obj.Fig,'Label','Event');
 obj.MenuFastEvent=uimenu(obj.MenuEvent,'Label','Fast Event','Callback',@(src,evt) WinFastEvents(obj));
-obj.MenuRepeatSelect=uimenu(obj.MenuEvent,'Label','Repeat Selection','Callback',@(src,evt) EventRepeatSelection(obj));
 obj.MenuAdvanceEvents=uimenu(obj.MenuEvent,'Label','Advance','Separator','on');
 obj.MenuAdvanceEventsCalculate=uimenu(obj.MenuAdvanceEvents,'Label','Detect',...
     'Callback',@(src,evt) AdvanceEvents(obj,src));

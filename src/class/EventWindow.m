@@ -25,8 +25,6 @@ classdef EventWindow  < handle
             uimenu(eventListMenu,'Label','Delete','Callback',@(src,evt) bsp.modifySelectedEvent('delete'));
             uimenu(eventListMenu,'Label','Group Delete','Callback',@(src,evt) bsp.groupModifySelectedEvent('delete'));
             set(obj.uilist,'uicontextMenu',eventListMenu);
-            
-            
         end
         
         function click(obj,src)

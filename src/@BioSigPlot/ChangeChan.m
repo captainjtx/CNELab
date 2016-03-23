@@ -1,13 +1,13 @@
-function ChangeChan(obj,src)
+function ChangeChan(obj,opt)
 
 dd=obj.DisplayedData;
-switch src
-    case obj.BtnHeightIncrease
+switch opt
+    case 1
         for i=1:length(dd)
             obj.DispChans(dd(i))=obj.DispChans(dd(i))+1;
         end
         
-    case obj.BtnHeightDecrease
+    case -1
         for i=1:length(dd)
             obj.DispChans(dd(i))=obj.DispChans(dd(i))-1;
         end    

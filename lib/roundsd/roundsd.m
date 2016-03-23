@@ -47,13 +47,12 @@ function y=roundsd(x,n,method)
 %	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 %	POSSIBILITY OF SUCH DAMAGE.
 
-error(nargchk(2,3,nargin))
 
 if ~isnumeric(x)
 		error('X argument must be numeric.')
 end
 
-if ~isnumeric(n) | numel(n) ~= 1 | n < 0 | mod(n,1) ~= 0
+if ~isnumeric(n) || numel(n) ~= 1 || n < 0 || mod(n,1) ~= 0
 	error('N argument must be a scalar positive integer.')
 end
 
@@ -62,12 +61,12 @@ opt = {'round','floor','ceil','fix'};
 if nargin < 3
 	method = opt{1};
 else
-	if ~ischar(method) | ~ismember(opt,method)
+	if ~ischar(method) || ~ismember(opt,method)
 		error('METHOD argument is invalid.')
 	end
 end
 
 og = 10.^(floor(log10(abs(x)) - n + 1));
 y = feval(method,x./og).*og;
-y(find(x==0)) = 0;
+y(x==0) = 0;
 
