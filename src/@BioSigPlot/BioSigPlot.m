@@ -1751,47 +1751,10 @@ classdef BioSigPlot < hgsetget
         %Filter Panel Initialization
         filterControlPanel(obj,parent,position)
         %==================================================================
-        function makeToolbar(obj)
-            obj.montageToolbar();
-            obj.viewToolbar();
-            obj.toolToolbar();
-        end
+        makeToolbar(obj)
+            
         %=================================================================
-        %******************************************************************
-        function montageToolbar(obj)
-            d=obj.JToolbar(1).getPreferredSize();
-            btn_width=d.height;
-            
-            obj.JTogMontage=javaObjectEDT(javax.swing.JButton());
-            obj.JTogMontage.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
-            icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/Raw.png']));
-            obj.JTogMontage.setIcon(icon);
-            obj.JTogMontage.setOpaque(false);
-            d=obj.JTogMontage.getPreferredSize();
-            d.width=btn_width;
-            obj.JTogMontage.setMinimumSize(d);
-            obj.JTogMontage.setMaximumSize(d);
-            obj.JTogMontage.setToolTipText('Raw montage');
-            set(handle(obj.JTogMontage,'CallbackProperties'),'MousePressedCallback',@(h,e) resetMontage(obj));
-            
-            obj.JToolbar(1).add(obj.JTogMontage);
-            
-            obj.JTogComAve=javaObjectEDT(javax.swing.JButton());
-            obj.JTogComAve.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
-            icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/common.png']));
-            obj.JTogComAve.setIcon(icon);
-            obj.JTogComAve.setOpaque(false);
-            d=obj.JTogComAve.getPreferredSize();
-            d.width=btn_width;
-            obj.JTogComAve.setMinimumSize(d);
-            obj.JTogComAve.setMaximumSize(d);
-            obj.JTogComAve.setToolTipText('Mean reference');
-            set(handle(obj.JTogComAve,'CallbackProperties'),'MousePressedCallback',@(h,e) resetMontage(obj,2));
-            
-            obj.JToolbar(1).add(obj.JTogComAve);
-            
-        end
-        
+        %******************************************************************       
         function resetMontage(obj,varargin)
             if isempty(varargin)
                 ind=1;
@@ -1805,13 +1768,6 @@ classdef BioSigPlot < hgsetget
             end
         end
         
-        %******************************************************************
-        %Data Set View Navigation Toolbar Initialization
-        viewToolbar(obj)
-        %==================================================================
-        %******************************************************************
-        %General Toolbar Initialization
-        toolToolbar(obj)
         %==================================================================
         %******************************************************************
         remakeMontage(obj)
