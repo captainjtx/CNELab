@@ -5,7 +5,16 @@ obj.Fig=figure('MenuBar','none','ToolBar','none','DockControls','off','NumberTit
     'CloseRequestFcn',@(src,evts) delete(obj),'WindowScrollWheelFcn',@(src,evts) ChangeSliders(obj,src,evts),...
     'WindowButtonMotionFcn',@(src,evt) MouseMovement(obj),'WindowButtonDownFcn',@(src,evt) MouseDown(obj),...
     'WindowButtonUpFcn',@(src,evt) MouseUp(obj),'Renderer','painters','ResizeFcn',@(src,evt) resize(obj),...
-    'WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'WindowKeyReleaseFcn',@(src,evt) KeyRelease(obj,src,evt),'Units','Pixels','Visible','on','position',[screensize(3)/2-250,screensize(4)/2-200,500,400]);
+    'WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'WindowKeyReleaseFcn',@(src,evt) KeyRelease(obj,src,evt),'Units','Pixels','Visible','on',...
+    'position',[screensize(3)/2-250,screensize(4)/2-200,600,450],'Name','Loading GUI components ...');
+
+logo_icon=javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),filesep,'db',filesep,'icon',filesep,'cnel_large.png']));
+logo_label=javaObjectEDT(javax.swing.JLabel());
+logo_label.setIcon(logo_icon);
+logo_label.setHorizontalAlignment(javax.swing.JLabel.CENTER);
+logo_label.setOpaque(false);
+[jh,gh]=javacomponent(logo_label,[0,0,1,1],obj.Fig);
+set(gh,'Units','Norm','Position',[0,0,1,1]);
 
 obj.Toolbar=uitoolbar(obj.Fig);
 drawnow

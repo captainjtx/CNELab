@@ -392,6 +392,8 @@ obj.JBtnTFMap.setFocusable(false);
 
 obj.JToolbar(1).add(obj.JBtnTFMap);
 
+obj.JToolbar(1).addSeparator();
+
 obj.JBtnPCA=javaObjectEDT(javax.swing.JButton());
 obj.JBtnPCA.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
 icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/pca.png']));
@@ -421,10 +423,6 @@ set(handle(obj.JBtnICA,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExi
 obj.JBtnICA.setFocusable(false);
 
 obj.JToolbar(1).add(obj.JBtnICA);
-
-drawnow
-
-
 end
 
 function BtnEnter(obj,jb)
