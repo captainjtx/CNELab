@@ -170,13 +170,7 @@ c=obj.MontageChanNames{ndata}{nchan};
 c=[c,' -- ',num2str(nchan),' | ',num2str(length(obj.MontageChanNames{ndata}))];
 
 if round(time*obj.SRate)<=obj.TotalSample
-    if iscell(obj.PreprocData)
-        v=obj.PreprocData{ndata}(max(round((time-obj.Time)*obj.SRate),1),nchan);
-    else
-        if ~isempty(obj.PreprocData)
-            v=obj.PreprocData(max(round((time-obj.Time)*obj.SRate),1),nchan);
-        end
-    end
+    v=obj.PreprocData{ndata}(max(round((time-obj.BufferTime)*obj.SRate),1),nchan);
 else
     v=nan;
 end

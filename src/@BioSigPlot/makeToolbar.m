@@ -17,8 +17,14 @@ obj.JTogMontage.setToolTipText('Raw montage');
 set(handle(obj.JTogMontage,'CallbackProperties'),'MousePressedCallback',@(h,e) resetMontage(obj));
 set(handle(obj.JTogMontage,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JTogMontage));
 set(handle(obj.JTogMontage,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JTogMontage));
-
+obj.JTogMontage.setFocusable(false);
 obj.JToolbar(1).add(obj.JTogMontage);
+
+% obj.JToolbar(1).repaint;
+% obj.JToolbar(1).revalidate;
+% [jbtn,hbtn]=javacomponent(obj.JTogMontage,[0,0,1,1],obj.Toolbar);
+
+
 
 obj.JTogComAve=javaObjectEDT(javax.swing.JButton());
 obj.JTogComAve.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
@@ -31,6 +37,7 @@ obj.JTogComAve.setToolTipText('Mean reference');
 set(handle(obj.JTogComAve,'CallbackProperties'),'MousePressedCallback',@(h,e) resetMontage(obj,2));
 set(handle(obj.JTogComAve,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JTogComAve));
 set(handle(obj.JTogComAve,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JTogComAve));
+obj.JTogComAve.setFocusable(false);
 
 obj.JToolbar(1).add(obj.JTogComAve);
 
@@ -52,6 +59,7 @@ obj.JBtnSwitchData.setToolTipText('Next data');
 set(handle(obj.JBtnSwitchData,'CallbackProperties'),'MousePressedCallback',@(h,e) ChangeData(obj,[]));
 set(handle(obj.JBtnSwitchData,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JBtnSwitchData));
 set(handle(obj.JBtnSwitchData,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JBtnSwitchData));
+obj.JBtnSwitchData.setFocusable(false);
 
 obj.JToolbar(1).add(obj.JBtnSwitchData);
 
@@ -66,6 +74,7 @@ obj.JTogHorizontal.setToolTipText('Horizontal alignment');
 set(handle(obj.JTogHorizontal,'CallbackProperties'),'MousePressedCallback',@(h,e) set(obj,'DataView','Horizontal'));
 set(handle(obj.JTogHorizontal,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JTogHorizontal));
 set(handle(obj.JTogHorizontal,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JTogHorizontal));
+obj.JTogHorizontal.setFocusable(false);
 
 obj.JToolbar(1).add(obj.JTogHorizontal);
 
@@ -80,6 +89,7 @@ obj.JTogVertical.setToolTipText('Vertical alignment');
 set(handle(obj.JTogVertical,'CallbackProperties'),'MousePressedCallback',@(h,e) set(obj,'DataView','Vertical'));
 set(handle(obj.JTogVertical,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JTogVertical));
 set(handle(obj.JTogVertical,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JTogVertical));
+obj.JTogVertical.setFocusable(false);
 
 obj.JToolbar(1).add(obj.JTogVertical);
 
@@ -96,6 +106,7 @@ obj.JBtnPlaySlower.setToolTipText('Slower');
 set(handle(obj.JBtnPlaySlower,'CallbackProperties'),'MousePressedCallback',@(h,e) PlaySlower(obj));
 set(handle(obj.JBtnPlaySlower,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JBtnPlaySlower));
 set(handle(obj.JBtnPlaySlower,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JBtnPlaySlower));
+obj.JBtnPlaySlower.setFocusable(false);
 
 obj.JToolbar(1).add(obj.JBtnPlaySlower);
 
@@ -110,6 +121,7 @@ obj.JTogPlay.setToolTipText('Start');
 set(handle(obj.JTogPlay,'CallbackProperties'),'MousePressedCallback',@(h,e) StartPlay(obj));
 set(handle(obj.JTogPlay,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JTogPlay));
 set(handle(obj.JTogPlay,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JTogPlay));
+obj.JTogPlay.setFocusable(false);
 
 obj.JToolbar(1).add(obj.JTogPlay);
 
@@ -124,6 +136,7 @@ obj.JBtnPlayFaster.setToolTipText('Faster');
 set(handle(obj.JBtnPlayFaster,'CallbackProperties'),'MousePressedCallback',@(h,e) PlayFaster(obj));
 set(handle(obj.JBtnPlayFaster,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JBtnPlayFaster));
 set(handle(obj.JBtnPlayFaster,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JBtnPlayFaster));
+obj.JBtnPlayFaster.setFocusable(false);
 
 obj.JToolbar(1).add(obj.JBtnPlayFaster);
 
@@ -138,6 +151,7 @@ obj.JTogVideo.setToolTipText('Video');
 set(handle(obj.JTogVideo,'CallbackProperties'),'MousePressedCallback',@(h,e) WinVideoFcn(obj));
 set(handle(obj.JTogVideo,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JTogVideo));
 set(handle(obj.JTogVideo,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JTogVideo));
+obj.JTogVideo.setFocusable(false);
 
 obj.JToolbar(1).add(obj.JTogVideo);
 
@@ -156,6 +170,7 @@ obj.JBtnWidthIncrease.setToolTipText('Increase time');
 set(handle(obj.JBtnWidthIncrease,'CallbackProperties'),'MousePressedCallback',@(h,e) ChangeDuration(obj,1));
 set(handle(obj.JBtnWidthIncrease,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JBtnWidthIncrease));
 set(handle(obj.JBtnWidthIncrease,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JBtnWidthIncrease));
+obj.JBtnWidthIncrease.setFocusable(false);
 
 obj.JToolbar(1).add(obj.JBtnWidthIncrease);
 
@@ -170,6 +185,7 @@ obj.JBtnWidthDecrease.setToolTipText('Decrease time');
 set(handle(obj.JBtnWidthDecrease,'CallbackProperties'),'MousePressedCallback',@(h,e) ChangeDuration(obj,-1));
 set(handle(obj.JBtnWidthDecrease,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JBtnWidthDecrease));
 set(handle(obj.JBtnWidthDecrease,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JBtnWidthDecrease));
+obj.JBtnWidthDecrease.setFocusable(false);
 
 obj.JToolbar(1).add(obj.JBtnWidthDecrease);
 
@@ -184,6 +200,7 @@ obj.JBtnHeightIncrease.setToolTipText('Increase channel');
 set(handle(obj.JBtnHeightIncrease,'CallbackProperties'),'MousePressedCallback',@(h,e) ChangeChan(obj,1));
 set(handle(obj.JBtnHeightIncrease,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JBtnHeightIncrease));
 set(handle(obj.JBtnHeightIncrease,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JBtnHeightIncrease));
+obj.JBtnHeightIncrease.setFocusable(false);
 
 obj.JToolbar(1).add(obj.JBtnHeightIncrease);
 
@@ -198,6 +215,7 @@ obj.JBtnHeightDecrease.setToolTipText('Decrease channel');
 set(handle(obj.JBtnHeightDecrease,'CallbackProperties'),'MousePressedCallback',@(h,e) ChangeChan(obj,-1));
 set(handle(obj.JBtnHeightDecrease,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JBtnHeightDecrease));
 set(handle(obj.JBtnHeightDecrease,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JBtnHeightDecrease));
+obj.JBtnHeightDecrease.setFocusable(false);
 
 obj.JToolbar(1).add(obj.JBtnHeightDecrease);
 obj.JToolbar(1).addSeparator();
@@ -214,7 +232,7 @@ obj.JBtnGainIncrease.setToolTipText('Increase gain (ctrl =)');
 set(handle(obj.JBtnGainIncrease,'CallbackProperties'),'MousePressedCallback',@(h,e) ChangeGain(obj,1));
 set(handle(obj.JBtnGainIncrease,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JBtnGainIncrease));
 set(handle(obj.JBtnGainIncrease,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JBtnGainIncrease));
-
+obj.JBtnGainIncrease.setFocusable(false);
 
 obj.JToolbar(1).add(obj.JBtnGainIncrease);
 
@@ -229,6 +247,7 @@ obj.JBtnGainDecrease.setToolTipText('Decrease gain (ctrl -)');
 set(handle(obj.JBtnGainDecrease,'CallbackProperties'),'MousePressedCallback',@(h,e) ChangeGain(obj,-1));
 set(handle(obj.JBtnGainDecrease,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JBtnGainDecrease));
 set(handle(obj.JBtnGainDecrease,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JBtnGainDecrease));
+obj.JBtnGainDecrease.setFocusable(false);
 
 obj.JToolbar(1).add(obj.JBtnGainDecrease);
 
@@ -243,34 +262,166 @@ obj.JBtnAutoScale.setToolTipText('Auto scale');
 set(handle(obj.JBtnAutoScale,'CallbackProperties'),'MousePressedCallback',@(h,e) ChangeGain(obj,0));
 set(handle(obj.JBtnAutoScale,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JBtnAutoScale));
 set(handle(obj.JBtnAutoScale,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JBtnAutoScale));
+obj.JBtnAutoScale.setFocusable(false);
 
 obj.JToolbar(1).add(obj.JBtnAutoScale);
+obj.JToolbar(1).addSeparator();
 
-obj.BtnMaskChannel=uipushtool(obj.Toolbar,'CData',imread('mask.png'),'TooltipString','Mask channel','separator','on',...
-    'ClickedCallback',@(src,evt) maskChannel(obj,src));
-obj.BtnUnMaskChannel=uipushtool(obj.Toolbar,'CData',imread('unmask.png'),'TooltipString','UnMask Channel',...
-    'ClickedCallback',@(src,evt) maskChannel(obj,src));
+obj.JBtnMaskChannel=javaObjectEDT(javax.swing.JButton());
+obj.JBtnMaskChannel.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
+icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/mask.png']));
+obj.JBtnMaskChannel.setIcon(icon);
+obj.JBtnMaskChannel.setOpaque(true);
+obj.JBtnMaskChannel.setMinimumSize(btn_d);
+obj.JBtnMaskChannel.setMaximumSize(btn_d);
+obj.JBtnMaskChannel.setToolTipText('Mask channel');
+set(handle(obj.JBtnMaskChannel,'CallbackProperties'),'MousePressedCallback',@(h,e) maskChannel(obj,0));
+set(handle(obj.JBtnMaskChannel,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JBtnMaskChannel));
+set(handle(obj.JBtnMaskChannel,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JBtnMaskChannel));
+obj.JBtnMaskChannel.setFocusable(false);
 
-obj.TogSelection=uitoggletool(obj.Toolbar,'CData',imread('select.bmp'),'TooltipString','Selection','separator','on',...
-    'ClickedCallback',@(src,evt) ChangeMouseMode(obj,src));
+obj.JToolbar(1).add(obj.JBtnMaskChannel);
 
-obj.BtnSelectWin=uipushtool(obj.Toolbar,'CData',imread('select_win.bmp'),'TooltipString','Select current window',...
-    'ClickedCallback',@(src,evt) SelectCurrentWindow(obj,src));
+obj.JBtnUnMaskChannel=javaObjectEDT(javax.swing.JButton());
+obj.JBtnUnMaskChannel.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
+icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/unmask.png']));
+obj.JBtnUnMaskChannel.setIcon(icon);
+obj.JBtnUnMaskChannel.setOpaque(true);
+obj.JBtnUnMaskChannel.setMinimumSize(btn_d);
+obj.JBtnUnMaskChannel.setMaximumSize(btn_d);
+obj.JBtnUnMaskChannel.setToolTipText('Unmask channel');
+set(handle(obj.JBtnUnMaskChannel,'CallbackProperties'),'MousePressedCallback',@(h,e) maskChannel(obj,1));
+set(handle(obj.JBtnUnMaskChannel,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JBtnUnMaskChannel));
+set(handle(obj.JBtnUnMaskChannel,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JBtnUnMaskChannel));
+obj.JBtnUnMaskChannel.setFocusable(false);
 
-obj.TogMeasurer=uitoggletool(obj.Toolbar,'CData',imread('measurer.bmp'),'TooltipString','Measure of each channels','separator','on',...
-    'ClickedCallback',@(src,evt) ChangeMouseMode(obj,src));
+obj.JToolbar(1).add(obj.JBtnUnMaskChannel);
 
-obj.TogAnnotate=uitoggletool(obj.Toolbar,'CData',imread('evts.bmp'),'TooltipString','Insert events(ctrl i)','separator','on',...
-    'ClickedCallback',@(src,evt) ChangeMouseMode(obj,src));
-obj.BtnPSD=uipushtool(obj.Toolbar,'CData',imread('psd.png'),'TooltipString','Power Spectrum Density','separator','on',...
-    'ClickedCallback',@(src,evt) obj.PSDWin.ComputeCallback());
-obj.BtnTFMap=uipushtool(obj.Toolbar,'CData',imread('tfmap.bmp'),'TooltipString','Time-Frequency Map',...
-    'ClickedCallback',@(src,evt) obj.TFMapWin.ComputeCallback());
+obj.JToolbar(1).addSeparator();
 
-obj.BtnPCA=uitoggletool(obj.Toolbar,'CData',imread('pca.png'),'TooltipString','Principle Component Analysis',...
-    'ClickedCallback',@(src,evt) SPF_Analysis(obj,src));
-obj.BtnICA=uitoggletool(obj.Toolbar,'CData',imread('ica.png'),'TooltipString','Independent Component Analysis',...
-    'ClickedCallback',@(src,evt) SPF_Analysis(obj,src));
+obj.JTogSelection=javaObjectEDT(javax.swing.JToggleButton());
+obj.JTogSelection.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
+icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/select.png']));
+obj.JTogSelection.setIcon(icon);
+obj.JTogSelection.setOpaque(true);
+obj.JTogSelection.setMinimumSize(btn_d);
+obj.JTogSelection.setMaximumSize(btn_d);
+obj.JTogSelection.setToolTipText('Selection');
+set(handle(obj.JTogSelection,'CallbackProperties'),'MousePressedCallback',@(h,e) ChangeMouseMode(obj,2));
+set(handle(obj.JTogSelection,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JTogSelection));
+set(handle(obj.JTogSelection,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JTogSelection));
+obj.JTogSelection.setFocusable(false);
+
+obj.JToolbar(1).add(obj.JTogSelection);
+
+obj.JBtnSelectWin=javaObjectEDT(javax.swing.JButton());
+obj.JBtnSelectWin.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
+icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/select_win.png']));
+obj.JBtnSelectWin.setIcon(icon);
+obj.JBtnSelectWin.setOpaque(true);
+obj.JBtnSelectWin.setMinimumSize(btn_d);
+obj.JBtnSelectWin.setMaximumSize(btn_d);
+obj.JBtnSelectWin.setToolTipText('Select window');
+set(handle(obj.JBtnSelectWin,'CallbackProperties'),'MousePressedCallback',@(h,e) SelectCurrentWindow(obj));
+set(handle(obj.JBtnSelectWin,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JBtnSelectWin));
+set(handle(obj.JBtnSelectWin,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JBtnSelectWin));
+obj.JBtnSelectWin.setFocusable(false);
+
+obj.JToolbar(1).add(obj.JBtnSelectWin);
+
+obj.JToolbar(1).addSeparator();
+obj.JTogMeasurer=javaObjectEDT(javax.swing.JToggleButton());
+obj.JTogMeasurer.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
+icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/measurer.png']));
+obj.JTogMeasurer.setIcon(icon);
+obj.JTogMeasurer.setOpaque(true);
+obj.JTogMeasurer.setMinimumSize(btn_d);
+obj.JTogMeasurer.setMaximumSize(btn_d);
+obj.JTogMeasurer.setToolTipText('Amplitude measurer');
+set(handle(obj.JTogMeasurer,'CallbackProperties'),'MousePressedCallback',@(h,e) ChangeMouseMode(obj,1));
+set(handle(obj.JTogMeasurer,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JTogMeasurer));
+set(handle(obj.JTogMeasurer,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JTogMeasurer));
+obj.JTogMeasurer.setFocusable(false);
+
+obj.JToolbar(1).add(obj.JTogMeasurer);
+
+obj.JToolbar(1).addSeparator();
+obj.JTogAnnotate=javaObjectEDT(javax.swing.JToggleButton());
+obj.JTogAnnotate.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
+icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/evts.png']));
+obj.JTogAnnotate.setIcon(icon);
+obj.JTogAnnotate.setOpaque(true);
+obj.JTogAnnotate.setMinimumSize(btn_d);
+obj.JTogAnnotate.setMaximumSize(btn_d);
+obj.JTogAnnotate.setToolTipText('Annotate (ctrl i)');
+set(handle(obj.JTogAnnotate,'CallbackProperties'),'MousePressedCallback',@(h,e) ChangeMouseMode(obj,3));
+set(handle(obj.JTogAnnotate,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JTogAnnotate));
+set(handle(obj.JTogAnnotate,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JTogAnnotate));
+obj.JTogAnnotate.setFocusable(false);
+
+obj.JToolbar(1).add(obj.JTogAnnotate);
+
+obj.JToolbar(1).addSeparator();
+obj.JBtnPSD=javaObjectEDT(javax.swing.JButton());
+obj.JBtnPSD.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
+icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/psd.png']));
+obj.JBtnPSD.setIcon(icon);
+obj.JBtnPSD.setOpaque(true);
+obj.JBtnPSD.setMinimumSize(btn_d);
+obj.JBtnPSD.setMaximumSize(btn_d);
+obj.JBtnPSD.setToolTipText('Power Spectrum Density');
+set(handle(obj.JBtnPSD,'CallbackProperties'),'MousePressedCallback',@(h,e) obj.PSDWin.ComputeCallback());
+set(handle(obj.JBtnPSD,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JBtnPSD));
+set(handle(obj.JBtnPSD,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JBtnPSD));
+obj.JBtnPSD.setFocusable(false);
+
+obj.JToolbar(1).add(obj.JBtnPSD);
+
+obj.JBtnTFMap=javaObjectEDT(javax.swing.JButton());
+obj.JBtnTFMap.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
+icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/tfmap.png']));
+obj.JBtnTFMap.setIcon(icon);
+obj.JBtnTFMap.setOpaque(true);
+obj.JBtnTFMap.setMinimumSize(btn_d);
+obj.JBtnTFMap.setMaximumSize(btn_d);
+obj.JBtnTFMap.setToolTipText('Time-Frequency Map');
+set(handle(obj.JBtnTFMap,'CallbackProperties'),'MousePressedCallback',@(h,e) obj.TFMapWin.ComputeCallback());
+set(handle(obj.JBtnTFMap,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JBtnTFMap));
+set(handle(obj.JBtnTFMap,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JBtnTFMap));
+obj.JBtnTFMap.setFocusable(false);
+
+obj.JToolbar(1).add(obj.JBtnTFMap);
+
+obj.JBtnPCA=javaObjectEDT(javax.swing.JButton());
+obj.JBtnPCA.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
+icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/pca.png']));
+obj.JBtnPCA.setIcon(icon);
+obj.JBtnPCA.setOpaque(true);
+obj.JBtnPCA.setMinimumSize(btn_d);
+obj.JBtnPCA.setMaximumSize(btn_d);
+obj.JBtnPCA.setToolTipText('PCA');
+set(handle(obj.JBtnPCA,'CallbackProperties'),'MousePressedCallback',@(h,e) SPF_Analysis(obj,'pca'));
+set(handle(obj.JBtnPCA,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JBtnPCA));
+set(handle(obj.JBtnPCA,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JBtnPCA));
+obj.JBtnPCA.setFocusable(false);
+
+obj.JToolbar(1).add(obj.JBtnPCA);
+
+obj.JBtnICA=javaObjectEDT(javax.swing.JButton());
+obj.JBtnICA.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
+icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/ica.png']));
+obj.JBtnICA.setIcon(icon);
+obj.JBtnICA.setOpaque(true);
+obj.JBtnICA.setMinimumSize(btn_d);
+obj.JBtnICA.setMaximumSize(btn_d);
+obj.JBtnICA.setToolTipText('ICA');
+set(handle(obj.JBtnICA,'CallbackProperties'),'MousePressedCallback',@(h,e) SPF_Analysis(obj,'ica'));
+set(handle(obj.JBtnICA,'CallbackProperties'),'MouseEnteredCallback',@(h,e) BtnEnter(obj,obj.JBtnICA));
+set(handle(obj.JBtnICA,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExit(obj,obj.JBtnICA));
+obj.JBtnICA.setFocusable(false);
+
+obj.JToolbar(1).add(obj.JBtnICA);
+
 drawnow
 
 

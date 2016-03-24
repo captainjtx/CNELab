@@ -24,7 +24,7 @@ classdef BioSigPlot < hgsetget
         BtnNextEvent
         BtnNextEvent1
         BtnEnd
-        BtnSelectWin
+        JBtnSelectWin
         
         TxtInfo1
         TxtInfo2
@@ -38,10 +38,10 @@ classdef BioSigPlot < hgsetget
         
         PopFilter
         
-        BtnPSD
-        BtnTFMap
-        BtnPCA
-        BtnICA
+        JBtnPSD
+        JBtnTFMap
+        JBtnPCA
+        JBtnICA
         
         JBtnPlaySlower
         JBtnPlayFaster
@@ -55,8 +55,8 @@ classdef BioSigPlot < hgsetget
         JBtnWidthDecrease
         
         JBtnAutoScale
-        BtnMaskChannel
-        BtnUnMaskChannel
+        JBtnMaskChannel
+        JBtnUnMaskChannel
         
         JBtnHeightIncrease
         JBtnHeightDecrease
@@ -69,10 +69,10 @@ classdef BioSigPlot < hgsetget
         JTogComAve
         JTogHorizontal
         JTogVertical
-        TogMeasurer
-        TogSelection
+        JTogMeasurer
+        JTogSelection
         
-        TogAnnotate
+        JTogAnnotate
         
         MenuFile
         MenuNew
@@ -1492,15 +1492,13 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         function obj = set.MouseMode_(obj,val)
             obj.MouseMode_=val;
-            offon={'off','on'};
             if isempty(val)
-                offon={'off','off'};
                 maskMeasurer(obj);
                 maskAnnotate(obj);
             end
-            set(obj.TogMeasurer,'State',offon{1+strcmpi(val,'Measurer')});
-            set(obj.TogSelection,'State',offon{1+strcmpi(val,'Select')});
-            set(obj.TogAnnotate,'State',offon{1+strcmpi(val,'Annotate')});
+            obj.JTogMeasurer.setSelected(strcmpi(val,'Measurer'));
+            obj.JTogSelection.setSelected(strcmpi(val,'Select'));
+            obj.JTogAnnotate.setSelected(strcmpi(val,'Annotate'));
             
         end
         %==================================================================
@@ -1513,20 +1511,18 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         function obj=set.Selection_(obj,val)
             obj.Selection_=val;
-            
-            if ~isempty(val)&&~isempty(obj.Evts_)
-                tmp=reshape(obj.SelectedEvent,length(obj.SelectedEvent),1);
-                for i=1:size(obj.Evts_,1)
-                    for j=1:size(val,2)
-                        if obj.Evts_{i,1}>=val(1,j)&&obj.Evts_{i,1}<=val(2,j)
-                            tmp=cat(1,tmp,i);
-                        end
-                    end
-                end
-                
-                obj.SelectedEvent=tmp;
-            end
-            
+%             if ~isempty(val)&&~isempty(obj.Evts_)
+%                 tmp=reshape(obj.SelectedEvent,length(obj.SelectedEvent),1);
+%                 for i=1:size(obj.Evts_,1)
+%                     for j=1:size(val,2)
+%                         if obj.Evts_{i,1}>=val(1,j)/obj.SRate&&obj.Evts_{i,1}<=val(2,j)/obj.SRate
+%                             tmp=cat(1,tmp,i);
+%                         end
+%                     end
+%                 end
+%                 
+%                 obj.SelectedEvent=tmp;
+%             end
             notify(obj,'SelectionChange');
         end
         %==================================================================
@@ -1832,19 +1828,30 @@ classdef BioSigPlot < hgsetget
         end
         %==================================================================
         %******************************************************************
-        function ChangeMouseMode(obj,src)
+        function ChangeMouseMode(obj,opt)
             s='';
             obj.SelectionStart=[];
-            if strcmpi(get(src,'State'),'on')
-                if src==obj.TogMeasurer
-                    remakeMeasurer(obj);
-                    s='Measurer';
-                elseif src==obj.TogSelection
-                    s='Select';
-                elseif src==obj.TogAnnotate
-                    remakeAnnotate(obj);
-                    s='Annotate';
-                end
+            switch opt
+                case 1
+                    state=obj.JTogMeasurer.isSelected();
+                    obj.JTogMeasurer.setSelected(~state);
+                    if ~state
+                        remakeMeasurer(obj);
+                        s='Measurer';
+                    end
+                case 2
+                    state=obj.JTogSelection.isSelected();
+                    obj.JTogSelection.setSelected(~state);
+                    if ~state
+                        s='Select';
+                    end
+                case 3
+                    state=obj.JTogAnnotate.isSelected();
+                    obj.JTogAnnotate.setSelected(~state);
+                    if ~state
+                        remakeAnnotate(obj);
+                        s='Annotate';
+                    end
             end
             obj.MouseMode=s;
         end
@@ -2270,7 +2277,7 @@ classdef BioSigPlot < hgsetget
         CrossCorrelation(obj,src)
         MnuNotchFilter(obj,src)
         MnuDownSample(obj,src)
-        SelectCurrentWindow(obj,src);
+        SelectCurrentWindow(obj);
         ExportObjToWorkspace(obj);
         MnuOverwritePreprocess(obj);
     end

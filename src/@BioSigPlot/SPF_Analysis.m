@@ -1,15 +1,7 @@
-function SPF_Analysis(obj,src)
+function SPF_Analysis(obj,method)
 %Subspace Projection Filter
 omitMask=true;
 [data,chanNames,dataset,channel,sample]=get_selected_data(obj,omitMask);
-switch src
-    case obj.BtnPCA
-        method='PCA';
-    case obj.BtnICA
-        method='ICA';
-    case obj.BtnTPCA
-        method='TPCA';
-end
 
 channames{1}=chanNames;
 renames=cell(size(chanNames));

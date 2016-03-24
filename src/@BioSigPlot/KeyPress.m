@@ -52,22 +52,14 @@ if ~isempty(evt.Modifier)
             elseif strcmpi(evt.Key,'equal')
                 ChangeGain(obj,1);
             elseif strcmpi(evt.Key,'i')
-                if strcmpi(get(obj.TogAnnotate,'State'),'on')
-                    set(obj.TogAnnotate,'State','off');
+                if obj.JTogAnnotate.isSelected()
+                    obj.JTogAnnotate.setSelected(false);
                 else
-                    set(obj.TogAnnotate,'State','on');
+                    obj.JTogAnnotate.setSelected(true)
                 end
-                ChangeMouseMode(obj,obj.TogAnnotate);
+                ChangeMouseMode(obj,3);
             elseif strcmpi(evt.Key,'e')
-                %conflict with saving settings
-%                 if strcmpi(get(obj.TogSelection,'State'),'on')
-%                     set(obj.TogSelection,'State','off');
-%                 else
-%                     set(obj.TogSelection,'State','on');
-%                 end
-%                 ChangeMouseMode(obj,obj.TogSelection);
             else
-                
                 m=min(9,size(obj.FastEvts,1));
                 if strcmpi(evt.Character,num2str(0))
                     obj.SelectedFastEvt=[];
