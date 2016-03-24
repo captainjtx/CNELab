@@ -12,7 +12,7 @@ classdef BioSigPlot < hgsetget
         FilterPanel
         
         EventInfo
-        BtnSwitchData
+        JBtnSwitchData
         BtnPrevEvent
         BtnPrevEvent1
         BtnStart
@@ -65,10 +65,10 @@ classdef BioSigPlot < hgsetget
         ArrScale
         Toolbar
         JToolbar
-        TogMontage
-        TogComAve
-        TogHorizontal
-        TogVertical
+        JTogMontage
+        JTogComAve
+        JTogHorizontal
+        JTogVertical
         TogMeasurer
         TogSelection
         
@@ -1262,6 +1262,8 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         function obj = set.DataView_(obj,val)
             obj.DataView_=val;
+            obj.JTogHorizontal.setSelected(strcmpi(obj.DataView_,'Horizontal'));
+            obj.JTogVertical.setSelected(strcmpi(obj.DataView_,'Vertical'));
             
             if length(obj.DisplayedData)==1
                 if ~isempty(obj.Title{obj.DisplayedData})
@@ -1757,16 +1759,40 @@ classdef BioSigPlot < hgsetget
         %=================================================================
         %******************************************************************
         function montageToolbar(obj)
-            obj.TogMontage=uitoggletool(obj.Toolbar,'CData',imread('Raw.bmp'),...
-                'TooltipString','Raw','ClickedCallback',@(src,evt) resetMontage(obj));
+            d=obj.JToolbar(1).getPreferredSize();
+            btn_width=d.height;
             
-            obj.TogComAve=uitoggletool(obj.Toolbar,'CData',imread('common.bmp'),...
-                'TooltipString','Mean Ref','ClickedCallback',@(src,evt) resetMontage(obj,2));
+            obj.JTogMontage=javaObjectEDT(javax.swing.JButton());
+            obj.JTogMontage.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
+            icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/Raw.png']));
+            obj.JTogMontage.setIcon(icon);
+            obj.JTogMontage.setOpaque(false);
+            d=obj.JTogMontage.getPreferredSize();
+            d.width=btn_width;
+            obj.JTogMontage.setMinimumSize(d);
+            obj.JTogMontage.setMaximumSize(d);
+            obj.JTogMontage.setToolTipText('Raw montage');
+            set(handle(obj.JTogMontage,'CallbackProperties'),'MousePressedCallback',@(h,e) resetMontage(obj));
+            
+            obj.JToolbar(1).add(obj.JTogMontage);
+            
+            obj.JTogComAve=javaObjectEDT(javax.swing.JButton());
+            obj.JTogComAve.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
+            icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/common.png']));
+            obj.JTogComAve.setIcon(icon);
+            obj.JTogComAve.setOpaque(false);
+            d=obj.JTogComAve.getPreferredSize();
+            d.width=btn_width;
+            obj.JTogComAve.setMinimumSize(d);
+            obj.JTogComAve.setMaximumSize(d);
+            obj.JTogComAve.setToolTipText('Mean reference');
+            set(handle(obj.JTogComAve,'CallbackProperties'),'MousePressedCallback',@(h,e) resetMontage(obj,2));
+            
+            obj.JToolbar(1).add(obj.JTogComAve);
             
         end
         
         function resetMontage(obj,varargin)
-            
             if isempty(varargin)
                 ind=1;
             else
@@ -1795,8 +1821,8 @@ classdef BioSigPlot < hgsetget
             
             if  obj.DataNumber==1
                 
-                set(obj.TogHorizontal,'Enable','off')
-                set(obj.TogVertical,'Enable','off')
+                obj.JTogHorizontal.setEnabled(false);
+                obj.JTogVertical.setEnabled(false);
                 
             end
             
@@ -1829,12 +1855,6 @@ classdef BioSigPlot < hgsetget
                     end
                 end
             end
-            
-            
-            offon={'off','on'};
-            set(obj.TogHorizontal,'State',offon{strcmpi(obj.DataView_,'Horizontal')+1});
-            set(obj.TogVertical,'State',offon{strcmpi(obj.DataView_,'Vertical')+1})
-            
         end
         
         %******************************************************************

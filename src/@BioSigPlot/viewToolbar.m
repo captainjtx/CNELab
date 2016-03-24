@@ -5,16 +5,49 @@ btn_width=d.height;
 obj.IconPlay=javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/play.png']));
 obj.IconPause=javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/pause.png']));
 
-obj.BtnSwitchData=uipushtool(obj.Toolbar,'CData',imread('switch.png'),'TooltipString','Next Data','separator','on',...
-    'ClickedCallback',@(src,evt) ChangeData(obj,src,[]));
+obj.JToolbar(1).addSeparator();
 
-obj.TogHorizontal=uitoggletool(obj.Toolbar,'CData',imread('horizontal.bmp'),...
-    'TooltipString','Horizontal',...
-    'ClickedCallback',@(src,evt) set(obj,'DataView','Horizontal'));
+obj.JBtnSwitchData=javaObjectEDT(javax.swing.JButton());
+obj.JBtnSwitchData.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
+icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/switch.png']));
+obj.JBtnSwitchData.setIcon(icon);
+obj.JBtnSwitchData.setOpaque(false);
+d=obj.JBtnSwitchData.getPreferredSize();
+d.width=btn_width;
+obj.JBtnSwitchData.setMinimumSize(d);
+obj.JBtnSwitchData.setMaximumSize(d);
+obj.JBtnSwitchData.setToolTipText('Next data');
+set(handle(obj.JBtnSwitchData,'CallbackProperties'),'MousePressedCallback',@(h,e) ChangeData(obj,[]));
 
-obj.TogVertical=uitoggletool(obj.Toolbar,'CData',imread('vertical.bmp'),...
-    'TooltipString','Vertical','ClickedCallback',@(src,evt) set(obj,'DataView','Vertical'));
-drawnow
+obj.JToolbar(1).add(obj.JBtnSwitchData);
+
+obj.JTogHorizontal=javaObjectEDT(javax.swing.JToggleButton());
+obj.JTogHorizontal.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
+icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/horizontal.png']));
+obj.JTogHorizontal.setIcon(icon);
+obj.JTogHorizontal.setOpaque(true);
+d=obj.JTogHorizontal.getPreferredSize();
+d.width=btn_width;
+obj.JTogHorizontal.setMinimumSize(d);
+obj.JTogHorizontal.setMaximumSize(d);
+obj.JTogHorizontal.setToolTipText('Horizontal alignment');
+set(handle(obj.JTogHorizontal,'CallbackProperties'),'MousePressedCallback',@(h,e) set(obj,'DataView','Horizontal'));
+
+obj.JToolbar(1).add(obj.JTogHorizontal);
+
+obj.JTogVertical=javaObjectEDT(javax.swing.JToggleButton());
+obj.JTogVertical.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
+icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/vertical.png']));
+obj.JTogVertical.setIcon(icon);
+obj.JTogVertical.setOpaque(true);
+d=obj.JTogVertical.getPreferredSize();
+d.width=btn_width;
+obj.JTogVertical.setMinimumSize(d);
+obj.JTogVertical.setMaximumSize(d);
+obj.JTogVertical.setToolTipText('Vertical alignment');
+set(handle(obj.JTogVertical,'CallbackProperties'),'MousePressedCallback',@(h,e) set(obj,'DataView','Vertical'));
+
+obj.JToolbar(1).add(obj.JTogVertical);
 
 obj.JToolbar(1).addSeparator();
 

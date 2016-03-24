@@ -1,5 +1,5 @@
-function ChangeData(obj,src,num)
-if src==obj.BtnSwitchData
+function ChangeData(obj,num)
+if isempty(num)
     dd=obj.DisplayedData;
     nd=dd(1)+1;
     
@@ -7,7 +7,7 @@ if src==obj.BtnSwitchData
         nd=1;
     end
     obj.DataView=['DAT' num2str(nd)];
-elseif isempty(src)
+else
     obj.DataView=['DAT' num2str(num)];
 end
 end

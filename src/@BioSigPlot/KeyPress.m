@@ -48,9 +48,9 @@ if ~isempty(evt.Modifier)
                 return
                 %Ctrl/Cmd+ -,=: Change channel gain
             elseif strcmpi(evt.Key,'hyphen')
-                ChangeGain(obj,obj.BtnGainDecrease);
+                ChangeGain(obj,-1);
             elseif strcmpi(evt.Key,'equal')
-                ChangeGain(obj,obj.BtnGainIncrease);
+                ChangeGain(obj,1);
             elseif strcmpi(evt.Key,'i')
                 if strcmpi(get(obj.TogAnnotate,'State'),'on')
                     set(obj.TogAnnotate,'State','off');
@@ -135,7 +135,7 @@ if ~isempty(evt.Modifier)
                 %Ctl/Cmd+Num Switch to dataset(Num)
                 for i=1:obj.DataNumber
                     if strcmpi(evt.Key,num2str(i))
-                        ChangeData(obj,[],i);
+                        ChangeData(obj,i);
                         return;
                     end
                 end
