@@ -1427,7 +1427,6 @@ classdef SpatialMapWindow < handle
             obj.neg=obj.neg_;
         end
         function OnClose(obj)
-            obj.valid=0;
             h = obj.fig;
             if ishandle(h)
                 delete(h);
