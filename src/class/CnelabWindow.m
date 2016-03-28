@@ -170,7 +170,7 @@ classdef CnelabWindow < handle
             demo_label.setOpaque(false);
             
             demo=javaObjectEDT(javax.swing.JButton());
-            demo.setBorder(javax.swing.BorderFactory.createMatteBorder(2,0,2,0,java.awt.Color(0.8,0.8,0.8)));
+            demo.setBorder(javax.swing.BorderFactory.createMatteBorder(2,0,0,0,java.awt.Color(0.8,0.8,0.8)));
             demo.setBackground(java.awt.Color(1,1,1));
             demo.add(demo_label);
             demo.setOpaque(false);
@@ -189,7 +189,7 @@ classdef CnelabWindow < handle
             new_cds_label.setOpaque(false);
             
             new_cds=javaObjectEDT(javax.swing.JButton());
-            new_cds.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
+            new_cds.setBorder(javax.swing.BorderFactory.createMatteBorder(2,0,0,0,java.awt.Color(0.8,0.8,0.8)));
             new_cds.setBackground(java.awt.Color(1,1,1));
             new_cds.add(new_cds_label);
             new_cds.setOpaque(false);
