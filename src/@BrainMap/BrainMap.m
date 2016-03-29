@@ -41,7 +41,7 @@ classdef BrainMap < handle
             
             view_p=uipanel(obj.fig,'units','normalized','position',[0,0.15,0.7,0.85],'BorderType','none','backgroundcolor','white');
             
-            obj.axe_3d=axes(view_p,'units','normalized','position',[0,0,1,1]);
+            obj.axe_3d=axes('parent',view_p,'units','normalized','position',[0,0,1,1]);
             axis off
             
             
