@@ -2007,7 +2007,6 @@ classdef BioSigPlot < hgsetget
             end
         end
         function resize(obj)
-            
             pos=get(obj.Fig,'position');
             cbs=obj.ControlBarSize;
             
