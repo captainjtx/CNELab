@@ -3,7 +3,7 @@ function LoadElectrode( obj )
 %   Detailed explanation goes here
 [filename,pathname]=uigetfile({'*.mat;*.txt','Data format (*.mat)'},'Please select file');
 fpath=[pathname filename];
-if isempty(fpath)
+if ~filename
     return;
 end
 dat=load(fpath);
@@ -22,10 +22,6 @@ for i=1:length(obj.electrode)
     else
         obj.curr_elec.stick=[];
     end
-    %     scatter3d(obj.electrode.coor{i}(:,1),obj.electrode.coor{i}(:,2),...
-    %         obj.electrode.coor{i}(:,3),...
-    %       obj.electrode.col{i},obj.electrode.marker{i},0.5);
-    %  hold on
 end
 
 obj.elec_no=length(obj.electrode);

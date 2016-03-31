@@ -108,7 +108,7 @@ classdef BrainMap < handle
             daspect([1,1,1]);
             obj.light=camlight('headlight');
             
-            obj.Timer=timer('TimerFcn',@ (src,evts) TimerCallback(obj),'ExecutionMode','fixedRate','BusyMode','drop','period',0.05);
+            obj.Timer=timer('TimerFcn',@ (src,evts) TimerCallback(obj),'ExecutionMode','fixedRate','BusyMode','drop','period',0.1);
         end
         
         function OnClose(obj)
@@ -142,7 +142,7 @@ classdef BrainMap < handle
             factor = 2;                         % correction mouse -> rotation
             camorbit(obj.axis_3d,-dx/factor,-dy/factor);
             if ~obj.isrender
-                %obj.light = camlight(obj.light,'headlight');        % adjust light
+                obj.light = camlight(obj.light,'headlight');        % adjust light
             end
             obj.loc=locend;
         end
