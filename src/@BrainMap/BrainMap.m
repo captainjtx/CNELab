@@ -115,22 +115,9 @@ classdef BrainMap < handle
         function mousedown(obj)
             obj.loc = get(0,'PointerLocation');    % get starting point
             start(obj.Timer);
-%             set(obj.fig,'windowbuttonmotionfcn',@(src,evt) rotationcallback(obj,loc,az,el));
             set(obj.fig,'windowbuttonupfcn',@(src,evt) donecallback(obj));
         end
-%         function rotationcallback(obj,loc,az,el)
-%             locend = get(obj.fig, 'CurrentPoint'); % get mouse location
-%             dx = locend(1) - loc(1);           % calculate difference x
-%             dy = locend(2) - loc(2);           % calculate difference y
-%             factor = 2;                         % correction mouse -> rotation
-%             newaz=az-dx/factor;
-%             newel=el-dy/factor;
-%             newel=min(max(newel,-90),90);
-%             view(obj.axis_3d,newaz,newel);
-%             if ~obj.isrender
-%                 obj.light = camlight(obj.light,'headlight');        % adjust light
-%             end
-%         end
+
         
         function donecallback(obj)
 %             set(obj.fig,'windowbuttonmotionfcn',[]);    % unassign windowbuttonmotionfcn
