@@ -38,7 +38,6 @@ classdef BrainMap < handle
         
         light
         Timer
-        loc
     end
     
     methods
@@ -73,11 +72,13 @@ classdef BrainMap < handle
             obj.color=[0 0 1];
             obj.model.vertices=[];
             obj.model.faces=[];
+            obj.light=[];
         end
         function buildfig(obj)
             screensize=get(0,'ScreenSize');
             obj.fig=figure('Menubar','none','Name','BrainMap','units','pixels','position',[screensize(3)/2-400,screensize(4)/2-275,800,550],...
-                'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),'resize','off','Dockcontrols','off');
+                'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),'resize','off','Dockcontrols','off',...
+                'WindowButtonDownFcn',@(src,evt)mousedown(obj));
             
             obj.FileMenu=uimenu(obj.fig,'label','File');
             obj.LoadMenu=uimenu(obj.FileMenu,'label','Load');
@@ -95,45 +96,43 @@ classdef BrainMap < handle
             view(3);
             daspect([1,1,1]);
             obj.light=camlight('headlight');
-            obj.Timer = timer('TimerFcn',@ (src,evts) TimerCallback(obj),'ExecutionMode','fixedRate','BusyMode','queue','period',0.1);
         end
         
         function OnClose(obj)
-            try
+            if ishandle(obj.fig)
                 delete(obj.fig);
-            catch
-            end
-            try
-                delete(obj.Timer);
-            catch
             end
         end
         
         function mousedown(obj)
             [az, el] = view(obj.axis_3d);              % get current azimuth and elevation
-            obj.loc = get(0,'PointerLocation');    % get starting point
+            loc = get(0,'PointerLocation');    % get starting point
+            set(obj.fig,'windowbuttonmotionfcn',@(src,evt) rotationcallback(obj,loc,az,el));
             set(obj.fig,'windowbuttonupfcn',@(src,evt) donecallback(obj));
-            start(obj.Timer);
         end
-
+        function rotationcallback(obj,loc,az,el)
+            locend = get(0, 'PointerLocation'); % get mouse location
+            dx = locend(1) - loc(1);           % calculate difference x
+            dy = locend(2) - loc(2);           % calculate difference y
+            factor = 2;                         % correction mouse -> rotation
+            newaz=az-dx/factor;
+            newel=el-dy/factor;
+            newel=min(max(newel,-90),90);
+            view(obj.axis_3d,newaz,newel);
+            if ~obj.isrender
+                obj.light = camlight(obj.light,'headlight');        % adjust light
+            end
+        end
+        
         function donecallback(obj)
             set(obj.fig,'windowbuttonmotionfcn',[]);    % unassign windowbuttonmotionfcn
             set(obj.fig,'windowbuttonupfcn',[]);        % unassign windowbuttonupfcn
-            stop(obj.Timer);
-        end
-        function TimerCallback(obj)
-            locend = get(0, 'PointerLocation'); % get mouse location
-            dx = locend(1) - obj.loc(1);           % calculate difference x
-            dy = locend(2) - obj.loc(2);           % calculate difference y
-            factor = 2;                         % correction mouse -> rotation
-            camorbit(obj.axis_3d,-dx/factor,-dy/factor);
-            obj.loc=locend;
-            obj.light = camlight(obj.light,'headlight');        % adjust light
         end
     end
     methods
         LoadSurface(obj)
         LoadElectrode(obj)
+        
     end
     
 end

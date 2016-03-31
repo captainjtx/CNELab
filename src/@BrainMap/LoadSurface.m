@@ -24,6 +24,8 @@ if strcmp(type, '.mat')
         axis vis3d
         axis equal off
         obj.isrender=1;
+        delete(findobj(obj.axis_3d,'type','light'));
+        
         obj.head_center=[size(dat.volume,1)/2 size(dat.volume,2)/2 size(dat.volume,3)/2];
         [az, el]=view(gca);
         obj.display_view=[az el];
@@ -93,7 +95,6 @@ obj.head_plot(obj.overlay)=patch('faces',obj.model(obj.overlay).faces,'vertices'
     'SpecularColorReflectance', 0.5, ...
     'FaceLighting',     'gouraud', ...
     'EdgeLighting',     'gouraud');
-% rotate3d on;
 hold on
 axis vis3d
 
@@ -125,7 +126,7 @@ obj.smooth(obj.overlay)=0;
 %             set(obj.show_ct_check,'visible','on');
 %             set(obj.info,'string','');
 
-set(obj.head_plot(obj.overlay),'ButtonDownFcn', @(src,evt)mousedown(obj));
 obj.light=camlight(obj.light,'headlight');
+
 end
 
