@@ -33,8 +33,12 @@ classdef BrainMap < handle
         model
         display_view
         curr_model
-        begin
+        
         head_plot
+        
+        light
+        Timer
+        loc
     end
     
     methods
@@ -87,19 +91,49 @@ classdef BrainMap < handle
             
             
             toolpanel=uipanel(obj.fig,'units','normalized','position',[0.7,0.15,0.3,0.85]);
+            
+            view(3);
+            daspect([1,1,1]);
+            obj.light=camlight('headlight');
+            obj.Timer = timer('TimerFcn',@ (src,evts) TimerCallback(obj),'ExecutionMode','fixedRate','BusyMode','queue','period',0.1);
         end
         
         function OnClose(obj)
-            if ishandle(obj.fig)
+            try
                 delete(obj.fig);
+            catch
+            end
+            try
+                delete(obj.Timer);
+            catch
             end
         end
         
+        function mousedown(obj)
+            [az, el] = view(obj.axis_3d);              % get current azimuth and elevation
+            obj.loc = get(0,'PointerLocation');    % get starting point
+            set(obj.fig,'windowbuttonupfcn',@(src,evt) donecallback(obj));
+            start(obj.Timer);
+        end
+
+        function donecallback(obj)
+            set(obj.fig,'windowbuttonmotionfcn',[]);    % unassign windowbuttonmotionfcn
+            set(obj.fig,'windowbuttonupfcn',[]);        % unassign windowbuttonupfcn
+            stop(obj.Timer);
+        end
+        function TimerCallback(obj)
+            locend = get(0, 'PointerLocation'); % get mouse location
+            dx = locend(1) - obj.loc(1);           % calculate difference x
+            dy = locend(2) - obj.loc(2);           % calculate difference y
+            factor = 2;                         % correction mouse -> rotation
+            camorbit(obj.axis_3d,-dx/factor,-dy/factor);
+            obj.loc=locend;
+            obj.light = camlight(obj.light,'headlight');        % adjust light
+        end
     end
     methods
         LoadSurface(obj)
         LoadElectrode(obj)
-        
     end
     
 end

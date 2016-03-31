@@ -21,11 +21,8 @@ if strcmp(type, '.mat')
         axis(obj.axis_3d);
         obj.render=vol3d('cdata',dat.volume,'texture','3D');
         colormap gray;
-        view(3);
-        rotate3d(obj.axis_3d);
         axis vis3d
         axis equal off
-        set(obj.axis_3d,'CameraViewAngle',8);
         obj.isrender=1;
         obj.head_center=[size(dat.volume,1)/2 size(dat.volume,2)/2 size(dat.volume,3)/2];
         [az, el]=view(gca);
@@ -43,7 +40,6 @@ if strcmp(type, '.mat')
         %                     set(obj.col_surf_Btn,'visible','on');
         %                     set(obj.del_surf_Btn,'visible','on');
         %                     set(obj.selBtn,'enable','on');
-        %                     obj.begin=1;
         %                     set(obj.show_ct_check,'visible','on');
         %                     set(obj.info,'string','');
         return;
@@ -55,21 +51,18 @@ elseif strcmp(type, '.dfs')
     temp=patch('faces',NFV.faces,'vertices',NFV.vertices);
     
     %set(obj.info,'string','Reducing mesh...');
-    %guidata(hObject, obj);
+
     obj.model.vertices=get(temp,'vertices');
     obj.model.faces=get(temp,'faces');
-    %    end
     delete(temp);
     obj.model(obj.overlay).faces=obj.model.faces;
     obj.model(obj.overlay).vertices=obj.model.vertices;
 else
     try
         %set(obj.info,'string','Reading surface data...');
-        %guidata(hObject, obj);
         [hi.vertices, hi.faces] = freesurfer_read_surf(fpath);
         temp=patch('faces',hi.faces,'vertices',hi.vertices);
         %set(obj.info,'string','Reducing mesh...');
-        %guidata(hObject, obj);
         if size(hi.vertices,1)>2000000
             obj.model=reducepatch(temp,0.1);
         elseif size(hi.vertices,1)>1000000
@@ -100,12 +93,10 @@ obj.head_plot(obj.overlay)=patch('faces',obj.model(obj.overlay).faces,'vertices'
     'SpecularColorReflectance', 0.5, ...
     'FaceLighting',     'gouraud', ...
     'EdgeLighting',     'gouraud');
-rotate3d on;
+% rotate3d on;
 hold on
-if obj.begin==0
-    camlight(0,70);camlight(-30,270);daspect([1,1,1]);
-end
 axis vis3d
+
 obj.head_center=[mean(obj.model(1).vertices(:,1)) mean(obj.model(1).vertices(:,2))...
     (max(obj.model(1).vertices(:,3))-min(obj.model(1).vertices(:,3)))/3+...
     min(obj.model(1).vertices(:,3))];
@@ -113,10 +104,11 @@ obj.head_center=[mean(obj.model(1).vertices(:,1)) mean(obj.model(1).vertices(:,2
 obj.display_view=[az el];
 %             set(obj.alpha_slider,'visible','on','value',0.85);
 %             set(obj.text11,'visible','on','enable','on');
-obj.alpha(obj.overlay)=0.85;
+obj.alpha(obj.overlay)=0.9;
 %             set(obj.smooth_slider,'visible','on','value',0);
 %             set(obj.text15,'visible','on');
 obj.smooth(obj.overlay)=0;
+
 %             set(obj.loadBtn,'enable','on');
 %             set(obj.regBtn,'enable','on');
 %             set(obj.addBtn,'enable','on');
@@ -129,9 +121,11 @@ obj.smooth(obj.overlay)=0;
 %             set(obj.gen_outer_Btn,'visible','on');
 %             set(obj.export_Btn,'visible','on');
 %             set(obj.selBtn,'enable','on');
-obj.begin=1;
 
 %             set(obj.show_ct_check,'visible','on');
 %             set(obj.info,'string','');
+
+set(obj.head_plot(obj.overlay),'ButtonDownFcn', @(src,evt)mousedown(obj));
+obj.light=camlight(obj.light,'headlight');
 end
 
