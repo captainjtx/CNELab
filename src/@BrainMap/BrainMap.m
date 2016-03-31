@@ -150,7 +150,5 @@ classdef BrainMap < handle
     methods
         LoadSurface(obj)
         LoadElectrode(obj)
-        
     end
-    
 end

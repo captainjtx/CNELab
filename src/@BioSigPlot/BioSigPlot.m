@@ -2007,13 +2007,13 @@ classdef BioSigPlot < hgsetget
             end
         end
         function resize(obj)
+            if isempty(obj.Fig)
+                return
+            end
+            
             pos=get(obj.Fig,'position');
             cbs=obj.ControlBarSize;
             
-            %resize function can be called upon figure creating
-            if isempty(pos)||isempty(cbs)||isempty(obj.EventPanel)||isempty(obj.AdjustPanel)||isempty(obj.MainPanel)
-                return
-            end
             if pos(3)<=cbs(1)
                 if obj.LockLayout
                     pos(3)=cbs(1);
