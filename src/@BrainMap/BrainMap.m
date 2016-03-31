@@ -38,6 +38,7 @@ classdef BrainMap < handle
         
         light
         Timer
+        loc
     end
     
     methods
@@ -96,37 +97,57 @@ classdef BrainMap < handle
             view(3);
             daspect([1,1,1]);
             obj.light=camlight('headlight');
+            
+            obj.Timer=timer('TimerFcn',@ (src,evts) TimerCallback(obj),'ExecutionMode','fixedRate','BusyMode','queue','period',0.1);
         end
         
         function OnClose(obj)
-            if ishandle(obj.fig)
+            try
                 delete(obj.fig);
+            catch
+            end
+            try
+                delete(obj.Timer)
+            catch
             end
         end
         
         function mousedown(obj)
-            [az, el] = view(obj.axis_3d);              % get current azimuth and elevation
-            loc = get(0,'PointerLocation');    % get starting point
-            set(obj.fig,'windowbuttonmotionfcn',@(src,evt) rotationcallback(obj,loc,az,el));
+            obj.loc = get(0,'PointerLocation');    % get starting point
+            start(obj.Timer);
+%             set(obj.fig,'windowbuttonmotionfcn',@(src,evt) rotationcallback(obj,loc,az,el));
             set(obj.fig,'windowbuttonupfcn',@(src,evt) donecallback(obj));
         end
-        function rotationcallback(obj,loc,az,el)
+%         function rotationcallback(obj,loc,az,el)
+%             locend = get(obj.fig, 'CurrentPoint'); % get mouse location
+%             dx = locend(1) - loc(1);           % calculate difference x
+%             dy = locend(2) - loc(2);           % calculate difference y
+%             factor = 2;                         % correction mouse -> rotation
+%             newaz=az-dx/factor;
+%             newel=el-dy/factor;
+%             newel=min(max(newel,-90),90);
+%             view(obj.axis_3d,newaz,newel);
+%             if ~obj.isrender
+%                 obj.light = camlight(obj.light,'headlight');        % adjust light
+%             end
+%         end
+        
+        function donecallback(obj)
+%             set(obj.fig,'windowbuttonmotionfcn',[]);    % unassign windowbuttonmotionfcn
+            set(obj.fig,'windowbuttonupfcn',[]);        % unassign windowbuttonupfcn
+            stop(obj.Timer);
+        end
+        
+        function TimerCallback(obj)
             locend = get(0, 'PointerLocation'); % get mouse location
-            dx = locend(1) - loc(1);           % calculate difference x
-            dy = locend(2) - loc(2);           % calculate difference y
+            dx = locend(1) - obj.loc(1);           % calculate difference x
+            dy = locend(2) - obj.loc(2);           % calculate difference y
             factor = 2;                         % correction mouse -> rotation
-            newaz=az-dx/factor;
-            newel=el-dy/factor;
-            newel=min(max(newel,-90),90);
-            view(obj.axis_3d,newaz,newel);
+            camorbit(obj.axis_3d,-dx/factor,-dy/factor);
             if ~obj.isrender
                 obj.light = camlight(obj.light,'headlight');        % adjust light
             end
-        end
-        
-        function donecallback(obj)
-            set(obj.fig,'windowbuttonmotionfcn',[]);    % unassign windowbuttonmotionfcn
-            set(obj.fig,'windowbuttonupfcn',[]);        % unassign windowbuttonupfcn
+            obj.loc=locend;
         end
     end
     methods
