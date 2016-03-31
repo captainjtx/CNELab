@@ -33,12 +33,14 @@ classdef BrainMap < handle
         model
         display_view
         curr_model
-        
+        curr_elec
         head_plot
-        
+        label
         light
         Timer
         loc
+        self_center
+        position_bak
     end
     
     methods
@@ -74,6 +76,14 @@ classdef BrainMap < handle
             obj.model.vertices=[];
             obj.model.faces=[];
             obj.light=[];
+            obj.curr_elec.side=[];
+            obj.curr_elec.top=[];
+            obj.curr_elec.stick=[];
+            obj.position_bak.side=[];
+            obj.position_bak.top=[];
+            obj.position_bak.stick=[];
+            obj.position_bak.coor=[];
+            
         end
         function buildfig(obj)
             screensize=get(0,'ScreenSize');
@@ -98,7 +108,7 @@ classdef BrainMap < handle
             daspect([1,1,1]);
             obj.light=camlight('headlight');
             
-            obj.Timer=timer('TimerFcn',@ (src,evts) TimerCallback(obj),'ExecutionMode','fixedRate','BusyMode','queue','period',0.1);
+            obj.Timer=timer('TimerFcn',@ (src,evts) TimerCallback(obj),'ExecutionMode','fixedRate','BusyMode','drop','period',0.05);
         end
         
         function OnClose(obj)
@@ -145,7 +155,7 @@ classdef BrainMap < handle
             factor = 2;                         % correction mouse -> rotation
             camorbit(obj.axis_3d,-dx/factor,-dy/factor);
             if ~obj.isrender
-                obj.light = camlight(obj.light,'headlight');        % adjust light
+                %obj.light = camlight(obj.light,'headlight');        % adjust light
             end
             obj.loc=locend;
         end
