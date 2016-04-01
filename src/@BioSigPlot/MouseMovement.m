@@ -75,7 +75,6 @@ if ndata==0
     end
 else
     if isempty(obj.MouseMode)
-        
         set(obj.Fig,'pointer','crosshair');
         
         videoIndex=get(obj.LineVideo(1),'XData');

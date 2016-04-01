@@ -1,7 +1,7 @@
 function LoadElectrode( obj )
 %UNTITLED3 Summary of this function goes here
 %   Detailed explanation goes here
-[filename,pathname]=uigetfile({'*.mat;*.txt','Data format (*.mat)'},'Please select file');
+[filename,pathname]=uigetfile({'*.mat;*.txt','Data format (*.mat)'},'Please select electrode file');
 fpath=[pathname filename];
 if ~filename
     return;
