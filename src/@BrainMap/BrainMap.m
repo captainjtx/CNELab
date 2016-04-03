@@ -14,7 +14,15 @@ classdef BrainMap < handle
         LoadSurfaceMenu
         LoadElectrodeMenu
         
-        view_p
+        SaveAsMenu
+        SaveAsFigureMenu
+        
+        ViewPanel
+        
+        Toolbar
+        JToolbar
+        
+        JRecenter
     end
     properties
         render
@@ -89,6 +97,7 @@ classdef BrainMap < handle
             obj.inView=[];
             
         end
+        
         function buildfig(obj)
             screensize=get(0,'ScreenSize');
             obj.fig=figure('Menubar','none','Name','BrainMap','units','pixels','position',[screensize(3)/2-400,screensize(4)/2-275,800,550],...
@@ -100,23 +109,26 @@ classdef BrainMap < handle
             obj.LoadSurfaceMenu=uimenu(obj.LoadMenu,'label','Surface','callback',@(src,evt) LoadSurface(obj),'Accelerator','o');
             obj.LoadElectrodeMenu=uimenu(obj.LoadMenu,'label','Electrode','callback',@(src,evt) LoadElectrode(obj),'Accelerator','e');
             
-            obj.view_p=uipanel(obj.fig,'units','normalized','position',[0,0.15,0.7,0.85],'backgroundcolor',[0,0,0]);
+            obj.SaveAsMenu=uimenu(obj.FileMenu,'label','Save as');
+            obj.SaveAsFigureMenu=uimenu(obj.SaveAsMenu,'label','Figuer','callback',@(src,evt) SaveAsFigure(obj),'Accelerator','p');
             
-            obj.axis_3d=axes('parent',obj.view_p,'units','normalized','position',[0,0,1,1]);
-            axis off
+            obj.ViewPanel=uipanel(obj.fig,'units','normalized','position',[0,0.15,0.7,0.85],'backgroundcolor',[0,0,0]);
             
+            obj.axis_3d=axes('parent',obj.ViewPanel,'units','normalized','position',[0,0,1,1],'visible','off','CameraViewAngle',10);
             
             toolpanel=uipanel(obj.fig,'units','normalized','position',[0.7,0.15,0.3,0.85]);
             
             view(3);
             daspect([1,1,1]);
-            obj.light=camlight('headlight');
+            obj.light=camlight('headlight','infinite');
             
             obj.RotateTimer=timer('TimerFcn',@ (src,evts) RotateTimerCallback(obj),'ExecutionMode','fixedRate','BusyMode','drop','period',0.1);
-%             obj.
-            obj.inView=obj.isIn(get(obj.fig,'CurrentPoint'),getpixelposition(obj.view_p));
+            %             obj.
+            obj.inView=obj.isIn(get(obj.fig,'CurrentPoint'),getpixelposition(obj.ViewPanel));
+            
+            obj.BuildToolbar();
+
         end
-        
         function OnClose(obj)
             try
                 delete(obj.fig);
@@ -128,6 +140,10 @@ classdef BrainMap < handle
             end
         end
         
+        function f=panon(obj)
+            f=strcmp(get(pan(obj.fig),'Enable'),'on');
+        end
+        
         function MouseDown_View(obj)
             obj.loc = get(obj.fig,'CurrentPoint');    % get starting point
             start(obj.RotateTimer);
@@ -137,25 +153,28 @@ classdef BrainMap < handle
             f=cursor(1)>position(1)&&cursor(1)<position(1)+position(3)&&cursor(2)>position(2)&&cursor(2)<position(2)+position(4);
         end
         function MouseMove(obj)
-            position = getpixelposition(obj.view_p);
+            position = getpixelposition(obj.ViewPanel);
             cursor=get(obj.fig,'CurrentPoint');
             in_view=obj.isIn(cursor,position);
             
             %within the view panel
-            if in_view&&~obj.inView
-                set(obj.fig,'WindowButtonDownFcn',@(src,evt)MouseDown_View(obj));
-                set(obj.fig,'WindowScrollWheelFcn',@(src,evt)Scroll_View(obj,src,evt));
-                
-            elseif ~in_view&&obj.inView
-                set(obj.fig,'WindowButtonDownFcn',[]);
-                set(obj.fig,'WindowScrollWheelFcn',[]);
+            f=obj.panon();
+            if ~f
+                if in_view&&~obj.inView
+                    set(obj.fig,'WindowButtonDownFcn',@(src,evt)MouseDown_View(obj));
+                    set(obj.fig,'WindowScrollWheelFcn',@(src,evt)Scroll_View(obj,src,evt));
+                    
+                elseif ~in_view&&obj.inView
+                    set(obj.fig,'WindowButtonDownFcn',[]);
+                    set(obj.fig,'WindowScrollWheelFcn',[]);
+                end
             end
             
             obj.inView=in_view;
         end
         
         function MouseUp_View(obj)
-%             set(obj.fig,'windowbuttonmotionfcn',[]);    % unassign windowbuttonmotionfcn
+            %             set(obj.fig,'windowbuttonmotionfcn',[]);    % unassign windowbuttonmotionfcn
             set(obj.fig,'windowbuttonupfcn',[]);        % unassign windowbuttonupfcn
             stop(obj.RotateTimer);
         end
@@ -174,14 +193,32 @@ classdef BrainMap < handle
         
         
         function Scroll_View(obj,src,evt)
-            
             vt=evt.VerticalScrollCount;
             factor=1.05^vt;
             camzoom(factor);
+        end
+        
+        function SaveAsFigure(obj)
+            position=getpixelposition(obj.ViewPanel);
+            figpos=get(obj.fig,'position');
+            position(1)=position(1)+figpos(1);
+            position(2)=position(2)+figpos(2);
+            f=figure('Name','Axis 3D','Position',position,'visible','on','color','w');
+            copyobj(obj.axis_3d,f);
+            colormap(colormap(obj.axis_3d));
+        end
+        
+        function RecenterCallback(obj)
+            view(3);
+            if ~obj.isrender
+                obj.light = camlight(obj.light,'headlight');        % adjust light
+            end
+            set(obj.axis_3d,'CameraViewAngle',10);
         end
     end
     methods
         LoadSurface(obj)
         LoadElectrode(obj)
+        BuildToolbar(obj)
     end
 end

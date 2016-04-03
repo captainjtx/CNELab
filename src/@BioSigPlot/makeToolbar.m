@@ -20,12 +20,7 @@ set(handle(obj.JTogMontage,'CallbackProperties'),'MouseExitedCallback',@(h,e) Bt
 obj.JTogMontage.setFocusable(false);
 obj.JToolbar(1).add(obj.JTogMontage);
 
-% obj.JToolbar(1).repaint;
-% obj.JToolbar(1).revalidate;
 % [jbtn,hbtn]=javacomponent(obj.JTogMontage,[0,0,1,1],obj.Toolbar);
-
-
-
 obj.JTogComAve=javaObjectEDT(javax.swing.JButton());
 obj.JTogComAve.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
 icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/common.png']));
@@ -253,7 +248,7 @@ obj.JToolbar(1).add(obj.JBtnGainDecrease);
 
 obj.JBtnAutoScale=javaObjectEDT(javax.swing.JButton());
 obj.JBtnAutoScale.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
-icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/auto_scale.png']));
+icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/auto.png']));
 obj.JBtnAutoScale.setIcon(icon);
 obj.JBtnAutoScale.setOpaque(true);
 obj.JBtnAutoScale.setMinimumSize(btn_d);
@@ -423,13 +418,16 @@ set(handle(obj.JBtnICA,'CallbackProperties'),'MouseExitedCallback',@(h,e) BtnExi
 obj.JBtnICA.setFocusable(false);
 
 obj.JToolbar(1).add(obj.JBtnICA);
+
+obj.JToolbar(1).repaint;
+obj.JToolbar(1).revalidate;
 end
 
 function BtnEnter(obj,jb)
 border=javax.swing.BorderFactory.createMatteBorder(1,1,1,1,java.awt.Color(0.8,0.8,0.8));
 
 jb.setBorder(border);
-jb.setBackground(java.awt.Color(0.98,0.98,0.98));
+jb.setBackground(java.awt.Color(0.99,0.99,0.99));
 end
 
 function BtnExit(obj,jb)
