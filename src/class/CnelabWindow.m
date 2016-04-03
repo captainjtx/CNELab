@@ -134,7 +134,7 @@ classdef CnelabWindow < handle
             obj.file_listbox.setFixedCellHeight(45);
             obj.file_listbox.setBackground(java.awt.Color(0.95,0.95,0.95));
             obj.file_listbox.setBorder([]);
-            jRenderer = LabelListBoxRenderer();
+            jRenderer = javaObjectEDT(LabelListBoxRenderer());
             jRenderer.setFileType(file_type);
             obj.file_listbox.setCellRenderer(jRenderer);
             set(handle(obj.file_listbox,'CallbackProperties'),'MousePressedCallback',@(h,e)mouse_press_list(obj));

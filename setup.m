@@ -37,11 +37,14 @@ if ~strcmp(java_version(6:8),'1.7')
     disp('Auto recompile java classes ...');
     try
     !javac src/java/LabelListBoxRenderer.java src/java/globalVar.java
+    !javac src/java/TButton.java
     catch
         disp('Auto recompile failed !');
         return
     end
 end
+
+globalVar.setCnelabPath(char(pwd));
 %save java class path into static file
 spath = javaclasspath('-static');
 if ~any(strcmp(spath,[pwd filesep 'src' filesep 'java']))

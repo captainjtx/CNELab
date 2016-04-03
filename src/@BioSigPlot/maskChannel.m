@@ -1,4 +1,4 @@
-function maskChannel(obj,opt)
+function MaskChannel(obj,opt)
 
 obj.Mask=obj.applyPanelVal(obj.Mask_,opt);
 
