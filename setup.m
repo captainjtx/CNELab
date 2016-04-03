@@ -31,7 +31,17 @@ addpath(genpath([pwd filesep 'test']),'-frozen');
 addpath(genpath([pwd filesep 'demo']),'-frozen');
 
 %recompile the java class to local platform, usually do not need
-% !javac src/java/LabelListBoxRenderer.java src/java/globalVar.java
+java_version=version('-java');
+
+if ~strcmp(java_version(6:8),'1.7')
+    disp('Auto recompile java classes ...');
+    try
+    !javac src/java/LabelListBoxRenderer.java src/java/globalVar.java
+    catch
+        disp('Auto recompile failed !');
+        return
+    end
+end
 %save java class path into static file
 spath = javaclasspath('-static');
 if ~any(strcmp(spath,[pwd filesep 'src' filesep 'java']))
