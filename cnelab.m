@@ -6,8 +6,6 @@ if iscell(cnelab_path)&&length(cnelab_path)>1
     return
 end
 
-globalVar.setCnelabPath(fileparts(cnelab_path{1}));
-
 %CNELAB launcher, %inspired by xcode
 cnb=CnelabWindow;
 cnb.buildfig;
@@ -43,7 +41,8 @@ screensize = get(0,'ScreenSize');
 
 info_h = dialog('Position',[screensize(3)/2-100 screensize(4)/2-50 220 150],'Name','Preparing ...');
 
-logo_icon=javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),filesep,'db',filesep,'icon',filesep,'cnel.png']));
+[cnelab_path,~,~]=fileparts(mfilename('fullpath'));
+logo_icon=javaObjectEDT(javax.swing.ImageIcon([cnelab_path,filesep,'db',filesep,'icon',filesep,'cnel.png']));
 logo_label=javaObjectEDT(javax.swing.JLabel());
 logo_label.setIcon(logo_icon);
 logo_label.setHorizontalAlignment(javax.swing.JLabel.CENTER);

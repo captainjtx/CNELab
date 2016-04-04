@@ -9,7 +9,7 @@ btn_d.height=d.height;
 col=obj.JToolbar(1).getBackground();
 
 
-obj.JRecenter=javaObjectEDT(TButton([char(globalVar.CNELAB_PATH),'/db/icon/recenter.png'],btn_d,char('Recenter'),col));
+obj.JRecenter=javaObjectEDT(TButton([obj.cnelab_path,'/db/icon/recenter.png'],btn_d,char('Recenter'),col));
 set(handle(obj.JRecenter,'CallbackProperties'),'MousePressedCallback',@(h,e) RecenterCallback(obj));
 obj.JToolbar(1).add(obj.JRecenter);
 

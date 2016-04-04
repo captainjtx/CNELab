@@ -3,6 +3,7 @@ classdef BrainMap < handle
     %   Detailed explanation goes here
     properties (Dependent)
         valid
+        cnelab_path
     end
     
     properties
@@ -23,6 +24,8 @@ classdef BrainMap < handle
         JToolbar
         
         JRecenter
+        
+        JScrollTreeInput
     end
     properties
         render
@@ -52,14 +55,19 @@ classdef BrainMap < handle
         position_bak
         
         inView
+        
     end
     
     methods
         function obj=BrainMap()
+            
             obj.varinit();
             obj.buildfig();
         end
         
+        function val=get.cnelab_path(obj)
+            [val,~,~]=fileparts(which('cnelab.m'));
+        end
         
         function val=get.valid(obj)
             try
@@ -127,6 +135,10 @@ classdef BrainMap < handle
             obj.inView=obj.isIn(get(obj.fig,'CurrentPoint'),getpixelposition(obj.ViewPanel));
             
             obj.BuildToolbar();
+            
+            obj.JScrollTreeInput=javaObjectEDT(CheckBoxNodeTree());
+            [jh,gh]=javacomponent(obj.JScrollTreeInput,[0,0,1,1],toolpanel);
+            set(gh,'Units','Norm','Position',[0,0.6,1,0.4]);
 
         end
         function OnClose(obj)

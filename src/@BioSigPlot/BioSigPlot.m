@@ -278,6 +278,7 @@ classdef BioSigPlot < hgsetget
         BufferEndSample
         
         valid
+        cnelab_path
     end
     properties (Access=protected,Hidden)%Storage of public properties
         Version_
@@ -1709,6 +1710,10 @@ classdef BioSigPlot < hgsetget
             catch
                 val=0;
             end
+        end
+        
+        function val=get.cnelab_path(obj)
+            [val,~,~]=fileparts(which('cnelab.m'));
         end
     end
     

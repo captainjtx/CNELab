@@ -35,16 +35,11 @@ public class LabelListBoxRenderer extends JLabel implements ListCellRenderer
 		setHorizontalAlignment(LEFT);
         setVerticalAlignment(CENTER);
         
-        
-        String iconFname = globalVar.CNELAB_PATH;
-        
-        String cdsIconFname=iconFname.concat("/db/icon/cds.png");
-        cdsIconFname=cdsIconFname.replace('\\', '/');
+        String cdsIconFname="../../db/icon/cds.png";
         
         cds_icon = getFileIcon(cdsIconFname);
         
-        String noncdsIconFname=iconFname.concat("/db/icon/noncds.png");
-        noncdsIconFname=noncdsIconFname.replace('\\', '/');
+        String noncdsIconFname="../../db/icon/noncds.png";
         
         noncds_icon=getFileIcon(noncdsIconFname);
 //         System.out.print("Hello world");

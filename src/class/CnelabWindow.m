@@ -14,6 +14,11 @@ classdef CnelabWindow < handle
         
         cfg_name
     end
+    
+    properties (Dependent)
+        cnelab_path
+    end
+        
     methods
         
         function val=get.valid(obj)
@@ -24,8 +29,14 @@ classdef CnelabWindow < handle
             end
         end
         
+        function val=get.cnelab_path(obj)
+            [val,~,~]=fileparts(which('cnelab.m'));
+        end
+        
         function obj=CnelabWindow()
-            obj.cfg_name=[char(globalVar.CNELAB_PATH),'/db/cfg/cnelab.cfg'];
+            
+            
+            obj.cfg_name=[obj.cnelab_path,'/db/cfg/cnelab.cfg'];
             
             if exist(obj.cfg_name,'file')==2
                 obj.cfg=load(obj.cfg_name,'-mat');
@@ -52,8 +63,8 @@ classdef CnelabWindow < handle
             set(obj.fig,'WindowKeyPressFcn',@(h,e)key_press(obj,h,e));
             
             logo=uipanel(obj.fig,'units','normalized','position',[0,0.4,0.6,0.6],'BorderType','none','backgroundcolor','white');
-                        
-            logo_icon=javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),filesep,'db',filesep,'icon',filesep,'cnel.png']));
+            
+            logo_icon=javaObjectEDT(javax.swing.ImageIcon([obj.cnelab_path,filesep,'db',filesep,'icon',filesep,'cnel.png']));
             logo_label=javaObjectEDT(javax.swing.JLabel());
             logo_label.setIcon(logo_icon);
             logo_label.setHorizontalAlignment(javax.swing.JLabel.CENTER);
@@ -162,7 +173,7 @@ classdef CnelabWindow < handle
             end
             opt=uipanel(obj.fig,'units','normalized','position',[0.1,0,0.5,0.4],'BorderType','none','backgroundcolor','white');
             
-            demo_icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/demo.png']));
+            demo_icon = javaObjectEDT(javax.swing.ImageIcon([obj.cnelab_path,'/db/icon/demo.png']));
             demo_label = javaObjectEDT(javax.swing.JLabel());
             demo_label.setIcon(demo_icon);
             demo_label.setText('<html><font size=4.5 color=black><b>Start from demo</b></font> <br> <font size=3.5 color=gray> Quickly learn the features</font></html>');
@@ -180,7 +191,7 @@ classdef CnelabWindow < handle
             [jh,gh]=javacomponent(demo,[0,0.72,1,0.28],opt);
             set(gh,'Units','Norm','Position',[0,0.72,1,0.28]);
             
-            new_cds_icon = javaObjectEDT(javax.swing.ImageIcon([char(globalVar.CNELAB_PATH),'/db/icon/new_cds.png']));
+            new_cds_icon = javaObjectEDT(javax.swing.ImageIcon([obj.cnelab_path,'/db/icon/new_cds.png']));
             new_cds_label = javaObjectEDT(javax.swing.JLabel());
             new_cds_label.setIcon(new_cds_icon);
             new_cds_label.setText('<html><font size=4.5 color=black><b>Create new CDS files</b></font> <br> <font size=3.5 color=gray> By converting from other data formats</font></html>');

@@ -1,10 +1,9 @@
 /*
 Definitive Guide to Swing for Java 2, Second Edition
-By John Zukowski     
+By John Zukowski
 ISBN: 1-893115-78-X
 Publisher: APress
-*/
-
+ */
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -12,230 +11,144 @@ import java.awt.Font;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
+
 import java.util.EventObject;
 import java.util.Vector;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.JCheckBox;
-import javax.swing.JFrame;
+
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 
-public class CheckBoxNodeTree extends JTree{
-  public static void main(String args[]) {
-    JFrame frame = new JFrame("CheckBox Tree");
+import java.io.File;
+import java.lang.System;
 
-    CheckBoxNode accessibilityOptions[] = {
-        new CheckBoxNode(
-            "Move system caret with focus/selection changes", false),
-        new CheckBoxNode("Always expand alt text for images", true) };
-    CheckBoxNode browsingOptions[] = {
-        new CheckBoxNode("Notify when downloads complete", true),
-        new CheckBoxNode("Disable script debugging", true),
-        new CheckBoxNode("Use AutoComplete", true),
-        new CheckBoxNode("Browse in a new process", false) };
-    Vector<Object> accessVector = new NamedVector<Object>("Accessibility",
-        accessibilityOptions);
-    Vector<Object> browseVector = new NamedVector<Object>("Browsing", browsingOptions);
-    Object rootNodes[] = { accessVector, browseVector };
-    Vector<Object> rootVector = new NamedVector<Object>("Root", rootNodes);
-    JTree tree = new JTree(rootVector);
-
-    CheckBoxNodeRenderer renderer = new CheckBoxNodeRenderer();
-    tree.setCellRenderer(renderer);
-
-    tree.setCellEditor(new CheckBoxNodeEditor(tree));
-    tree.setEditable(true);
-
-    JScrollPane scrollPane = new JScrollPane(tree);
-    frame.getContentPane().add(scrollPane, BorderLayout.CENTER);
-    frame.setSize(300, 150);
-    frame.setVisible(true);
-  }
-}
-
-class CheckBoxNodeRenderer implements TreeCellRenderer {
-  private JCheckBox leafRenderer = new JCheckBox();
-
-  private DefaultTreeCellRenderer nonLeafRenderer = new DefaultTreeCellRenderer();
-
-  Color selectionBorderColor, selectionForeground, selectionBackground,
-      textForeground, textBackground;
-
-  protected JCheckBox getLeafRenderer() {
-    return leafRenderer;
-  }
-
-  public CheckBoxNodeRenderer() {
-    Font fontValue;
-    fontValue = UIManager.getFont("Tree.font");
-    if (fontValue != null) {
-      leafRenderer.setFont(fontValue);
-    }
-    Boolean booleanValue = (Boolean) UIManager
-        .get("Tree.drawsFocusBorderAroundIcon");
-    leafRenderer.setFocusPainted((booleanValue != null)
-        && (booleanValue.booleanValue()));
-
-    selectionBorderColor = UIManager.getColor("Tree.selectionBorderColor");
-    selectionForeground = UIManager.getColor("Tree.selectionForeground");
-    selectionBackground = UIManager.getColor("Tree.selectionBackground");
-    textForeground = UIManager.getColor("Tree.textForeground");
-    textBackground = UIManager.getColor("Tree.textBackground");
-  }
-
-  public Component getTreeCellRendererComponent(JTree tree, Object value,
-      boolean selected, boolean expanded, boolean leaf, int row,
-      boolean hasFocus) {
-
-    Component returnValue;
-    if (leaf) {
-
-      String stringValue = tree.convertValueToText(value, selected,
-          expanded, leaf, row, false);
-      leafRenderer.setText(stringValue);
-      leafRenderer.setSelected(false);
-
-      leafRenderer.setEnabled(tree.isEnabled());
-
-      if (selected) {
-        leafRenderer.setForeground(selectionForeground);
-        leafRenderer.setBackground(selectionBackground);
-      } else {
-        leafRenderer.setForeground(textForeground);
-        leafRenderer.setBackground(textBackground);
-      }
-
-      if ((value != null) && (value instanceof DefaultMutableTreeNode)) {
-        Object userObject = ((DefaultMutableTreeNode) value)
-            .getUserObject();
-        if (userObject instanceof CheckBoxNode) {
-          CheckBoxNode node = (CheckBoxNode) userObject;
-          leafRenderer.setText(node.getText());
-          leafRenderer.setSelected(node.isSelected());
+public class CheckBoxNodeTree extends JScrollPane
+{
+    
+    private JTree tree;
+    
+    class CheckBoxNode
+    {
+        String fullname;
+        
+        public String toString()
+        {
+            File f=new File(fullname);
+            return f.getName();
         }
-      }
-      returnValue = leafRenderer;
-    } else {
-      returnValue = nonLeafRenderer.getTreeCellRendererComponent(tree,
-          value, selected, expanded, leaf, row, hasFocus);
-    }
-    return returnValue;
-  }
-}
-
-class CheckBoxNodeEditor extends AbstractCellEditor implements TreeCellEditor {
-
-  CheckBoxNodeRenderer renderer = new CheckBoxNodeRenderer();
-
-  ChangeEvent changeEvent = null;
-
-  JTree tree;
-
-  public CheckBoxNodeEditor(JTree tree) {
-    this.tree = tree;
-  }
-
-  public Object getCellEditorValue() {
-    JCheckBox checkbox = renderer.getLeafRenderer();
-    CheckBoxNode checkBoxNode = new CheckBoxNode(checkbox.getText(),
-        checkbox.isSelected());
-    return checkBoxNode;
-  }
-
-  public boolean isCellEditable(EventObject event) {
-    boolean returnValue = false;
-    if (event instanceof MouseEvent) {
-      MouseEvent mouseEvent = (MouseEvent) event;
-      TreePath path = tree.getPathForLocation(mouseEvent.getX(),
-          mouseEvent.getY());
-      if (path != null) {
-        Object node = path.getLastPathComponent();
-        if ((node != null) && (node instanceof DefaultMutableTreeNode)) {
-          DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) node;
-          Object userObject = treeNode.getUserObject();
-          returnValue = ((treeNode.isLeaf()) && (userObject instanceof CheckBoxNode));
+        
+        public CheckBoxNode(String str)
+        {
+            fullname=str;
         }
-      }
     }
-    return returnValue;
-  }
-
-  public Component getTreeCellEditorComponent(JTree tree, Object value,
-      boolean selected, boolean expanded, boolean leaf, int row) {
-
-    Component editor = renderer.getTreeCellRendererComponent(tree, value,
-        true, expanded, leaf, row, true);
-
-    // editor always selected / focused
-    ItemListener itemListener = new ItemListener() {
-      public void itemStateChanged(ItemEvent itemEvent) {
-        if (stopCellEditing()) {
-          fireEditingStopped();
+    public CheckBoxNodeTree() {
+        tree = new JTree();
+        tree.setRootVisible( false );
+        tree.setShowsRootHandles(true);
+        
+        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode("Objects");
+        DefaultTreeModel defaultTreeModel = new DefaultTreeModel( rootNode );
+        
+        tree.setModel( defaultTreeModel );
+        
+        DefaultMutableTreeNode parentNode = null;
+        DefaultMutableTreeNode node = null;
+        
+        parentNode = (DefaultMutableTreeNode) defaultTreeModel.getRoot();
+        node = new DefaultMutableTreeNode( new CheckBoxNode("Surface"));
+        addNodeToDefaultTreeModel( defaultTreeModel, parentNode, node );
+        
+        parentNode = node;
+        node = new DefaultMutableTreeNode( new CheckBoxNode("cortex.mat") );
+        addNodeToDefaultTreeModel( defaultTreeModel, parentNode, node );
+        
+        parentNode = rootNode;
+        node = new DefaultMutableTreeNode( new CheckBoxNode("Rendering"));
+        addNodeToDefaultTreeModel( defaultTreeModel, parentNode, node );
+        
+        parentNode = (DefaultMutableTreeNode) defaultTreeModel.getRoot();
+        node = new DefaultMutableTreeNode( new CheckBoxNode("Electrode"));
+        addNodeToDefaultTreeModel( defaultTreeModel, parentNode, node );
+        
+        parentNode = rootNode;
+        node = new DefaultMutableTreeNode( new CheckBoxNode("Others") );
+        addNodeToDefaultTreeModel( defaultTreeModel, parentNode, node );
+        
+        // Set the icon for surface nodes.
+        String surfaceIconFname="../../db/icon/surface.png";
+        
+        ImageIcon surfaceIcon = new ImageIcon(surfaceIconFname,"Surface Icon");
+        if (surfaceIcon != null) {
+            tree.setCellRenderer(new MyRenderer(surfaceIcon));
+        } else {
+            System.err.println("Surface icon missing; using default.");
         }
-      }
-    };
-    if (editor instanceof JCheckBox) {
-      ((JCheckBox) editor).addItemListener(itemListener);
+        
+        setViewportView(tree);
     }
-
-    return editor;
-  }
-}
-
-class CheckBoxNode {
-  String text;
-
-  boolean selected;
-
-  public CheckBoxNode(String text, boolean selected) {
-    this.text = text;
-    this.selected = selected;
-  }
-
-  public boolean isSelected() {
-    return selected;
-  }
-
-  public void setSelected(boolean newValue) {
-    selected = newValue;
-  }
-
-  public String getText() {
-    return text;
-  }
-
-  public void setText(String newValue) {
-    text = newValue;
-  }
-
-  public String toString() {
-    return getClass().getName() + "[" + text + "/" + selected + "]";
-  }
-}
-
-class NamedVector<Object> extends Vector<Object> {
-  String name;
-
-  public NamedVector(String name) {
-    this.name = name;
-  }
-
-  public NamedVector(String name, Object elements[]) {
-    this.name = name;
-    for (int i = 0, n = elements.length; i < n; i++) {
-      add(elements[i]);
+    private static void addNodeToDefaultTreeModel( DefaultTreeModel treeModel, DefaultMutableTreeNode parentNode, DefaultMutableTreeNode node )
+    {
+        treeModel.insertNodeInto(  node, parentNode, parentNode.getChildCount()  );
+        
+        if (  parentNode == treeModel.getRoot()  ) {
+            treeModel.nodeStructureChanged(  (javax.swing.tree.TreeNode) treeModel.getRoot()  );
+        }
     }
-  }
-
-  public String toString() {
-    return "[" + name + "]";
-  }
+    
+    private class MyRenderer extends DefaultTreeCellRenderer {
+        Icon surfaceIcon;
+        Icon electrodeIcon;
+        Icon renderingIcon;
+        Icon othersIcon;
+        
+        public MyRenderer(Icon icon) {
+            surfaceIcon = icon;
+        }
+        
+        public Component getTreeCellRendererComponent(JTree tree, Object value,
+        boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            
+            super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row,
+            hasFocus);
+            if (!leaf && isSurface(value)) {
+                setIcon(surfaceIcon);
+                setToolTipText("Surface");
+            } else {
+                setToolTipText(null); // no tool tip
+            }
+            
+            return this;
+        }
+        
+        protected boolean isSurface(Object value) {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+            CheckBoxNode nodeInfo = (CheckBoxNode) (node.getUserObject());
+            String title = nodeInfo.fullname;
+            if (title.indexOf("Surface") >= 0) {
+                return true;
+            }
+            
+            return false;
+        }
+    }
 }
+    
+    
+    
+    
+    
+    
+    
