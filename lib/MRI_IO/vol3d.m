@@ -266,7 +266,7 @@ function demo_vol3d
 figure;
 load mri.mat
 vol3d('cdata', squeeze(D), 'xdata', [0 1], 'ydata', [0 1], 'zdata', [0 0.7]);
-colormap(grey);
+colormap(gray);
 alphamap([0 linspace(0.1, 0, 255)]);
 axis equal off
 set(gcf, 'color', 'w');

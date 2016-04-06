@@ -1,4 +1,6 @@
 function BuildToolbar( obj )
+import src.java.TButton;
+
 obj.Toolbar=uitoolbar(obj.fig);
 drawnow
 obj.JToolbar=get(get(obj.Toolbar,'JavaContainer'),'ComponentPeer');

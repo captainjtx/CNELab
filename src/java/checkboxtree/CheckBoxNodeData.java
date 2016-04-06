@@ -27,9 +27,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-
-package checkboxtree;
-
+package src.java.checkboxtree;
 import javax.swing.JTree;
 import java.io.File;
 

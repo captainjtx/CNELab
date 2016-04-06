@@ -146,7 +146,7 @@ classdef BrainMap < handle
             
             obj.BuildToolbar();
             
-            obj.JScrollTreeInput=javaObjectEDT(checkboxtree.FileLoadTree());
+            obj.JScrollTreeInput=javaObjectEDT(src.java.checkboxtree.FileLoadTree());
             [jh,gh]=javacomponent(obj.JScrollTreeInput,[0,0,1,1],toolpanel);
             set(gh,'Units','Norm','Position',[0,0.7,1,0.3]);
 

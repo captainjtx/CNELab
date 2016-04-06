@@ -1,3 +1,4 @@
+package src.java;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -34,12 +35,13 @@ public class LabelListBoxRenderer extends JLabel implements ListCellRenderer
 		setOpaque(true);
 		setHorizontalAlignment(LEFT);
         setVerticalAlignment(CENTER);
+        final File f = new File(LabelListBoxRenderer.class.getProtectionDomain().getCodeSource().getLocation().getPath());
         
-        String cdsIconFname="../../db/icon/cds.png";
+        String cdsIconFname=f.toString()+"/db/icon/cds.png";
         
         cds_icon = getFileIcon(cdsIconFname);
         
-        String noncdsIconFname="../../db/icon/noncds.png";
+        String noncdsIconFname=f.toString()+"/db/icon/noncds.png";
         
         noncds_icon=getFileIcon(noncdsIconFname);
 //         System.out.print("Hello world");

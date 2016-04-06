@@ -28,7 +28,7 @@
  * #L%
  */
 
-package checkboxtree;
+package src.java.checkboxtree;
 
 import java.awt.BorderLayout;
 
@@ -42,9 +42,9 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
-import checkboxtree.CheckBoxNodeData;
-import checkboxtree.CheckBoxNodeEditor;
-import checkboxtree.CheckBoxNodeRenderer;
+// import checkboxtree.CheckBoxNodeData;
+// import checkboxtree.CheckBoxNodeEditor;
+// import checkboxtree.CheckBoxNodeRenderer;
 
 import javax.swing.ImageIcon;
 

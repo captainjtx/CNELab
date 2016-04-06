@@ -28,7 +28,7 @@
  * #L%
  */
 
-package checkboxtree;
+package src.java.checkboxtree;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -86,18 +86,18 @@ public class CheckBoxNodeRenderer implements TreeCellRenderer {
 		textBackground = UIManager.getColor("Tree.textBackground");
         
         final File f = new File(CheckBoxNodeRenderer.class.getProtectionDomain().getCodeSource().getLocation().getPath());
-        System.out.print(f.toString());
+//         System.out.print(f.toString());
         
-        String surfaceIconFname=f.toString()+"/../../db/icon/surface.png";
+        String surfaceIconFname=f.toString()+"/db/icon/surface.png";
         surfaceIcon = new ImageIcon(surfaceIconFname,"Surface Icon");
         
-        String electrodeIconFname=f.toString()+"/../../db/icon/ecog.png";
+        String electrodeIconFname=f.toString()+"/db/icon/ecog.png";
         electrodeIcon = new ImageIcon(electrodeIconFname,"Electrode Icon");
         
-        String volumeIconFname=f.toString()+"/../../db/icon/volume.png";
+        String volumeIconFname=f.toString()+"/db/icon/volume.png";
         volumeIcon = new ImageIcon(volumeIconFname,"Volume Icon");
         
-        String othersIconFname=f.toString()+"/../../db/icon/others.png";
+        String othersIconFname=f.toString()+"/db/icon/others.png";
         othersIcon = new ImageIcon(othersIconFname,"Others Icon");
 	}
 

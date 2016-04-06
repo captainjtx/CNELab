@@ -28,7 +28,7 @@
  * #L%
  */
 
-package checkboxtree;
+package src.java.checkboxtree;
 
 import java.awt.Component;
 import java.awt.event.ItemEvent;

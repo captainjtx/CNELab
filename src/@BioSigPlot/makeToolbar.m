@@ -1,4 +1,6 @@
 function makeToolbar(obj)
+import src.java.TButton;
+
 d=obj.JToolbar(1).getPreferredSize();
 btn_d=java.awt.Dimension();
 btn_d.width=d.height;

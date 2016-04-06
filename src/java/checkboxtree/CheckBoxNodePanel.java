@@ -28,7 +28,7 @@
  * #L%
  */
 
-package checkboxtree;
+package src.java.checkboxtree;
 
 import java.awt.BorderLayout;
 import java.awt.Insets;

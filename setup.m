@@ -36,8 +36,9 @@ java_version=version('-java');
 if ~strcmp(java_version(6:8),'1.7')
     disp('Auto recompile java classes ...');
     try
-    !javac src/java/LabelListBoxRenderer.java src/java/globalVar.java
+    !javac src/java/LabelListBoxRenderer.java 
     !javac src/java/TButton.java
+    !javac src/java/checkboxtree/FileLoadTree.java
     catch
         disp('Auto recompile failed !');
         return
@@ -45,16 +46,15 @@ if ~strcmp(java_version(6:8),'1.7')
 end
 %save java class path into static file
 spath = javaclasspath('-static');
-if ~any(strcmp(spath,[pwd filesep 'src' filesep 'java']))
-    javaaddpath([pwd filesep 'src' filesep 'java']);
-    javaaddpath([pwd filesep 'src' filesep 'java' filesep 'checkboxtree']);
+if ~any(strcmp(spath,pwd))
+    javaaddpath(pwd);
 end
 
 pref_dir=prefdir;
 fid = fopen(fullfile(pref_dir,'javaclasspath.txt'),'w');
-fprintf(fid,'%s\n',[pwd filesep 'src' filesep 'java']);
 
-fprintf(fid,'%s\n',[pwd filesep 'src' filesep 'java' filesep 'checkboxtree']);
+fprintf(fid,'%s\n',pwd);
+
 fclose(fid);
 
 try
