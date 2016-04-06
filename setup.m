@@ -43,18 +43,18 @@ if ~strcmp(java_version(6:8),'1.7')
         return
     end
 end
-
-globalVar.setCnelabPath(char(pwd));
 %save java class path into static file
 spath = javaclasspath('-static');
 if ~any(strcmp(spath,[pwd filesep 'src' filesep 'java']))
     javaaddpath([pwd filesep 'src' filesep 'java']);
+    javaaddpath([pwd filesep 'src' filesep 'java' filesep 'checkboxtree']);
 end
 
 pref_dir=prefdir;
 fid = fopen(fullfile(pref_dir,'javaclasspath.txt'),'w');
 fprintf(fid,'%s\n',[pwd filesep 'src' filesep 'java']);
-fprintf(fid,'%s\n',[pwd filesep 'test']);
+
+fprintf(fid,'%s\n',[pwd filesep 'src' filesep 'java' filesep 'checkboxtree']);
 fclose(fid);
 
 try

@@ -12,6 +12,7 @@ classdef BrainMap < handle
         
         FileMenu
         LoadMenu
+        LoadVolumeMenu
         LoadSurfaceMenu
         LoadElectrodeMenu
         
@@ -28,10 +29,11 @@ classdef BrainMap < handle
         JScrollTreeInput
     end
     properties
-        render
+        
         head_center
-        isrender
-        overlay
+        surface_overlay
+        volume_overlay
+        electrode_overlay
         coor
         electrode
         curr_coor
@@ -41,11 +43,13 @@ classdef BrainMap < handle
         smooth
         elec_index
         color
-        model
+        
+        surface
+        volume
+        
         display_view
-        curr_model
         curr_elec
-        head_plot
+        surface_plot
         label
         light
         RotateTimer
@@ -77,10 +81,12 @@ classdef BrainMap < handle
             end
         end
         function varinit(obj)
-            obj.render=[];
+
             obj.head_center=[];
-            obj.isrender=[];
-            obj.overlay=0;
+            obj.surface_overlay=0;
+            obj.volume_overlay=0;
+            obj.electrode_overlay=0;
+            
             obj.coor=[];
             obj.electrode.coor=[];
             obj.electrode.col=[];
@@ -92,8 +98,10 @@ classdef BrainMap < handle
             obj.smooth=0;
             obj.elec_index=0;
             obj.color=[0 0 1];
-            obj.model.vertices=[];
-            obj.model.faces=[];
+            
+            obj.surface=[];
+            obj.volume=[];
+            
             obj.light=[];
             obj.curr_elec.side=[];
             obj.curr_elec.top=[];
@@ -114,7 +122,9 @@ classdef BrainMap < handle
             
             obj.FileMenu=uimenu(obj.fig,'label','File');
             obj.LoadMenu=uimenu(obj.FileMenu,'label','Load');
-            obj.LoadSurfaceMenu=uimenu(obj.LoadMenu,'label','Surface','callback',@(src,evt) LoadSurface(obj),'Accelerator','o');
+            
+            obj.LoadVolumeMenu=uimenu(obj.LoadMenu,'label','Volume','callback',@(src,evt) LoadVolume(obj),'Accelerator','v');
+            obj.LoadSurfaceMenu=uimenu(obj.LoadMenu,'label','Surface','callback',@(src,evt) LoadSurface(obj),'Accelerator','s');
             obj.LoadElectrodeMenu=uimenu(obj.LoadMenu,'label','Electrode','callback',@(src,evt) LoadElectrode(obj),'Accelerator','e');
             
             obj.SaveAsMenu=uimenu(obj.FileMenu,'label','Save as');
@@ -136,9 +146,9 @@ classdef BrainMap < handle
             
             obj.BuildToolbar();
             
-            obj.JScrollTreeInput=javaObjectEDT(CheckBoxNodeTree());
+            obj.JScrollTreeInput=javaObjectEDT(checkboxtree.FileLoadTree());
             [jh,gh]=javacomponent(obj.JScrollTreeInput,[0,0,1,1],toolpanel);
-            set(gh,'Units','Norm','Position',[0,0.6,1,0.4]);
+            set(gh,'Units','Norm','Position',[0,0.7,1,0.3]);
 
         end
         function OnClose(obj)
@@ -197,9 +207,12 @@ classdef BrainMap < handle
             dy = locend(2) - obj.loc(2);           % calculate difference y
             factor = 2;                         % correction mouse -> rotation
             camorbit(obj.axis_3d,-dx/factor,-dy/factor);
-            if ~obj.isrender
+
+            try
                 obj.light = camlight(obj.light,'headlight');        % adjust light
+            catch
             end
+            
             obj.loc=locend;
         end
         
@@ -222,8 +235,9 @@ classdef BrainMap < handle
         
         function RecenterCallback(obj)
             view(3);
-            if ~obj.isrender
+            try
                 obj.light = camlight(obj.light,'headlight');        % adjust light
+            catch
             end
             set(obj.axis_3d,'CameraViewAngle',10);
         end
