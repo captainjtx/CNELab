@@ -10,13 +10,17 @@ btn_d.width=d.height;
 btn_d.height=d.height;
 col=obj.JToolbar(1).getBackground();
 
+obj.IconLightOn=javaObjectEDT(javax.swing.ImageIcon([obj.cnelab_path,'/db/icon/light.png']));
+obj.IconLightOff=javaObjectEDT(javax.swing.ImageIcon([obj.cnelab_path,'/db/icon/nolight.png']));
+
 
 obj.JRecenter=javaObjectEDT(TButton([obj.cnelab_path,'/db/icon/recenter.png'],btn_d,char('Recenter'),col));
 set(handle(obj.JRecenter,'CallbackProperties'),'MousePressedCallback',@(h,e) RecenterCallback(obj));
 obj.JToolbar(1).add(obj.JRecenter);
 
-obj.JToolbar(1).addSeparator();
-
+obj.JLight=javaObjectEDT(TButton([obj.cnelab_path,'/db/icon/nolight.png'],btn_d,char('Light off'),col));
+set(handle(obj.JLight,'CallbackProperties'),'MousePressedCallback',@(h,e) LightOffCallback(obj));
+obj.JToolbar(1).add(obj.JLight);
 
 obj.JToolbar(1).repaint;
 obj.JToolbar(1).revalidate;

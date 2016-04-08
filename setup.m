@@ -50,10 +50,15 @@ if ~any(strcmp(spath,pwd))
     javaaddpath(pwd);
 end
 
+if ~any(strcmp(spath,[pwd filesep 'test']))
+    javaaddpath([pwd filesep 'test']);
+end
+
 pref_dir=prefdir;
 fid = fopen(fullfile(pref_dir,'javaclasspath.txt'),'w');
 
 fprintf(fid,'%s\n',pwd);
+fprintf(fid,'%s\n',[pwd filesep 'test']);
 
 fclose(fid);
 

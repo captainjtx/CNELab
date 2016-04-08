@@ -26,14 +26,13 @@ classdef BrainMap < handle
         
         JRecenter
         
-        JScrollTreeInput
+        JFileLoadTree
+        JLight
+        
+        IconLightOn
+        IconLightOff
     end
     properties
-        
-        head_center
-        surface_overlay
-        volume_overlay
-        electrode_overlay
         coor
         electrode
         curr_coor
@@ -44,22 +43,19 @@ classdef BrainMap < handle
         elec_index
         color
         
-        surface
-        volume
-        
         display_view
         curr_elec
-        surface_plot
+        
         label
         light
         RotateTimer
         ZoomTimer
         loc
         self_center
-        position_bak
         
         inView
         
+        mapObj
     end
     
     methods
@@ -81,11 +77,6 @@ classdef BrainMap < handle
             end
         end
         function varinit(obj)
-
-            obj.head_center=[];
-            obj.surface_overlay=0;
-            obj.volume_overlay=0;
-            obj.electrode_overlay=0;
             
             obj.coor=[];
             obj.electrode.coor=[];
@@ -99,19 +90,13 @@ classdef BrainMap < handle
             obj.elec_index=0;
             obj.color=[0 0 1];
             
-            obj.surface=[];
-            obj.volume=[];
-            
             obj.light=[];
             obj.curr_elec.side=[];
             obj.curr_elec.top=[];
             obj.curr_elec.stick=[];
-            obj.position_bak.side=[];
-            obj.position_bak.top=[];
-            obj.position_bak.stick=[];
-            obj.position_bak.coor=[];
             obj.inView=[];
             
+            obj.mapObj=containers.Map;
         end
         
         function buildfig(obj)
@@ -146,10 +131,16 @@ classdef BrainMap < handle
             
             obj.BuildToolbar();
             
-            obj.JScrollTreeInput=javaObjectEDT(src.java.checkboxtree.FileLoadTree());
-            [jh,gh]=javacomponent(obj.JScrollTreeInput,[0,0,1,1],toolpanel);
+            obj.JFileLoadTree=javaObjectEDT(src.java.checkboxtree.FileLoadTree());
+            obj.JFileLoadTree.buildfig();
+            
+            jh=obj.JFileLoadTree;
+            set(handle(jh,'CallbackProperties'),'TreeSelectionCallback',@(src,evt) TreeSelectionCallback(obj,src,evt));
+            set(handle(jh,'CallbackProperties'),'CheckChangedCallback',@(src,evt) CheckChangedCallback(obj,src,evt));
+            
+            
+            [jh,gh]=javacomponent(obj.JFileLoadTree.span,[0,0,1,1],toolpanel);
             set(gh,'Units','Norm','Position',[0,0.7,1,0.3]);
-
         end
         function OnClose(obj)
             try
@@ -208,11 +199,11 @@ classdef BrainMap < handle
             factor = 2;                         % correction mouse -> rotation
             camorbit(obj.axis_3d,-dx/factor,-dy/factor);
 
-            try
+            if ~isempty(obj.light)
                 obj.light = camlight(obj.light,'headlight');        % adjust light
-            catch
             end
             
+%             vol3d(obj.volume{obj.volume_overlay});
             obj.loc=locend;
         end
         
@@ -228,18 +219,49 @@ classdef BrainMap < handle
             figpos=get(obj.fig,'position');
             position(1)=position(1)+figpos(1);
             position(2)=position(2)+figpos(2);
-            f=figure('Name','Axis 3D','Position',position,'visible','on','color','w');
+            f=figure('Name','Axis 3D','Position',position,'visible','on','color',get(obj.ViewPanel,'BackgroundColor'));
             copyobj(obj.axis_3d,f);
             colormap(colormap(obj.axis_3d));
         end
         
         function RecenterCallback(obj)
             view(3);
-            try
+            if ~isempty(obj.light)
                 obj.light = camlight(obj.light,'headlight');        % adjust light
-            catch
             end
             set(obj.axis_3d,'CameraViewAngle',10);
+        end
+        
+        function TreeSelectionCallback(obj,src,evt)
+%             disp(evt.filename)
+%             disp(evt.ischecked)
+        end
+        
+        function CheckChangedCallback(obj,src,evt)
+            
+            mapval=obj.mapObj(char(evt.filename));
+            if evt.ischecked
+                set(mapval.handles,'visible','on');
+            else
+                set(mapval.handles,'visible','off');
+            end
+%             disp(evt.filename)
+%             disp(evt.ischecked)
+        end
+        
+        function LightOffCallback(obj)
+            obj.JLight.setIcon(obj.IconLightOn);
+            obj.JLight.setToolTipText('Light on');
+            delete(findobj(obj.axis_3d,'type','light'));
+            obj.light=[];
+            set(handle(obj.JLight,'CallbackProperties'),'MousePressedCallback',@(h,e) LightOnCallback(obj));
+        end
+        
+        function LightOnCallback(obj)
+            obj.JLight.setIcon(obj.IconLightOff);
+            obj.JLight.setToolTipText('Light off');
+            obj.light=camlight('headlight','infinite');
+            set(handle(obj.JLight,'CallbackProperties'),'MousePressedCallback',@(h,e) LightOffCallback(obj));
         end
     end
     methods

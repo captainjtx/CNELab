@@ -6,19 +6,37 @@ fpath=[pathname filename];
 if ~filename
     return;
 end
+
+if obj.mapObj.isKey(fpath)
+    errordlg('Already loaded !');
+    return
+end
+
 dat=load(fpath);
 obj.electrode=dat.electrode_information;
+
+mapval.id='electrode';
+count=0;
+
 for i=1:length(obj.electrode)
+    count=count+1;
     obj.curr_elec.side=patch('faces',obj.electrode(i).side.Faces,...
         'vertices',obj.electrode(i).side.Vertices,...
         'facecolor',obj.electrode(i).col,'edgecolor','none');
+    mapval.handles(count)=obj.curr_elec.side;
+    
+    count=count+1;
     obj.curr_elec.top=patch('faces',obj.electrode(i).top.Faces,...
         'vertices',obj.electrode(i).top.Vertices,...
         'facecolor',obj.electrode(i).col,'edgecolor','none');
+    mapval.handles(count)=obj.curr_elec.top;
+    
     if ~isempty(obj.electrode(i).stick)
+        count=count+1;
         obj.curr_elec.stick=patch('faces',obj.electrode(i).stick.Faces,...
             'vertices',obj.electrode(i).stick.Vertices,...
             'facecolor',[0 0 0],'edgecolor','none','facealpha',0.3);
+        mapval.handles(count)=obj.curr_elec.stick;
     else
         obj.curr_elec.stick=[];
     end
@@ -40,14 +58,9 @@ catch
     obj.label=text(x(1)-3,y(1)-3,z(1)+3,'C1','fontsize',12,'color',[0 0 0]) ;
 end
 obj.self_center=mean(obj.curr_coor);
-obj.position_bak.side=get(obj.curr_elec.side,'vertices');
-obj.position_bak.top=get(obj.curr_elec.top,'vertices');
-try
-    obj.position_bak.stick=get(obj.curr_elec.stick,'vertices');
-catch
-    obj.position_bak.stick=[];
-end
-obj.position_bak.coor=obj.curr_coor;
+
+obj.JFileLoadTree.addElectrode(fpath,true);
+obj.mapObj(fpath)=mapval;
 
 end
 

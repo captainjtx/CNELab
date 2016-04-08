@@ -12,24 +12,72 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
-// import checkboxtree.CheckBoxNodeData;
-// import checkboxtree.CheckBoxNodeEditor;
-// import checkboxtree.CheckBoxNodeRenderer;
-
 import javax.swing.ImageIcon;
 
-public class FileLoadTree extends JScrollPane
+import java.util.ArrayList;
+
+import java.awt.BorderLayout;
+import java.awt.Insets;
+
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.event.ItemListener;
+import java.awt.event.ItemEvent;
+
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+
+import javax.swing.AbstractButton;
+import javax.swing.ButtonModel;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+
+import javax.swing.JTree;
+import javax.swing.UIManager;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreeCellRenderer;
+import javax.swing.ImageIcon;
+
+import java.io.File;
+
+import java.awt.Component;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.MouseEvent;
+import java.util.EventObject;
+
+import javax.swing.AbstractCellEditor;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeCellEditor;
+import javax.swing.tree.TreePath;
+
+import java.util.Hashtable;
+
+
+public class FileLoadTree
 {
-    private JTree tree;
+    public JTree tree;
+    
+    public JScrollPane span;
+    
     private DefaultMutableTreeNode SurfaceNode = null;
     private DefaultMutableTreeNode ElectrodeNode = null;
     private DefaultMutableTreeNode VolumeNode = null;
     private DefaultMutableTreeNode OthersNode = null;
     private DefaultTreeModel defaultTreeModel;
     
-    public FileLoadTree()
+    public JScrollPane buildfig()
     {
         tree=new JTree();
+        
         tree.setRootVisible( false );
         tree.setShowsRootHandles(true);
         
@@ -72,47 +120,62 @@ public class FileLoadTree extends JScrollPane
         tree.setCellEditor(editor);
         tree.setEditable(true);
         
-        // listen for changes in the selection
-        tree.addTreeSelectionListener(new TreeSelectionListener() {
-            
+        tree.addTreeSelectionListener( new TreeSelectionListener()
+        {
             @Override
-            public void valueChanged(final TreeSelectionEvent e) {
-//                 System.out.println(System.currentTimeMillis() + ": selection changed");
+            public void valueChanged(TreeSelectionEvent e)
+            {
+                CheckBoxNodeData data = null;
+                
+                DefaultMutableTreeNode node= (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+                
+                if (node == null) return;
+                
+                Object nodeInfo=node.getUserObject();
+                
+                if (nodeInfo instanceof CheckBoxNodeData)
+                {
+                    data = (CheckBoxNodeData) nodeInfo;
+                }
+                
+                if (data!=null)
+                notifyTreeSelection(data.getText(),data.isChecked());
             }
         });
         
         // listen for changes in the model (including check box toggles)
-        defaultTreeModel.addTreeModelListener(new TreeModelListener() {
-            
-            @Override
-            public void treeNodesChanged(final TreeModelEvent e) {
-//                 System.out.println(System.currentTimeMillis() + ": nodes changed");
-            }
-            
-            @Override
-            public void treeNodesInserted(final TreeModelEvent e) {
-//                 System.out.println(System.currentTimeMillis() + ": nodes inserted");
-            }
-            
-            @Override
-            public void treeNodesRemoved(final TreeModelEvent e) {
-//                 System.out.println(System.currentTimeMillis() + ": nodes removed");
-            }
-            
-            @Override
-            public void treeStructureChanged(final TreeModelEvent e) {
-//                 System.out.println(System.currentTimeMillis() + ": structure changed");
-            }
-        });
+//         defaultTreeModel.addTreeModelListener(new TreeModelListener() {
+//
+//             @Override
+//             public void treeNodesChanged(final TreeModelEvent e) {
+// //                 System.out.println(System.currentTimeMillis() + ": nodes changed");
+//             }
+//
+//             @Override
+//             public void treeNodesInserted(final TreeModelEvent e) {
+// //                 System.out.println(System.currentTimeMillis() + ": nodes inserted");
+//             }
+//
+//             @Override
+//             public void treeNodesRemoved(final TreeModelEvent e) {
+// //                 System.out.println(System.currentTimeMillis() + ": nodes removed");
+//             }
+//
+//             @Override
+//             public void treeStructureChanged(final TreeModelEvent e) {
+// //                 System.out.println(System.currentTimeMillis() + ": structure changed");
+//             }
+//         });
         
-        setViewportView(tree);
+        span=new JScrollPane(tree);
+        span.setViewportView(tree);
+        
+        return span;
     }
-    private static DefaultMutableTreeNode add(
-    final DefaultMutableTreeNode parent, final String text,
-    final boolean checked)
+    private DefaultMutableTreeNode add(final DefaultMutableTreeNode parent, final String text,final boolean checked)
     {
-        final CheckBoxNodeData data = new CheckBoxNodeData(text, checked);
-        final DefaultMutableTreeNode node = new DefaultMutableTreeNode(data);
+        CheckBoxNodeData data = new CheckBoxNodeData(text, checked);
+        DefaultMutableTreeNode node = new DefaultMutableTreeNode(data);
         parent.add(node);
         return node;
     }
@@ -124,31 +187,417 @@ public class FileLoadTree extends JScrollPane
             treeModel.nodeStructureChanged(  (javax.swing.tree.TreeNode) treeModel.getRoot()  );
         }
     }
+    private final Hashtable<String,CheckBoxNodeData> nodeCache = new Hashtable<String,CheckBoxNodeData>();
     
-    public void addSurface(String filename)
+    public void addSurface(String filename, boolean chk)
     {
-        DefaultMutableTreeNode node = new DefaultMutableTreeNode( new CheckBoxNodeData(filename,false) );
-        addNodeToDefaultTreeModel( defaultTreeModel, SurfaceNode, node );
+        if (!nodeCache.containsKey(filename))
+        {
+            CheckBoxNodeData dat=new CheckBoxNodeData(filename,chk);
+            nodeCache.put(filename,dat);
+            
+            DefaultMutableTreeNode node = new DefaultMutableTreeNode( dat );
+            addNodeToDefaultTreeModel( defaultTreeModel, SurfaceNode, node );
+        }
     }
-    public void addVolume(String filename)
+    public void addVolume(String filename, boolean chk)
     {
-        
-        DefaultMutableTreeNode node = new DefaultMutableTreeNode( new CheckBoxNodeData(filename,false) );
-        addNodeToDefaultTreeModel( defaultTreeModel, VolumeNode, node );
+        if (!nodeCache.containsKey(filename))
+        {
+            CheckBoxNodeData dat=new CheckBoxNodeData(filename,chk);
+            nodeCache.put(filename,dat);
+            
+            DefaultMutableTreeNode node = new DefaultMutableTreeNode( dat );
+            addNodeToDefaultTreeModel( defaultTreeModel, VolumeNode, node );
+        }
         
     }
-    public void addElectrode(String filename)
+    public void addElectrode(String filename, boolean chk)
     {
-        
-        DefaultMutableTreeNode node = new DefaultMutableTreeNode( new CheckBoxNodeData(filename,false) );
-        addNodeToDefaultTreeModel( defaultTreeModel, ElectrodeNode, node );
-        
+        if (!nodeCache.containsKey(filename))
+        {
+            CheckBoxNodeData dat=new CheckBoxNodeData(filename,chk);
+            nodeCache.put(filename,dat);
+            
+            DefaultMutableTreeNode node = new DefaultMutableTreeNode( dat );
+            addNodeToDefaultTreeModel( defaultTreeModel, ElectrodeNode, node );
+        }
     }
-    public void addOthers(String filename)
+    public void addOthers(String filename, boolean chk)
     {
-        DefaultMutableTreeNode node = new DefaultMutableTreeNode( new CheckBoxNodeData(filename,false) );
-        addNodeToDefaultTreeModel( defaultTreeModel, OthersNode, node );
+        if (!nodeCache.containsKey(filename))
+        {
+            CheckBoxNodeData dat=new CheckBoxNodeData(filename,chk);
+            nodeCache.put(filename,dat);
+            
+            DefaultMutableTreeNode node = new DefaultMutableTreeNode( dat );
+            addNodeToDefaultTreeModel( defaultTreeModel, OthersNode, node );
+        }
         
     }
     
+    public ArrayList<TreeListener> treelistener = new ArrayList<>();
+    
+    public synchronized void addTreeListener(TreeListener lis) {
+//         System.out.println("hello");
+        treelistener.add(lis);
+    }
+    public synchronized void removeTreeListener(TreeListener lis) {
+        treelistener.remove(lis);
+    }
+    public interface TreeListener extends java.util.EventListener {
+        void treeSelection(TreeEvent event);
+    }
+    public class TreeEvent extends java.util.EventObject {
+        public String filename;
+        public boolean ischecked;
+        
+        public TreeEvent(Object source, String filename, boolean ischecked)
+        {
+            super(source);
+            this.filename=filename;
+            this.ischecked=ischecked;
+        }
+    }
+    public void notifyTreeSelection(String filename,boolean ischecked ) {
+//         ArrayList<TreeListener> listenerCopy=new ArrayList<TreeListener>(treelistener);
+//         System.out.println("Tree Size: "+treelistener.size());
+        for(TreeListener obj : treelistener)
+        {
+            obj.treeSelection(new TreeEvent(this,filename,ischecked));
+        }
+    }
+    public ArrayList<CheckListener> checklistener = new ArrayList<>();
+    
+    public synchronized void addCheckListener(CheckListener lis) {
+//         System.out.println("hello");
+        checklistener.add(lis);
+    }
+    public synchronized void removeCheckListener(CheckListener lis) {
+        checklistener.remove(lis);
+    }
+    public interface CheckListener extends java.util.EventListener {
+        void checkChanged(CheckEvent event);
+    }
+    public class CheckEvent extends java.util.EventObject {
+        public String filename;
+        public boolean ischecked;
+        
+        public CheckEvent(Object source, String filename, boolean ischecked)
+        {
+            super(source);
+            this.filename=filename;
+            this.ischecked=ischecked;
+        }
+    }
+    public void notifyCheckChange(String filename,boolean ischecked) {
+        for(CheckListener obj : checklistener)
+        {
+            obj.checkChanged(new CheckEvent(this,filename,ischecked));
+        }
+    }
+    
+    public class CheckBoxNodePanel extends JPanel {
+        
+        private final JLabel label = new JLabel();
+        private final JCheckBox check = new JCheckBox();
+        private ActionListener actionListener;
+        
+        public CheckBoxNodePanel() {
+            actionListener = new ActionListener() {
+                public void actionPerformed(ActionEvent actionEvent) {
+//                     AbstractButton abstractButton = (AbstractButton) actionEvent
+//                     .getSource();
+//                     boolean selected = abstractButton.getModel().isSelected();
+                    CheckBoxNodeData data = null;
+                    
+                    DefaultMutableTreeNode node= (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+                    
+                    if (node == null) return;
+                    
+                    Object nodeInfo=node.getUserObject();
+                    
+                    if (nodeInfo instanceof CheckBoxNodeData)
+                    {
+                        data = (CheckBoxNodeData) nodeInfo;
+                    }
+                    
+                    if (data!=null)
+                    notifyCheckChange(data.getText(),data.isChecked());
+                }
+            };
+            
+            this.check.addActionListener(actionListener);
+            
+            this.check.setMargin(new Insets(0, 0, 0, 0));
+            setLayout(new BorderLayout());
+            add(check, BorderLayout.WEST);
+            add(label, BorderLayout.CENTER);
+        }
+        
+    }
+    
+    public class CheckBoxNodeRenderer implements TreeCellRenderer {
+        
+        private final CheckBoxNodePanel panel = new CheckBoxNodePanel();
+        
+        private final CheckBoxNodeData nodedata = new CheckBoxNodeData("",false);
+        
+        private final DefaultTreeCellRenderer defaultRenderer =
+        new DefaultTreeCellRenderer();
+        
+        private final Color selectionForeground, selectionBackground;
+        private final Color textForeground, textBackground;
+        
+        protected CheckBoxNodePanel getPanel() {
+            return panel;
+        }
+        protected CheckBoxNodeData getNodeData() {
+            return nodedata;
+        }
+        
+        private ImageIcon surfaceIcon;
+        private ImageIcon electrodeIcon;
+        private ImageIcon volumeIcon;
+        private ImageIcon othersIcon;
+        
+        public CheckBoxNodeRenderer() {
+            final Font fontValue = UIManager.getFont("Tree.font");
+            if (fontValue != null) panel.label.setFont(fontValue);
+            
+            final Boolean focusPainted =
+            (Boolean) UIManager.get("Tree.drawsFocusBorderAroundIcon");
+            panel.check.setFocusPainted(focusPainted != null && focusPainted);
+            
+            selectionForeground = UIManager.getColor("Tree.selectionForeground");
+            selectionBackground = UIManager.getColor("Tree.selectionBackground");
+            textForeground = UIManager.getColor("Tree.textForeground");
+            textBackground = UIManager.getColor("Tree.textBackground");
+            
+            final File f = new File(CheckBoxNodeRenderer.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+//         System.out.print(f.toString());
+            
+            String surfaceIconFname=f.toString()+"/db/icon/surface.png";
+            surfaceIcon = new ImageIcon(surfaceIconFname,"Surface Icon");
+            
+            String electrodeIconFname=f.toString()+"/db/icon/ecog.png";
+            electrodeIcon = new ImageIcon(electrodeIconFname,"Electrode Icon");
+            
+            String volumeIconFname=f.toString()+"/db/icon/volume.png";
+            volumeIcon = new ImageIcon(volumeIconFname,"Volume Icon");
+            
+            String othersIconFname=f.toString()+"/db/icon/others.png";
+            othersIcon = new ImageIcon(othersIconFname,"Others Icon");
+        }
+        
+        // -- TreeCellRenderer methods --
+        
+        @Override
+        public Component getTreeCellRendererComponent(final JTree tree,
+        final Object value, final boolean selected, final boolean expanded,
+        final boolean leaf, final int row, final boolean hasFocus)
+        {
+            CheckBoxNodeData data = null;
+            if (value instanceof DefaultMutableTreeNode) {
+                final DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+                final Object userObject = node.getUserObject();
+                if (userObject instanceof CheckBoxNodeData) {
+                    data = (CheckBoxNodeData) userObject;
+                }
+            }
+            
+            final String stringValue =
+            tree.convertValueToText(value, selected, expanded, leaf, row, false);
+            panel.label.setText(stringValue);
+            panel.check.setSelected(false);
+            
+            panel.setEnabled(tree.isEnabled());
+            
+            
+            if (selected) {
+                panel.setForeground(selectionForeground);
+                panel.setBackground(selectionBackground);
+                panel.label.setForeground(selectionForeground);
+                panel.label.setBackground(selectionBackground);
+            }
+            else {
+                panel.setForeground(textForeground);
+                panel.setBackground(textBackground);
+                panel.label.setForeground(textForeground);
+                panel.label.setBackground(textBackground);
+            }
+            
+            if (data == null) {
+                // not a check box node; return default cell renderer
+                
+                defaultRenderer.setText(stringValue);
+                
+                if (isSurface(value))
+                {
+                    defaultRenderer.setIcon(surfaceIcon);
+                    defaultRenderer.setToolTipText("Surface");
+                }
+                else if (isElectrode(value))
+                {
+                    defaultRenderer.setIcon(electrodeIcon);
+                    defaultRenderer.setToolTipText("Electrode");
+                }
+                else if (isVolume(value))
+                {
+                    defaultRenderer.setIcon(volumeIcon);
+                    defaultRenderer.setToolTipText("Volume");
+                }
+                
+                else
+                {
+                    defaultRenderer.setIcon(othersIcon);
+                    defaultRenderer.setToolTipText("Others");
+                }
+                
+                return (Component) defaultRenderer;
+                
+            }
+            
+            panel.label.setText(data.toString());
+//         panel.label.setIcon(surfaceIcon);
+            panel.check.setSelected(data.isChecked());
+            
+            nodedata.setText(data.getText());
+            nodedata.setChecked(data.isChecked());
+            
+            return panel;
+        }
+        protected boolean isSurface(Object value)
+        {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+            String title = node.toString();
+            
+            if (title.indexOf("Surface") >= 0) {
+                return true;
+            }
+            return false;
+        }
+        protected boolean isElectrode(Object value)
+        {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+            String title = node.toString();
+            
+            if (title.indexOf("Electrode") >= 0) {
+                return true;
+            }
+            return false;
+        }
+        protected boolean isVolume(Object value)
+        {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+            String title = node.toString();
+            
+            if (title.indexOf("Volume") >= 0) {
+                return true;
+            }
+            return false;
+        }
+        
+    }
+    
+    public class CheckBoxNodeEditor extends AbstractCellEditor implements
+    TreeCellEditor
+    {
+        
+        private final CheckBoxNodeRenderer renderer = new CheckBoxNodeRenderer();
+        
+        private final JTree theTree;
+        
+        public CheckBoxNodeEditor(final JTree tree) {
+            theTree = tree;
+        }
+        
+        @Override
+        public Object getCellEditorValue() {
+            final CheckBoxNodePanel panel = renderer.getPanel();
+            final CheckBoxNodeData checkBoxNode = new CheckBoxNodeData(renderer.getNodeData().getText(),panel.check.isSelected());
+            return checkBoxNode;
+        }
+        
+        @Override
+        public boolean isCellEditable(final EventObject event) {
+            if (!(event instanceof MouseEvent)) return false;
+            final MouseEvent mouseEvent = (MouseEvent) event;
+            
+            final TreePath path =
+            theTree.getPathForLocation(mouseEvent.getX(), mouseEvent.getY());
+            if (path == null) return false;
+            
+            final Object node = path.getLastPathComponent();
+            if (!(node instanceof DefaultMutableTreeNode)) return false;
+            final DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) node;
+            
+            final Object userObject = treeNode.getUserObject();
+            return userObject instanceof CheckBoxNodeData;
+        }
+        
+        @Override
+        public Component getTreeCellEditorComponent(final JTree tree,
+        final Object value, final boolean selected, final boolean expanded,
+        final boolean leaf, final int row)
+        {
+            
+            final Component editor =
+            renderer.getTreeCellRendererComponent(tree, value, true, expanded, leaf,
+            row, true);
+            
+            // editor always selected / focused
+            final ItemListener itemListener = new ItemListener() {
+                
+                @Override
+                public void itemStateChanged(final ItemEvent itemEvent) {
+                    if (stopCellEditing()) {
+                        fireEditingStopped();
+                    }
+                }
+            };
+            if (editor instanceof CheckBoxNodePanel) {
+                final CheckBoxNodePanel panel = (CheckBoxNodePanel) editor;
+                panel.check.addItemListener(itemListener);
+            }
+            
+            return editor;
+        }
+    }
+    
+    public class CheckBoxNodeData {
+        
+        private String text;
+        private boolean checked;
+        
+        public CheckBoxNodeData(final String text, final boolean checked) {
+            this.text = text;
+            this.checked = checked;
+        }
+        
+        public boolean isChecked() {
+            return checked;
+        }
+        
+        public void setChecked(final boolean checked) {
+            this.checked = checked;
+        }
+        
+        public String getText() {
+            return text;
+        }
+        
+        public void setText(final String text) {
+            this.text = text;
+        }
+        
+        @Override
+        public String toString() {
+            
+            File f=new File(text);
+            return f.getName();
+        }
+        
+    }
 }
+

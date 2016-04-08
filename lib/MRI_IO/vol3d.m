@@ -235,6 +235,7 @@ if (ind==1 || is3DTexture )
       aslice(y_cut+1:end,z_cut+1:end)=0;    
    end
    h(handle_ind) = surface(x,y,z,cslice,'alphadata',aslice,opts{:});
+%    drawnow
    x = x + delta;
    handle_ind = handle_ind + 1;
   end
