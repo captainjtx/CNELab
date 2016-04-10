@@ -120,6 +120,8 @@ public class FileLoadTree
         tree.setCellEditor(editor);
         tree.setEditable(true);
         
+        tree.setSelectionRow(0);
+        
         tree.addTreeSelectionListener( new TreeSelectionListener()
         {
             @Override
@@ -131,15 +133,23 @@ public class FileLoadTree
                 
                 if (node == null) return;
                 
-                Object nodeInfo=node.getUserObject();
                 
+                Object nodeInfo=node.getUserObject();
                 if (nodeInfo instanceof CheckBoxNodeData)
                 {
                     data = (CheckBoxNodeData) nodeInfo;
                 }
                 
                 if (data!=null)
-                notifyTreeSelection(data.getText(),data.isChecked());
+                {
+                    //subnode
+                    notifyTreeSelection(data.getText(),data.isChecked(),node.getParent().toString(),node.getLevel());
+                }
+                else
+                {
+                    //mainnode
+                    notifyTreeSelection(node.toString(),true,node.toString(),node.getLevel());
+                }
             }
         });
         
@@ -251,20 +261,24 @@ public class FileLoadTree
     public class TreeEvent extends java.util.EventObject {
         public String filename;
         public boolean ischecked;
+        public String category;
+        public int level;
         
-        public TreeEvent(Object source, String filename, boolean ischecked)
+        public TreeEvent(Object source, String filename, boolean ischecked, String category, int level)
         {
             super(source);
             this.filename=filename;
             this.ischecked=ischecked;
+            this.category=category;
+            this.level=level;
         }
     }
-    public void notifyTreeSelection(String filename,boolean ischecked ) {
+    public void notifyTreeSelection(String filename,boolean ischecked,String category,int level) {
 //         ArrayList<TreeListener> listenerCopy=new ArrayList<TreeListener>(treelistener);
 //         System.out.println("Tree Size: "+treelistener.size());
         for(TreeListener obj : treelistener)
         {
-            obj.treeSelection(new TreeEvent(this,filename,ischecked));
+            obj.treeSelection(new TreeEvent(this,filename,ischecked,category,level));
         }
     }
     public ArrayList<CheckListener> checklistener = new ArrayList<>();
@@ -361,9 +375,12 @@ public class FileLoadTree
         private ImageIcon volumeIcon;
         private ImageIcon othersIcon;
         
+        private Font noselectFont =  UIManager.getFont("Tree.font").deriveFont(Font.PLAIN);
+        private Font selectFont=UIManager.getFont("Tree.font").deriveFont(Font.BOLD);
+        
         public CheckBoxNodeRenderer() {
-            final Font fontValue = UIManager.getFont("Tree.font");
-            if (fontValue != null) panel.label.setFont(fontValue);
+            if (noselectFont != null) panel.label.setFont(noselectFont);
+            
             
             final Boolean focusPainted =
             (Boolean) UIManager.get("Tree.drawsFocusBorderAroundIcon");
@@ -373,6 +390,12 @@ public class FileLoadTree
             selectionBackground = UIManager.getColor("Tree.selectionBackground");
             textForeground = UIManager.getColor("Tree.textForeground");
             textBackground = UIManager.getColor("Tree.textBackground");
+            
+//             defaultRenderer.setTextNonSelectionColor(textForeground);
+//             defaultRenderer.setTextSelectionColor(selectionForeground);
+//             defaultRenderer.setBorderSelectionColor(textForeground);
+//             defaultRenderer.setBackgroundNonSelectionColor(textBackground);
+//             defaultRenderer.setBackgroundSelectionColor(selectionBackground);
             
             final File f = new File(CheckBoxNodeRenderer.class.getProtectionDomain().getCodeSource().getLocation().getPath());
 //         System.out.print(f.toString());
@@ -415,12 +438,14 @@ public class FileLoadTree
             
             
             if (selected) {
+//                 panel.label.setFont(selectFont);
                 panel.setForeground(selectionForeground);
                 panel.setBackground(selectionBackground);
                 panel.label.setForeground(selectionForeground);
                 panel.label.setBackground(selectionBackground);
             }
             else {
+//                 panel.label.setFont(noselectFont);
                 panel.setForeground(textForeground);
                 panel.setBackground(textBackground);
                 panel.label.setForeground(textForeground);
@@ -454,7 +479,13 @@ public class FileLoadTree
                     defaultRenderer.setToolTipText("Others");
                 }
                 
-                return (Component) defaultRenderer;
+                if (selected)
+                    defaultRenderer.setFont(selectFont);
+                else
+                    defaultRenderer.setFont(noselectFont);
+                
+
+                return defaultRenderer;
                 
             }
             
@@ -465,6 +496,7 @@ public class FileLoadTree
             nodedata.setText(data.getText());
             nodedata.setChecked(data.isChecked());
             
+            panel.setFocusable(false);
             return panel;
         }
         protected boolean isSurface(Object value)

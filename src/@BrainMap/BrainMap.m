@@ -31,6 +31,25 @@ classdef BrainMap < handle
         
         IconLightOn
         IconLightOff
+        
+        IconLoadSurface
+        IconDeleteSurface
+        IconNewSurface
+        
+        IconLoadVolume
+        IconDeleteVolume
+        IconNewVolume
+        
+        IconLoadElectrode
+        IconDeleteElectrode
+        IconNewElectrode
+        
+        JLoadBtn
+        JDeleteBtn
+        JNewBtn
+        
+        toolpane
+        toolbtnpane
     end
     properties
         coor
@@ -56,6 +75,8 @@ classdef BrainMap < handle
         inView
         
         mapObj
+        
+        SelectEvt
     end
     
     methods
@@ -97,29 +118,31 @@ classdef BrainMap < handle
             obj.inView=[];
             
             obj.mapObj=containers.Map;
+            
+            obj.SelectEvt.category='Volume';
         end
         
         function buildfig(obj)
             screensize=get(0,'ScreenSize');
-            obj.fig=figure('Menubar','none','Name','BrainMap','units','pixels','position',[screensize(3)/2-400,screensize(4)/2-275,800,550],...
-                'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),'resize','off','Dockcontrols','off',...
+            obj.fig=figure('Menubar','none','Name','BrainMap','units','pixels','position',[screensize(3)/2-450,screensize(4)/2-325,900,650],...
+                'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),'resize','on','Dockcontrols','off',...
                 'WindowButtonMotionFcn',@(src,evt)MouseMove(obj));
             
             obj.FileMenu=uimenu(obj.fig,'label','File');
             obj.LoadMenu=uimenu(obj.FileMenu,'label','Load');
             
-            obj.LoadVolumeMenu=uimenu(obj.LoadMenu,'label','Volume','callback',@(src,evt) LoadVolume(obj),'Accelerator','v');
-            obj.LoadSurfaceMenu=uimenu(obj.LoadMenu,'label','Surface','callback',@(src,evt) LoadSurface(obj),'Accelerator','s');
+            obj.LoadVolumeMenu=uimenu(obj.LoadMenu,'label','Volume','callback',@(src,evt) LoadVolume(obj),'Accelerator','o');
+            obj.LoadSurfaceMenu=uimenu(obj.LoadMenu,'label','Surface','callback',@(src,evt) LoadSurface(obj),'Accelerator','u');
             obj.LoadElectrodeMenu=uimenu(obj.LoadMenu,'label','Electrode','callback',@(src,evt) LoadElectrode(obj),'Accelerator','e');
             
             obj.SaveAsMenu=uimenu(obj.FileMenu,'label','Save as');
             obj.SaveAsFigureMenu=uimenu(obj.SaveAsMenu,'label','Figuer','callback',@(src,evt) SaveAsFigure(obj),'Accelerator','p');
             
-            obj.ViewPanel=uipanel(obj.fig,'units','normalized','position',[0,0.15,0.7,0.85],'backgroundcolor',[0,0,0]);
+            obj.ViewPanel=uipanel(obj.fig,'units','normalized','position',[0,0.1,0.7,0.9],'backgroundcolor',[0,0,0]);
             
             obj.axis_3d=axes('parent',obj.ViewPanel,'units','normalized','position',[0,0,1,1],'visible','off','CameraViewAngle',10);
             
-            toolpanel=uipanel(obj.fig,'units','normalized','position',[0.7,0.15,0.3,0.85]);
+            obj.toolpane=uipanel(obj.fig,'units','normalized','position',[0.7,0.1,0.3,0.9]);
             
             view(3);
             daspect([1,1,1]);
@@ -137,10 +160,14 @@ classdef BrainMap < handle
             jh=obj.JFileLoadTree;
             set(handle(jh,'CallbackProperties'),'TreeSelectionCallback',@(src,evt) TreeSelectionCallback(obj,src,evt));
             set(handle(jh,'CallbackProperties'),'CheckChangedCallback',@(src,evt) CheckChangedCallback(obj,src,evt));
+%             set(handle(obj.JFileLoadTree.span,'CallbackProperties'),'KeyTypedCallback',@(src,evt) KeyTypedCallback(obj,src,evt));
             
+            [jh,gh]=javacomponent(obj.JFileLoadTree.span,[0,0,1,1],obj.toolpane);
+            set(gh,'Units','Norm','Position',[0,0.8,1,0.2]);
             
-            [jh,gh]=javacomponent(obj.JFileLoadTree.span,[0,0,1,1],toolpanel);
-            set(gh,'Units','Norm','Position',[0,0.7,1,0.3]);
+            obj.toolbtnpane=uipanel(obj.toolpane,'units','normalized','position',[0,0.745,1,0.055]);
+            
+            obj.BuildIOBar();
         end
         function OnClose(obj)
             try
@@ -203,7 +230,6 @@ classdef BrainMap < handle
                 obj.light = camlight(obj.light,'headlight');        % adjust light
             end
             
-%             vol3d(obj.volume{obj.volume_overlay});
             obj.loc=locend;
         end
         
@@ -233,8 +259,58 @@ classdef BrainMap < handle
         end
         
         function TreeSelectionCallback(obj,src,evt)
+            if ~strcmpi(obj.SelectEvt.category,evt.category)
+                
+                if strcmpi(evt.category,'Volume')
+                    obj.JLoadBtn.setIcon(obj.IconLoadVolume);
+                    obj.JLoadBtn.setToolTipText('Load volume');
+                    
+                    obj.JDeleteBtn.setIcon(obj.IconDeleteVolume);
+                    obj.JDeleteBtn.setToolTipText('Delete volume');
+                    
+                    obj.JNewBtn.setIcon(obj.IconNewVolume);
+                    obj.JNewBtn.setToolTipText('New volume');
+                    
+                    set(handle(obj.JLoadBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) LoadVolume(obj));
+                    set(handle(obj.JDeleteBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) DeleteVolume(obj));
+                    set(handle(obj.JNewBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) NewVolume(obj));
+                elseif strcmpi(evt.category,'Surface')
+                    obj.JLoadBtn.setIcon(obj.IconLoadSurface);
+                    obj.JLoadBtn.setToolTipText('Load surface');
+                    
+                    obj.JDeleteBtn.setIcon(obj.IconDeleteSurface);
+                    obj.JDeleteBtn.setToolTipText('Delete surface');
+                    
+                    obj.JNewBtn.setIcon(obj.IconNewSurface);
+                    obj.JNewBtn.setToolTipText('New surface');
+                    
+                    set(handle(obj.JLoadBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) LoadSurface(obj));
+                    set(handle(obj.JDeleteBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) DeleteSurface(obj));
+                    set(handle(obj.JNewBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) NewSurface(obj));
+                elseif strcmpi(evt.category,'Electrode')
+                    obj.JLoadBtn.setIcon(obj.IconLoadElectrode);
+                    obj.JLoadBtn.setToolTipText('Load electrode');
+                    
+                    obj.JDeleteBtn.setIcon(obj.IconDeleteElectrode);
+                    obj.JDeleteBtn.setToolTipText('Delete electrode');
+                    
+                    obj.JNewBtn.setIcon(obj.IconNewElectrode);
+                    obj.JNewBtn.setToolTipText('New electrode');
+                    
+                    set(handle(obj.JLoadBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) LoadElectrode(obj));
+                    set(handle(obj.JDeleteBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) DeleteElectrode(obj));
+                    set(handle(obj.JNewBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) NewElectrode(obj));
+                elseif strcmpi(evt.category,'Others')
+                    
+                end
+            end         
+            
 %             disp(evt.filename)
 %             disp(evt.ischecked)
+%             disp(evt.level)
+%             disp(evt.category)
+            
+            obj.SelectEvt=evt;
         end
         
         function CheckChangedCallback(obj,src,evt)
@@ -263,10 +339,28 @@ classdef BrainMap < handle
             obj.light=camlight('headlight','infinite');
             set(handle(obj.JLight,'CallbackProperties'),'MousePressedCallback',@(h,e) LightOffCallback(obj));
         end
+        
+        
+        function DeleteSurface(obj)
+            
+        end
+        
+        function DeleteVolume(obj)
+        end
+        function DeleteElectrode(obj)
+        end
+        
+        function NewElectrode(obj)
+        end
+        function NewSurface(obj)
+        end
+        function NewVolume(obj)
+        end
     end
     methods
         LoadSurface(obj)
         LoadElectrode(obj)
         BuildToolbar(obj)
+        BuildIOBar(obj)
     end
 end
