@@ -35,18 +35,22 @@ classdef BrainMap < handle
         IconLoadSurface
         IconDeleteSurface
         IconNewSurface
+        IconSaveSurface
         
         IconLoadVolume
         IconDeleteVolume
         IconNewVolume
+        IconSaveVolume
         
         IconLoadElectrode
         IconDeleteElectrode
         IconNewElectrode
+        IconSaveElectrode
         
         JLoadBtn
         JDeleteBtn
         JNewBtn
+        JSaveBtn
         
         toolpane
         toolbtnpane
@@ -165,7 +169,7 @@ classdef BrainMap < handle
             [jh,gh]=javacomponent(obj.JFileLoadTree.span,[0,0,1,1],obj.toolpane);
             set(gh,'Units','Norm','Position',[0,0.8,1,0.2]);
             
-            obj.toolbtnpane=uipanel(obj.toolpane,'units','normalized','position',[0,0.745,1,0.055]);
+            obj.toolbtnpane=uipanel(obj.toolpane,'units','normalized','position',[0,0.73,1,0.07]);
             
             obj.BuildIOBar();
         end
@@ -271,9 +275,13 @@ classdef BrainMap < handle
                     obj.JNewBtn.setIcon(obj.IconNewVolume);
                     obj.JNewBtn.setToolTipText('New volume');
                     
+                    obj.JSaveBtn.setIcon(obj.IconSaveVolume);
+                    obj.JSaveBtn.setToolTipText('Save volume');
+                    
                     set(handle(obj.JLoadBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) LoadVolume(obj));
                     set(handle(obj.JDeleteBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) DeleteVolume(obj));
                     set(handle(obj.JNewBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) NewVolume(obj));
+                    set(handle(obj.JSaveBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) SaveVolume(obj));
                 elseif strcmpi(evt.category,'Surface')
                     obj.JLoadBtn.setIcon(obj.IconLoadSurface);
                     obj.JLoadBtn.setToolTipText('Load surface');
@@ -284,9 +292,13 @@ classdef BrainMap < handle
                     obj.JNewBtn.setIcon(obj.IconNewSurface);
                     obj.JNewBtn.setToolTipText('New surface');
                     
+                    obj.JSaveBtn.setIcon(obj.IconSaveSurface);
+                    obj.JSaveBtn.setToolTipText('Save surface');
+                    
                     set(handle(obj.JLoadBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) LoadSurface(obj));
                     set(handle(obj.JDeleteBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) DeleteSurface(obj));
                     set(handle(obj.JNewBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) NewSurface(obj));
+                    set(handle(obj.JSaveBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) SaveSurface(obj));
                 elseif strcmpi(evt.category,'Electrode')
                     obj.JLoadBtn.setIcon(obj.IconLoadElectrode);
                     obj.JLoadBtn.setToolTipText('Load electrode');
@@ -297,9 +309,13 @@ classdef BrainMap < handle
                     obj.JNewBtn.setIcon(obj.IconNewElectrode);
                     obj.JNewBtn.setToolTipText('New electrode');
                     
+                    obj.JSaveBtn.setIcon(obj.IconSaveElectrode);
+                    obj.JSaveBtn.setToolTipText('Save electrode');
+                    
                     set(handle(obj.JLoadBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) LoadElectrode(obj));
                     set(handle(obj.JDeleteBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) DeleteElectrode(obj));
                     set(handle(obj.JNewBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) NewElectrode(obj));
+                    set(handle(obj.JSaveBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) SaveElectrode(obj));
                 elseif strcmpi(evt.category,'Others')
                     
                 end
@@ -355,6 +371,13 @@ classdef BrainMap < handle
         function NewSurface(obj)
         end
         function NewVolume(obj)
+        end
+        
+        function SaveVolume(obj)
+        end
+        function SaveSurface(obj)
+        end
+        function SaveElectrode(obj)
         end
     end
     methods

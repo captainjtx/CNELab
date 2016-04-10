@@ -208,7 +208,10 @@ public class FileLoadTree
             
             DefaultMutableTreeNode node = new DefaultMutableTreeNode( dat );
             addNodeToDefaultTreeModel( defaultTreeModel, SurfaceNode, node );
+            
+            expandAllNodes(tree, 0, tree.getRowCount());
         }
+        
     }
     public void addVolume(String filename, boolean chk)
     {
@@ -219,6 +222,10 @@ public class FileLoadTree
             
             DefaultMutableTreeNode node = new DefaultMutableTreeNode( dat );
             addNodeToDefaultTreeModel( defaultTreeModel, VolumeNode, node );
+            
+            
+            expandAllNodes(tree, 0, tree.getRowCount());
+
         }
         
     }
@@ -231,6 +238,9 @@ public class FileLoadTree
             
             DefaultMutableTreeNode node = new DefaultMutableTreeNode( dat );
             addNodeToDefaultTreeModel( defaultTreeModel, ElectrodeNode, node );
+            
+            expandAllNodes(tree, 0, tree.getRowCount());
+
         }
     }
     public void addOthers(String filename, boolean chk)
@@ -242,6 +252,9 @@ public class FileLoadTree
             
             DefaultMutableTreeNode node = new DefaultMutableTreeNode( dat );
             addNodeToDefaultTreeModel( defaultTreeModel, OthersNode, node );
+            
+            expandAllNodes(tree, 0, tree.getRowCount());
+
         }
         
     }
@@ -379,7 +392,11 @@ public class FileLoadTree
         private Font selectFont=UIManager.getFont("Tree.font").deriveFont(Font.BOLD);
         
         public CheckBoxNodeRenderer() {
-            if (noselectFont != null) panel.label.setFont(noselectFont);
+            if (noselectFont != null) 
+            {
+                panel.label.setFont(noselectFont);
+                defaultRenderer.setFont(noselectFont);
+            }
             
             
             final Boolean focusPainted =
@@ -630,6 +647,16 @@ public class FileLoadTree
             return f.getName();
         }
         
+    }
+    private void expandAllNodes(JTree tree, int startingIndex, int rowCount)
+    {
+        for(int i=startingIndex;i<rowCount;++i){
+            tree.expandRow(i);
+        }
+        
+        if(tree.getRowCount()!=rowCount){
+            expandAllNodes(tree, rowCount, tree.getRowCount());
+        }
     }
 }
 

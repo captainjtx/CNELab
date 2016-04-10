@@ -27,21 +27,19 @@ elseif strcmp(type, '.dfs')
     faces=NFV.faces;
     vertices=NFV.vertices;
 
-else
-    try
+elseif strcmp(type,'.pial')
         %set(obj.info,'string','Reading surface data...');
-        [vertices, faces] = freesurfer_read_surf(fpath);
+        [vertices, faces] = mne_read_surface(fpath);
         %set(obj.info,'string','Reducing mesh...');
         if size(vertices,1)>2000000
             [faces,vertices]=reducepatch(faces,vertices,0.1);
         elseif size(vertices,1)>1000000
             [faces,vertices]=reducepatch(faces,vertices,0.5);
         end
-    catch 
-        errordlg('Unrecognized data.', 'Wrong data format');
-        %                     set(obj.info,'string','');
-        return;
-    end
+
+else
+    errordlg('Unrecognized data.', 'Wrong data format');
+    return
 end
 
 mapval.vertices=vertices;
