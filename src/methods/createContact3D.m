@@ -1,9 +1,9 @@
-function [top,side] = createContact(x,y,z,Vn,r,d)
+function [faces,vertices] = createContact3D(loc,Vn,r,d)
 %create a 3d contact at specified locations
 
 %creating the polygon face of contact
 %Using n polygon to simulate circle
-n=32;
+n=20;
 
 if Vn(1)~=0
     Vp=[-Vn(2),Vn(1),0];
@@ -12,6 +12,9 @@ elseif Vn(2)~=0
 else
     Vp=[0,Vn(3),-Vn(2)];
 end
+
+loc=loc(:)';
+Vn=Vn(:)';
 
 Vn=Vn/norm(Vn);
 Vp=Vp/norm(Vp);
@@ -23,19 +26,20 @@ side.faces=zeros(n,4);
 
 R=r*tan(2*pi/n);
 for i=1:n
-    top.vertices(i,:)=[x,y,z]+Vp*r;
+    top.vertices(i,:)=loc+Vp*r;
     %Tangent direction
     Vt=cross(Vp,Vn);
 %     Vt(1) = Vp(2) * Vn(3) - Vp(3) * Vn(2);
 %     Vt(2) = Vp(3) * Vn(1) - Vp(1) * Vn(3);
 %     Vt(3) = Vp(1) * Vn(2) - Vp(2) * Vn(1);
+
     Vt=Vt/norm(Vt);
     
-    Vp=Vp+Vt*R;
+    Vp=Vp*r+Vt*R;
     Vp=Vp/norm(Vp);
     
     preVert=top.vertices(i,:);
-    newVert=[x,y,z]+Vp*r;
+    newVert=loc+Vp*r;
     
     side.vertices((i-1)*4+1,:)=preVert;
     side.vertices((i-1)*4+2,:)=newVert;
@@ -47,5 +51,10 @@ for i=1:n
 end
 
 top.faces=1:n;
+faces=ones(n+1,n)*nan;
+faces(1,:)=top.faces;
+faces(2:end,1:4)=side.faces+n;
+
+vertices=[top.vertices;side.vertices];
 end
 

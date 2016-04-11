@@ -64,5 +64,7 @@ obj.light=camlight(obj.light,'headlight');
 
 obj.JFileLoadTree.addSurface(fpath,true);
 obj.mapObj(fpath)=mapval;
+
+material dull
 end
 

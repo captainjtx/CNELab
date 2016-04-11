@@ -40,6 +40,6 @@ hold on;
 obj.JFileLoadTree.addVolume(fpath,true);
 obj.mapObj(fpath)=mapval;
 
- 
+material dull
 end
 

@@ -1,4 +1,3 @@
-
 function [nchan,ndata,yvalue,t]=getMouseInfo(obj)
 xlim=obj.WinLength*obj.SRate;
 ndata=0;nchan=0;

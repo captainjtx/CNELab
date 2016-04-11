@@ -151,6 +151,7 @@ classdef BrainMap < handle
             view(3);
             daspect([1,1,1]);
             obj.light=camlight('headlight','infinite');
+            material dull;
             
             obj.RotateTimer=timer('TimerFcn',@ (src,evts) RotateTimerCallback(obj),'ExecutionMode','fixedRate','BusyMode','drop','period',0.1);
             %             obj.
@@ -233,13 +234,11 @@ classdef BrainMap < handle
             if ~isempty(obj.light)
                 obj.light = camlight(obj.light,'headlight');        % adjust light
             end
-            
             obj.loc=locend;
         end
         
-        
         function Scroll_View(obj,src,evt)
-            vt=evt.VerticalScrollCount;
+            vt=-evt.VerticalScrollCount;
             factor=1.05^vt;
             camzoom(factor);
         end
