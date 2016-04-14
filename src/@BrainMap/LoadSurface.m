@@ -42,10 +42,6 @@ else
     return
 end
 
-mapval.vertices=vertices;
-mapval.faces=faces;
-mapval.id='surface';
-
 axis(obj.axis_3d);
 mapval.handles=patch('faces',faces,'vertices',vertices,...
     'edgecolor','none','facecolor',[0.85 0.85 0.85],...
@@ -55,8 +51,16 @@ axis vis3d
 
 obj.light=camlight(obj.light,'headlight');
 
-obj.JFileLoadTree.addSurface(fpath,true);
-obj.mapObj(fpath)=mapval;
+num=obj.JFileLoadTree.addSurface(fpath,true);
+
+mapval.vertices=vertices;
+mapval.faces=faces;
+
+mapval.id='Surface';
+mapval.file=fpath;
+mapval.ind=num;
+
+obj.mapObj([mapval.id,num2str(num)])=mapval;
 
 material dull
 end

@@ -12,37 +12,37 @@ if obj.mapObj.isKey(fpath)
     return
 end
 
-obj.electrode=load(fpath,'-mat');
+tmp=load(fpath,'-mat');
 
-mapval.id='electrode';
+if ~isfield(tmp,'norm')
+    tmp.norm=tmp.coor;
+end
 
-for i=1:size(obj.electrode.coor,1)
+for i=1:size(tmp.coor,1)
     userdat.ind=i;
     userdat.select=false;
     
-    [faces,vertices] = createContact3D(obj.electrode.coor(i,:),obj.electrode.coor(i,:),obj.electrode.radius(i),obj.electrode.thickness(i));
+    [faces,vertices] = createContact3D(tmp.coor(i,:),tmp.norm(i,:),tmp.radius(i),tmp.thickness(i));
     
     mapval.handles(i)=patch('faces',faces,'vertices',vertices,...
-        'facecolor',obj.electrode.color(i,:),'edgecolor','none','UserData',userdat,...
+        'facecolor',tmp.color(i,:),'edgecolor','none','UserData',userdat,...
         'ButtonDownFcn',@(src,evt) ClickOnElectrode(obj,src),'facelighting','gouraud');
 end
-
-obj.JFileLoadTree.addElectrode(fpath,true);
-obj.mapObj(fpath)=mapval;
 material dull;
+
+num=obj.JFileLoadTree.addElectrode(fpath,true);
+
+mapval.id='Electrode';
+mapval.file=fpath;
+mapval.ind=num;
+mapval.coor=tmp.coor;
+mapval.radius=tmp.radius;
+mapval.thickness=tmp.thickness;
+mapval.color=tmp.color;
+mapval.norm=tmp.norm;
+
+obj.mapObj([mapval.id,num2str(num)])=mapval;
+
 end
 
-function ClickOnElectrode(obj,src)
-dat=get(src,'UserData');
-
-if dat.select
-    set(src,'facecolor',obj.electrode.color(dat.ind,:));
-    dat.select=false;
-else
-    set(src,'facecolor','g');
-    dat.select=true;
-end
-
-set(src,'UserData',dat);
-end
 

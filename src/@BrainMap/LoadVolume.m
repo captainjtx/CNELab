@@ -36,7 +36,6 @@ if isfield(dat,'SpacingBetweenSlices')
 else
     zdata=[0,size(dat.volume,3)];
 end
-mapval.id='volume';
 
 tmp=vol3d('cdata',dat.volume,'texture','3D','Parent',obj.axis_3d,...
     'XData',xdata,'YData',ydata,'ZData',zdata);
@@ -47,13 +46,14 @@ axis vis3d
 axis equal off
 set(obj.axis_3d,'clim',[obj.cmin,obj.cmax]/255);
 
-[az, el]=view(gca);
-obj.display_view=[az el];
-
 hold on;
 
-obj.JFileLoadTree.addVolume(fpath,true);
-obj.mapObj(fpath)=mapval;
+num=obj.JFileLoadTree.addVolume(fpath,true);
+mapval.id='Volume';
+mapval.file=fpath;
+mapval.ind=num;
+
+obj.mapObj([mapval.id,num2str(num)])=mapval;
 
 material dull
 end

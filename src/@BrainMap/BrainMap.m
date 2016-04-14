@@ -70,27 +70,20 @@ classdef BrainMap < handle
         JVolumeMaxSpinner
         
         JElectrodeColorBtn
+        JExtraBtn1
+        
+        JElectrodeRadiusSpinner
+        JElectrodeThicknessSpinner
+        
+        IconTiltElectrode
+        
+        HExtraBtn1
     end
     properties
-        coor
-        electrode
-        curr_coor
-        ini_coor
-        elec_no
-        
-        smooth
-        elec_index
-        color
-        
-        display_view
-        curr_elec
-        
-        label
         light
         RotateTimer
         ZoomTimer
         loc
-        self_center
         
         inView
         
@@ -122,21 +115,8 @@ classdef BrainMap < handle
         end
         function varinit(obj)
             
-            obj.coor=[];
-            obj.electrode.coor=[];
-            obj.electrode.col=[];
-            obj.electrode.marker=[];
-            obj.curr_coor=[];
-            obj.ini_coor=[];
-            obj.elec_no=0;
-            obj.smooth=0;
-            obj.elec_index=0;
-            obj.color=[0 0 1];
             
             obj.light=[];
-            obj.curr_elec.side=[];
-            obj.curr_elec.top=[];
-            obj.curr_elec.stick=[];
             obj.inView=[];
             
             obj.mapObj=containers.Map;
@@ -147,7 +127,7 @@ classdef BrainMap < handle
             obj.cmax=140;
         end
         
-       
+        
         function OnClose(obj)
             try
                 delete(obj.fig);
@@ -204,7 +184,7 @@ classdef BrainMap < handle
             dy = locend(2) - obj.loc(2);           % calculate difference y
             factor = 2;                         % correction mouse -> rotation
             camorbit(obj.axis_3d,-dx/factor,-dy/factor);
-
+            
             if ~isempty(obj.light)
                 obj.light = camlight(obj.light,'headlight');        % adjust light
             end
@@ -234,16 +214,16 @@ classdef BrainMap < handle
             end
             set(obj.axis_3d,'CameraViewAngle',10);
         end
-
+        
         function CheckChangedCallback(obj,src,evt)
-            mapval=obj.mapObj(char(evt.filename));
+            mapval=obj.mapObj(char(evt.getKey()));
             if evt.ischecked
                 set(mapval.handles,'visible','on');
             else
                 set(mapval.handles,'visible','off');
             end
-%             disp(evt.filename)
-%             disp(evt.ischecked)
+            %             disp(evt.filename)
+            %             disp(evt.ischecked)
         end
         
         function LightOffCallback(obj)
@@ -291,7 +271,7 @@ classdef BrainMap < handle
             obj.JSurfaceAlphaSlider.setValue(alpha);
             drawnow
             if ~isempty(obj.SelectEvt)&&obj.SelectEvt.level==2
-                mapval=obj.mapObj(char(obj.SelectEvt.filename));
+                mapval=obj.mapObj(char(obj.SelectEvt.getKey()));
                 set(mapval.handles,'facealpha',alpha/100);
             end
         end
@@ -302,7 +282,7 @@ classdef BrainMap < handle
             obj.JSurfaceAlphaSpinner.setValue(alpha);
             drawnow
             if ~isempty(obj.SelectEvt)&&obj.SelectEvt.level==2
-                mapval=obj.mapObj(char(obj.SelectEvt.filename));
+                mapval=obj.mapObj(char(obj.SelectEvt.getKey()));
                 set(mapval.handles,'facealpha',alpha/100);
             end
         end
@@ -335,17 +315,56 @@ classdef BrainMap < handle
         end
         function ElectrodeColorCallback(obj)
             col=[ obj.JElectrodeColorBtn.getBackground().getRed(),...
-                  obj.JElectrodeColorBtn.getBackground().getGreen(),...
-                  obj.JElectrodeColorBtn.getBackground().getBlue()]/255;
-              
+                obj.JElectrodeColorBtn.getBackground().getGreen(),...
+                obj.JElectrodeColorBtn.getBackground().getBlue()]/255;
+            
             newcol=uisetcolor(col,'Electrode');
             
             obj.JElectrodeColorBtn.setBackground(java.awt.Color(newcol(1),newcol(2),newcol(2)));
             if ~isempty(obj.SelectEvt)&&obj.SelectEvt.level==2
-                mapval=obj.mapObj(char(obj.SelectEvt.filename));
+                mapval=obj.mapObj(char(obj.SelectEvt.getKey()));
                 set(mapval.handles,'facecolor',newcol);
             end
-            
+        end
+        
+        function ElectrodeSpinnerCallback(obj)
+            r=obj.JElectrodeRadiusSpinner.getValue();
+            thick=obj.JElectrodeThicknessSpinner.getValue();
+            if ~isempty(obj.SelectEvt)&&obj.SelectEvt.level==2
+                mapval=obj.mapObj(char(obj.SelectEvt.getKey()));
+                delete(mapval.handles);
+                mapval.handles=zeros(size(mapval.coor,1),1);
+                
+                mapval.thickness=ones(size(mapval.thickness))*thick;
+                mapval.radius=ones(size(mapval.radius))*r;
+                for i=1:size(mapval.coor,1)
+                    userdat.ind=i;
+                    userdat.select=false;
+                    
+                    [faces,vertices] = createContact3D(mapval.coor(i,:),mapval.norm(i,:),mapval.radius(i),mapval.thickness(i));
+                    
+                    mapval.handles(i)=patch('faces',faces,'vertices',vertices,...
+                        'facecolor',mapval.color(i,:),'edgecolor','none','UserData',userdat,...
+                        'ButtonDownFcn',@(src,evt) ClickOnElectrode(obj,src),'facelighting','gouraud');
+                end
+                obj.mapObj(char(obj.SelectEvt.getKey()))=mapval;
+            end
+        end
+        function ClickOnElectrode(obj,src)
+            % dat=get(src,'UserData');
+            %
+            % if dat.select
+            %     set(src,'facecolor',obj.electrode.color(dat.ind,:));
+            %     dat.select=false;
+            % else
+            %     set(src,'facecolor','g');
+            %     dat.select=true;
+            % end
+            %
+            % set(src,'UserData',dat);
+        end
+        
+        function ElectrodeTiltCallback(obj,src)
         end
     end
     methods

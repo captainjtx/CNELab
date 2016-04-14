@@ -5,6 +5,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.JButton;
 import java.awt.Color;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 
 screensize=get(0,'ScreenSize');
 obj.fig=figure('Menubar','none','Name','BrainMap','units','pixels','position',[screensize(3)/2-450,screensize(4)/2-325,900,650],...
@@ -62,7 +63,7 @@ obj.BuildIOBar();
 obj.surfacetoolpane=uipanel(obj.sidepane,'units','normalized','position',[0,0,1,0.73],'visible','off');
 
 uicontrol('parent',obj.surfacetoolpane,'style','text','units','normalized','position',[0,0.9,0.25,0.08],...
-    'string','Opacity(%)','FontSize',12);
+    'string','Opacity(%)','FontSize',12,'horizontalalignment','left');
 obj.JSurfaceAlphaSlider=javaObjectEDT(JSlider(JSlider.HORIZONTAL,0,100,90));
 [jh,gh]=javacomponent(obj.JSurfaceAlphaSlider,[0,0,1,1],obj.surfacetoolpane);
 set(gh,'Units','Norm','Position',[0.25,0.9,0.55,0.1]);
@@ -79,7 +80,7 @@ cmapList = {'Gray','Bone', 'Copper','Jet', 'HSV', 'Hot', 'Cool', 'Spring', 'Summ
 obj.volumetoolpane=uipanel(obj.sidepane,'units','normalized','position',[0,0,1,0.73],'visible','on');
 
 uicontrol('parent',obj.volumetoolpane,'style','text','units','normalized','position',[0,0.9,0.25,0.08],...
-    'string','Colormap','FontSize',12);
+    'string','Colormap','FontSize',12,'horizontalalignment','left');
 obj.ColorMapPopup = uicontrol('Style','popup','Parent',obj.volumetoolpane,'String',cmapList,...
     'units','normalized','position',[0.25,0.9,0.75,0.08],'FontName','Courier','BackgroundColor','w');
 allLength = cellfun(@numel,cmapList);
@@ -100,24 +101,24 @@ end
 set(obj.ColorMapPopup,'Value',1,'String',cmapHTML,'Callback',@(src,evt)ColormapCallback(obj));
 
 uicontrol('parent',obj.volumetoolpane,'style','text','units','normalized','position',[0,0.84,0.2,0.06],...
-    'string','Min','FontSize',12);
+    'string','Min','FontSize',12,'horizontalalignment','left');
 model = javaObjectEDT(SpinnerNumberModel(obj.cmin,0,255,5));  
 obj.JVolumeMinSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JVolumeMinSpinner,[0,0,1,1],obj.volumetoolpane);
-set(gh,'Units','Norm','Position',[0.2,0.84,0.25,0.06]);
+set(gh,'Units','Norm','Position',[0.22,0.84,0.25,0.06]);
 set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) VolumeScaleSpinnerCallback(obj));
 
 uicontrol('parent',obj.volumetoolpane,'style','text','units','normalized','position',[0.5,0.84,0.2,0.06],...
-    'string','Max','FontSize',12);
+    'string','Max','FontSize',12,'horizontalalignment','left');
 model = javaObjectEDT(SpinnerNumberModel(obj.cmax,0,255,5));  
 obj.JVolumeMaxSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JVolumeMaxSpinner,[0,0,1,1],obj.volumetoolpane);
-set(gh,'Units','Norm','Position',[0.7,0.84,0.25,0.06]);
+set(gh,'Units','Norm','Position',[0.72,0.84,0.25,0.06]);
 set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) VolumeScaleSpinnerCallback(obj));
 %electrode tool pane=======================================================
 obj.electrodetoolpane=uipanel(obj.sidepane,'units','normalized','position',[0,0,1,0.73],'visible','off');
 uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','position',[0,0.9,0.25,0.08],...
-    'string','Color','FontSize',12);
+    'string','Color','FontSize',12,'horizontalalignment','left');
 
 obj.JElectrodeColorBtn = javaObjectEDT(JButton());
 obj.JElectrodeColorBtn.setBorder(BorderFactory.createLineBorder(Color.black));
@@ -127,6 +128,21 @@ obj.JElectrodeColorBtn.setOpaque(true);
 set(hContainer, 'Units','norm','position',[0.3,0.93,0.15,0.05]);
 set(handle(jh,'CallbackProperties'),'MousePressedCallback',@(h,e) ElectrodeColorCallback(obj));
 
+uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','position',[0,0.84,0.22,0.06],...
+    'string','Radius','FontSize',12,'horizontalalignment','left');
+model = javaObjectEDT(SpinnerNumberModel(0.5,0,10,0.1));  
+obj.JElectrodeRadiusSpinner =javaObjectEDT(JSpinner(model));
+[jh,gh]=javacomponent(obj.JElectrodeRadiusSpinner,[0,0,1,1],obj.electrodetoolpane);
+set(gh,'Units','Norm','Position',[0.22,0.84,0.25,0.06]);
+set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ElectrodeSpinnerCallback(obj));
+
+uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','position',[0.5,0.84,0.22,0.06],...
+    'string','Thickness','FontSize',12,'horizontalalignment','left');
+model = javaObjectEDT(SpinnerNumberModel(0.4,0,10,0.1));  
+obj.JElectrodeThicknessSpinner =javaObjectEDT(JSpinner(model));
+[jh,gh]=javacomponent(obj.JElectrodeThicknessSpinner,[0,0,1,1],obj.electrodetoolpane);
+set(gh,'Units','Norm','Position',[0.72,0.84,0.25,0.06]);
+set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ElectrodeSpinnerCallback(obj));
 
 end
 
