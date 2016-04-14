@@ -2,6 +2,9 @@ function BuildFig(obj)
 import javax.swing.JSlider;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.JButton;
+import java.awt.Color;
+import javax.swing.BorderFactory;
 
 screensize=get(0,'ScreenSize');
 obj.fig=figure('Menubar','none','Name','BrainMap','units','pixels','position',[screensize(3)/2-450,screensize(4)/2-325,900,650],...
@@ -57,8 +60,6 @@ obj.BuildIOBar();
 
 %suface tool pane==========================================================
 obj.surfacetoolpane=uipanel(obj.sidepane,'units','normalized','position',[0,0,1,0.73],'visible','off');
-obj.electrodetoolpane=uipanel(obj.sidepane,'units','normalized','position',[0,0,1,0.73],'visible','off');
-
 
 uicontrol('parent',obj.surfacetoolpane,'style','text','units','normalized','position',[0,0.9,0.25,0.08],...
     'string','Opacity(%)','FontSize',12);
@@ -113,6 +114,20 @@ obj.JVolumeMaxSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JVolumeMaxSpinner,[0,0,1,1],obj.volumetoolpane);
 set(gh,'Units','Norm','Position',[0.7,0.84,0.25,0.06]);
 set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) VolumeScaleSpinnerCallback(obj));
+%electrode tool pane=======================================================
+obj.electrodetoolpane=uipanel(obj.sidepane,'units','normalized','position',[0,0,1,0.73],'visible','off');
+uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','position',[0,0.9,0.25,0.08],...
+    'string','Color','FontSize',12);
+
+obj.JElectrodeColorBtn = javaObjectEDT(JButton());
+obj.JElectrodeColorBtn.setBorder(BorderFactory.createLineBorder(Color.black));
+obj.JElectrodeColorBtn.setBackground(Color(0.8549,0.6471,0.1255));
+obj.JElectrodeColorBtn.setOpaque(true);
+[jh, hContainer] = javacomponent(obj.JElectrodeColorBtn, [0,0,1,1], obj.electrodetoolpane);
+set(hContainer, 'Units','norm','position',[0.3,0.93,0.15,0.05]);
+set(handle(jh,'CallbackProperties'),'MousePressedCallback',@(h,e) ElectrodeColorCallback(obj));
+
+
 end
 
 

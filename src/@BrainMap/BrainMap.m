@@ -30,6 +30,7 @@ classdef BrainMap < handle
         
         JFileLoadTree
         JLight
+        JCanvasColor
         
         IconLightOn
         IconLightOff
@@ -67,6 +68,8 @@ classdef BrainMap < handle
         
         JVolumeMinSpinner
         JVolumeMaxSpinner
+        
+        JElectrodeColorBtn
     end
     properties
         coor
@@ -329,6 +332,20 @@ classdef BrainMap < handle
                 obj.cmax=max;
                 set(obj.axis_3d,'clim',[obj.cmin/255,obj.cmax/255]);
             end
+        end
+        function ElectrodeColorCallback(obj)
+            col=[ obj.JElectrodeColorBtn.getBackground().getRed(),...
+                  obj.JElectrodeColorBtn.getBackground().getGreen(),...
+                  obj.JElectrodeColorBtn.getBackground().getBlue()]/255;
+              
+            newcol=uisetcolor(col,'Electrode');
+            
+            obj.JElectrodeColorBtn.setBackground(java.awt.Color(newcol(1),newcol(2),newcol(2)));
+            if ~isempty(obj.SelectEvt)&&obj.SelectEvt.level==2
+                mapval=obj.mapObj(char(obj.SelectEvt.filename));
+                set(mapval.handles,'facecolor',newcol);
+            end
+            
         end
     end
     methods

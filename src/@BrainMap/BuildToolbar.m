@@ -22,6 +22,10 @@ obj.JLight=javaObjectEDT(TButton([obj.cnelab_path,'/db/icon/nolight.png'],btn_d,
 set(handle(obj.JLight,'CallbackProperties'),'MousePressedCallback',@(h,e) LightOffCallback(obj));
 obj.JToolbar(1).add(obj.JLight);
 
+obj.JCanvasColor=javaObjectEDT(TButton([obj.cnelab_path,'/db/icon/bg_color.png'],btn_d,char('Canvas color'),col));
+set(handle(obj.JCanvasColor,'CallbackProperties'),'MousePressedCallback',@(src,evt) ChangeCanvasColor(obj));
+obj.JToolbar(1).add(obj.JCanvasColor);
+
 obj.JToolbar(1).repaint;
 obj.JToolbar(1).revalidate;
 end
