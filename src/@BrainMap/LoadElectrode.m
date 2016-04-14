@@ -24,7 +24,7 @@ for i=1:size(obj.electrode.coor,1)
     
     mapval.handles(i)=patch('faces',faces,'vertices',vertices,...
         'facecolor',obj.electrode.color(i,:),'edgecolor','none','UserData',userdat,...
-        'ButtonDownFcn',@(src,evt) ClickOnElectrode(obj,src));
+        'ButtonDownFcn',@(src,evt) ClickOnElectrode(obj,src),'facelighting','gouraud');
 end
 
 obj.JFileLoadTree.addElectrode(fpath,true);

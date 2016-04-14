@@ -18,6 +18,8 @@ classdef BrainMap < handle
         
         SaveAsMenu
         SaveAsFigureMenu
+        SettingsMenu
+        SettingsBackgroundColorMenu
         
         ViewPanel
         
@@ -52,8 +54,19 @@ classdef BrainMap < handle
         JNewBtn
         JSaveBtn
         
-        toolpane
+        sidepane
         toolbtnpane
+        
+        surfacetoolpane
+        electrodetoolpane
+        volumetoolpane
+        
+        JSurfaceAlphaSpinner
+        JSurfaceAlphaSlider
+        ColorMapPopup
+        
+        JVolumeMinSpinner
+        JVolumeMaxSpinner
     end
     properties
         coor
@@ -61,7 +74,7 @@ classdef BrainMap < handle
         curr_coor
         ini_coor
         elec_no
-        alpha
+        
         smooth
         elec_index
         color
@@ -81,13 +94,16 @@ classdef BrainMap < handle
         mapObj
         
         SelectEvt
+        
+        cmin
+        cmax
     end
     
     methods
         function obj=BrainMap()
             
             obj.varinit();
-            obj.buildfig();
+            obj.BuildFig();
         end
         
         function val=get.cnelab_path(obj)
@@ -110,7 +126,6 @@ classdef BrainMap < handle
             obj.curr_coor=[];
             obj.ini_coor=[];
             obj.elec_no=0;
-            obj.alpha=0.85;
             obj.smooth=0;
             obj.elec_index=0;
             obj.color=[0 0 1];
@@ -124,56 +139,12 @@ classdef BrainMap < handle
             obj.mapObj=containers.Map;
             
             obj.SelectEvt.category='Volume';
+            
+            obj.cmin=50;
+            obj.cmax=140;
         end
         
-        function buildfig(obj)
-            screensize=get(0,'ScreenSize');
-            obj.fig=figure('Menubar','none','Name','BrainMap','units','pixels','position',[screensize(3)/2-450,screensize(4)/2-325,900,650],...
-                'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),'resize','on','Dockcontrols','off',...
-                'WindowButtonMotionFcn',@(src,evt)MouseMove(obj));
-            
-            obj.FileMenu=uimenu(obj.fig,'label','File');
-            obj.LoadMenu=uimenu(obj.FileMenu,'label','Load');
-            
-            obj.LoadVolumeMenu=uimenu(obj.LoadMenu,'label','Volume','callback',@(src,evt) LoadVolume(obj),'Accelerator','o');
-            obj.LoadSurfaceMenu=uimenu(obj.LoadMenu,'label','Surface','callback',@(src,evt) LoadSurface(obj),'Accelerator','u');
-            obj.LoadElectrodeMenu=uimenu(obj.LoadMenu,'label','Electrode','callback',@(src,evt) LoadElectrode(obj),'Accelerator','e');
-            
-            obj.SaveAsMenu=uimenu(obj.FileMenu,'label','Save as');
-            obj.SaveAsFigureMenu=uimenu(obj.SaveAsMenu,'label','Figuer','callback',@(src,evt) SaveAsFigure(obj),'Accelerator','p');
-            
-            obj.ViewPanel=uipanel(obj.fig,'units','normalized','position',[0,0.1,0.7,0.9],'backgroundcolor',[0,0,0]);
-            
-            obj.axis_3d=axes('parent',obj.ViewPanel,'units','normalized','position',[0,0,1,1],'visible','off','CameraViewAngle',10);
-            
-            obj.toolpane=uipanel(obj.fig,'units','normalized','position',[0.7,0.1,0.3,0.9]);
-            
-            view(3);
-            daspect([1,1,1]);
-            obj.light=camlight('headlight','infinite');
-            material dull;
-            
-            obj.RotateTimer=timer('TimerFcn',@ (src,evts) RotateTimerCallback(obj),'ExecutionMode','fixedRate','BusyMode','drop','period',0.1);
-            %             obj.
-            obj.inView=obj.isIn(get(obj.fig,'CurrentPoint'),getpixelposition(obj.ViewPanel));
-            
-            obj.BuildToolbar();
-            
-            obj.JFileLoadTree=javaObjectEDT(src.java.checkboxtree.FileLoadTree());
-            obj.JFileLoadTree.buildfig();
-            
-            jh=obj.JFileLoadTree;
-            set(handle(jh,'CallbackProperties'),'TreeSelectionCallback',@(src,evt) TreeSelectionCallback(obj,src,evt));
-            set(handle(jh,'CallbackProperties'),'CheckChangedCallback',@(src,evt) CheckChangedCallback(obj,src,evt));
-%             set(handle(obj.JFileLoadTree.span,'CallbackProperties'),'KeyTypedCallback',@(src,evt) KeyTypedCallback(obj,src,evt));
-            
-            [jh,gh]=javacomponent(obj.JFileLoadTree.span,[0,0,1,1],obj.toolpane);
-            set(gh,'Units','Norm','Position',[0,0.8,1,0.2]);
-            
-            obj.toolbtnpane=uipanel(obj.toolpane,'units','normalized','position',[0,0.73,1,0.07]);
-            
-            obj.BuildIOBar();
-        end
+       
         function OnClose(obj)
             try
                 delete(obj.fig);
@@ -260,76 +231,8 @@ classdef BrainMap < handle
             end
             set(obj.axis_3d,'CameraViewAngle',10);
         end
-        
-        function TreeSelectionCallback(obj,src,evt)
-            if ~strcmpi(obj.SelectEvt.category,evt.category)
-                
-                if strcmpi(evt.category,'Volume')
-                    obj.JLoadBtn.setIcon(obj.IconLoadVolume);
-                    obj.JLoadBtn.setToolTipText('Load volume');
-                    
-                    obj.JDeleteBtn.setIcon(obj.IconDeleteVolume);
-                    obj.JDeleteBtn.setToolTipText('Delete volume');
-                    
-                    obj.JNewBtn.setIcon(obj.IconNewVolume);
-                    obj.JNewBtn.setToolTipText('New volume');
-                    
-                    obj.JSaveBtn.setIcon(obj.IconSaveVolume);
-                    obj.JSaveBtn.setToolTipText('Save volume');
-                    
-                    set(handle(obj.JLoadBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) LoadVolume(obj));
-                    set(handle(obj.JDeleteBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) DeleteVolume(obj));
-                    set(handle(obj.JNewBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) NewVolume(obj));
-                    set(handle(obj.JSaveBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) SaveVolume(obj));
-                elseif strcmpi(evt.category,'Surface')
-                    obj.JLoadBtn.setIcon(obj.IconLoadSurface);
-                    obj.JLoadBtn.setToolTipText('Load surface');
-                    
-                    obj.JDeleteBtn.setIcon(obj.IconDeleteSurface);
-                    obj.JDeleteBtn.setToolTipText('Delete surface');
-                    
-                    obj.JNewBtn.setIcon(obj.IconNewSurface);
-                    obj.JNewBtn.setToolTipText('New surface');
-                    
-                    obj.JSaveBtn.setIcon(obj.IconSaveSurface);
-                    obj.JSaveBtn.setToolTipText('Save surface');
-                    
-                    set(handle(obj.JLoadBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) LoadSurface(obj));
-                    set(handle(obj.JDeleteBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) DeleteSurface(obj));
-                    set(handle(obj.JNewBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) NewSurface(obj));
-                    set(handle(obj.JSaveBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) SaveSurface(obj));
-                elseif strcmpi(evt.category,'Electrode')
-                    obj.JLoadBtn.setIcon(obj.IconLoadElectrode);
-                    obj.JLoadBtn.setToolTipText('Load electrode');
-                    
-                    obj.JDeleteBtn.setIcon(obj.IconDeleteElectrode);
-                    obj.JDeleteBtn.setToolTipText('Delete electrode');
-                    
-                    obj.JNewBtn.setIcon(obj.IconNewElectrode);
-                    obj.JNewBtn.setToolTipText('New electrode');
-                    
-                    obj.JSaveBtn.setIcon(obj.IconSaveElectrode);
-                    obj.JSaveBtn.setToolTipText('Save electrode');
-                    
-                    set(handle(obj.JLoadBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) LoadElectrode(obj));
-                    set(handle(obj.JDeleteBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) DeleteElectrode(obj));
-                    set(handle(obj.JNewBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) NewElectrode(obj));
-                    set(handle(obj.JSaveBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) SaveElectrode(obj));
-                elseif strcmpi(evt.category,'Others')
-                    
-                end
-            end         
-            
-%             disp(evt.filename)
-%             disp(evt.ischecked)
-%             disp(evt.level)
-%             disp(evt.category)
-            
-            obj.SelectEvt=evt;
-        end
-        
+
         function CheckChangedCallback(obj,src,evt)
-            
             mapval=obj.mapObj(char(evt.filename));
             if evt.ischecked
                 set(mapval.handles,'visible','on');
@@ -378,11 +281,62 @@ classdef BrainMap < handle
         end
         function SaveElectrode(obj)
         end
+        function SurfaceAlphaSpinnerCallback(obj)
+            
+            alpha=obj.JSurfaceAlphaSpinner.getValue();
+            
+            obj.JSurfaceAlphaSlider.setValue(alpha);
+            drawnow
+            if ~isempty(obj.SelectEvt)&&obj.SelectEvt.level==2
+                mapval=obj.mapObj(char(obj.SelectEvt.filename));
+                set(mapval.handles,'facealpha',alpha/100);
+            end
+        end
+        
+        function SurfaceAlphaSliderCallback(obj)
+            alpha=obj.JSurfaceAlphaSlider.getValue();
+            
+            obj.JSurfaceAlphaSpinner.setValue(alpha);
+            drawnow
+            if ~isempty(obj.SelectEvt)&&obj.SelectEvt.level==2
+                mapval=obj.mapObj(char(obj.SelectEvt.filename));
+                set(mapval.handles,'facealpha',alpha/100);
+            end
+        end
+        
+        function ChangeCanvasColor(obj)
+            set(obj.ViewPanel,'BackgroundColor',uisetcolor(get(obj.ViewPanel,'BackgroundColor'),'Background'))
+        end
+        
+        function ColormapCallback(obj)
+            %extraction of colormap name from popupmenu
+            htmlList = get(obj.ColorMapPopup,'String');
+            listIdx = get(obj.ColorMapPopup,'Value');
+            removedHTML = regexprep(htmlList{listIdx},'<[^>]*>','');
+            cmapName = strrep(strrep(strrep(removedHTML,'_',''),'>',''),'-','');
+            cmapFun = str2func(['@(x) ' lower(cmapName) '(x)']);
+            colormap(obj.axis_3d,cmapFun(16));
+        end
+        function VolumeScaleSpinnerCallback(obj)
+            
+            min=obj.JVolumeMinSpinner.getValue();
+            max=obj.JVolumeMaxSpinner.getValue();
+            
+            drawnow
+            
+            if min<max
+                obj.cmin=min;
+                obj.cmax=max;
+                set(obj.axis_3d,'clim',[obj.cmin/255,obj.cmax/255]);
+            end
+        end
     end
     methods
         LoadSurface(obj)
         LoadElectrode(obj)
         BuildToolbar(obj)
         BuildIOBar(obj)
+        BuildFig(obj)
+        TreeSelectionCallback(obj,src,evt)
     end
 end

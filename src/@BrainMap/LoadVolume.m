@@ -23,14 +23,29 @@ LightOffCallback(obj)
 % newV=interp3(X,Y,Z,dat.volume,newX,newY,newZ);
 
 mapval.volume=dat.volume;
+
+if isfield(dat,'PixelSpacing')
+    xdata=[0,dat.PixelSpacing(2)*size(dat.volume,2)];
+    ydata=[0,dat.PixelSpacing(1)*size(dat.volume,1)];
+else
+    xdata=[0,size(dat.volume,2)];
+    ydata=[0,size(dat.volume,1)];
+end
+if isfield(dat,'SpacingBetweenSlices')
+    zdata=[0,dat.SpacingBetweenSlices*size(dat.volume,3)];
+else
+    zdata=[0,size(dat.volume,3)];
+end
 mapval.id='volume';
 
-tmp=vol3d('cdata',dat.volume,'texture','3D','Parent',obj.axis_3d);
+tmp=vol3d('cdata',dat.volume,'texture','3D','Parent',obj.axis_3d,...
+    'XData',xdata,'YData',ydata,'ZData',zdata);
 mapval.handles=tmp.handles;
 
-colormap gray;
+ColormapCallback(obj);
 axis vis3d
 axis equal off
+set(obj.axis_3d,'clim',[obj.cmin,obj.cmax]/255);
 
 [az, el]=view(gca);
 obj.display_view=[az el];
