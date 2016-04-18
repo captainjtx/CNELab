@@ -271,8 +271,6 @@ classdef BrainMap < handle
         end
         function SaveSurface(obj)
         end
-        function SaveElectrode(obj)
-        end
         function SurfaceAlphaSpinnerCallback(obj)
             
             alpha=obj.JSurfaceAlphaSpinner.getValue();
@@ -328,35 +326,38 @@ classdef BrainMap < handle
                 obj.JElectrodeColorBtn.getBackground().getBlue()]/255;
             
             newcol=uisetcolor(col,'Electrode');
-            
             obj.JElectrodeColorBtn.setBackground(java.awt.Color(newcol(1),newcol(2),newcol(2)));
-            if ~isempty(obj.SelectEvt)&&obj.SelectEvt.level==2
-                mapval=obj.mapObj(char(obj.SelectEvt.getKey()));
-                set(mapval.handles,'facecolor',newcol);
+            
+            if ~isempty(obj.SelectedElectrode)
+                electrode=obj.mapObj(['Electrode',num2str(obj.SelectedElectrode)]);
+                set(electrode.handles(logical(electrode.selected)),'facecolor',newcol);
+                
+                electrode.color(logical(electrode.selected),:)=ones(sum(electrode.selected),1)*newcol;
+                obj.mapObj(['Electrode',num2str(obj.SelectedElectrode)])=electrode;
             end
         end
         
         function ElectrodeSpinnerCallback(obj)
             r=obj.JElectrodeRadiusSpinner.getValue();
             thick=obj.JElectrodeThicknessSpinner.getValue();
-            if ~isempty(obj.SelectEvt)&&obj.SelectEvt.level==2
-                mapval=obj.mapObj(char(obj.SelectEvt.getKey()));
-                delete(mapval.handles);
-                mapval.handles=zeros(size(mapval.coor,1),1);
+            if ~isempty(obj.SelectedElectrode)
+                electrode=obj.mapObj(['Electrode',num2str(obj.SelectedElectrode)]);
+                ind=find(electrode.selected);
                 
-                mapval.thickness=ones(size(mapval.thickness))*thick;
-                mapval.radius=ones(size(mapval.radius))*r;
-                for i=1:size(mapval.coor,1)
-                    userdat.ind=i;
-                    userdat.select=false;
+                electrode.thickness(ind)=thick;
+                electrode.radius(ind)=r;
+                for i=1:length(ind)
+                    userdat.ind=ind(i);
+                    userdat.ele=obj.SelectedElectrode;
                     
-                    [faces,vertices] = createContact3D(mapval.coor(i,:),mapval.norm(i,:),mapval.radius(i),mapval.thickness(i));
-                    
-                    mapval.handles(i)=patch('faces',faces,'vertices',vertices,...
-                        'facecolor',mapval.color(i,:),'edgecolor','none','UserData',userdat,...
+                    [faces,vertices] = createContact3D...
+                        (electrode.coor(ind(i),:),electrode.norm(ind(i),:),electrode.radius(ind(i)),electrode.thickness(ind(i)));
+                    delete(electrode.handles(ind(i)));
+                    electrode.handles(ind(i))=patch('faces',faces,'vertices',vertices,...
+                        'facecolor',electrode.color(ind(i),:),'edgecolor','none','UserData',userdat,...
                         'ButtonDownFcn',@(src,evt) ClickOnElectrode(obj,src),'facelighting','gouraud');
                 end
-                obj.mapObj(char(obj.SelectEvt.getKey()))=mapval;
+                obj.mapObj(['Electrode',num2str(obj.SelectedElectrode)])=electrode;
             end
         end
         function ClickOnElectrode(obj,src,evt)
@@ -419,5 +420,6 @@ classdef BrainMap < handle
         BuildIOBar(obj)
         BuildFig(obj)
         TreeSelectionCallback(obj,src,evt)
+        SaveElectrode(obj)
     end
 end

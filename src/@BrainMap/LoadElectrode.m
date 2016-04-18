@@ -44,7 +44,6 @@ mapval.checked=true;
 mapval.selected=ones(size(mapval.coor,1),1)*true;
 
 obj.mapObj([mapval.category,num2str(num)])=mapval;
-
 end
 
 
