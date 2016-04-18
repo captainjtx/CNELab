@@ -180,9 +180,12 @@ public class FileLoadTree
 // //                 System.out.println(System.currentTimeMillis() + ": structure changed");
 //             }
 //         });
+//         tree.setFocusable(false);
         
         span=new JScrollPane(tree);
         span.setViewportView(tree);
+        
+//         span.setFocusable(false);
         
         return span;
     }
@@ -532,7 +535,6 @@ public class FileLoadTree
             nodedata.setText(data.getText());
             nodedata.setChecked(data.isChecked());
             
-            panel.setFocusable(false);
             return panel;
         }
         protected boolean isSurface(Object value)

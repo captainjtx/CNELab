@@ -56,11 +56,12 @@ num=obj.JFileLoadTree.addSurface(fpath,true);
 mapval.vertices=vertices;
 mapval.faces=faces;
 
-mapval.id='Surface';
+mapval.category='Surface';
 mapval.file=fpath;
 mapval.ind=num;
+mapval.checked=true;
 
-obj.mapObj([mapval.id,num2str(num)])=mapval;
+obj.mapObj([mapval.category,num2str(num)])=mapval;
 
 material dull
 end

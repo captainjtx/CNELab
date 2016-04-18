@@ -48,8 +48,8 @@ if ~strcmpi(obj.SelectEvt.category,evt.category)
         set(obj.electrodetoolpane,'visible','off');
         
         if evt.level==2
-            mapval=obj.mapObj(char(evt.filename));
-            alpha=get(mapval.handles,'facealpha');
+            electrode=obj.mapObj(char(evt.getKey()));
+            alpha=get(electrode.handles,'facealpha');
             obj.JSurfaceAlphaSpinner.setValue(round(alpha*100));
             obj.JSurfaceAlphaSlider.setValue(round(alpha*100));
         end
@@ -81,10 +81,16 @@ if ~strcmpi(obj.SelectEvt.category,evt.category)
     end
 end
 
-%             disp(evt.filename)
-%             disp(evt.ischecked)
-%             disp(evt.level)
-%             disp(evt.category)
+if strcmpi(evt.category,'Electrode')&&evt.level==2
+    electrode=obj.mapObj(char(evt.getKey()));
+    set(electrode.handles,'edgecolor','y');
+else
+    if strcmpi(obj.SelectEvt.category,'Electrode')&&obj.SelectEvt.level==2
+        electrode=obj.mapObj(char(obj.SelectEvt.getKey()));
+        set(electrode.handles,'edgecolor','none');
+    end
+end
+
 
 obj.SelectEvt=evt;
 

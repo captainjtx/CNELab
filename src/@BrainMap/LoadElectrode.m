@@ -32,7 +32,7 @@ material dull;
 
 num=obj.JFileLoadTree.addElectrode(fpath,true);
 
-mapval.id='Electrode';
+mapval.category='Electrode';
 mapval.file=fpath;
 mapval.ind=num;
 mapval.coor=tmp.coor;
@@ -40,8 +40,9 @@ mapval.radius=tmp.radius;
 mapval.thickness=tmp.thickness;
 mapval.color=tmp.color;
 mapval.norm=tmp.norm;
+mapval.checked=true;
 
-obj.mapObj([mapval.id,num2str(num)])=mapval;
+obj.mapObj([mapval.category,num2str(num)])=mapval;
 
 end
 

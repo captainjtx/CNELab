@@ -37,6 +37,10 @@ else
     zdata=[0,size(dat.volume,3)];
 end
 
+mapval.xrange=xdata;
+mapval.yrange=ydata;
+mapval.zrange=zdata;
+
 tmp=vol3d('cdata',dat.volume,'texture','3D','Parent',obj.axis_3d,...
     'XData',xdata,'YData',ydata,'ZData',zdata);
 mapval.handles=tmp.handles;
@@ -49,11 +53,12 @@ set(obj.axis_3d,'clim',[obj.cmin,obj.cmax]/255);
 hold on;
 
 num=obj.JFileLoadTree.addVolume(fpath,true);
-mapval.id='Volume';
+mapval.category='Volume';
 mapval.file=fpath;
 mapval.ind=num;
+mapval.checked=true;
 
-obj.mapObj([mapval.id,num2str(num)])=mapval;
+obj.mapObj([mapval.category,num2str(num)])=mapval;
 
 material dull
 end

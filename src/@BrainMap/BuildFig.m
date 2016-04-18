@@ -10,7 +10,7 @@ import javax.swing.ImageIcon;
 screensize=get(0,'ScreenSize');
 obj.fig=figure('Menubar','none','Name','BrainMap','units','pixels','position',[screensize(3)/2-450,screensize(4)/2-325,900,650],...
     'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),'resize','on','Dockcontrols','off',...
-    'WindowButtonMotionFcn',@(src,evt)MouseMove(obj));
+    'WindowButtonMotionFcn',@(src,evt)MouseMove(obj),'WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt));
 
 %==========================================================================
 obj.FileMenu=uimenu(obj.fig,'label','File');
@@ -143,6 +143,9 @@ obj.JElectrodeThicknessSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JElectrodeThicknessSpinner,[0,0,1,1],obj.electrodetoolpane);
 set(gh,'Units','Norm','Position',[0.72,0.84,0.25,0.06]);
 set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ElectrodeSpinnerCallback(obj));
+
+uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','position',[0,0.84,0.22,0.06],...
+    'string','Radius','FontSize',12,'horizontalalignment','left');
 
 end
 

@@ -78,6 +78,9 @@ classdef BrainMap < handle
         IconTiltElectrode
         
         HExtraBtn1
+        
+        JElectrodeRetractBtn
+        JElectrodeProlongBtn
     end
     properties
         light
@@ -219,9 +222,13 @@ classdef BrainMap < handle
             mapval=obj.mapObj(char(evt.getKey()));
             if evt.ischecked
                 set(mapval.handles,'visible','on');
+                mapval.checked=true;
             else
                 set(mapval.handles,'visible','off');
+                mapval.checked=false;
             end
+            obj.mapObj(char(evt.getKey()))=mapval;
+            
             %             disp(evt.filename)
             %             disp(evt.ischecked)
         end
@@ -351,20 +358,57 @@ classdef BrainMap < handle
             end
         end
         function ClickOnElectrode(obj,src)
-            % dat=get(src,'UserData');
-            %
-            % if dat.select
-            %     set(src,'facecolor',obj.electrode.color(dat.ind,:));
-            %     dat.select=false;
-            % else
-            %     set(src,'facecolor','g');
-            %     dat.select=true;
-            % end
-            %
-            % set(src,'UserData',dat);
+            dat=get(src,'UserData');
+            
+            if dat.select
+%                 set(src,'facecolor',obj..color(dat.ind,:));
+                dat.select=false;
+            else
+                set(src,'facecolor','g');
+                dat.select=true;
+            end
+            
+            set(src,'UserData',dat);
         end
         
-        function ElectrodeTiltCallback(obj,src)
+        function ElectrodeTiltCallback(obj)
+            if ~isempty(obj.SelectEvt)&&obj.SelectEvt.level==2
+                center=camtarget;
+                %tilt the electrode face
+                electrode=obj.mapObj(char(obj.SelectEvt.getKey()));
+                
+                delete(electrode.handles);
+                for i=1:size(electrode.coor,1)
+                    userdat.ind=i;
+                    userdat.select=false;
+                    electrode.norm(i,:)=electrode.coor(i,:)-center;
+                    [faces,vertices] = createContact3D(electrode.coor(i,:),electrode.norm(i,:),electrode.radius(i),electrode.thickness(i));
+                    
+                    electrode.handles(i)=patch('faces',faces,'vertices',vertices,...
+                        'facecolor',electrode.color(i,:),'edgecolor','none','UserData',userdat,...
+                        'ButtonDownFcn',@(src,evt) ClickOnElectrode(obj,src),'facelighting','gouraud');
+                end
+                obj.mapObj(char(obj.SelectEvt.getKey()))=electrode;
+            end
+        end
+        
+        function maps=getCheckedObjects(obj,opt)
+            allvalues=obj.mapObj.values;
+            maps={};
+            for i=1:length(allvalues)
+                if strcmpi(allvalues{i}.category,opt)
+                    if allvalues{i}.checked
+                        maps=cat(1,maps,allvalues(i));
+                    end
+                end
+            end
+        end
+        
+        function new_coor=bmrotate(obj,coor,ud,lr)
+            center=mean(coor,1);
+            origin=camtarget;
+            new_center= perspectiveRotate(center-origin,campos-origin,ud,lr);
+            new_coor=coor-ones(size(coor,1),1)*center+ones(size(coor,1),1)*(new_center'+origin);
         end
     end
     methods
