@@ -18,19 +18,19 @@ if ~isfield(tmp,'norm')
     tmp.norm=tmp.coor;
 end
 
+num=obj.JFileLoadTree.addElectrode(fpath,true);
+
 for i=1:size(tmp.coor,1)
+    userdat.ele=num;
     userdat.ind=i;
-    userdat.select=false;
     
     [faces,vertices] = createContact3D(tmp.coor(i,:),tmp.norm(i,:),tmp.radius(i),tmp.thickness(i));
     
     mapval.handles(i)=patch('faces',faces,'vertices',vertices,...
         'facecolor',tmp.color(i,:),'edgecolor','none','UserData',userdat,...
-        'ButtonDownFcn',@(src,evt) ClickOnElectrode(obj,src),'facelighting','gouraud');
+        'ButtonDownFcn',@(src,evt) ClickOnElectrode(obj,src,evt),'facelighting','gouraud');
 end
 material dull;
-
-num=obj.JFileLoadTree.addElectrode(fpath,true);
 
 mapval.category='Electrode';
 mapval.file=fpath;
@@ -41,6 +41,7 @@ mapval.thickness=tmp.thickness;
 mapval.color=tmp.color;
 mapval.norm=tmp.norm;
 mapval.checked=true;
+mapval.selected=ones(size(mapval.coor,1),1)*true;
 
 obj.mapObj([mapval.category,num2str(num)])=mapval;
 

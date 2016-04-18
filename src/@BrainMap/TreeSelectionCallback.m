@@ -83,11 +83,18 @@ end
 
 if strcmpi(evt.category,'Electrode')&&evt.level==2
     electrode=obj.mapObj(char(evt.getKey()));
+    electrode.selected=ones(size(electrode.coor,1),1)*true;
     set(electrode.handles,'edgecolor','y');
+    obj.mapObj(char(evt.getKey()))=electrode;
+    obj.SelectedElectrode=electrode.ind;
 else
     if strcmpi(obj.SelectEvt.category,'Electrode')&&obj.SelectEvt.level==2
         electrode=obj.mapObj(char(obj.SelectEvt.getKey()));
+        electrode.selected=ones(size(electrode.coor,1),1)*false;
+        electrode=obj.mapObj(char(obj.SelectEvt.getKey()));
         set(electrode.handles,'edgecolor','none');
+        obj.mapObj(char(obj.SelectEvt.getKey()))=electrode;
+        obj.SelectedElectrode=[];
     end
 end
 

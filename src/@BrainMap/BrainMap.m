@@ -96,6 +96,8 @@ classdef BrainMap < handle
         
         cmin
         cmax
+        
+        SelectedElectrode
     end
     
     methods
@@ -357,18 +359,24 @@ classdef BrainMap < handle
                 obj.mapObj(char(obj.SelectEvt.getKey()))=mapval;
             end
         end
-        function ClickOnElectrode(obj,src)
+        function ClickOnElectrode(obj,src,evt)
             dat=get(src,'UserData');
-            
-            if dat.select
-%                 set(src,'facecolor',obj..color(dat.ind,:));
-                dat.select=false;
-            else
-                set(src,'facecolor','g');
-                dat.select=true;
+            electrode=obj.mapObj(['Electrode',num2str(dat.ele)]);
+            type=get(obj.fig,'selectiontype');
+
+            switch type
+                case 'normal'
+                    electrode.selected=ones(size(electrode.selected))*false;
+                    electrode.selected(dat.ind)=true;
+                case 'alt'
+                    electrode.selected(dat.ind)=~electrode.selected(dat.ind);
             end
             
-            set(src,'UserData',dat);
+            set(electrode.handles,'edgecolor','none');
+            set(electrode.handles(logical(electrode.selected)),'edgecolor','y');
+            
+            obj.mapObj(['Electrode',num2str(dat.ele)])=electrode;
+            obj.SelectedElectrode=dat.ele;
         end
         
         function ElectrodeTiltCallback(obj)
@@ -402,13 +410,6 @@ classdef BrainMap < handle
                     end
                 end
             end
-        end
-        
-        function new_coor=bmrotate(obj,coor,ud,lr)
-            center=mean(coor,1);
-            origin=camtarget;
-            new_center= perspectiveRotate(center-origin,campos-origin,ud,lr);
-            new_coor=coor-ones(size(coor,1),1)*center+ones(size(coor,1),1)*(new_center'+origin);
         end
     end
     methods
