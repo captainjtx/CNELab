@@ -21,7 +21,8 @@ obj.IconLoadElectrode=javaObjectEDT(javax.swing.ImageIcon([obj.cnelab_path,'/db/
 obj.IconDeleteElectrode=javaObjectEDT(javax.swing.ImageIcon([obj.cnelab_path,'/db/icon/delete_electrode.png']));
 obj.IconNewElectrode=javaObjectEDT(javax.swing.ImageIcon([obj.cnelab_path,'/db/icon/new_electrode.png']));
 obj.IconSaveElectrode=javaObjectEDT(javax.swing.ImageIcon([obj.cnelab_path,'/db/icon/save_electrode.png']));
-obj.IconTiltElectrode=javaObjectEDT(javax.swing.ImageIcon([obj.cnelab_path,'/db/icon/tilt.png']));
+obj.IconInterpolateElectrode=javaObjectEDT(javax.swing.ImageIcon([obj.cnelab_path,'/db/icon/interpolate.png']));
+
 
 %             obj.JNewBtn=javaObjectEDT(TButton([obj.cnelab_path,'/db/icon/new.png'],btn_d,char('Recenter'),col));
 %             set(handle(obj.JRecenter,'CallbackProperties'),'MousePressedCallback',@(h,e) RecenterCallback(obj));
@@ -53,11 +54,17 @@ set(handle(obj.JSaveBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) Save
 [jh,gh]=javacomponent(obj.JSaveBtn,[0,0,1,1],obj.toolbtnpane);
 set(gh,'Units','Norm','Position',[width*3,0,width,1]);
 
-obj.JExtraBtn1 = javaObjectEDT(TButton([obj.cnelab_path,'/db/icon/tilt.png'],btn_d,char('Auto tilt'),col));
-set(handle(obj.JExtraBtn1,'CallbackProperties'),'MousePressedCallback',@(h,e) ElectrodeTiltCallback(obj));
+obj.JExtraBtn1 = javaObjectEDT(TButton([obj.cnelab_path,'/db/icon/interpolate.png'],btn_d,char('Interpolate'),col));
+set(handle(obj.JExtraBtn1,'CallbackProperties'),'MousePressedCallback',@(h,e) ElectrodeInterpolateCallback(obj));
 
 [jh,obj.HExtraBtn1]=javacomponent(obj.JExtraBtn1,[0,0,1,1],obj.toolbtnpane);
 set(obj.HExtraBtn1,'Units','Norm','Position',[width*4,0,width,1],'visible','off');
+
+obj.JSettingsBtn = javaObjectEDT(TButton([obj.cnelab_path,'/db/icon/more.png'],btn_d,char('More'),col));
+set(handle(obj.JSettingsBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) VolumeSettingsCallback(obj));
+
+[jh,gh]=javacomponent(obj.JSettingsBtn,[0,0,1,1],obj.toolbtnpane);
+set(gh,'Units','Norm','Position',[1-width/3,0,width/3,1],'visible','on');
 
 
 end

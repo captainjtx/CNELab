@@ -18,11 +18,17 @@ if ~isfield(tmp,'norm')
     tmp.norm=tmp.coor;
 end
 
+if ~isfield(tmp,'channame')
+    tmp.channame=num2cell(1:size(tmp.coor,1));
+    tmp.channame=cellfun(@num2str,tmp.channame,'UniformOutput',false);
+end
+    
+
 num=obj.JFileLoadTree.addElectrode(fpath,true);
 
 for i=1:size(tmp.coor,1)
     userdat.ele=num;
-    userdat.ind=i;
+    userdat.name=tmp.channame{i};
     
     [faces,vertices] = createContact3D(tmp.coor(i,:),tmp.norm(i,:),tmp.radius(i),tmp.thickness(i));
     
@@ -42,8 +48,10 @@ mapval.color=tmp.color;
 mapval.norm=tmp.norm;
 mapval.checked=true;
 mapval.selected=ones(size(mapval.coor,1),1)*true;
+mapval.channame=tmp.channame;
 
 obj.mapObj([mapval.category,num2str(num)])=mapval;
+
 end
 
 

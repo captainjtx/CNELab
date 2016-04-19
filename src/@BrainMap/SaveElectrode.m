@@ -14,6 +14,7 @@ if strcmpi(obj.SelectEvt.category,'Electrode')&&obj.SelectEvt.level==2
         mapval.thickness=electrode.thickness;
         mapval.color=electrode.color;
         mapval.norm=electrode.norm;
+        mapval.channame=electrode.channame;
         
         save(fullfile(FilePath,FileName),'-struct','mapval');
     end

@@ -50,6 +50,7 @@ classdef BrainMap < handle
         IconNewElectrode
         IconSaveElectrode
         
+        
         JLoadBtn
         JDeleteBtn
         JNewBtn
@@ -75,12 +76,11 @@ classdef BrainMap < handle
         JElectrodeRadiusSpinner
         JElectrodeThicknessSpinner
         
-        IconTiltElectrode
+        IconInterpolateElectrode
         
         HExtraBtn1
         
-        JElectrodeRetractBtn
-        JElectrodeProlongBtn
+        JSettingsBtn
     end
     properties
         light
@@ -98,12 +98,16 @@ classdef BrainMap < handle
         cmax
         
         SelectedElectrode
+        
+        electrode_settings
     end
     
     methods
         function obj=BrainMap()
             
             obj.varinit();
+            
+            obj.electrode_settings=ElectrodeSettings(obj);
             obj.BuildFig();
         end
         
@@ -132,7 +136,6 @@ classdef BrainMap < handle
             obj.cmax=140;
         end
         
-        
         function OnClose(obj)
             try
                 delete(obj.fig);
@@ -142,6 +145,7 @@ classdef BrainMap < handle
                 delete(obj.RotateTimer)
             catch
             end
+            obj.electrode_settings.OnClose();
         end
         
         function f=panon(obj)
@@ -220,6 +224,8 @@ classdef BrainMap < handle
             set(obj.axis_3d,'CameraViewAngle',10);
         end
         
+        
+        
         function CheckChangedCallback(obj,src,evt)
             mapval=obj.mapObj(char(evt.getKey()));
             if evt.ischecked
@@ -230,6 +236,9 @@ classdef BrainMap < handle
                 mapval.checked=false;
             end
             obj.mapObj(char(evt.getKey()))=mapval;
+            if mapval.ind==obj.electrode_settings.select_ele
+                notify(obj,'ElectrodeSettingsChange')
+            end
             
             %             disp(evt.filename)
             %             disp(evt.ischecked)
@@ -334,6 +343,9 @@ classdef BrainMap < handle
                 
                 electrode.color(logical(electrode.selected),:)=ones(sum(electrode.selected),1)*newcol;
                 obj.mapObj(['Electrode',num2str(obj.SelectedElectrode)])=electrode;
+                if electrode.ind==obj.electrode_settings.select_ele
+                    notify(obj,'ElectrodeSettingsChange')
+                end
             end
         end
         
@@ -347,7 +359,7 @@ classdef BrainMap < handle
                 electrode.thickness(ind)=thick;
                 electrode.radius(ind)=r;
                 for i=1:length(ind)
-                    userdat.ind=ind(i);
+                    userdat.name=electrode.channame{ind(i)};
                     userdat.ele=obj.SelectedElectrode;
                     
                     [faces,vertices] = createContact3D...
@@ -358,6 +370,9 @@ classdef BrainMap < handle
                         'ButtonDownFcn',@(src,evt) ClickOnElectrode(obj,src),'facelighting','gouraud');
                 end
                 obj.mapObj(['Electrode',num2str(obj.SelectedElectrode)])=electrode;
+                if electrode.ind==obj.electrode_settings.select_ele
+                    notify(obj,'ElectrodeSettingsChange')
+                end
             end
         end
         function ClickOnElectrode(obj,src,evt)
@@ -365,12 +380,13 @@ classdef BrainMap < handle
             electrode=obj.mapObj(['Electrode',num2str(dat.ele)]);
             type=get(obj.fig,'selectiontype');
 
+            datind=strcmp(dat.name,electrode.channame);
             switch type
                 case 'normal'
                     electrode.selected=ones(size(electrode.selected))*false;
-                    electrode.selected(dat.ind)=true;
+                    electrode.selected(datind)=true;
                 case 'alt'
-                    electrode.selected(dat.ind)=~electrode.selected(dat.ind);
+                    electrode.selected(datind)=~electrode.selected(datind);
             end
             
             set(electrode.handles,'edgecolor','none');
@@ -378,28 +394,13 @@ classdef BrainMap < handle
             
             obj.mapObj(['Electrode',num2str(dat.ele)])=electrode;
             obj.SelectedElectrode=dat.ele;
-        end
-        
-        function ElectrodeTiltCallback(obj)
-            if ~isempty(obj.SelectEvt)&&obj.SelectEvt.level==2
-                center=camtarget;
-                %tilt the electrode face
-                electrode=obj.mapObj(char(obj.SelectEvt.getKey()));
-                
-                delete(electrode.handles);
-                for i=1:size(electrode.coor,1)
-                    userdat.ind=i;
-                    userdat.select=false;
-                    electrode.norm(i,:)=electrode.coor(i,:)-center;
-                    [faces,vertices] = createContact3D(electrode.coor(i,:),electrode.norm(i,:),electrode.radius(i),electrode.thickness(i));
-                    
-                    electrode.handles(i)=patch('faces',faces,'vertices',vertices,...
-                        'facecolor',electrode.color(i,:),'edgecolor','none','UserData',userdat,...
-                        'ButtonDownFcn',@(src,evt) ClickOnElectrode(obj,src),'facelighting','gouraud');
-                end
-                obj.mapObj(char(obj.SelectEvt.getKey()))=electrode;
+            
+            if electrode.ind==obj.electrode_settings.select_ele
+                notify(obj,'ElectrodeSettingsChange')
             end
         end
+        
+
         
         function maps=getCheckedObjects(obj,opt)
             allvalues=obj.mapObj.values;
@@ -412,6 +413,14 @@ classdef BrainMap < handle
                 end
             end
         end
+        
+        function VolumeSettingsCallback(obj)
+        end
+        function ElectrodeSettingsCallback(obj)
+            obj.electrode_settings.buildfig();
+        end
+        function SurfaceSettingsCallback(obj)
+        end
     end
     methods
         LoadSurface(obj)
@@ -421,5 +430,9 @@ classdef BrainMap < handle
         BuildFig(obj)
         TreeSelectionCallback(obj,src,evt)
         SaveElectrode(obj)
+        ElectrodeInterpolateCallback(obj)
+    end
+    events
+        ElectrodeSettingsChange
     end
 end

@@ -57,21 +57,15 @@ classdef FastEventWindow  < handle
                 'CellSelectionCallback',@(src,evt) cellClick(obj,src,evt),...
                 'CellEditCallback',@(src,evt) cellEdit(obj,src,evt));
             
-            
             obj.BtnDelete=uicontrol(obj.Fig,'Style','pushbutton','string','delete',...
                 'Units','normalized','Position',[0.79,0.01,0.2,0.05],...
                 'tooltipstring','delete the selected event','callback',@(src,evt) deleteFastEvent(obj));
-            
-            
             
             obj.BtnDelete=uicontrol(obj.Fig,'Style','pushbutton','string','new',...
                 'Units','normalized','Position',[0.01,0.01,0.2,0.05],...
                 'tooltipstring','create a new event','callback',@(src,evt) newFastEvent(obj));
             
             addlistener(bsp,'SelectedFastEvtChange',@(src,evt) synchSelect(obj));
-            
-            
-            
         end
         
         function delete(obj)
@@ -104,7 +98,6 @@ classdef FastEventWindow  < handle
         end
         
         function cellEdit(obj,src,evt)
-            
             if size(evt.Indices,1)==1
                 if evt.Indices(1,2)==1
                     if evt.NewData
@@ -131,12 +124,9 @@ classdef FastEventWindow  < handle
         end
         
         function deleteFastEvent(obj)
-            
             obj.FastEvts(obj.SelectedFastEvt,:)=[];
             obj.Data(obj.SelectedFastEvt,:)=[];
             notify(obj,'SelectedFastEvtChange');
-            
-            
         end
         
         function val=get.SelectedFastEvt(obj)
@@ -156,7 +146,6 @@ classdef FastEventWindow  < handle
             obj.FastEvts=val;
             notify(obj,'FastEvtsChange');
         end
-        
     end
     methods (Static=true)
         function htmlstr=colorgen(color,text)

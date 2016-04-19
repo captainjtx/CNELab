@@ -68,6 +68,11 @@ public class FileLoadTree
     
     public JScrollPane span;
     
+    private int SurfaceID=0;
+    private int ElectrodeID=0;
+    private int VolumeID=0;
+    private int OthersID=0;
+    
     private DefaultMutableTreeNode SurfaceNode = null;
     private DefaultMutableTreeNode ElectrodeNode = null;
     private DefaultMutableTreeNode VolumeNode = null;
@@ -140,14 +145,14 @@ public class FileLoadTree
                     data = (CheckBoxNodeData) nodeInfo;
                 }
                 
-                TreePath currentPath=tree.getSelectionPath();
-                TreePath parentPath=currentPath.getParentPath();
-                int num=tree.getRowForPath(currentPath)-tree.getRowForPath(parentPath);
+//                 TreePath currentPath=tree.getSelectionPath();
+//                 TreePath parentPath=currentPath.getParentPath();
+//                 int num=tree.getRowForPath(currentPath)-tree.getRowForPath(parentPath);
                 
                 if (data!=null)
                 {
                     //subnode
-                    notifyTreeSelection(data.getText(),data.isChecked(),node.getParent().toString(),node.getLevel(),num);
+                    notifyTreeSelection(data.getText(),data.isChecked(),node.getParent().toString(),node.getLevel(),data.getID());
                 }
                 else
                 {
@@ -189,9 +194,9 @@ public class FileLoadTree
         
         return span;
     }
-    private DefaultMutableTreeNode add(final DefaultMutableTreeNode parent, final String text,final boolean checked)
+    private DefaultMutableTreeNode add(final DefaultMutableTreeNode parent, final String text,final boolean checked, final int id)
     {
-        CheckBoxNodeData data = new CheckBoxNodeData(text, checked);
+        CheckBoxNodeData data = new CheckBoxNodeData(text, checked,id);
         DefaultMutableTreeNode node = new DefaultMutableTreeNode(data);
         parent.add(node);
         return node;
@@ -208,7 +213,7 @@ public class FileLoadTree
     
     public int addSurface(String filename, boolean chk)
     {
-            CheckBoxNodeData dat=new CheckBoxNodeData(filename,chk);
+            CheckBoxNodeData dat=new CheckBoxNodeData(filename,chk,++SurfaceID);
             DefaultMutableTreeNode node = new DefaultMutableTreeNode( dat );
             addNodeToDefaultTreeModel( defaultTreeModel, SurfaceNode, node );
 //             expandAllNodes(tree, 0, tree.getRowCount());
@@ -217,17 +222,16 @@ public class FileLoadTree
             tree.scrollPathToVisible(newPath);
             tree.setSelectionPath(newPath);
             
-            TreePath parentPath= new TreePath(defaultTreeModel.getPathToRoot(SurfaceNode));
-
-            int num=tree.getRowForPath(newPath)-tree.getRowForPath(parentPath);
-            nodeCache.put("surface"+num,dat);
+//             TreePath parentPath= new TreePath(defaultTreeModel.getPathToRoot(SurfaceNode));
+//             int num=tree.getRowForPath(newPath)-tree.getRowForPath(parentPath);
             
-            return num;
-        
+            nodeCache.put("surface"+SurfaceID,dat);
+            
+            return SurfaceID;
     }
     public int addVolume(String filename, boolean chk)
     {
-            CheckBoxNodeData dat=new CheckBoxNodeData(filename,chk);
+            CheckBoxNodeData dat=new CheckBoxNodeData(filename,chk,++VolumeID);
 
             
             DefaultMutableTreeNode node = new DefaultMutableTreeNode( dat );
@@ -237,16 +241,13 @@ public class FileLoadTree
             tree.scrollPathToVisible(newPath);
             tree.setSelectionPath(newPath);
             
-            TreePath parentPath= new TreePath(defaultTreeModel.getPathToRoot(VolumeNode));
+            nodeCache.put("volume"+VolumeID,dat);
             
-            int num=tree.getRowForPath(newPath)-tree.getRowForPath(parentPath);
-            nodeCache.put("volume"+num,dat);
-            
-            return num;
+            return VolumeID;
     }
     public int addElectrode(String filename, boolean chk)
     {
-            CheckBoxNodeData dat=new CheckBoxNodeData(filename,chk);
+            CheckBoxNodeData dat=new CheckBoxNodeData(filename,chk,++ElectrodeID);
             
             DefaultMutableTreeNode node = new DefaultMutableTreeNode( dat );
             addNodeToDefaultTreeModel( defaultTreeModel, ElectrodeNode, node );
@@ -256,16 +257,13 @@ public class FileLoadTree
             tree.scrollPathToVisible(newPath);
             tree.setSelectionPath(newPath);
             
-            TreePath parentPath= new TreePath(defaultTreeModel.getPathToRoot(ElectrodeNode));
-
-            int num=tree.getRowForPath(newPath)-tree.getRowForPath(parentPath);
-            nodeCache.put("electrode"+num,dat);
-            return num;
+            nodeCache.put("electrode"+ElectrodeID,dat);
+            return ElectrodeID;
             
     }
     public int addOthers(String filename, boolean chk)
     {
-            CheckBoxNodeData dat=new CheckBoxNodeData(filename,chk);
+            CheckBoxNodeData dat=new CheckBoxNodeData(filename,chk,++OthersID);
             
             DefaultMutableTreeNode node = new DefaultMutableTreeNode( dat );
             addNodeToDefaultTreeModel( defaultTreeModel, OthersNode, node );
@@ -273,13 +271,8 @@ public class FileLoadTree
             TreePath newPath=new TreePath(defaultTreeModel.getPathToRoot(node));
             tree.scrollPathToVisible(newPath);
             tree.setSelectionPath(newPath);
-            
-            
-            TreePath parentPath= new TreePath(defaultTreeModel.getPathToRoot(OthersNode));
-
-            int num=tree.getRowForPath(newPath)-tree.getRowForPath(parentPath);
-            nodeCache.put("others"+num,dat);
-            return num;
+            nodeCache.put("others"+OthersID,dat);
+            return OthersID;
     }
     
     public ArrayList<TreeListener> treelistener = new ArrayList<>();
@@ -390,7 +383,7 @@ public class FileLoadTree
         
         private final CheckBoxNodePanel panel = new CheckBoxNodePanel();
         
-        private final CheckBoxNodeData nodedata = new CheckBoxNodeData("",false);
+        private final CheckBoxNodeData nodedata = new CheckBoxNodeData("",false,0);
         
         private final DefaultTreeCellRenderer defaultRenderer =
         new DefaultTreeCellRenderer();
@@ -534,6 +527,7 @@ public class FileLoadTree
             
             nodedata.setText(data.getText());
             nodedata.setChecked(data.isChecked());
+            nodedata.setID(data.getID());
             
             return panel;
         }
@@ -585,7 +579,7 @@ public class FileLoadTree
         @Override
         public Object getCellEditorValue() {
             final CheckBoxNodePanel panel = renderer.getPanel();
-            final CheckBoxNodeData checkBoxNode = new CheckBoxNodeData(renderer.getNodeData().getText(),panel.check.isSelected());
+            final CheckBoxNodeData checkBoxNode = new CheckBoxNodeData(renderer.getNodeData().getText(),panel.check.isSelected(),renderer.getNodeData().getID());
             return checkBoxNode;
         }
         
@@ -639,12 +633,23 @@ public class FileLoadTree
         
         private String text;
         private boolean checked;
+        private int id;
         
-        public CheckBoxNodeData(final String text, final boolean checked) {
+        public CheckBoxNodeData(final String text, final boolean checked, final int id) {
             this.text = text;
             this.checked = checked;
+            this.id=id;
         }
         
+        public int getID()
+        {
+            return id;
+        }
+        
+        public void setID(int id)
+        {
+            this.id=id;
+        }
         public boolean isChecked() {
             return checked;
         }

@@ -83,7 +83,7 @@ if ~isempty(obj.SelectedElectrode)
     
     if redraw_electrode
         for i=1:length(ind)
-            userdat.ind=ind(i);
+            userdat.name=electrode.channame{ind(i)};
             userdat.ele=electrode.ind;
             
             electrode.norm(ind(i),:)=electrode.coor(ind(i),:)-camtarget(obj.axis_3d);
@@ -95,6 +95,10 @@ if ~isempty(obj.SelectedElectrode)
                 'ButtonDownFcn',@(src,evt) ClickOnElectrode(obj,src,evt),'facelighting','gouraud');
         end
         obj.mapObj(['Electrode',num2str(obj.SelectedElectrode)])=electrode;
+        
+        if electrode.ind==obj.electrode_settings.select_ele
+            notify(obj,'ElectrodeSettingsChange')
+        end
     end
 end
 

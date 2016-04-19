@@ -19,6 +19,7 @@ if ~strcmpi(obj.SelectEvt.category,evt.category)
         set(handle(obj.JDeleteBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) DeleteVolume(obj));
         set(handle(obj.JNewBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) NewVolume(obj));
         set(handle(obj.JSaveBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) SaveVolume(obj));
+        set(handle(obj.JSettingsBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) VolumeSettingsCallback(obj));
         
         set(obj.volumetoolpane,'visible','on');
         set(obj.surfacetoolpane,'visible','off');
@@ -42,6 +43,7 @@ if ~strcmpi(obj.SelectEvt.category,evt.category)
         set(handle(obj.JDeleteBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) DeleteSurface(obj));
         set(handle(obj.JNewBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) NewSurface(obj));
         set(handle(obj.JSaveBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) SaveSurface(obj));
+        set(handle(obj.JSettingsBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) SurfaceSettingsCallback(obj));
         
         set(obj.volumetoolpane,'visible','off');
         set(obj.surfacetoolpane,'visible','on');
@@ -72,6 +74,7 @@ if ~strcmpi(obj.SelectEvt.category,evt.category)
         set(handle(obj.JDeleteBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) DeleteElectrode(obj));
         set(handle(obj.JNewBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) NewElectrode(obj));
         set(handle(obj.JSaveBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) SaveElectrode(obj));
+        set(handle(obj.JSettingsBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) ElectrodeSettingsCallback(obj));
         
         set(obj.volumetoolpane,'visible','off');
         set(obj.surfacetoolpane,'visible','off');
@@ -87,14 +90,21 @@ if strcmpi(evt.category,'Electrode')&&evt.level==2
     set(electrode.handles,'edgecolor','y');
     obj.mapObj(char(evt.getKey()))=electrode;
     obj.SelectedElectrode=electrode.ind;
+    
+    if electrode.ind==obj.electrode_settings.select_ele
+        notify(obj,'ElectrodeSettingsChange')
+    end
 else
     if strcmpi(obj.SelectEvt.category,'Electrode')&&obj.SelectEvt.level==2
         electrode=obj.mapObj(char(obj.SelectEvt.getKey()));
         electrode.selected=ones(size(electrode.coor,1),1)*false;
-        electrode=obj.mapObj(char(obj.SelectEvt.getKey()));
         set(electrode.handles,'edgecolor','none');
         obj.mapObj(char(obj.SelectEvt.getKey()))=electrode;
         obj.SelectedElectrode=[];
+        
+        if electrode.ind==obj.electrode_settings.select_ele
+            notify(obj,'ElectrodeSettingsChange')
+        end
     end
 end
 
