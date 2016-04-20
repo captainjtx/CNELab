@@ -529,6 +529,8 @@ public class FileLoadTree
             nodedata.setChecked(data.isChecked());
             nodedata.setID(data.getID());
             
+            panel.label.setToolTipText("#ID: "+data.getID());
+            
             return panel;
         }
         protected boolean isSurface(Object value)

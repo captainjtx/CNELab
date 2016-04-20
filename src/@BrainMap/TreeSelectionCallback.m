@@ -14,6 +14,7 @@ if ~strcmpi(obj.SelectEvt.category,evt.category)
         obj.JSaveBtn.setToolTipText('Save volume');
         
         set(obj.HExtraBtn1,'visible','off');
+        set(obj.HExtraBtn2,'visible','off');
         
         set(handle(obj.JLoadBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) LoadVolume(obj));
         set(handle(obj.JDeleteBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) DeleteVolume(obj));
@@ -38,6 +39,7 @@ if ~strcmpi(obj.SelectEvt.category,evt.category)
         obj.JSaveBtn.setToolTipText('Save surface');
         
         set(obj.HExtraBtn1,'visible','off');
+        set(obj.HExtraBtn2,'visible','off');
         
         set(handle(obj.JLoadBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) LoadSurface(obj));
         set(handle(obj.JDeleteBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) DeleteSurface(obj));
@@ -69,6 +71,7 @@ if ~strcmpi(obj.SelectEvt.category,evt.category)
         obj.JSaveBtn.setToolTipText('Save electrode');
         
         set(obj.HExtraBtn1,'visible','on');
+        set(obj.HExtraBtn2,'visible','on');
         
         set(handle(obj.JLoadBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) LoadElectrode(obj));
         set(handle(obj.JDeleteBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) DeleteElectrode(obj));

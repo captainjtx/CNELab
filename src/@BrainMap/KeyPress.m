@@ -94,6 +94,7 @@ if ~isempty(obj.SelectedElectrode)
                 'facecolor',electrode.color(ind(i),:),'edgecolor','y','UserData',userdat,...
                 'ButtonDownFcn',@(src,evt) ClickOnElectrode(obj,src,evt),'facelighting','gouraud');
         end
+        material dull;
         obj.mapObj(['Electrode',num2str(obj.SelectedElectrode)])=electrode;
         
         if electrode.ind==obj.electrode_settings.select_ele

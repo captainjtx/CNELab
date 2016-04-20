@@ -22,6 +22,7 @@ obj.IconDeleteElectrode=javaObjectEDT(javax.swing.ImageIcon([obj.cnelab_path,'/d
 obj.IconNewElectrode=javaObjectEDT(javax.swing.ImageIcon([obj.cnelab_path,'/db/icon/new_electrode.png']));
 obj.IconSaveElectrode=javaObjectEDT(javax.swing.ImageIcon([obj.cnelab_path,'/db/icon/save_electrode.png']));
 obj.IconInterpolateElectrode=javaObjectEDT(javax.swing.ImageIcon([obj.cnelab_path,'/db/icon/interpolate.png']));
+obj.IconLoadMap=javaObjectEDT(javax.swing.ImageIcon([obj.cnelab_path,'/db/icon/map.png']));
 
 
 %             obj.JNewBtn=javaObjectEDT(TButton([obj.cnelab_path,'/db/icon/new.png'],btn_d,char('Recenter'),col));
@@ -59,6 +60,12 @@ set(handle(obj.JExtraBtn1,'CallbackProperties'),'MousePressedCallback',@(h,e) El
 
 [jh,obj.HExtraBtn1]=javacomponent(obj.JExtraBtn1,[0,0,1,1],obj.toolbtnpane);
 set(obj.HExtraBtn1,'Units','Norm','Position',[width*4,0,width,1],'visible','off');
+
+obj.JExtraBtn2 = javaObjectEDT(TButton([obj.cnelab_path,'/db/icon/map.png'],btn_d,char('Load map'),col));
+set(handle(obj.JExtraBtn2,'CallbackProperties'),'MousePressedCallback',@(h,e) LoadMap(obj));
+
+[jh,obj.HExtraBtn2]=javacomponent(obj.JExtraBtn2,[0,0,1,1],obj.toolbtnpane);
+set(obj.HExtraBtn2,'Units','Norm','Position',[width*5,0,width,1],'visible','off');
 
 obj.JSettingsBtn = javaObjectEDT(TButton([obj.cnelab_path,'/db/icon/more.png'],btn_d,char('More'),col));
 set(handle(obj.JSettingsBtn,'CallbackProperties'),'MousePressedCallback',@(h,e) VolumeSettingsCallback(obj));

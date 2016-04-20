@@ -23,3 +23,4 @@ xx=interp2(xx,4,'cubic');
 yy=interp2(yy,4,'cubic');
 zz=interp2(zz,4,'cubic');
 s=surf(xx,yy,zz,'edgecolor','none','CData',H);
+end

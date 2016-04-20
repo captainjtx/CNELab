@@ -72,13 +72,16 @@ classdef BrainMap < handle
         
         JElectrodeColorBtn
         JExtraBtn1
+        JExtraBtn2
         
         JElectrodeRadiusSpinner
         JElectrodeThicknessSpinner
         
         IconInterpolateElectrode
+        IconLoadMap
         
         HExtraBtn1
+        HExtraBtn2
         
         JSettingsBtn
     end
@@ -365,10 +368,18 @@ classdef BrainMap < handle
                     [faces,vertices] = createContact3D...
                         (electrode.coor(ind(i),:),electrode.norm(ind(i),:),electrode.radius(ind(i)),electrode.thickness(ind(i)));
                     delete(electrode.handles(ind(i)));
+                    
+                    if electrode.selected(ind(i))
+                        edgecolor='y';
+                    else
+                        edgecolor='none';
+                    end
+                        
                     electrode.handles(ind(i))=patch('faces',faces,'vertices',vertices,...
-                        'facecolor',electrode.color(ind(i),:),'edgecolor','none','UserData',userdat,...
+                        'facecolor',electrode.color(ind(i),:),'edgecolor',edgecolor,'UserData',userdat,...
                         'ButtonDownFcn',@(src,evt) ClickOnElectrode(obj,src),'facelighting','gouraud');
                 end
+                material dull;
                 obj.mapObj(['Electrode',num2str(obj.SelectedElectrode)])=electrode;
                 if electrode.ind==obj.electrode_settings.select_ele
                     notify(obj,'ElectrodeSettingsChange')
@@ -431,6 +442,7 @@ classdef BrainMap < handle
         TreeSelectionCallback(obj,src,evt)
         SaveElectrode(obj)
         ElectrodeInterpolateCallback(obj)
+        LoadMap(obj)
     end
     events
         ElectrodeSettingsChange

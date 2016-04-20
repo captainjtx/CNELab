@@ -92,18 +92,18 @@ classdef ElectrodeSettings<handle
                 'Data',data,...
                 'CellSelectionCallback',@(src,evt) cellClick(obj,src,evt),...
                 'CellEditCallback',@(src,evt) cellEdit(obj,src,evt));
-            jscrollpane = findjobj(obj.Table);
-            jtable = jscrollpane.getViewport.getView;
-            
-            % Now turn the JIDE sorting on
-            jtable.setSortable(true);		% or: set(jtable,'Sortable','on');
-%             jtable.setAutoResort(true);
-            jtable.setMultiColumnSortable(true);
-            jtable.setPreserveSelectionsAfterSorting(true);
-            
-            for i=1:length(columnWidth)
-                jtable.getColumnModel().getColumn(i-1).setPreferredWidth(columnWidth{i});
-            end
+%             jscrollpane = findjobj(obj.Table);
+%             jtable = jscrollpane.getViewport.getView;
+%             
+%             % Now turn the JIDE sorting on
+%             jtable.setSortable(true);		% or: set(jtable,'Sortable','on');
+% %             jtable.setAutoResort(true);
+%             jtable.setMultiColumnSortable(true);
+%             jtable.setPreserveSelectionsAfterSorting(true);
+%             
+%             for i=1:length(columnWidth)
+%                 jtable.getColumnModel().getColumn(i-1).setPreferredWidth(columnWidth{i});
+%             end
             
             obj.BtnDelete=uicontrol(obj.fig,'Style','pushbutton','string','delete',...
                 'Units','normalized','Position',[0.89,0.01,0.1,0.05],...
@@ -198,6 +198,7 @@ classdef ElectrodeSettings<handle
             electrode.handles(ind)=patch('faces',faces,'vertices',vertices,...
                 'facecolor',electrode.color(ind,:),'edgecolor',edgecolor,'UserData',userdat,...
                 'ButtonDownFcn',@(src,evt) obj.bm.ClickOnElectrode(src),'facelighting','gouraud');
+            material dull;
         end
         function newElectrode(obj)
         end

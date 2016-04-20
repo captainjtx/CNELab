@@ -57,6 +57,8 @@ if ~isempty(obj.SelectedElectrode)
         if electrode.ind==obj.electrode_settings.select_ele
             notify(obj,'ElectrodeSettingsChange')
         end
+        
+        material dull;
     end
     
 end

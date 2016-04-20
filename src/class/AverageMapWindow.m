@@ -571,8 +571,6 @@ classdef AverageMapWindow  < handle
             end
         end
         
-        
-        
         function val=get.clim_slider_min(obj)
             val=obj.clim_slider_min_;
         end
