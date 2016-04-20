@@ -3,6 +3,9 @@ function [faces,vertices] = createContact3D(loc,Vn,r,d)
 
 %creating the polygon face of contact
 %Using n polygon to simulate circle
+
+%By Tianxiao Jiang
+%jtxinnocence@gmail.com
 n=20;
 
 if Vn(1)~=0
@@ -13,11 +16,13 @@ else
     Vp=[0,Vn(3),-Vn(2)];
 end
 
+Vn=Vn/norm(Vn);
+Vp=Vp/norm(Vp);
+
 loc=loc(:)';
 Vn=Vn(:)';
 
-Vn=Vn/norm(Vn);
-Vp=Vp/norm(Vp);
+loc=loc+Vn*d/2;
 
 top.vertices=zeros(n,3);
 
