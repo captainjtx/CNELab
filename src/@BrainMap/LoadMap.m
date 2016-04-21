@@ -33,21 +33,9 @@ if ~isempty(obj.SelectedElectrode)
     end
     map=mean(map,2);
     electrode.map=map;
-    %**************************************************************
     %%
-    %remake the model of max/min spinner
-    max_map=max(map);
-    min_map=min(map);
-    
-    cmax=max(abs(map))*1.1;
-    cmin=-max(abs(map))*1.1;
-    
-    model = javaObjectEDT(SpinnerNumberModel(min_map,cmin,cmax,(max_map-min_map)/20));
-    obj.JMapMinSpinner.setModel(model);
-    
-    model = javaObjectEDT(SpinnerNumberModel(max_map,cmin,cmax,(max_map-min_map)/20));
-    obj.JMapMaxSpinner.setModel(model);
-    %%
+    obj.JMapMinSpinner.getModel().setValue(min(map));
+    obj.JMapMaxSpinner.getModel().setValue(max(map));
     %set map alpha value
     obj.JMapAlphaSpinner.setValue(electrode.map_alpha*100);
     obj.JMapAlphaSlider.setValue(electrode.map_alpha*100);

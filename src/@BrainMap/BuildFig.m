@@ -144,7 +144,7 @@ set(obj.MapColorMapPopup,'Value',4,'Callback',@(src,evt)MapColormapCallback(obj)
 %map color data limit
 uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','position',[0,0.54,0.22,0.06],...
     'string','Min','FontSize',12,'horizontalalignment','left');
-model = javaObjectEDT(SpinnerNumberModel(-6,-10,10,1));  
+model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(-6),[],[],java.lang.Double(1)));  
 obj.JMapMinSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JMapMinSpinner,[0,0,1,1],obj.electrodetoolpane);
 set(gh,'Units','Norm','Position',[0.22,0.54,0.25,0.06]);
@@ -152,7 +152,7 @@ set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) MapSpinnerCall
 
 uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','position',[0.5,0.54,0.22,0.06],...
     'string','Max','FontSize',12,'horizontalalignment','left');
-model = javaObjectEDT(SpinnerNumberModel(6,-10,10,1));  
+model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(6),[],[],java.lang.Double(1))); 
 obj.JMapMaxSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JMapMaxSpinner,[0,0,1,1],obj.electrodetoolpane);
 set(gh,'Units','Norm','Position',[0.72,0.54,0.25,0.06]);

@@ -1,13 +1,22 @@
 function  electrode=redrawNewMap(obj,electrode)
+
 pos=electrode.coor;
 map=electrode.map;
+%%
+max_map=max(map);
+min_map=min(map);
 
-min_map=obj.JMapMinSpinner.getValue();
-max_map=obj.JMapMaxSpinner.getValue();
+step=(max_map-min_map)/20;
 
+obj.JMapMinSpinner.getModel().setStepSize(java.lang.Double(step));
+obj.JMapMaxSpinner.getModel().setStepSize(java.lang.Double(step));
+
+cmin=obj.JMapMinSpinner.getValue();
+cmax=obj.JMapMaxSpinner.getValue();
+%%
 F= scatteredInterpolant(pos(:,1),pos(:,2),pos(:,3),map,'natural','linear');
 cmap=colormap(electrode.map_colormap);
-clevel=linspace(min_map,max_map,size(cmap,1));
+clevel=linspace(cmin,cmax,size(cmap,1));
 
 if ~is_handle_valid(electrode.map_h)
     newpos=interp_tri(pos,electrode.coor_interp);
