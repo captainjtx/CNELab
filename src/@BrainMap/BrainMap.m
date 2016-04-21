@@ -487,6 +487,7 @@ classdef BrainMap < handle
         LoadMap(obj)
         MapColormapCallback(obj)
         MapSpinnerCallback(obj)
+        electrode=redrawNewMap(obj,electrode)
     end
     events
         ElectrodeSettingsChange

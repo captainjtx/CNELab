@@ -24,7 +24,7 @@ if ~isfield(tmp,'channame')
 end
 
 if ~isfield(tmp,'map')
-    tmp.map=[];
+    tmp.map=ones(size(tmp.coor,1),1)*nan;
 end
     
 
@@ -55,11 +55,9 @@ mapval.selected=ones(size(mapval.coor,1),1)*true;
 mapval.channame=tmp.channame;
 mapval.map=tmp.map;
 mapval.map_h=[];
-mapval.new_coor=mapval.coor;
 mapval.coor_interp=10;
 mapval.map_alpha=0.8;
 mapval.map_colormap='jet';
-
 
 obj.mapObj([mapval.category,num2str(num)])=mapval;
 

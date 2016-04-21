@@ -32,12 +32,7 @@ if ~isempty(obj.SelectedElectrode)
         map(ib,i)=sm.val;
     end
     map=mean(map,2);
-    %**************************************************************
-    %interpolate missing channels
-    pos=electrode.coor;
-    %     for i=1:size(pos,1)
-    %         pos(i,:)=pos(i,:)-electrode.norm(ind(i),:)/norm(electrode.norm(ind(i),:))*electrode.thickness(ind(i))/2;
-    %     end
+    electrode.map=map;
     %**************************************************************
     %%
     %remake the model of max/min spinner
@@ -61,37 +56,13 @@ if ~isempty(obj.SelectedElectrode)
     set(obj.MapColorMapPopup,'value',...
         find(strcmpi(electrode.map_colormap,get(obj.MapColorMapPopup,'UserData'))));
     %%
-    if isempty(electrode.map_h)
-        newpos=interp_tri(pos,electrode.coor_interp);
-        electrode.new_coor=newpos;
-        
-        F= scatteredInterpolant(pos(:,1),pos(:,2),pos(:,3),map,'natural','linear');
-        newmap=F(newpos(:,1),newpos(:,2),newpos(:,3));
-        
-        tri=delaunay(newpos(:,1),newpos(:,2));
-        
-        cmap=colormap(electrode.map_colormap);
-        
-        clevel=linspace(min_map,max_map,size(cmap,1));
-        
-        cmapv=zeros(length(newmap),3);
-        for i=1:length(newmap)
-            [~,index] = min(abs(clevel-newmap(i)));
-            
-            cmapv(i,:)=cmap(index,:);
-        end
-        
-        electrode.map_h=patch('Faces',tri,'Vertices',newpos,'facelighting','gouraud',...
-            'FaceVertexCData',cmapv,'FaceColor','interp','EdgeColor','none','FaceAlpha',electrode.map_alpha,...
-            'UserData',newmap);
-        material dull
-        
-        electrode.map=map;
-    else
-        newpos=electrode.new_coor;
-    end
+    electrode=obj.redrawNewMap(electrode);
+    
     obj.mapObj(['Electrode',num2str(obj.SelectedElectrode)])=electrode;
     
+    if electrode.ind==obj.electrode_settings.select_ele
+        notify(obj,'ElectrodeSettingsChange')
+    end
 end
 end
 
