@@ -45,7 +45,7 @@ tmp=vol3d('cdata',dat.volume,'texture','3D','Parent',obj.axis_3d,...
     'XData',xdata,'YData',ydata,'ZData',zdata);
 mapval.handles=tmp.handles;
 
-ColormapCallback(obj);
+VolumeColormapCallback(obj);
 axis vis3d
 axis equal off
 set(obj.axis_3d,'clim',[obj.cmin,obj.cmax]/255);

@@ -1,4 +1,6 @@
 function LoadMap(obj)
+import javax.swing.SpinnerNumberModel;
+
 if ~isempty(obj.SelectedElectrode)
     electrode=obj.mapObj(['Electrode',num2str(obj.SelectedElectrode)]);
     open_dir=fileparts(electrode.file);
@@ -21,84 +23,77 @@ if ~isempty(obj.SelectedElectrode)
     catch
     end
     
-    maps={fullfile(FilePath,FileName)};
+    mapfiles={fullfile(FilePath,FileName)};
+    map=ones(size(electrode.coor,1),length(mapfiles))*nan;
     
-    map=zeros(size(electrode.coor,1),1);
-    ind=[];
-    for i=1:length(maps)
-        sm=ReadSpatialMap(maps{i});
+    for i=1:length(mapfiles)
+        sm=ReadSpatialMap(mapfiles{i});
         [~,ib]=ismember(sm.name,electrode.channame);
-        ind=union(ind,ib);
         map(ib,i)=sm.val;
     end
+    map=mean(map,2);
     %**************************************************************
     %interpolate missing channels
-    pos=electrode.coor(ind,:);
-    map_channames=electrode.channame(ind);
-    map=map(ind,:);
+    pos=electrode.coor;
+    %     for i=1:size(pos,1)
+    %         pos(i,:)=pos(i,:)-electrode.norm(ind(i),:)/norm(electrode.norm(ind(i),:))*electrode.thickness(ind(i))/2;
+    %     end
     %**************************************************************
-    cmax=6;
-    cmin=-6;
+    %%
+    %remake the model of max/min spinner
+    max_map=max(map);
+    min_map=min(map);
     
-    [newpos,newmap]=interp_tri(pos,map,5);
+    cmax=max(abs(map))*1.1;
+    cmin=-max(abs(map))*1.1;
     
-    tri=delaunay(newpos(:,1),newpos(:,2));
+    model = javaObjectEDT(SpinnerNumberModel(min_map,cmin,cmax,(max_map-min_map)/20));
+    obj.JMapMinSpinner.setModel(model);
     
-    cmap=colormap('jet');
-    clevel=linspace(cmin,cmax,size(cmap,1));
-    
-    cmapv=zeros(length(newmap),3);
-    for i=1:length(newmap)
-        [~,index] = min(abs(clevel-newmap(i)));
+    model = javaObjectEDT(SpinnerNumberModel(max_map,cmin,cmax,(max_map-min_map)/20));
+    obj.JMapMaxSpinner.setModel(model);
+    %%
+    %set map alpha value
+    obj.JMapAlphaSpinner.setValue(electrode.map_alpha*100);
+    obj.JMapAlphaSlider.setValue(electrode.map_alpha*100);
+    %%
+    %set map colormap
+    set(obj.MapColorMapPopup,'value',...
+        find(strcmpi(electrode.map_colormap,get(obj.MapColorMapPopup,'UserData'))));
+    %%
+    if isempty(electrode.map_h)
+        newpos=interp_tri(pos,electrode.coor_interp);
+        electrode.new_coor=newpos;
         
-        cmapv(i,:)=cmap(index,:);
+        F= scatteredInterpolant(pos(:,1),pos(:,2),pos(:,3),map,'natural','linear');
+        newmap=F(newpos(:,1),newpos(:,2),newpos(:,3));
+        
+        tri=delaunay(newpos(:,1),newpos(:,2));
+        
+        cmap=colormap(electrode.map_colormap);
+        
+        clevel=linspace(min_map,max_map,size(cmap,1));
+        
+        cmapv=zeros(length(newmap),3);
+        for i=1:length(newmap)
+            [~,index] = min(abs(clevel-newmap(i)));
+            
+            cmapv(i,:)=cmap(index,:);
+        end
+        
+        electrode.map_h=patch('Faces',tri,'Vertices',newpos,'facelighting','gouraud',...
+            'FaceVertexCData',cmapv,'FaceColor','interp','EdgeColor','none','FaceAlpha',electrode.map_alpha,...
+            'UserData',newmap);
+        material dull
+        
+        electrode.map=map;
+    else
+        newpos=electrode.new_coor;
     end
+    obj.mapObj(['Electrode',num2str(obj.SelectedElectrode)])=electrode;
     
-    patch('Faces',tri,'Vertices',newpos,'facelighting','gouraud',...
-        'FaceVertexCData',cmapv,'FaceColor','interp','EdgeColor','none','FaceAlpha',0.8);
-    material dull
 end
 end
 
-function [newpos,newmap]=interp_tri(pos,map,k)
 
-if k==0
-    newpos=pos;
-    newmap=map;
-    return
-else
-    tri=delaunay(pos(:,1),pos(:,2));
-    
-    edge_pair=[];
-    newpos=[];
-    for i=1:size(tri,1)
-        if ~ismember([tri(i,1),tri(i,2)],edge_pair)
-            newpos=cat(1,newpos,(pos(tri(i,1),:)+pos(tri(i,2),:))/2);
-            edge_pair=cat(1,edge_pair,[tri(i,1),tri(i,2)]);
-        end
-        
-        if ~ismember([tri(i,1),tri(i,3)],edge_pair)
-            newpos=cat(1,newpos,(pos(tri(i,1),:)+pos(tri(i,3),:))/2);
-            edge_pair=cat(1,edge_pair,[tri(i,1),tri(i,3)]);
-        end
-        
-        if ~ismember([tri(i,3),tri(i,2)],edge_pair)
-            newpos=cat(1,newpos,(pos(tri(i,3),:)+pos(tri(i,2),:))/2);
-            edge_pair=cat(1,edge_pair,[tri(i,3),tri(i,2)]);
-        end
-    end
-    
-    F= scatteredInterpolant(pos(:,1),pos(:,2),pos(:,3),map,'natural','linear');
-    newmap=F(newpos(:,1),newpos(:,2),newpos(:,3));
-    
-    newpos=cat(1,pos,newpos);
-    
-    [newpos,ind]=unique(newpos,'rows');
-    newmap=cat(1,map(:),newmap(:));
-    newmap=newmap(ind);
-    
-    [newpos,newmap]=interp_tri(newpos,newmap,k-1);
-end
-
-end
 

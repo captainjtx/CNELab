@@ -65,7 +65,7 @@ classdef BrainMap < handle
         
         JSurfaceAlphaSpinner
         JSurfaceAlphaSlider
-        ColorMapPopup
+        VolumeColorMapPopup
         
         JVolumeMinSpinner
         JVolumeMaxSpinner
@@ -84,6 +84,14 @@ classdef BrainMap < handle
         HExtraBtn2
         
         JSettingsBtn
+        
+        JMapMaxSpinner
+        JMapMinSpinner
+        
+        MapColorMapPopup
+        
+        JMapAlphaSpinner
+        JMapAlphaSlider
     end
     properties
         light
@@ -103,6 +111,8 @@ classdef BrainMap < handle
         SelectedElectrode
         
         electrode_settings
+        
+        cmapList
     end
     
     methods
@@ -310,14 +320,13 @@ classdef BrainMap < handle
             set(obj.ViewPanel,'BackgroundColor',uisetcolor(get(obj.ViewPanel,'BackgroundColor'),'Background'))
         end
         
-        function ColormapCallback(obj)
-            %extraction of colormap name from popupmenu
-            htmlList = get(obj.ColorMapPopup,'String');
-            listIdx = get(obj.ColorMapPopup,'Value');
-            removedHTML = regexprep(htmlList{listIdx},'<[^>]*>','');
-            cmapName = strrep(strrep(strrep(removedHTML,'_',''),'>',''),'-','');
-            cmapFun = str2func(['@(x) ' lower(cmapName) '(x)']);
-            colormap(obj.axis_3d,cmapFun(16));
+        function VolumeColormapCallback(obj)
+            listIdx = get(obj.VolumeColorMapPopup,'Value');
+
+            cmapName=get(obj.VolumeColorMapPopup,'UserData');
+            cmapName=cmapName{listIdx};
+            
+            colormap(obj.axis_3d,lower(cmapName));
         end
         function VolumeScaleSpinnerCallback(obj)
             
@@ -432,6 +441,39 @@ classdef BrainMap < handle
         end
         function SurfaceSettingsCallback(obj)
         end
+        
+        function MapAlphaSliderCallback(obj)
+            alpha=obj.JMapAlphaSlider.getValue();
+            obj.JMapAlphaSpinner.setValue(alpha);
+            drawnow
+            
+            if ~isempty(obj.SelectedElectrode)
+                electrode=obj.mapObj(['Electrode',num2str(obj.SelectedElectrode)]);
+                electrode.map_alpha=alpha/100;
+                
+                if is_handle_valid(electrode.map_h)
+                    set(electrode.map_h,'FaceAlpha',alpha/100);
+                end
+                
+                obj.mapObj(['Electrode',num2str(obj.SelectedElectrode)])=electrode;
+            end
+        end
+        function MapAlphaSpinnerCallback(obj)
+            alpha=obj.JMapAlphaSpinner.getValue();
+            obj.JMapAlphaSlider.setValue(alpha);
+            drawnow
+            
+            if ~isempty(obj.SelectedElectrode)
+                electrode=obj.mapObj(['Electrode',num2str(obj.SelectedElectrode)]);
+                electrode.map_alpha=alpha/100;
+                
+                if is_handle_valid(electrode.map_h)
+                    set(electrode.map_h,'FaceAlpha',alpha/100);
+                end
+                
+                obj.mapObj(['Electrode',num2str(obj.SelectedElectrode)])=electrode;
+            end
+        end
     end
     methods
         LoadSurface(obj)
@@ -443,6 +485,8 @@ classdef BrainMap < handle
         SaveElectrode(obj)
         ElectrodeInterpolateCallback(obj)
         LoadMap(obj)
+        MapColormapCallback(obj)
+        MapSpinnerCallback(obj)
     end
     events
         ElectrodeSettingsChange
