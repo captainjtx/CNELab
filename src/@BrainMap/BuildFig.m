@@ -125,7 +125,7 @@ model = javaObjectEDT(SpinnerNumberModel(0.5,0,10,0.1));
 obj.JElectrodeRadiusSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JElectrodeRadiusSpinner,[0,0,1,1],obj.electrodetoolpane);
 set(gh,'Units','Norm','Position',[0.22,0.84,0.25,0.06]);
-set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ElectrodeSpinnerCallback(obj));
+set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ElectrodeRadiusSpinnerCallback(obj));
 
 uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','position',[0.5,0.84,0.22,0.06],...
     'string','Thickness','FontSize',12,'horizontalalignment','left');
@@ -133,7 +133,24 @@ model = javaObjectEDT(SpinnerNumberModel(0.4,0,10,0.1));
 obj.JElectrodeThicknessSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JElectrodeThicknessSpinner,[0,0,1,1],obj.electrodetoolpane);
 set(gh,'Units','Norm','Position',[0.72,0.84,0.25,0.06]);
-set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ElectrodeSpinnerCallback(obj));
+set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ElectrodeThicknessSpinnerCallback(obj));
+%%
+%radius and thickness percentage
+uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','position',[0,0.74,0.22,0.06],...
+    'string','%','FontSize',12,'horizontalalignment','left');
+model = javaObjectEDT(SpinnerNumberModel(java.lang.Integer(100),java.lang.Integer(10),java.lang.Integer(500),java.lang.Integer(10)));  
+obj.JElectrodeRadiusRatioSpinner =javaObjectEDT(JSpinner(model));
+[jh,gh]=javacomponent(obj.JElectrodeRadiusRatioSpinner,[0,0,1,1],obj.electrodetoolpane);
+set(gh,'Units','Norm','Position',[0.22,0.74,0.25,0.06]);
+set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ElectrodeRadiusRatioSpinnerCallback(obj));
+
+uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','position',[0.5,0.74,0.22,0.06],...
+    'string','%','FontSize',12,'horizontalalignment','left');
+model = javaObjectEDT(SpinnerNumberModel(java.lang.Integer(100),java.lang.Integer(10),java.lang.Integer(500),java.lang.Integer(10)));  
+obj.JElectrodeThicknessRatioSpinner =javaObjectEDT(JSpinner(model));
+[jh,gh]=javacomponent(obj.JElectrodeThicknessRatioSpinner,[0,0,1,1],obj.electrodetoolpane);
+set(gh,'Units','Norm','Position',[0.72,0.74,0.25,0.06]);
+set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ElectrodeThicknessRatioSpinnerCallback(obj));
 %%
 %map colormap
 uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','position',[0,0.6,0.25,0.08],...
@@ -171,8 +188,17 @@ obj.JMapAlphaSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JMapAlphaSpinner,[0,0,1,1],obj.electrodetoolpane);
 set(gh,'Units','Norm','Position',[0.8,0.45,0.2,0.06]);
 set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) MapAlphaSpinnerCallback(obj));
+%%
+%map interpolation
+uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','position',[0,0.35,0.5,0.06],...
+    'string','Interpolation level','FontSize',12,'horizontalalignment','left');
+model = javaObjectEDT(SpinnerNumberModel(java.lang.Integer(10),java.lang.Integer(0),java.lang.Integer(20),java.lang.Integer(1)));  
+obj.JMapInterpolationSpinner =javaObjectEDT(JSpinner(model));
+[jh,gh]=javacomponent(obj.JMapInterpolationSpinner,[0,0,1,1],obj.electrodetoolpane);
+set(gh,'Units','Norm','Position',[0.5,0.35,0.25,0.06]);
+set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) MapInterpolationCallback(obj));
 end
-
+%%
 function h=colormap_popup(varargin)
 cmapList = {'Gray','Bone', 'Copper','Jet', 'HSV', 'Hot', 'Cool', 'Spring', 'Summer', 'Autumn', ...
                  'Winter', 'Pink', 'Lines'}';

@@ -58,6 +58,9 @@ mapval.map_h=[];
 mapval.coor_interp=10;
 mapval.map_alpha=0.8;
 mapval.map_colormap='jet';
+mapval.F=[];
+mapval.radius_ratio=ones(size(mapval.coor,1),1);
+mapval.thickness_ratio=ones(size(mapval.coor,1),1);
 
 obj.mapObj([mapval.category,num2str(num)])=mapval;
 

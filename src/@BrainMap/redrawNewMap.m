@@ -15,6 +15,8 @@ cmin=obj.JMapMinSpinner.getValue();
 cmax=obj.JMapMaxSpinner.getValue();
 %%
 F= scatteredInterpolant(pos(:,1),pos(:,2),pos(:,3),map,'natural','linear');
+electrode.F=F;
+
 cmap=colormap(electrode.map_colormap);
 clevel=linspace(cmin,cmax,size(cmap,1));
 
