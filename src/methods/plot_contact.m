@@ -1,4 +1,4 @@
-function plot_contact(axe,col,row,r,h,w,channames,varargin)
+function plot_contact(axe,mapv,col,row,r,h,w,channames,varargin)
 %channames is optional
 col=round(col*w);
 row=round(row*h);
@@ -50,12 +50,12 @@ erschan=logical(erschan);
 erdcol=col(erdchan);
 erdrow=row(erdchan);
 % erdr=r(erdchan);
-erdr=ones(size(erdchan))*max(r);
+erdr=ones(size(erdchan))*max(r)*1.5;
 
 erscol=col(erschan);
 ersrow=row(erschan);
 % ersr=r(erschan);
-ersr=ones(size(erschan))*max(r);
+ersr=ones(size(erschan))*max(r)*1.5;
 
 col=col(~erdchan&~erschan);
 row=row(~erdchan&~erschan);
@@ -68,29 +68,39 @@ else
 end
 
 background=uint8(ones(h,w,3)*255);
-shapeInserter = vision.ShapeInserter('Shape','Circles','BorderColor','Custom',...
-    'CustomBorderColor',[0,0,0],'LineWidth',1.2,'Antialiasing',true);
-circles =int32([col, row, r]);
 
-I = step(shapeInserter, background, circles);
+circles =[col, row, r];
+
+cmap=colormap(axe);
+cmap=round(cmap*255);
+cl=get(axe,'CLim');
+
+clevel=linspace(cl(1),cl(2),size(cmap,1));
+
+cmapv=zeros(length(mapv),3);
+for i=1:length(mapv)
+    [~,index] = min(abs(clevel-mapv(i)));
+    cmapv(i,:)=cmap(index,:);
+end
+
+if isempty(mapv)
+    I = insertShape(background,'Circle',circles,'Color',[0,0,0],'LineWidth',1);
+else
+    I = insertShape(background,'FilledCircle',circles,'Color',cmapv(~erdchan&~erschan,:),'LineWidth',1);
+end
 
 if ~isempty(badcol)
-    shapeInserter = vision.ShapeInserter('Shape','Circles','BorderColor','Custom',...
-        'CustomBorderColor',[100,100,100],'LineWidth',1.2,'Antialiasing',true);
-    circles=int32([badcol,badrow,badr]);
-    
-    I = step(shapeInserter, I, circles);
-    
+    circles=[badcol,badrow,badr];
+    I = insertShape(I,'Circle',circles,'Color',[100,100,100],'LineWidth',1);
 end
 
 alpha=pi/4;
 
-[az,el] = view;
+[az,el] = view(axe);
 rotation_m=[cosd(-az),-sind(-az);sind(-az),cosd(-az)];
 
 if ~isempty(erdcol)
-    shapeInserter = vision.ShapeInserter('Shape','Polygons','BorderColor','Custom',...
-        'CustomBorderColor',[0,0,0],'LineWidth',1.2,'Antialiasing',true);
+    
     triangles=zeros(0,6);
     
     for i=1:length(erdcol)
@@ -110,13 +120,16 @@ if ~isempty(erdcol)
             erdcol(i)+offset3(1),   erdrow(i)+offset3(2)]));
     end
     
-    I = step(shapeInserter, I, triangles);
+    if isempty(mapv)
+        I = insertShape(I,'Polygon',triangles,'Color',[0,0,0],'LineWidth',1);
+    else
+        I = insertShape(I,'FilledPolygon',triangles,'Color',cmapv(erdchan,:),'LineWidth',1);
+    end
     
 end
 
 if ~isempty(erscol)
-    shapeInserter = vision.ShapeInserter('Shape','Polygons','BorderColor','Custom',...
-        'CustomBorderColor',[0,0,0],'LineWidth',1.2,'Antialiasing',true);
+    
     triangles=zeros(0,6);
     
     for i=1:length(erscol)
@@ -135,8 +148,11 @@ if ~isempty(erscol)
             erscol(i)+offset3(1),   ersrow(i)+offset3(2)]));
     end
     
-    I = step(shapeInserter, I, triangles);
-    
+    if isempty(mapv)
+        I = insertShape(I,'Polygon',triangles,'Color',[0,0,0],'LineWidth',1);
+    else
+        I = insertShape(I,'FilledPolygon',triangles,'Color',cmapv(erschan,:),'LineWidth',1);
+    end
 end
                         
 hold on
@@ -144,10 +160,14 @@ hold on
 imgh=image(I,'parent',axe);
 A=rgb2gray(I);
 
-set(imgh,'AlphaData',255-A);
+if isempty(mapv)
+    set(imgh,'AlphaData',255-A);
+else
+%     alpha=ones(size(A));
+%     alpha(A==255)=0;
+%     set(imgh,'AlphaData',alpha);
+end
 set(imgh,'Tag','contact');
-
-
 
 %keep channel name above the contact
 %rotation matrix

@@ -1,4 +1,4 @@
-function spatialmap_grid(fig,mapv,method,extrap,channames,pos_x,pos_y,r,w,h,sl,sh,colbar,ratio)
+function spatialmap_grid(fig,mapv,interp_scatter,pos_x,pos_y,w,h,sl,sh,colbar,ratio)
 %TFMAP_GRID Summary of this function goes here
 %   Detailed explanation goes here
 %Orign of postion is top left corner
@@ -13,22 +13,23 @@ row=pos_y;
 h=round(h);
 w=round(w);
 
-if strcmpi(method,'natural')
-    [x,y]=meshgrid((1:w)/w,(1:h)/h);
-%     mapvq = gaussInterpolant(col,row,mapv,x,y);
-    F= scatteredInterpolant(col(:),row(:),mapv(:),method,extrap);
-    mapvq=F(x,y);
-%     mapvq=griddata(col,row,mapv,x,y,method);
-else
-    return
-end
+[x,y]=meshgrid((1:w)/w,(1:h)/h);
+
+F= scatteredInterpolant(col(:),row(:),mapv(:),'natural','linear');
+mapvq=F(x,y);
+
 figure(fig)
+clf
 
 fpos=get(fig,'position');
+
 a=axes('units','normalized','position',[10/400*w/fpos(3),15/300*h/fpos(4),w/fpos(3),h/fpos(4)],'Visible','off','parent',fig,...
     'xlimmode','manual','ylimmode','manual');
 
-imagesc('CData',mapvq,'Parent',a,'Tag','ImageMap');
+if strcmp(interp_scatter,'interp')
+    imagesc('CData',mapvq,'Parent',a,'Tag','ImageMap');
+end
+
 set(a,'XLim',[1,size(mapvq,2)]);
 set(a,'YLim',[1,size(mapvq,1)]);
 set(a,'CLim',[sl sh]);

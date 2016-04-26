@@ -147,12 +147,10 @@ classdef FastEventWindow  < handle
             notify(obj,'FastEvtsChange');
         end
     end
-    methods (Static=true)
+    methods (Static=true)        
         function htmlstr=colorgen(color,text)
-            %color is a 3-element RGB vector from 0-1
-            color=round(color*255);
-            colorstr=['rgb(',num2str(color(1)),',',num2str(color(2)),',',num2str(color(3)),')'];
-            htmlstr=['<html><table border=0 width=500 bgcolor=',colorstr,'><TR><TD>',text,'</TD></TR> </table></html>'];
+            colorstr=rgb2hex(color);
+            htmlstr=['<html><div style="padding: 100px; background-color:',colorstr,'">',text,'</div></html>'];
         end
     end
     

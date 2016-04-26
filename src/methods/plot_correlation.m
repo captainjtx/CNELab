@@ -27,7 +27,7 @@ if neg
             for t=length(neg_t):-1:2
                 if corr_matrix(r,c)<=neg_t(t)&&corr_matrix(r,c)>neg_t(t-1)
 %                 hold on
-                line([col(r),col(c)],[row(r),row(c)],'color','k','linewidth',2*(lenght(neg_t)-t)+1,...
+                line([col(r),col(c)],[row(r),row(c)],'color','k','linewidth',2*(length(neg_t)-t)+1,...
                     'tag','corr','parent',axe,'linestyle','-');
                 end
             end

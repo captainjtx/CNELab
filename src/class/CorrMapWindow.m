@@ -480,7 +480,7 @@ classdef CorrMapWindow < handle
             if ~obj.smw.NoSpatialMapFig()
                 
                 if needupdate
-                    obj.UpdateCorrelation();
+                    obj.Update();
                 end
                 
                 for i=1:length(obj.smw.SpatialMapFig)
@@ -516,7 +516,7 @@ classdef CorrMapWindow < handle
             end
         end
         
-        function UpdateCorrelation(obj)
+        function Update(obj)
             t1=round((obj.smw.act_start+obj.smw.ms_before)/1000*obj.smw.fs);
             t2=t1+round(obj.smw.act_len/1000*obj.smw.fs);
             for i=1:length(obj.smw.tfmat)
