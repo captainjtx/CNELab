@@ -243,7 +243,7 @@ classdef CrossCorrMapWindow < handle
             obj.valid=0;
             obj.smw=smw;
             
-            obj.width=350;
+            obj.width=300;
             obj.height=270;
             
             obj.pos=0;

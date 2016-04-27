@@ -135,6 +135,7 @@ classdef BioSigPlot < hgsetget
         MontageOptMenu
         
         MenuEvent
+        MenuNewEvent
         MenuEventsWindow
         MenuFastEvent
         MenuEventsDisplay
@@ -2287,6 +2288,7 @@ classdef BioSigPlot < hgsetget
         SelectCurrentWindow(obj);
         ExportObjToWorkspace(obj);
         MnuOverwritePreprocess(obj);
+        NewEvent(obj);
     end
     
     methods

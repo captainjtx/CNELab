@@ -251,7 +251,7 @@ classdef CovMapWindow < handle
             end
             obj.valid=1;
             
-            obj.width=350;
+            obj.width=300;
             obj.height=270;
             
             figpos=get(obj.smw.fig,'Position');

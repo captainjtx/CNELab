@@ -265,7 +265,7 @@ classdef CorrMapWindow < handle
         function obj=CorrMapWindow(smw)%spatial map window
             obj.valid=0;
             obj.smw=smw;
-            obj.width=350;
+            obj.width=300;
             obj.height=270;
             obj.sig=0;
             obj.sig_t=0.05;
@@ -293,7 +293,7 @@ classdef CorrMapWindow < handle
             end
             obj.valid=1;
             
-            obj.width=350;
+            obj.width=300;
             obj.height=270;
             
             figpos=get(obj.smw.fig,'Position');
