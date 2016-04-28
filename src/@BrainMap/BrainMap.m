@@ -21,6 +21,19 @@ classdef BrainMap < handle
         SettingsMenu
         SettingsBackgroundColorMenu
         
+        ElectrodeMenu
+        ElectrodeRotateMenu
+        ElectrodeRotateLeftMenu
+        ElectrodeRotateRightMenu
+        ElectrodeRotateUpMenu
+        ElectrodeRotateDownMenu
+        ElectrodePushPullMenu
+        ElectrodePullOutMenu
+        ElectrodePushInMenu
+        ElectrodeSpinMenu
+        ElectrodeSpinClockwiseMenu
+        ElectrodeSpinAntiClockwiseMenu
+        
         ViewPanel
         
         Toolbar
@@ -464,6 +477,7 @@ classdef BrainMap < handle
         ElectrodeRadiusSpinnerCallback(obj)
         ElectrodeThicknessRatioSpinnerCallback(obj)
         ElectrodeRadiusRatioSpinnerCallback(obj)
+        MoveElectrode(obj,src)
     end
     events
         ElectrodeSettingsChange

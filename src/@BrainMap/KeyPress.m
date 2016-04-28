@@ -33,10 +33,10 @@ if ~isempty(obj.SelectedElectrode)
                     electrode.coor(ind,:)=axialTranslate(electrode.coor(ind,:),camtarget(obj.axis_3d),-0.025);
                     redraw_electrode=true;
                 elseif strcmpi(evt.Key,'leftarrow')
-                    electrode.coor(ind,:) = selfRotate(electrode.coor(ind,:),camtarget(obj.axis_3d),-0.06);
+                    electrode.coor(ind,:) = selfRotate(electrode.coor(ind,:),camtarget(obj.axis_3d),0.06);
                     redraw_electrode=true;
                 elseif strcmpi(evt.Key,'rightarrow')
-                    electrode.coor(ind,:) = selfRotate(electrode.coor(ind,:),camtarget(obj.axis_3d),0.06);
+                    electrode.coor(ind,:) = selfRotate(electrode.coor(ind,:),camtarget(obj.axis_3d),-0.06);
                     redraw_electrode=true;
                 end
                 
@@ -69,10 +69,10 @@ if ~isempty(obj.SelectedElectrode)
                         electrode.coor(ind,:)=axialTranslate(electrode.coor(ind,:),camtarget(obj.axis_3d),-0.005);
                         redraw_electrode=true;
                     elseif strcmpi(evt.Key,'leftarrow')
-                        electrode.coor(ind,:) = selfRotate(electrode.coor(ind,:),camtarget(obj.axis_3d),-0.02);
+                        electrode.coor(ind,:) = selfRotate(electrode.coor(ind,:),camtarget(obj.axis_3d),0.02);
                         redraw_electrode=true;
                     elseif strcmpi(evt.Key,'rightarrow')
-                        electrode.coor(ind,:) = selfRotate(electrode.coor(ind,:),camtarget(obj.axis_3d),0.02);
+                        electrode.coor(ind,:) = selfRotate(electrode.coor(ind,:),camtarget(obj.axis_3d),-0.02);
                         redraw_electrode=true;
                     end
                 end

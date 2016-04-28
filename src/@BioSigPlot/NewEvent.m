@@ -17,7 +17,7 @@ end
 
 event=answer{2};
 
-newEvent={time,event,[0,0,0],0};
+newEvent={time,event,obj.EventDefaultColors(end,:),0};
 addNewEvent(obj,newEvent);
 end
 
