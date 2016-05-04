@@ -76,6 +76,18 @@ datamat=[];
 timestamps=[];
 erdfiles=dir([FilePath,GUID,'*.erd']);
 erdfile_names=sort({erdfiles.name});
+
+%To work around filename bug that is out of order
+%%
+ts=[];
+for n=1:length(erdfile_names)
+    [~,~,TS,~]=xltekreaderdfile(fullfile(FilePath,erdfile_names{n}));
+    ts=[ts,min(TS)];
+end
+[~,new_order]=sort(ts);
+
+erdfile_names=erdfile_names(new_order);
+
 for n=1:length(erdfile_names)
     [DATA,CH,TS,INFO]=xltekreaderdfile(fullfile(FilePath,erdfile_names{n}));
     erdfile.data=DATA;
