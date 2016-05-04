@@ -2796,55 +2796,51 @@ classdef SpatialMapWindow < handle
             end
         end
         function ExportTrialInfoCallback(obj)
-            [FileName,FilePath,FilterIndex]=uiputfile({'*.mat','Matlab Files (*.mat)';...
-                '*.txt','Text File (*.evt)'}...
-                ,'save your trial informations',fullfile(obj.bsp.FileDir,'info'));
-            if FileName~=0
-                filename=fullfile(FilePath,FileName);
-                switch FilterIndex
-                    case 1
-                        %matlab file
-                        erdchan=obj.erd_chan;
-                        erschan=obj.ers_chan;
-                        for k=1:length(obj.tfmat)
-                            %k th event
-                            tf=obj.tfmat(k);
-                            
-                            fi=(tf.f>=obj.min_freq)&(tf.f<=obj.max_freq);
-                            ti=(tf.t>=obj.act_start/1000)&(tf.t<=obj.act_start/1000+obj.act_len/1000);
-                            
-                            
-                            for i=1:length(tf.trial_mat)
-                                %i th channel
-                                event_mat=tf.trial_mat{i};
-                                if ~isempty(event_mat)
-                                    pow_val=[];
-                                    
-                                    for t=1:length(event_mat)
-                                        %t th trial
-                                        pow_val=cat(1,pow_val,mean(mean(event_mat{t}(fi,ti))));
-                                    end
-                                    
-                                    info(k).pow(:,i)=pow_val(:);
-                                end
-                            end
-                            info(k).event=tf.event;
-                            info(k).channame=tf.channame;
-                            info(k).erd_chan=erdchan{k};
-                            info(k).ers_chan=erschan{k};
-                        end
-                        save(filename,'info');
-                        
-                        [pathstr,name,ext] = fileparts(filename);
-                        assignin('base',name,info);
-                        
-                    case 2
-                        %text file
-                        
-                end
-            else
+            
+            if exist([obj.bsp.FileDir,'/app/spatial map'],'dir')~=7
+                mkdir(obj.bsp.FileDir,'/app/spatial map');
+            end
+            open_dir=[obj.bsp.FileDir,'/app/spatial map'];
+            
+            folder_name = uigetdir(open_dir,'Select a direcotry to export');
+            if ~folder_name
                 return
             end
+            filename=[num2str(obj.min_freq),'-',num2str(obj.max_freq),...
+                '_start',num2str(obj.act_start),'_len',num2str(obj.act_len),'_trial'];
+            
+            %matlab file
+            erdchan=obj.erd_chan;
+            erschan=obj.ers_chan;
+            for k=1:length(obj.tfmat)
+                %k th event
+                tf=obj.tfmat(k);
+                
+                fi=(tf.f>=obj.min_freq)&(tf.f<=obj.max_freq);
+                ti=(tf.t>=obj.act_start/1000)&(tf.t<=obj.act_start/1000+obj.act_len/1000);
+                
+                
+                for i=1:length(tf.trial_mat)
+                    %i th channel
+                    event_mat=tf.trial_mat{i};
+                    if ~isempty(event_mat)
+                        pow_val=[];
+                        
+                        for t=1:length(event_mat)
+                            %t th trial
+                            pow_val=cat(1,pow_val,mean(mean(event_mat{t}(fi,ti))));
+                        end
+                        
+                        info(k).pow(:,i)=pow_val(:);
+                    end
+                end
+                info(k).event=tf.event;
+                info(k).channame=tf.channame;
+                info(k).erd_chan=erdchan{k};
+                info(k).ers_chan=erschan{k};
+            end
+            save(fullfile(open_dir,filename),'info');
+            assignin('base','trial_info',info);
         end
         
         function TCallback(obj,src)

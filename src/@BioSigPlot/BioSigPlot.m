@@ -13,17 +13,17 @@ classdef BioSigPlot < hgsetget
         
         EventInfo
         JBtnSwitchData
-        BtnPrevEvent
-        BtnPrevEvent1
-        BtnStart
-        BtnPrevPage
-        BtnPrevSec
+        JBtnPrevEvent
+        JBtnPrevEvent1
+        JBtnStart
+        JBtnPrevPage
+        JBtnPrevSec
         EdtTime
-        BtnNextSec
-        BtnNextPage
-        BtnNextEvent
-        BtnNextEvent1
-        BtnEnd
+        JBtnNextSec
+        JBtnNextPage
+        JBtnNextEvent
+        JBtnNextEvent1
+        JBtnEnd
         JBtnSelectWin
         
         TxtInfo1
@@ -1989,8 +1989,8 @@ classdef BioSigPlot < hgsetget
         
         function resizeAxes(obj,MainPos)
             n=length(obj.Axes);
-            for i=1:length(obj.Axes)
-                if strcmp(obj.DataView,'Vertical')
+            if strcmp(obj.DataView,'Vertical')
+                for i=1:length(obj.Axes)
                     if i==1
                         start=0;
                     else
@@ -2254,7 +2254,7 @@ classdef BioSigPlot < hgsetget
         SaveData(obj,src)
         ExportDataToWorkspace(obj)
         d=preprocessedAllData(obj,n,chan,selection)
-        ChangeTime(obj,src)
+        ChangeTime(obj,opt)
         redrawChangeBlock(obj,opt)
         showGauge(obj)
         maskChannel(obj,src)

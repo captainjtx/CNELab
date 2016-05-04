@@ -29,9 +29,9 @@ if ~isempty(evt.Modifier)
         if ismember('command',evt.Modifier)||ismember('control',evt.Modifier)
             
             if strcmpi(evt.Key,'leftarrow')
-                ChangeTime(obj,obj.BtnPrevSec);
+                ChangeTime(obj,-1);
             elseif strcmpi(evt.Key,'rightarrow')
-                ChangeTime(obj,obj.BtnNextSec);
+                ChangeTime(obj,1);
                 %Ctrl+A: Select the current dataset
             elseif strcmpi(evt.Key,'A')&&~ismember('command',evt.Modifier)
                 if ~obj.IsChannelSelected
@@ -108,7 +108,7 @@ if ~isempty(evt.Modifier)
                 %else move the time of selected event by 10 sample point
             elseif strcmpi(evt.Key,'leftarrow')
                 if isempty(obj.SelectedEvent)
-                    ChangeTime(obj,obj.BtnPrevPage);
+                    ChangeTime(obj,-2);
                 else
                     step=-20/obj.SRate;
                     moveSelectedEvents(obj,step);
@@ -116,7 +116,7 @@ if ~isempty(evt.Modifier)
                 return
             elseif strcmpi(evt.Key,'rightarrow')
                 if isempty(obj.SelectedEvent)
-                    ChangeTime(obj,obj.BtnNextPage);
+                    ChangeTime(obj,2);
                 else
                     step=20/obj.SRate;
                     moveSelectedEvents(obj,step);
@@ -137,9 +137,9 @@ if ~isempty(evt.Modifier)
         if ismember('command',evt.Modifier)||ismember('control',evt.Modifier)
             if ismember('shift',evt.Modifier)
                if strcmpi(evt.Key,'leftarrow')
-                   ChangeTime(obj,obj.BtnPrevEvent);
+                   ChangeTime(obj,-4);
                elseif  strcmpi(evt.Key,'rightarrow')
-                   ChangeTime(obj,obj.BtnNextEvent);
+                   ChangeTime(obj,4);
                end
             end
         end

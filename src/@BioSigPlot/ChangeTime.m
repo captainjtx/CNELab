@@ -1,32 +1,33 @@
 
-function ChangeTime(obj,src)
+function ChangeTime(obj,opt)
 timemax=obj.TotalTime;
 
-if src==obj.BtnNextPage
-    t=obj.Time+obj.WinLength;
-elseif src==obj.BtnPrevPage
+switch opt
+    case 2 %obj.JBtnNextPage
+        t=obj.Time+obj.WinLength;
+    case -2 %obj.JBtnPrevPage
     t=obj.Time-obj.WinLength;
-elseif src==obj.BtnNextSec
+    case 1 %obj.JBtnNextSec
     t=obj.Time+obj.WinLength/15;
-elseif src==obj.BtnPrevSec
+    case -1 %obj.JBtnPrevSec
     t=obj.Time-obj.WinLength/15;
-elseif src==obj.BtnPrevEvent
-    MovebyEvent(obj,src);
+    case -3 %obj.JBtnPrevEvent
+    MovebyEvent(obj,opt);
     return
-elseif src==obj.BtnPrevEvent1
-    MovebyEvent(obj,src);
+    case -4 %obj.JBtnPrevEvent1
+    MovebyEvent(obj,opt);
     return
-elseif src==obj.BtnNextEvent
-    MovebyEvent(obj,src);
+    case 3 %obj.JBtnNextEvent
+    MovebyEvent(obj,opt);
     return
-elseif src==obj.BtnNextEvent1
-    MovebyEvent(obj,src);
+    case 4 %obj.JBtnNextEvent1
+    MovebyEvent(obj,opt);
     return
-elseif src==obj.BtnStart
+    case -10 %obj.JBtnStart
     t=0;
-elseif src==obj.BtnEnd
+    case 10 %obj.JBtnEnd
     t=timemax-obj.WinLength;
-else
+    otherwise 
     str=get(obj.EdtTime,'String');
     if strcmpi(str,'end')
         t=timemax-obj.WinLength;
@@ -39,12 +40,12 @@ obj.Time=t;
 updateVideo(obj);
 end
 
-function MovebyEvent(obj,src)
+function MovebyEvent(obj,opt)
 
 if isempty(obj.Evts_)
-    if src==obj.BtnPrevEvent
+    if opt==-4
         obj.Time=0;
-    elseif src==obj.BtnNextEvent
+    elseif opt==4
         obj.Time=obj.TotalTime-obj.WinLength;
     end
     return
@@ -62,7 +63,7 @@ Lia = ismember(obj.Evts_(:,2),NaviEvts);
 alltimes=[obj.Evts_{Lia,1}];
 ind=find(Lia);
 
-if src==obj.BtnPrevEvent
+if opt==-4
     t=alltimes(alltimes<startTime);
     ind=ind(alltimes<startTime);
     
@@ -75,7 +76,7 @@ if src==obj.BtnPrevEvent
         obj.SelectedEvent=ind(I);
     end
     
-elseif src==obj.BtnNextEvent
+elseif opt==4
     
     t=alltimes(alltimes>startTime);
     ind=ind(alltimes>startTime);
@@ -88,7 +89,7 @@ elseif src==obj.BtnNextEvent
         end
         obj.SelectedEvent=ind(I);
     end 
-elseif src==obj.BtnPrevEvent1
+elseif opt==-3
     ind=obj.SelectedEvent-1;
     obj.SelectedEvent=max(1,min(ind,size(obj.Evts_,1)));
     
@@ -97,7 +98,7 @@ elseif src==obj.BtnPrevEvent1
             obj.Time=obj.Evts_{ind,1}-9/10*obj.WinLength;
         end  
     end
-elseif src==obj.BtnNextEvent1
+elseif opt==3
     ind=obj.SelectedEvent+1;
     obj.SelectedEvent=max(1,min(ind,size(obj.Evts_,1)));
     

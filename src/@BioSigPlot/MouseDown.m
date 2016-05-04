@@ -20,7 +20,6 @@ sample=floor((time-obj.Time)*obj.SRate);
 Modifier=get(obj.Fig,'CurrentModifier');
 obj.PrevMouseTime=time;
 
-
 if isempty(obj.MouseMode)
     %**********************************************************************
     set(obj.Fig,'pointer','hand');

@@ -17,6 +17,9 @@ if obj.ResizeMode
     set(obj.AdjustPanel,'Position',pos2);
     
     set(obj.MainPanel,'Position',[pos2(1)+pos2(3) pos3(2) fpos(3)-pos1(3)-pos2(3) pos3(4)]);
+    
+    obj.resizeAxes([pos2(1)+pos2(3) pos3(2) fpos(3)-pos1(3)-pos2(3) pos3(4)])
+
     return
 end
 
