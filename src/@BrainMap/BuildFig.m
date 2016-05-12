@@ -240,16 +240,16 @@ set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) MapAlphaSpinne
 %%
 %map interpolation
 uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','position',[0,0.35,0.5,0.06],...
-    'string','Interpolation level','horizontalalignment','left','fontunits','normalized','fontsize',0.5);
+    'string','Map interpolation level','horizontalalignment','left','fontunits','normalized','fontsize',0.5);
 model = javaObjectEDT(SpinnerNumberModel(java.lang.Integer(10),java.lang.Integer(0),java.lang.Integer(20),java.lang.Integer(1)));  
 obj.JMapInterpolationSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JMapInterpolationSpinner,[0,0,1,1],obj.electrodetoolpane);
-set(gh,'Units','Norm','Position',[0.5,0.35,0.25,0.06]);
+set(gh,'Units','Norm','Position',[0.72,0.35,0.25,0.06]);
 set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) MapInterpolationCallback(obj));
 
 %%
 obj.TextInfo=uicontrol('parent',obj.InfoPanel,'units','normalized','position',[0,0,1,1],...
-    'style','Text','String','','HorizontalAlignment','left','fontweight','bold','fontunits','normalized','fontsize',0.5);
+    'style','Text','String','','HorizontalAlignment','left','fontweight','bold','fontsize',14);
 end
 %%
 function h=colormap_popup(varargin)
