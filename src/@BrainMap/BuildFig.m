@@ -112,7 +112,7 @@ set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) SurfaceAlphaSl
 model = javaObjectEDT(SpinnerNumberModel(90,0,100,10));  
 obj.JSurfaceAlphaSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JSurfaceAlphaSpinner,[0,0,1,1],obj.surfacetoolpane);
-set(gh,'Units','Norm','Position',[0.72,0.92,0.25,0.06]);
+set(gh,'Units','Norm','Position',[0.75,0.92,0.22,0.06]);
 set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) SurfaceAlphaSpinnerCallback(obj));
 %%
 %volume tool pane==========================================================
@@ -132,7 +132,7 @@ uicontrol('parent',obj.volumetoolpane,'style','text','units','normalized','posit
 model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.cmin),[],java.lang.Double(1),java.lang.Double(0.1)));  
 obj.JVolumeMinSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JVolumeMinSpinner,[0,0,1,1],obj.volumetoolpane);
-set(gh,'Units','Norm','Position',[0.22,0.84,0.25,0.06]);
+set(gh,'Units','Norm','Position',[0.25,0.84,0.22,0.06]);
 set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) VolumeScaleSpinnerCallback(obj));
 
 uicontrol('parent',obj.volumetoolpane,'style','text','units','normalized','position',[0.5,0.84,0.2,0.06],...
@@ -140,7 +140,7 @@ uicontrol('parent',obj.volumetoolpane,'style','text','units','normalized','posit
 model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.cmax),java.lang.Double(0),[],java.lang.Double(0.1)));
 obj.JVolumeMaxSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JVolumeMaxSpinner,[0,0,1,1],obj.volumetoolpane);
-set(gh,'Units','Norm','Position',[0.72,0.84,0.25,0.06]);
+set(gh,'Units','Norm','Position',[0.75,0.84,0.22,0.06]);
 set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) VolumeScaleSpinnerCallback(obj));
 %%
 %volume smooth
@@ -149,7 +149,7 @@ uicontrol('parent',obj.volumetoolpane,'style','text','units','normalized','posit
 model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.smooth_sigma),java.lang.Double(0),java.lang.Double(10),java.lang.Double(0.1)));
 obj.JVolumeSmoothSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JVolumeSmoothSpinner,[0,0,1,1],obj.volumetoolpane);
-set(gh,'Units','Norm','Position',[0.72,0.74,0.25,0.06]);
+set(gh,'Units','Norm','Position',[0.75,0.74,0.22,0.06]);
 set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) VolumeSmoothSpinnerCallback(obj));
 
 %%
@@ -173,7 +173,7 @@ uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','po
 model = javaObjectEDT(SpinnerNumberModel(0.5,0,10,0.1));  
 obj.JElectrodeRadiusSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JElectrodeRadiusSpinner,[0,0,1,1],obj.electrodetoolpane);
-set(gh,'Units','Norm','Position',[0.22,0.84,0.25,0.06]);
+set(gh,'Units','Norm','Position',[0.25,0.84,0.22,0.06]);
 set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ElectrodeRadiusSpinnerCallback(obj));
 
 uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','position',[0.5,0.84,0.22,0.06],...
@@ -181,7 +181,7 @@ uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','po
 model = javaObjectEDT(SpinnerNumberModel(0.4,0,10,0.1));  
 obj.JElectrodeThicknessSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JElectrodeThicknessSpinner,[0,0,1,1],obj.electrodetoolpane);
-set(gh,'Units','Norm','Position',[0.72,0.84,0.25,0.06]);
+set(gh,'Units','Norm','Position',[0.75,0.84,0.22,0.06]);
 set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ElectrodeThicknessSpinnerCallback(obj));
 %%
 %radius and thickness percentage
@@ -190,7 +190,7 @@ uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','po
 model = javaObjectEDT(SpinnerNumberModel(java.lang.Integer(100),java.lang.Integer(10),java.lang.Integer(500),java.lang.Integer(10)));  
 obj.JElectrodeRadiusRatioSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JElectrodeRadiusRatioSpinner,[0,0,1,1],obj.electrodetoolpane);
-set(gh,'Units','Norm','Position',[0.22,0.74,0.25,0.06]);
+set(gh,'Units','Norm','Position',[0.25,0.74,0.22,0.06]);
 set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ElectrodeRadiusRatioSpinnerCallback(obj));
 
 uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','position',[0.5,0.74,0.22,0.06],...
@@ -198,7 +198,7 @@ uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','po
 model = javaObjectEDT(SpinnerNumberModel(java.lang.Integer(100),java.lang.Integer(10),java.lang.Integer(500),java.lang.Integer(10)));  
 obj.JElectrodeThicknessRatioSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JElectrodeThicknessRatioSpinner,[0,0,1,1],obj.electrodetoolpane);
-set(gh,'Units','Norm','Position',[0.72,0.74,0.25,0.06]);
+set(gh,'Units','Norm','Position',[0.75,0.74,0.22,0.06]);
 set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ElectrodeThicknessRatioSpinnerCallback(obj));
 %%
 %map colormap
@@ -213,7 +213,7 @@ uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','po
 model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(-6),[],[],java.lang.Double(1)));  
 obj.JMapMinSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JMapMinSpinner,[0,0,1,1],obj.electrodetoolpane);
-set(gh,'Units','Norm','Position',[0.22,0.54,0.25,0.06]);
+set(gh,'Units','Norm','Position',[0.25,0.54,0.22,0.06]);
 set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) MapSpinnerCallback(obj));
 
 uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','position',[0.5,0.54,0.22,0.06],...
@@ -221,7 +221,7 @@ uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','po
 model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(6),[],[],java.lang.Double(1))); 
 obj.JMapMaxSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JMapMaxSpinner,[0,0,1,1],obj.electrodetoolpane);
-set(gh,'Units','Norm','Position',[0.72,0.54,0.25,0.06]);
+set(gh,'Units','Norm','Position',[0.75,0.54,0.22,0.06]);
 set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) MapSpinnerCallback(obj));
 %%
 %map opacity
@@ -235,7 +235,7 @@ set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) MapAlphaSlider
 model = javaObjectEDT(SpinnerNumberModel(80,0,100,10));  
 obj.JMapAlphaSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JMapAlphaSpinner,[0,0,1,1],obj.electrodetoolpane);
-set(gh,'Units','Norm','Position',[0.72,0.45,0.25,0.06]);
+set(gh,'Units','Norm','Position',[0.75,0.45,0.22,0.06]);
 set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) MapAlphaSpinnerCallback(obj));
 %%
 %map interpolation
@@ -244,7 +244,7 @@ uicontrol('parent',obj.electrodetoolpane,'style','text','units','normalized','po
 model = javaObjectEDT(SpinnerNumberModel(java.lang.Integer(10),java.lang.Integer(0),java.lang.Integer(20),java.lang.Integer(1)));  
 obj.JMapInterpolationSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JMapInterpolationSpinner,[0,0,1,1],obj.electrodetoolpane);
-set(gh,'Units','Norm','Position',[0.72,0.35,0.25,0.06]);
+set(gh,'Units','Norm','Position',[0.75,0.35,0.22,0.06]);
 set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) MapInterpolationCallback(obj));
 
 %%
