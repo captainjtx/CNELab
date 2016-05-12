@@ -66,6 +66,7 @@ obj.ElectrodeSpinAntiClockwiseMenu=uimenu(obj.ElectrodeSpinMenu,...
 
 %==========================================================================
 obj.ViewPanel=uipanel(obj.fig,'units','normalized','position',[0,0.1,0.7,0.9],'backgroundcolor',[0,0,0]);
+obj.InfoPanel=uipanel(obj.fig,'units','normalized','position',[0,0,1,0.1]);
 
 obj.axis_3d=axes('parent',obj.ViewPanel,'units','normalized','position',[0,0,1,1],'visible','off','CameraViewAngle',10);
 
@@ -128,7 +129,7 @@ set(obj.VolumeColorMapPopup,'Value',1,'Callback',@(src,evt)VolumeColormapCallbac
 %volume color data limit
 uicontrol('parent',obj.volumetoolpane,'style','text','units','normalized','position',[0,0.84,0.2,0.06],...
     'string','Min','FontSize',12,'horizontalalignment','left');
-model = javaObjectEDT(SpinnerNumberModel(obj.cmin,0,255,5));  
+model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.cmin),[],java.lang.Double(1),java.lang.Double(0.1)));  
 obj.JVolumeMinSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JVolumeMinSpinner,[0,0,1,1],obj.volumetoolpane);
 set(gh,'Units','Norm','Position',[0.22,0.84,0.25,0.06]);
@@ -136,11 +137,21 @@ set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) VolumeScaleSpi
 
 uicontrol('parent',obj.volumetoolpane,'style','text','units','normalized','position',[0.5,0.84,0.2,0.06],...
     'string','Max','FontSize',12,'horizontalalignment','left');
-model = javaObjectEDT(SpinnerNumberModel(obj.cmax,0,255,5));  
+model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.cmax),java.lang.Double(0),[],java.lang.Double(0.1)));
 obj.JVolumeMaxSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JVolumeMaxSpinner,[0,0,1,1],obj.volumetoolpane);
 set(gh,'Units','Norm','Position',[0.72,0.84,0.25,0.06]);
 set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) VolumeScaleSpinnerCallback(obj));
+%%
+%volume smooth
+uicontrol('parent',obj.volumetoolpane,'style','text','units','normalized','position',[0,0.74,0.5,0.06],...
+    'string','Gaussian smooth kernel','FontSize',12,'horizontalalignment','left');
+model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.smooth_sigma),java.lang.Double(0),java.lang.Double(10),java.lang.Double(0.1)));
+obj.JVolumeSmoothSpinner =javaObjectEDT(JSpinner(model));
+[jh,gh]=javacomponent(obj.JVolumeSmoothSpinner,[0,0,1,1],obj.volumetoolpane);
+set(gh,'Units','Norm','Position',[0.72,0.74,0.25,0.06]);
+set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) VolumeSmoothSpinnerCallback(obj));
+
 %%
 %electrode tool pane=======================================================
 obj.electrodetoolpane=uipanel(obj.sidepane,'units','normalized','position',[0,0,1,0.73],'visible','off');
@@ -235,6 +246,10 @@ obj.JMapInterpolationSpinner =javaObjectEDT(JSpinner(model));
 [jh,gh]=javacomponent(obj.JMapInterpolationSpinner,[0,0,1,1],obj.electrodetoolpane);
 set(gh,'Units','Norm','Position',[0.5,0.35,0.25,0.06]);
 set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) MapInterpolationCallback(obj));
+
+%%
+obj.TextInfo=uicontrol('parent',obj.InfoPanel,'units','normalized','position',[0,0,1,1],...
+    'style','Text','String','','HorizontalAlignment','left','FontSize',12,'fontweight','bold');
 end
 %%
 function h=colormap_popup(varargin)

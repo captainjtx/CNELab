@@ -1,5 +1,5 @@
 function LoadSurface(obj)
-[filename,pathname]=uigetfile({'*.*','Data format (*,mat,*.dfs,*.surf)'},'Please select surface data');
+[filename,pathname]=uigetfile({'*.mat;*.dfd;*.surf','Data format (*,mat,*.dfs,*.surf)'},'Please select surface data');
 fpath=[pathname filename];
 if filename==0
     return;

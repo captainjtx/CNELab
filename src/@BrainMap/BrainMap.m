@@ -35,6 +35,7 @@ classdef BrainMap < handle
         ElectrodeSpinAntiClockwiseMenu
         
         ViewPanel
+        InfoPanel
         
         Toolbar
         JToolbar
@@ -82,6 +83,7 @@ classdef BrainMap < handle
         
         JVolumeMinSpinner
         JVolumeMaxSpinner
+        JVolumeSmoothSpinner
         
         JElectrodeColorBtn
         JExtraBtn1
@@ -110,6 +112,8 @@ classdef BrainMap < handle
         JMapAlphaSlider
         
         JMapInterpolationSpinner
+        
+        TextInfo
     end
     properties
         light
@@ -125,6 +129,8 @@ classdef BrainMap < handle
         
         cmin
         cmax
+        
+        smooth_sigma
         
         SelectedElectrode
         
@@ -163,8 +169,10 @@ classdef BrainMap < handle
             
             obj.SelectEvt.category='Volume';
             
-            obj.cmin=50;
-            obj.cmax=140;
+            obj.cmin=0;
+            obj.cmax=1;
+            
+            obj.smooth_sigma=0;
         end
         
         function OnClose(obj)
@@ -196,6 +204,11 @@ classdef BrainMap < handle
             cursor=get(obj.fig,'CurrentPoint');
             in_view=obj.isIn(cursor,position);
             
+            if in_view
+                p=get(obj.axis_3d,'CurrentPoint');
+                info={['X: ',num2str(p(1,1),'%5.1f')],['Y: ',num2str(p(1,2),'%5.1f')],['Z: ',num2str(p(1,3),'%5.1f')]};
+                set(obj.TextInfo,'String',info,'FontSize',12,'Foregroundcolor','k','HorizontalAlignment','left');
+            end
             %within the view panel
             f=obj.panon();
             if ~f
@@ -238,13 +251,20 @@ classdef BrainMap < handle
         end
         
         function SaveAsFigure(obj)
+            set(obj.TextInfo,'String','Printing figure ...','FontSize',18,...
+                'Foregroundcolor','r','HorizontalAlignment','center');
+            drawnow
+            
             position=getpixelposition(obj.ViewPanel);
             figpos=get(obj.fig,'position');
             position(1)=position(1)+figpos(1);
             position(2)=position(2)+figpos(2);
             f=figure('Name','Axis 3D','Position',position,'visible','on','color',get(obj.ViewPanel,'BackgroundColor'));
             copyobj(obj.axis_3d,f);
+            
             colormap(colormap(obj.axis_3d));
+            set(obj.TextInfo,'String','Figure print complete !','FontSize',18,...
+                'Foregroundcolor',[12,60,38]/255,'HorizontalAlignment','center');
         end
         
         function RecenterCallback(obj)
@@ -255,9 +275,10 @@ classdef BrainMap < handle
             set(obj.axis_3d,'CameraViewAngle',10);
         end
         
-        
-        
         function CheckChangedCallback(obj,src,evt)
+            set(obj.TextInfo,'String','Refreshing axis ...','fontsize',18,...
+                'ForegroundColor','r','HorizontalAlignment','center');
+            drawnow
             mapval=obj.mapObj(char(evt.getKey()));
             if evt.ischecked
                 set(mapval.handles,'visible','on');
@@ -270,7 +291,8 @@ classdef BrainMap < handle
             if mapval.ind==obj.electrode_settings.select_ele
                 notify(obj,'ElectrodeSettingsChange')
             end
-            
+            set(obj.TextInfo,'String','Axis refresh complete !','fontsize',18,...
+                'ForegroundColor',[12,60,38]/255,'HorizontalAlignment','center');
             %             disp(evt.filename)
             %             disp(evt.ischecked)
         end
@@ -356,7 +378,7 @@ classdef BrainMap < handle
             if min<max
                 obj.cmin=min;
                 obj.cmax=max;
-                set(obj.axis_3d,'clim',[obj.cmin/255,obj.cmax/255]);
+                set(obj.axis_3d,'clim',[obj.cmin,obj.cmax]);
             end
         end
         function ElectrodeColorCallback(obj)
@@ -478,6 +500,7 @@ classdef BrainMap < handle
         ElectrodeThicknessRatioSpinnerCallback(obj)
         ElectrodeRadiusRatioSpinnerCallback(obj)
         MoveElectrode(obj,src)
+        VolumeSmoothSpinnerCallback(obj)
     end
     events
         ElectrodeSettingsChange
