@@ -1,5 +1,6 @@
 function BuildToolbar( obj )
-import src.java.TButton;
+import src.java.PushButton;
+import src.java.TogButton;
 
 obj.Toolbar=uitoolbar(obj.fig);
 drawnow
@@ -13,18 +14,24 @@ col=obj.JToolbar(1).getBackground();
 obj.IconLightOn=javaObjectEDT(javax.swing.ImageIcon([obj.cnelab_path,'/db/icon/light.png']));
 obj.IconLightOff=javaObjectEDT(javax.swing.ImageIcon([obj.cnelab_path,'/db/icon/nolight.png']));
 
-
-obj.JRecenter=javaObjectEDT(TButton([obj.cnelab_path,'/db/icon/recenter.png'],btn_d,char('Recenter'),col));
+obj.JRecenter=javaObjectEDT(PushButton([obj.cnelab_path,'/db/icon/recenter.png'],btn_d,char('Recenter'),col));
 set(handle(obj.JRecenter,'CallbackProperties'),'MousePressedCallback',@(h,e) RecenterCallback(obj));
 obj.JToolbar(1).add(obj.JRecenter);
 
-obj.JLight=javaObjectEDT(TButton([obj.cnelab_path,'/db/icon/nolight.png'],btn_d,char('Light off'),col));
+obj.JLight=javaObjectEDT(PushButton([obj.cnelab_path,'/db/icon/nolight.png'],btn_d,char('Light off'),col));
 set(handle(obj.JLight,'CallbackProperties'),'MousePressedCallback',@(h,e) LightOffCallback(obj));
 obj.JToolbar(1).add(obj.JLight);
 
-obj.JCanvasColor=javaObjectEDT(TButton([obj.cnelab_path,'/db/icon/bg_color.png'],btn_d,char('Canvas color'),col));
+obj.JCanvasColor=javaObjectEDT(PushButton([obj.cnelab_path,'/db/icon/bg_color.png'],btn_d,char('Canvas color'),col));
 set(handle(obj.JCanvasColor,'CallbackProperties'),'MousePressedCallback',@(src,evt) ChangeCanvasColor(obj));
 obj.JToolbar(1).add(obj.JCanvasColor);
+
+obj.JToolbar(1).addSeparator();
+
+obj.JTogNewElectrode=javaObjectEDT(TogButton([obj.cnelab_path,'/db/icon/evts.png'],btn_d,char('New electrode (ctrl i)'),col));
+set(handle(obj.JTogNewElectrode,'CallbackProperties'),'MousePressedCallback',@(h,e) ChangeMouseMode(obj,1));
+obj.JToolbar(1).add(obj.JTogNewElectrode);
+obj.JToolbar(1).addSeparator();
 
 obj.JToolbar(1).repaint;
 obj.JToolbar(1).revalidate;

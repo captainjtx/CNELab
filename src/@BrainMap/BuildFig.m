@@ -163,7 +163,7 @@ obj.JElectrodeColorBtn.setBorder(BorderFactory.createLineBorder(Color.black));
 obj.JElectrodeColorBtn.setBackground(Color(1,0.8,0.6));
 obj.JElectrodeColorBtn.setOpaque(true);
 [jh, hContainer] = javacomponent(obj.JElectrodeColorBtn, [0,0,1,1], obj.electrodetoolpane);
-set(hContainer, 'Units','norm','position',[0.3,0.93,0.15,0.05]);
+set(hContainer, 'Units','norm','position',[0.25,0.93,0.22,0.05]);
 set(handle(jh,'CallbackProperties'),'MousePressedCallback',@(h,e) ElectrodeColorCallback(obj));
 
 %%

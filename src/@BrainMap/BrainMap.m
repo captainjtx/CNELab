@@ -42,6 +42,8 @@ classdef BrainMap < handle
         
         JRecenter
         
+        JTogNewElectrode
+        
         JFileLoadTree
         JLight
         JCanvasColor
@@ -206,6 +208,7 @@ classdef BrainMap < handle
             
             if in_view
                 p=get(obj.axis_3d,'CurrentPoint');
+                
                 info={['X: ',num2str(p(1,1),'%5.1f')],['Y: ',num2str(p(1,2),'%5.1f')],['Z: ',num2str(p(1,3),'%5.1f')]};
                 set(obj.TextInfo,'String',info,'FontSize',12,'Foregroundcolor','k','HorizontalAlignment','left');
             end
@@ -387,7 +390,7 @@ classdef BrainMap < handle
                 obj.JElectrodeColorBtn.getBackground().getBlue()]/255;
             
             newcol=uisetcolor(col,'Electrode');
-            obj.JElectrodeColorBtn.setBackground(java.awt.Color(newcol(1),newcol(2),newcol(2)));
+            obj.JElectrodeColorBtn.setBackground(java.awt.Color(newcol(1),newcol(2),newcol(3)));
             
             if ~isempty(obj.SelectedElectrode)
                 electrode=obj.mapObj(['Electrode',num2str(obj.SelectedElectrode)]);
@@ -501,6 +504,7 @@ classdef BrainMap < handle
         ElectrodeRadiusRatioSpinnerCallback(obj)
         MoveElectrode(obj,src)
         VolumeSmoothSpinnerCallback(obj)
+        ChangeMouseMode(obj,opt)
     end
     events
         ElectrodeSettingsChange

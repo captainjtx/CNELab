@@ -1491,19 +1491,6 @@ classdef BioSigPlot < hgsetget
             
         end
         %==================================================================
-        %******************************************************************
-        function obj = set.MouseMode_(obj,val)
-            obj.MouseMode_=val;
-            if isempty(val)
-                maskMeasurer(obj);
-                maskAnnotate(obj);
-            end
-            obj.JTogMeasurer.setSelected(strcmpi(val,'Measurer'));
-            obj.JTogSelection.setSelected(strcmpi(val,'Select'));
-            obj.JTogAnnotate.setSelected(strcmpi(val,'Annotate'));
-            
-        end
-        %==================================================================
         function obj =set.VideoTimerPeriod_(obj,val)
             obj.VideoTimerPeriod_=val;
             set(obj.VideoTimer,'period',val);
@@ -1840,26 +1827,31 @@ classdef BioSigPlot < hgsetget
             switch opt
                 case 1
                     state=obj.JTogMeasurer.isSelected();
-                    obj.JTogMeasurer.setSelected(~state);
                     if ~state
                         remakeMeasurer(obj);
                         s='Measurer';
                     end
                 case 2
                     state=obj.JTogSelection.isSelected();
-                    obj.JTogSelection.setSelected(~state);
                     if ~state
                         s='Select';
                     end
                 case 3
                     state=obj.JTogAnnotate.isSelected();
-                    obj.JTogAnnotate.setSelected(~state);
                     if ~state
                         remakeAnnotate(obj);
                         s='Annotate';
                     end
             end
             obj.MouseMode=s;
+        end
+        function ClearMouseMode(obj)
+            obj.MouseMode='';
+            maskMeasurer(obj);
+            maskAnnotate(obj);
+            obj.JTogMeasurer.setSelected(false);
+            obj.JTogSelection.setSelected(false);
+            obj.JTogAnnotate.setSelected(false);
         end
         %==================================================================
         %******************************************************************

@@ -9,12 +9,12 @@ import javax.swing.BorderFactory;
 import java.awt.Color;
 
 
-public class TButton extends JButton{
+public class PushButton extends JButton{
     
 private ImageIcon icon;
 private Color c;
 
-public TButton(String pname,Dimension btn_d,String tip,Color bg)
+public PushButton(String pname,Dimension btn_d,String tip,Color bg)
 {
     c=bg;
     setBorder(BorderFactory.createEmptyBorder());

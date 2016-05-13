@@ -9,9 +9,9 @@ dd=obj.DisplayedData;
 %Exit the special channel selection mode
 if strcmpi(evt.Key,'escape')
     if ~isempty(obj.MouseMode)
-        obj.MouseMode=[];
+        obj.ClearMouseMode();
     else
-        obj.MouseMode=[];
+        obj.ClearMouseMode();
         if ~isempty(obj.SelectedEvent)
             obj.SelectedEvent=[];
         elseif obj.IsChannelSelected
