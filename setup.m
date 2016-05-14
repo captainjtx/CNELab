@@ -41,7 +41,7 @@ if ~any(strcmp(spath,pwd))
 end
 
 pref_dir=prefdir;
-fid = fopen(fullfile(pref_dir,'javaclasspath.txt'),'w');
+fid = fopen(fullfile(pref_dir,'javaclasspath.txt'),'a');
 
 fprintf(fid,'%s\n',pwd);
 
