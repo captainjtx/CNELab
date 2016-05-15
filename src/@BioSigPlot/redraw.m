@@ -156,7 +156,7 @@ x=ind'*ones(1,size(data,2));
 y=data;
 % y=data';
 
-h=line(x,y,'parent',axe,'Color',[0 0 0],'linewidth',0.4);
+h=line(x,y,'parent',axe,'Color',[0 0 0],'linewidth',0.8);
 % drawnow;
 for i=1:length(h)
     set(h(i),'Color',colors(i,:));
