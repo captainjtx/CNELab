@@ -34,8 +34,6 @@ classdef CnelabWindow < handle
         end
         
         function obj=CnelabWindow()
-            
-            
             obj.cfg_name=[obj.cnelab_path,'/db/cfg/cnelab.cfg'];
             
             if exist(obj.cfg_name,'file')==2

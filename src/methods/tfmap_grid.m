@@ -23,7 +23,7 @@ end
 set(h,'XLim',[min(t) max(t)]);
 set(h,'YLim',freq);
 
-colormap(jet);
+colormap(h,jet);
 
 
 set(h,'Tag',['TFMapAxes-' channame]);

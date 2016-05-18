@@ -82,7 +82,9 @@ for i=1:length(dd)
     
     if omitMask
        %Omit the mask channels
-        chan=intersect(find(obj.Mask{dd(i)}~=0),chan);
+       if ~isempty(obj.Mask{dd(i)})
+           chan=intersect(find(obj.Mask{dd(i)}~=0),chan);
+       end
     end
     %very costly
 %     d=preprocessedData(obj,dd(i),CommonDataStructure.get_data_segment(obj.CDS{dd(i)},selection,chan));

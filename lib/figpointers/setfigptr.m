@@ -46,7 +46,7 @@ function setfigptr(ptr,fig)
 %       $Revision: 1.15 $  $Date: 2001/04/15 12:03:33 $ 
 %
 
-error(nargchk(0, 2, nargin))
+narginchk(0, 2);
 
 if nargin==0
     
