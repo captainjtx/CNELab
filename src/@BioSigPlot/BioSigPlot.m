@@ -38,6 +38,8 @@ classdef BioSigPlot < hgsetget
         
         PopFilter
         
+        JTogNavigation
+        
         JBtnPSD
         JBtnTFMap
         JBtnPCA
@@ -1825,23 +1827,21 @@ classdef BioSigPlot < hgsetget
             s='';
             obj.SelectionStart=[];
             switch opt
+                case 0
+                    ClearMouseMode(obj);
+                    s='';
                 case 1
-                    state=obj.JTogMeasurer.isSelected();
-                    if ~state
-                        remakeMeasurer(obj);
-                        s='Measurer';
-                    end
+                    s='Measurer';
+                    maskAnnotate(obj);
+                    remakeMeasurer(obj);
                 case 2
-                    state=obj.JTogSelection.isSelected();
-                    if ~state
-                        s='Select';
-                    end
+                    s='Select';
+                    maskAnnotate(obj);
+                    maskMeasurer(obj);
                 case 3
-                    state=obj.JTogAnnotate.isSelected();
-                    if ~state
-                        remakeAnnotate(obj);
-                        s='Annotate';
-                    end
+                    s='Annotate';
+                    maskMeasurer(obj);
+                    remakeAnnotate(obj);
             end
             obj.MouseMode=s;
         end
@@ -1849,9 +1849,7 @@ classdef BioSigPlot < hgsetget
             obj.MouseMode='';
             maskMeasurer(obj);
             maskAnnotate(obj);
-            obj.JTogMeasurer.setSelected(false);
-            obj.JTogSelection.setSelected(false);
-            obj.JTogAnnotate.setSelected(false);
+            obj.JTogNavigation.setSelected(true);
         end
         %==================================================================
         %******************************************************************

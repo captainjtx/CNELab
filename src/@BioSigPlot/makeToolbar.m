@@ -1,6 +1,7 @@
 function makeToolbar(obj)
 import src.java.PushButton;
 import src.java.TogButton;
+import javax.swing.ButtonGroup;
 
 d=obj.JToolbar(1).getPreferredSize();
 btn_d=java.awt.Dimension();
@@ -8,7 +9,6 @@ btn_d.width=d.height;
 btn_d.height=d.height;
 col=obj.JToolbar(1).getBackground();
 %montage
-
 obj.JTogMontage=javaObjectEDT(PushButton([obj.cnelab_path,'/db/icon/Raw.png'],btn_d,char('Raw montage'),col));
 set(handle(obj.JTogMontage,'CallbackProperties'),'MousePressedCallback',@(h,e) resetMontage(obj));
 obj.JToolbar(1).add(obj.JTogMontage);
@@ -99,6 +99,11 @@ obj.JToolbar(1).add(obj.JBtnUnMaskChannel);
 
 obj.JToolbar(1).addSeparator();
 
+obj.JTogNavigation=javaObjectEDT(TogButton([obj.cnelab_path,'/db/icon/arrow.png'],btn_d,char('Navigation'),col));
+set(handle(obj.JTogNavigation,'CallbackProperties'),'MousePressedCallback',@(h,e) ChangeMouseMode(obj,0));
+obj.JToolbar(1).add(obj.JTogNavigation);
+
+obj.JToolbar(1).addSeparator();
 obj.JTogSelection=javaObjectEDT(TogButton([obj.cnelab_path,'/db/icon/select.png'],btn_d,char('Selection'),col));
 set(handle(obj.JTogSelection,'CallbackProperties'),'MousePressedCallback',@(h,e) ChangeMouseMode(obj,2));
 obj.JToolbar(1).add(obj.JTogSelection);
@@ -143,6 +148,11 @@ obj.JBtnICA=javaObjectEDT(PushButton([obj.cnelab_path,'/db/icon/ica.png'],btn_d,
 set(handle(obj.JBtnICA,'CallbackProperties'),'MousePressedCallback',@(h,e) SPF_Analysis(obj,'ica'));
 obj.JToolbar(1).add(obj.JBtnICA);
 
+group=javaObjectEDT(ButtonGroup());
+group.add(obj.JTogMeasurer);
+group.add(obj.JTogAnnotate);
+group.add(obj.JTogSelection);
+group.add(obj.JTogNavigation);
 
 obj.JToolbar(1).repaint;
 obj.JToolbar(1).revalidate;
