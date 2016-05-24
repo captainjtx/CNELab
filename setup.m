@@ -36,16 +36,13 @@ addpath(genpath([pwd filesep 'demo']),'-frozen');
 
 
 spath = javaclasspath('-static');
+pref_dir=prefdir;
 if ~any(strcmp(spath,pwd))
     javaaddpath(pwd);
+    fid = fopen(fullfile(pref_dir,'javaclasspath.txt'),'a');
+    fprintf(fid,'%s\n',pwd);
+    fclose(fid);
 end
-
-pref_dir=prefdir;
-fid = fopen(fullfile(pref_dir,'javaclasspath.txt'),'a');
-
-fprintf(fid,'%s\n',pwd);
-
-fclose(fid);
 
 try
     savepath;

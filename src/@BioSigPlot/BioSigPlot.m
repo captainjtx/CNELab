@@ -2247,7 +2247,7 @@ classdef BioSigPlot < hgsetget
         ChangeTime(obj,opt)
         redrawChangeBlock(obj,opt)
         showGauge(obj)
-        maskChannel(obj,src)
+        MaskChannel(obj,src)
         MnuChanGain(obj,src)
         MnuVisualBuffer(obj,src)
         MnuDataBuffer(obj,src)
