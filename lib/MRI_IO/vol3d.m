@@ -135,13 +135,9 @@ function [model,ax] = local_draw(model)
 cdata = model.cdata; 
 siz = size(cdata);
 
-x_cut=150;
-y_cut=170;
-z_cut=80;
 x_cut=siz(2);
 y_cut=siz(1);
 z_cut=siz(3);
-
 
 % Define [x,y,z]data
 if isempty(model.xdata)
