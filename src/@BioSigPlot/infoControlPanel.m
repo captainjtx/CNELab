@@ -21,14 +21,14 @@ s4=['FL: ','-',' , ',...
     'FCUM:','-'];
 
 obj.TxtInfo1=uicontrol(InfoPanel1,'Style','text','units','normalized',...
-    'position',[0,0.5,1,0.5],'HorizontalAlignment','Left','String',s1);
+    'position',[0,0.5,1,0.5],'HorizontalAlignment','Left','String',s1,'FontUnits','normalized','FontSize',0.7);
 
 obj.TxtInfo2=uicontrol(InfoPanel1,'Style','text','units','normalized',...
-    'position',[0,0,1,0.5],'HorizontalAlignment','Left','String',s4);
+    'position',[0,0,1,0.5],'HorizontalAlignment','Left','String',s4,'FontUnits','normalized','FontSize',0.7);
 
 obj.TxtInfo3=uicontrol(InfoPanel2,'Style','text','units','normalized',...
-    'position',[0,0.5,1,0.5],'HorizontalAlignment','Left','String',s3);
+    'position',[0,0.5,1,0.5],'HorizontalAlignment','Left','String',s3,'FontUnits','normalized','FontSize',0.7);
 
 obj.TxtInfo4=uicontrol(InfoPanel2,'Style','text','units','normalized',...
-    'position',[0,0,1,0.5],'HorizontalAlignment','Left','String',s2);
+    'position',[0,0,1,0.5],'HorizontalAlignment','Left','String',s2,'FontUnits','normalized','FontSize',0.7);
 end
