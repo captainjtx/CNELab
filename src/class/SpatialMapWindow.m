@@ -2749,8 +2749,8 @@ classdef SpatialMapWindow < handle
             
             for i=1:length(obj.tfmat)
                 events{i}=obj.tfmat(i).event;
-                erd{i}=ismember(names,obj.all_chan_names(logical(erdchan{i})));
-                ers{i}=ismember(names,obj.all_chan_names(logical(erschan{i})));
+                erd{i}=ismember(names,obj.chan_names(logical(erdchan{i})));
+                ers{i}=ismember(names,obj.chan_names(logical(erschan{i})));
             end
         end
         function ExportPictureCallback(obj)
@@ -2759,7 +2759,7 @@ classdef SpatialMapWindow < handle
         function ExportMapCallback(obj)
             %export the map values together with the channel name/position
             %for further analysis
-            [events,val,names,~,~,~]=getMapInfo(obj);
+            [events,val,names,~,erdd,erss]=getMapInfo(obj);
             if exist([obj.bsp.FileDir,'/app/spatial map'],'dir')~=7
                 mkdir(obj.bsp.FileDir,'/app/spatial map');
             end
@@ -2778,7 +2778,7 @@ classdef SpatialMapWindow < handle
                 fid=fopen(fullfile(folder_name,fname),'w');
                 
                 for j=1:length(names)
-                    fprintf(fid,'%s,%f\n',names{j},val{i}(j));
+                    fprintf(fid,'%s,%f,%d\n',names{j},val{i}(j),erss{i}(j)-erdd{i}(j));
                 end
                 fclose(fid);
             end
