@@ -2,8 +2,7 @@ function setup()
 java_version=version('-java');
 
 if ~strcmp(java_version(6:8),'1.7')
-    disp('Matlab Java version mismatch !');
-    return;
+    error('Matlab Java version mismatch !');
 end
 
 while 1
@@ -34,6 +33,13 @@ addpath(genpath([pwd filesep 'script']),'-frozen');
 addpath(genpath([pwd filesep 'test']),'-frozen');
 addpath(genpath([pwd filesep 'demo']),'-frozen');
 
+try
+    mex([pwd filesep 'src' filesep 'mex' filesep 'SymmetricFilter.cpp']);
+    movefile('SymmetricFilter.*',[pwd filesep 'src' filesep 'mex']);
+catch
+    error('Cannot recompile SymmetricFilter.cpp');
+end
+    
 
 spath = javaclasspath('-static');
 pref_dir=prefdir;
