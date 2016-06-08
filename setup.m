@@ -34,8 +34,8 @@ addpath(genpath([pwd filesep 'test']),'-frozen');
 addpath(genpath([pwd filesep 'demo']),'-frozen');
 
 try
-    mex([pwd filesep 'src' filesep 'mex' filesep 'SymmetricFilter.cpp']);
-    movefile('SymmetricFilter.*',[pwd filesep 'src' filesep 'mex']);
+    mex([pwd filesep 'src' filesep 'mex' filesep 'FastFilter.cpp']);
+    movefile('FastFilter.*',[pwd filesep 'src' filesep 'mex']);
 catch
     error('Cannot recompile SymmetricFilter.cpp');
 end

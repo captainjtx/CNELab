@@ -61,10 +61,13 @@ end
 
 if ~isempty(fchan)
     fd=d(:,fchan);
+    fd=wextend('ar','sym',fd,ext,'b');
+    
     ja=a(fchan);
     jb=b(fchan);
     
-    d(:,fchan)=SymmetricFilter(jb,ja,fd);
+    fd=FastFilter(jb,ja,fd);
+    d(:,fchan)=fd(ext+1:end-ext,fchan);
 end
 
 %needs to be cascaded in future

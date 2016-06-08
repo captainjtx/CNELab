@@ -117,12 +117,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
         {
             x[k]=data[ichan*sample+k-padding];
         }
-        //symmetric extend
-        for(int k=0;k<padding;++k)
-        {
-            x[k]=x[2*padding-1-k];
-        }
-        
+
         for(int k=0;k<sample+2*padding;++k)
         {
             y[k]=0;
@@ -158,12 +153,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
         for(int k=0;k<sample+padding;++k)
         {
             ry[k]=y[sample+2*padding-1-k];
-        }
-        
-        //symmetric extend
-        for(int k=0;k<padding;++k)
-        {
-            ry[k]=ry[2*padding-1-k];
         }
         
         for(int k=0;k<sample+2*padding;++k)
