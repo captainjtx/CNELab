@@ -1,10 +1,6 @@
-#include <math.h>
-#include <matrix.h>
 #include <mex.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <iostream>
+
 #include <pthread.h>
 using namespace std;
 
@@ -67,14 +63,13 @@ void *threadfunc(void *arg) {
 
     double* output=(double*)args[5];
     
-    double* y=(double*) mxCalloc(sample+2*padding,sizeof(double));
-    double* ry=(double*) mxCalloc(sample+2*padding,sizeof(double));
-    double* x=(double*) mxCalloc(sample+padding,sizeof(double));
+    double* y=new double [sample+2*padding];
+    double* ry=new double [sample+2*padding];
+    double* x=new double [sample+padding];
     int ichan;
     
     int ib_n;
     int ia_n;
-            
     pthread_mutex_lock(&chan_mutex);
     ichan=++(*chancount);//atomic
     pthread_mutex_unlock(&chan_mutex);
@@ -84,6 +79,8 @@ void *threadfunc(void *arg) {
 //         pthread_mutex_lock(&cout_mutex);
 //         cout<<"Computing Channel"<<ichan<<endl;
 //         pthread_mutex_unlock(&cout_mutex);
+
+        
         for(int k=padding;k<sample+padding;++k)
         {
             x[k]=data[ichan*sample+k-padding];
@@ -150,10 +147,11 @@ void *threadfunc(void *arg) {
         pthread_mutex_lock(&chan_mutex);
         ichan=++(*chancount);//atomic
         pthread_mutex_unlock(&chan_mutex); 
+        
     }
-    mxFree(y);
-    mxFree(ry);
-    mxFree(x);
+    delete[] y;
+    delete[] ry;
+    delete[] x;
     
 //     pthread_mutex_lock(&cout_mutex);
 //     cout<<"Thread complete"<<endl;
