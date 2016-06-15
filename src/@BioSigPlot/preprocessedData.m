@@ -66,7 +66,13 @@ if ~isempty(fchan)
     ja=a(fchan);
     jb=b(fchan);
     
-    fd=FastFilter(jb,ja,fd);
+    if ismac
+        fd=UnixMultiThreadedFilter(jb,ja,fd);
+    elseif ispc
+        fd=WinMultiThreadedFilter(jb,ja,fd);
+    else
+        fd=FastFilter(jb,ja,fd);
+    end
     d(:,fchan)=fd(ext+1:end-ext,fchan);
 end
 

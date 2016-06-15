@@ -33,12 +33,33 @@ addpath(genpath([pwd filesep 'script']),'-frozen');
 addpath(genpath([pwd filesep 'test']),'-frozen');
 addpath(genpath([pwd filesep 'demo']),'-frozen');
 
-try
-    mex([pwd filesep 'src' filesep 'mex' filesep 'FastFilter.cpp']);
-    movefile('FastFilter.*',[pwd filesep 'src' filesep 'mex']);
-catch
-    error('Cannot recompile SymmetricFilter.cpp');
+%%
+if ispc
+    try
+        mex([pwd filesep 'src' filesep 'mex' filesep 'WinMultiThreadedFilter.cpp']);
+        movefile('WinMultiThreadedFilter.*',[pwd filesep 'src' filesep 'mex']);
+    catch
+        error('Cannot recompile WinMultiThreadedFilter.cpp');
+    end
+elseif ismac||isunix
+    try
+        mex([pwd filesep 'src' filesep 'mex' filesep 'UnixMultiThreadedFilter.cpp']);
+        movefile('UnixMultiThreadedFilter.*',[pwd filesep 'src' filesep 'mex']);
+    catch
+        error('Cannot recompile UnixMultiThreadedFilter.cpp');
+    end
+else
+    %not sure what kind of computer fall into this category
+    %no parallel filtering supported here, but still faster than matlab
+    %filter function
+    try
+        mex([pwd filesep 'src' filesep 'mex' filesep 'FastFilter.cpp']);
+        movefile('FastFilter.*',[pwd filesep 'src' filesep 'mex']);
+    catch
+        error('Cannot recompile FastFilter.cpp');
+    end
 end
+%%
     
 
 spath = javaclasspath('-static');

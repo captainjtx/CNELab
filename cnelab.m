@@ -341,4 +341,6 @@ cnb.cfg.files=[{FileNames},cnb.cfg.files];
 cnb.cfg.files=cnb.cfg.files(1:min(9,length(cnb.cfg.files)));
 cnb.saveConfig();
 
+% license('inuse');
+
 end
