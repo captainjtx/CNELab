@@ -1,4 +1,7 @@
 function setup()
+
+clear functions
+
 java_version=version('-java');
 
 if ~strcmp(java_version(6:8),'1.7')

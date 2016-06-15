@@ -1,13 +1,6 @@
-#include <math.h>
-#include <matrix.h>
 #include <mex.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <iostream>
-#include <process.h>
 #include <windows.h>
-
 using namespace std;
 
 #ifdef _WIN32
@@ -46,12 +39,11 @@ int getNumberOfCores() {
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
-
 const mxArray* b;
 const mxArray* a;
 HANDLE chanMutex; 
 
-unsigned __stdcall threadfunc(void *arg) {
+DWORD WINAPI threadfunc(void *arg) {
     void **args=(void **) arg;
     
     double* data=(double*)args[0];
@@ -61,9 +53,9 @@ unsigned __stdcall threadfunc(void *arg) {
     int chan=*((int* )args[4]);
     double* output=(double*)args[5];
     
-    double* y=(double*) mxCalloc(sample+2*padding,sizeof(double));
-    double* ry=(double*) mxCalloc(sample+2*padding,sizeof(double));
-    double* x=(double*) mxCalloc(sample+padding,sizeof(double));
+    double* y=new double[sample+2*padding];
+    double* ry=new double [sample+2*padding];
+    double* x=new double [sample+padding];
     
     int ichan;
    
@@ -71,37 +63,35 @@ unsigned __stdcall threadfunc(void *arg) {
     int ia_n;
             
     DWORD dwWaitResult;
-    ichan=++(*chancount);
     
-    while ( ichan<chan )
+    dwWaitResult = WaitForSingleObject(
+            chanMutex,    // handle to mutex
+            INFINITE);  // no time-out interval
+    switch (dwWaitResult)
     {
-//         dwWaitResult = WaitForSingleObject(
-//                 chanMutex,    // handle to mutex
-//                 INFINITE);  // no time-out interval
-//          switch (dwWaitResult) 
-//         {
-//             // The thread got ownership of the mutex
-//             case WAIT_OBJECT_0: 
-//                 __try { 
-//                     ichan=++(*chancount);
-//                 } 
-// 
-//                 __finally { 
-//                     // Release ownership of the mutex object
-//                     if (! ReleaseMutex(chanMutex)) 
-//                     { 
-//                         // Handle error.
-//                     } 
-//                 } 
-//                 break; 
-//             // The thread got ownership of an abandoned mutex
-//             // The database is in an indeterminate state
-//             case WAIT_ABANDONED: 
-//                 return 1; 
-//         }
-        ichan=++(*chancount);
-        
-        cout<<"Channel "<<ichan<<endl;
+        // The thread got ownership of the mutex
+        case WAIT_OBJECT_0:
+            __try {
+                ichan=++(*chancount);
+            }
+            
+            __finally {
+                // Release ownership of the mutex object
+                if (! ReleaseMutex(chanMutex))
+                {
+                    // Handle error.
+                }
+            }
+            break;
+            // The thread got ownership of an abandoned mutex
+            // The database is in an indeterminate state
+        case WAIT_ABANDONED:
+            return 1;
+    }
+    while ( ichan<chan )
+    {      
+
+        mexPrintf("Channel");
         for(int k=padding;k<sample+padding;++k)
         {
             x[k]=data[ichan*sample+k-padding];
@@ -112,8 +102,8 @@ unsigned __stdcall threadfunc(void *arg) {
             y[k]=0;
         }
         
-        mxArray* ib = mxGetCell(b,ichan);
-        mxArray* ia = mxGetCell(a,ichan);
+        mxArray* ib= mxGetCell(b,ichan);
+        mxArray* ia= mxGetCell(a,ichan);
         
         double* ib_e=mxGetPr(ib);
         double* ia_e=mxGetPr(ia);
@@ -123,7 +113,6 @@ unsigned __stdcall threadfunc(void *arg) {
         
         const int* ia_dim=mxGetDimensions(ia);
         ia_n=MAX(ia_dim[0],ia_dim[1]);
-        
         
         //filter forward
         for (int j=padding;j<sample+padding;++j)
@@ -166,11 +155,36 @@ unsigned __stdcall threadfunc(void *arg) {
         {
             output[ichan*sample+j-padding]=y[sample+2*padding-1-j];
         }
+        
+        dwWaitResult = WaitForSingleObject(
+                chanMutex,    // handle to mutex
+                INFINITE);  // no time-out interval
+        switch (dwWaitResult)
+        {
+            // The thread got ownership of the mutex
+            case WAIT_OBJECT_0:
+                __try {
+                    ichan=++(*chancount);
+                }
+                
+                __finally {
+                    // Release ownership of the mutex object
+                    if (! ReleaseMutex(chanMutex))
+                    {
+                        // Handle error.
+                    }
+                }
+                break;
+                // The thread got ownership of an abandoned mutex
+                // The database is in an indeterminate state
+            case WAIT_ABANDONED:
+                return 1;
+        }
     }
-    mxFree(y);
-    mxFree(ry);
-    mxFree(x);
-    _endthreadex( 0 );
+    delete[] y;
+    delete[] ry;
+    delete[] x;
+//     cout<<"Thread Complete"<<endl;
     return 0;
 }
 
@@ -185,7 +199,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
     
     int padding=0;
     
-    int threadNum;
+    int threadNum=8;
+    
     try
     {
         //the optimal thread number is cpu core number
@@ -197,17 +212,16 @@ void mexFunction(int nlhs, mxArray *plhs[],
         threadNum=8;
     }
     
-    cout<<"number of core: "<<threadNum<<endl;
     
     HANDLE* hThread=new HANDLE[threadNum];
-    unsigned* threadID=new unsigned[threadNum];
+    DWORD* threadID=new DWORD[threadNum];
     
     chanMutex = CreateMutex(
             NULL,              // default security attributes
             FALSE,             // initially not owned
             NULL);             // unnamed mutex
 
-    cout<<"Mutex created !"<<endl;
+//     cout<<"Mutex created !"<<endl;
     if (nrhs != 3) {
         mexErrMsgIdAndTxt("MATLAB:FastFilter:nargin",
                 "FastFilter requires three input arguments.");
@@ -305,13 +319,14 @@ void mexFunction(int nlhs, mxArray *plhs[],
         args[4]=&chan;
         args[5]=output;
         
-        hThread[i] = (HANDLE)_beginthreadex( NULL, 0, &threadfunc, args, 0, &threadID[i] );
-        cout<<"create thread "<<i<<endl;
+        hThread[i] = CreateThread( NULL, 0, threadfunc, args, 0, &threadID[i] );
+//         cout<<"create thread "<<i<<endl;
     }
-    for(int i=0;i<threadNum;i++) {
-        WaitForSingleObject( hThread[i], INFINITE );
-        CloseHandle( hThread[i] );
-        cout<<"thread wait"<<i<<endl;
+    WaitForMultipleObjects(threadNum,hThread,TRUE,INFINITE);
+    
+    for(int i=0;i<threadNum;++i)
+    {
+        CloseHandle(hThread[i]);
     }
     CloseHandle(chanMutex);
     delete[] hThread;
