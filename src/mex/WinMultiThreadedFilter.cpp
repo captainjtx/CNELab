@@ -11,6 +11,14 @@ using namespace std;
 #else
 #include <unistd.h>
 #endif
+
+struct fparam {
+  double* b;
+  double* a;
+  int nb;
+  int na;    
+} ;
+
  
 int getNumberOfCores() {
 #ifdef WIN32
@@ -42,6 +50,7 @@ int getNumberOfCores() {
 const mxArray* b;
 const mxArray* a;
 HANDLE chanMutex; 
+fparam* filterConfig;
 
 DWORD WINAPI threadfunc(void *arg) {
     void **args=(void **) arg;
@@ -61,6 +70,8 @@ DWORD WINAPI threadfunc(void *arg) {
    
     int ib_n;
     int ia_n;
+    double* ia_e;
+    double* ib_e;
             
     DWORD dwWaitResult;
     
@@ -90,8 +101,11 @@ DWORD WINAPI threadfunc(void *arg) {
     }
     while ( ichan<chan )
     {      
-
-        mexPrintf("Channel");
+        ia_e=filterConfig[ichan].a;
+        ib_e=filterConfig[ichan].b;
+        ia_n=filterConfig[ichan].na;
+        ib_n=filterConfig[ichan].nb;
+        
         for(int k=padding;k<sample+padding;++k)
         {
             x[k]=data[ichan*sample+k-padding];
@@ -102,18 +116,7 @@ DWORD WINAPI threadfunc(void *arg) {
             y[k]=0;
         }
         
-        mxArray* ib= mxGetCell(b,ichan);
-        mxArray* ia= mxGetCell(a,ichan);
-        
-        double* ib_e=mxGetPr(ib);
-        double* ia_e=mxGetPr(ia);
-        
-        const int* ib_dim=mxGetDimensions(ib);
-        ib_n=MAX(ib_dim[0],ib_dim[1]);
-        
-        const int* ia_dim=mxGetDimensions(ia);
-        ia_n=MAX(ia_dim[0],ia_dim[1]);
-        
+
         //filter forward
         for (int j=padding;j<sample+padding;++j)
         {
@@ -193,7 +196,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
 {
     mxArray *ib;
     mxArray *ia;
-    
+    double* ib_e;
+    double* ia_e;
+    int ib_n;
+    int ia_n;
     void *args[6];
     int chancount[1];
     
@@ -294,15 +300,35 @@ void mexFunction(int nlhs, mxArray *plhs[],
         output=mxGetPr(plhs[0]);
     }
     
-    for (int ichan=0; ichan<chan; ichan++) {
-        ib = mxGetCell(b,ichan);
-        ia = mxGetCell(a,ichan);
+    //mxGetCell cannot be accessed inside thread in windows, maybe not threadsafe
+    //So we define our own data structure...
+    filterConfig=new fparam[chan];
+    
+    for(int i=0;i<chan;++i)
+    {
+        ib= mxGetCell(b,i);
+        ia= mxGetCell(a,i);
+        
+        ib_e=mxGetPr(ib);
+        ia_e=mxGetPr(ia);
         
         const int* ib_dim=mxGetDimensions(ib);
-        int ib_n=MAX(ib_dim[0],ib_dim[1]);
+        ib_n=MAX(ib_dim[0],ib_dim[1]);
         
         const int* ia_dim=mxGetDimensions(ia);
-        int ia_n=MAX(ia_dim[0],ia_dim[1]);
+        ia_n=MAX(ia_dim[0],ia_dim[1]);
+        
+        filterConfig[i].a=new double[ia_n];
+        filterConfig[i].b=new double[ib_n];
+        
+        filterConfig[i].na=ia_n;
+        filterConfig[i].nb=ib_n;
+        
+        for(int j=0;j<ia_n;++j)
+        {filterConfig[i].a[j]=ia_e[j];}
+        
+        for(int j=0;j<ia_n;++j)
+        {filterConfig[i].b[j]=ib_e[j];}
         
         padding=MAX(padding,ib_n);
         padding=MAX(padding,ia_n);
@@ -331,6 +357,12 @@ void mexFunction(int nlhs, mxArray *plhs[],
     CloseHandle(chanMutex);
     delete[] hThread;
     delete[] threadID;
-    
+        
+    for(int i=0;i<chan;++i)
+    {
+        delete[] filterConfig[i].b;
+        delete[] filterConfig[i].a;
+    }
+    delete[] filterConfig;
     return;
 }
