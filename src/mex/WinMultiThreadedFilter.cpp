@@ -56,47 +56,54 @@ unsigned __stdcall threadfunc(void *arg) {
     
     double* data=(double*)args[0];
     int sample=*((int* )args[1]);
-    int padding=*(int* )args[2]);
+    int padding=*((int* )args[2]);
     int* chancount=(int*)args[3];
     int chan=*((int* )args[4]);
     double* output=(double*)args[5];
     
-    double* y=(double*) mxCalloc(sample+2*padding,sizeof(double));
-    double* ry=(double*) mxCalloc(sample+2*padding,sizeof(double));
-    double* x=(double*) mxCalloc(sample+padding,sizeof(double));
+    double* y=(double*) malloc(sample+2*padding);
+    double* ry=(double*) malloc(sample+2*padding);
+    double* x=(double*) malloc(sample+padding);
     
     int ichan;
     mxArray *ib;
     mxArray *ia;
+    double* ib_e;
+    double* ia_e;
     
+    int ib_n;
+    int ia_n;
+            
     DWORD dwWaitResult;
     do
     {
-        dwWaitResult = WaitForSingleObject(
-                chanMutex,    // handle to mutex
-                INFINITE);  // no time-out interval
-         switch (dwWaitResult) 
-        {
-            // The thread got ownership of the mutex
-            case WAIT_OBJECT_0: 
-                __try { 
-                    ichan=++(*chancount);
-                } 
-
-                __finally { 
-                    // Release ownership of the mutex object
-                    if (! ReleaseMutex(chanMutex)) 
-                    { 
-                        // Handle error.
-                    } 
-                } 
-                break; 
-            // The thread got ownership of an abandoned mutex
-            // The database is in an indeterminate state
-            case WAIT_ABANDONED: 
-                return 1; 
-        }
+//         dwWaitResult = WaitForSingleObject(
+//                 chanMutex,    // handle to mutex
+//                 INFINITE);  // no time-out interval
+//          switch (dwWaitResult) 
+//         {
+//             // The thread got ownership of the mutex
+//             case WAIT_OBJECT_0: 
+//                 __try { 
+//                     ichan=++(*chancount);
+//                 } 
+// 
+//                 __finally { 
+//                     // Release ownership of the mutex object
+//                     if (! ReleaseMutex(chanMutex)) 
+//                     { 
+//                         // Handle error.
+//                     } 
+//                 } 
+//                 break; 
+//             // The thread got ownership of an abandoned mutex
+//             // The database is in an indeterminate state
+//             case WAIT_ABANDONED: 
+//                 return 1; 
+//         }
+        ichan=++(*chancount);
         
+        cout<<"Channel "<<ichan<<endl;
         for(int k=padding;k<sample+padding;++k)
         {
             x[k]=data[ichan*sample+k-padding];
@@ -110,14 +117,14 @@ unsigned __stdcall threadfunc(void *arg) {
         ib = mxGetCell(b,ichan);
         ia = mxGetCell(a,ichan);
         
-        double* ib_e=mxGetPr(ib);
-        double* ia_e=mxGetPr(ia);
+        ib_e=mxGetPr(ib);
+        ia_e=mxGetPr(ia);
         
         const int* ib_dim=mxGetDimensions(ib);
-        int ib_n=MAX(ib_dim[0],ib_dim[1]);
+        ib_n=MAX(ib_dim[0],ib_dim[1]);
         
         const int* ia_dim=mxGetDimensions(ia);
-        int ia_n=MAX(ia_dim[0],ia_dim[1]);
+        ia_n=MAX(ia_dim[0],ia_dim[1]);
         
         
         //filter forward
@@ -162,7 +169,9 @@ unsigned __stdcall threadfunc(void *arg) {
             output[ichan*sample+j-padding]=y[sample+2*padding-1-j];
         }
     }while( ichan<chan-1 );
-    
+    free(y);
+    free(ry);
+    free(x);
     _endthreadex( 0 );
     return 0;
 }
@@ -190,14 +199,16 @@ void mexFunction(int nlhs, mxArray *plhs[],
         threadNum=8;
     }
     
-    HANDLE *hThread=malloc(threadNum*sizeof(HANDLE));
-    unsigned *threadID=malloc(threadNum*sizeof(unsigned));
+    cout<<"number of core: "<<threadNum<<endl;
+    
+    HANDLE* hThread=new HANDLE[threadNum];
+    unsigned* threadID=new unsigned[threadNum];
     chanMutex = CreateMutex(
             NULL,              // default security attributes
             FALSE,             // initially not owned
             NULL);             // unnamed mutex
 
-    
+    cout<<"Mutex created !"<<endl;
     if (nrhs != 3) {
         mexErrMsgIdAndTxt("MATLAB:FastFilter:nargin",
                 "FastFilter requires three input arguments.");
@@ -296,16 +307,16 @@ void mexFunction(int nlhs, mxArray *plhs[],
         args[5]=output;
         
         hThread[i] = (HANDLE)_beginthreadex( NULL, 0, &threadfunc, args, 0, &threadID[i] );
+        cout<<"create thread "<<i<<endl;
     }
     for(int i=0;i<threadNum;i++) {
         WaitForSingleObject( hThread[i], INFINITE );
         CloseHandle( hThread[i] );
+        cout<<"thread wait"<<i<<endl;
     }
     CloseHandle(chanMutex);
-
-    free(hThread);
-    free(threadID);
+    delete[] hThread;
+    delete[] threadID;
     
-    mxFree(y);
     return;
 }

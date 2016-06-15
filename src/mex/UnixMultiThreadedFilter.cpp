@@ -67,14 +67,20 @@ void *threadfunc(void *arg) {
 
     double* output=(double*)args[5];
     
-    double* y=(double*) mxCalloc(sample+2*padding,sizeof(double));
-    double* ry=(double*) mxCalloc(sample+2*padding,sizeof(double));
-    double* x=(double*) mxCalloc(sample+padding,sizeof(double));
+    double* y=(double*) malloc(sample+2*padding);
+    double* ry=(double*) malloc(sample+2*padding);
+    double* x=(double*) malloc(sample+padding);
     int ichan;
     int finishedTask=-1;
     
     mxArray *ib;
     mxArray *ia;
+    
+    double* ib_e;
+    double* ia_e;
+    
+    int ib_n;
+    int ia_n;
     
     do{
 //         pthread_mutex_lock(&cout_mutex);
@@ -97,14 +103,14 @@ void *threadfunc(void *arg) {
         ib = mxGetCell(b,ichan);
         ia = mxGetCell(a,ichan);
         
-        double* ib_e=mxGetPr(ib);
-        double* ia_e=mxGetPr(ia);
+        ib_e=mxGetPr(ib);
+        ia_e=mxGetPr(ia);
         
         const int* ib_dim=mxGetDimensions(ib);
-        int ib_n=MAX(ib_dim[0],ib_dim[1]);
+        ib_n=MAX(ib_dim[0],ib_dim[1]);
         
         const int* ia_dim=mxGetDimensions(ia);
-        int ia_n=MAX(ia_dim[0],ia_dim[1]);
+        ia_n=MAX(ia_dim[0],ia_dim[1]);
         
         //filter forward
         for (int j=padding;j<sample+padding;++j)
@@ -148,9 +154,9 @@ void *threadfunc(void *arg) {
             output[ichan*sample+j-padding]=y[sample+2*padding-1-j];
         }
     }while( ichan<chan-1 );
-    mxFree(y);
-    mxFree(ry);
-    mxFree(x);
+    free(y);
+    free(ry);
+    free(x);
     
 //     pthread_mutex_lock(&cout_mutex);
 //     cout<<"Thread complete"<<endl;
