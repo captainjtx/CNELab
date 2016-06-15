@@ -76,15 +76,14 @@ void *threadfunc(void *arg) {
     mxArray *ib;
     mxArray *ia;
     
-    //make it thread safe on increment chancount
-    pthread_mutex_lock(&chan_mutex);
-    ichan=++(*chancount);//atomic 
-    pthread_mutex_unlock(&chan_mutex);
-    
-    while( ichan<chan ) {
+    do{
 //         pthread_mutex_lock(&cout_mutex);
 //         cout<<"Computing Channel"<<ichan<<endl;
 //         pthread_mutex_unlock(&cout_mutex);
+        
+        pthread_mutex_lock(&chan_mutex);
+        ichan=++(*chancount);//atomic
+        pthread_mutex_unlock(&chan_mutex); 
         for(int k=padding;k<sample+padding;++k)
         {
             x[k]=data[ichan*sample+k-padding];
@@ -148,11 +147,7 @@ void *threadfunc(void *arg) {
         {
             output[ichan*sample+j-padding]=y[sample+2*padding-1-j];
         }
-        
-        pthread_mutex_lock(&chan_mutex);
-        ichan=++(*chancount);//atomic
-        pthread_mutex_unlock(&chan_mutex); 
-    }
+    }while( ichan<chan-1 );
     mxFree(y);
     mxFree(ry);
     mxFree(x);

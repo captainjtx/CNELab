@@ -1,5 +1,4 @@
 function d=preprocessedData(obj,varargin)
-
 % t=ceil(obj.Time*obj.SRate+1):min(ceil((obj.Time+obj.WinLength)*obj.SRate),size(obj.Data{1},1));
 if nargin==2
     n=varargin{1};
@@ -75,20 +74,18 @@ if ~isempty(fchan)
     end
     d(:,fchan)=fd(ext+1:end-ext,fchan);
 end
-
 %needs to be cascaded in future
-for i=1:size(d,2)
-    if obj.Filtering{n}(i)
-        if ~isnan(fn(i))&&fn(i)~=0
-            if notch_single
-                [b,a]=butter(order,[fn(i)-2,fn(i)+2]/(fs/2),'stop');
-                d(:,i)=filter_symmetric(b{i},a{i},d(:,i),ext,phs,ftyp);
-            else
-                d(:,i)=filter_harmonic(d(:,i),fn(i),fs,order);
-            end
+for f=1:length(fchan)
+    i=fchan(f);
+    if ~isnan(fn(i))&&fn(i)~=0
+        if notch_single
+            [b,a]=butter(order,[fn(i)-2,fn(i)+2]/(fs/2),'stop');
+            d(:,i)=filter_symmetric(b{i},a{i},d(:,i),ext,phs,ftyp);
+        else
+            d(:,i)=filter_harmonic(d(:,i),fn(i),fs,order);
         end
-        d(:,i)=applyCustomFilters(obj,d(:,i),fcum(i));
     end
+    d(:,i)=applyCustomFilters(obj,d(:,i),fcum(i));
 end
 
 %apply subspace filter
@@ -102,6 +99,7 @@ if ~isempty(obj.SPFObj)&&isvalid(obj.SPFObj)&&isa(obj.SPFObj,'SPFPlot')
         d(sample,channel)=obj.SPFObj.subspacefilter(d(sample,channel));
     end
 end
+
 end
 
 function data=applyCustomFilters(obj,data,fcum)
