@@ -61,21 +61,19 @@ unsigned __stdcall threadfunc(void *arg) {
     int chan=*((int* )args[4]);
     double* output=(double*)args[5];
     
-    double* y=(double*) malloc(sample+2*padding);
-    double* ry=(double*) malloc(sample+2*padding);
-    double* x=(double*) malloc(sample+padding);
+    double* y=(double*) mxCalloc(sample+2*padding,sizeof(double));
+    double* ry=(double*) mxCalloc(sample+2*padding,sizeof(double));
+    double* x=(double*) mxCalloc(sample+padding,sizeof(double));
     
     int ichan;
-    mxArray *ib;
-    mxArray *ia;
-    double* ib_e;
-    double* ia_e;
-    
+   
     int ib_n;
     int ia_n;
             
     DWORD dwWaitResult;
-    do
+    ichan=++(*chancount);
+    
+    while ( ichan<chan )
     {
 //         dwWaitResult = WaitForSingleObject(
 //                 chanMutex,    // handle to mutex
@@ -114,11 +112,11 @@ unsigned __stdcall threadfunc(void *arg) {
             y[k]=0;
         }
         
-        ib = mxGetCell(b,ichan);
-        ia = mxGetCell(a,ichan);
+        mxArray* ib = mxGetCell(b,ichan);
+        mxArray* ia = mxGetCell(a,ichan);
         
-        ib_e=mxGetPr(ib);
-        ia_e=mxGetPr(ia);
+        double* ib_e=mxGetPr(ib);
+        double* ia_e=mxGetPr(ia);
         
         const int* ib_dim=mxGetDimensions(ib);
         ib_n=MAX(ib_dim[0],ib_dim[1]);
@@ -168,10 +166,10 @@ unsigned __stdcall threadfunc(void *arg) {
         {
             output[ichan*sample+j-padding]=y[sample+2*padding-1-j];
         }
-    }while( ichan<chan-1 );
-    free(y);
-    free(ry);
-    free(x);
+    }
+    mxFree(y);
+    mxFree(ry);
+    mxFree(x);
     _endthreadex( 0 );
     return 0;
 }
@@ -203,6 +201,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     
     HANDLE* hThread=new HANDLE[threadNum];
     unsigned* threadID=new unsigned[threadNum];
+    
     chanMutex = CreateMutex(
             NULL,              // default security attributes
             FALSE,             // initially not owned

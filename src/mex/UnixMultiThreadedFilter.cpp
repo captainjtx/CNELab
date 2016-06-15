@@ -67,29 +67,23 @@ void *threadfunc(void *arg) {
 
     double* output=(double*)args[5];
     
-    double* y=(double*) malloc(sample+2*padding);
-    double* ry=(double*) malloc(sample+2*padding);
-    double* x=(double*) malloc(sample+padding);
+    double* y=(double*) mxCalloc(sample+2*padding,sizeof(double));
+    double* ry=(double*) mxCalloc(sample+2*padding,sizeof(double));
+    double* x=(double*) mxCalloc(sample+padding,sizeof(double));
     int ichan;
-    int finishedTask=-1;
-    
-    mxArray *ib;
-    mxArray *ia;
-    
-    double* ib_e;
-    double* ia_e;
     
     int ib_n;
     int ia_n;
+            
+    pthread_mutex_lock(&chan_mutex);
+    ichan=++(*chancount);//atomic
+    pthread_mutex_unlock(&chan_mutex);
     
-    do{
+    while(ichan<chan)
+    {
 //         pthread_mutex_lock(&cout_mutex);
 //         cout<<"Computing Channel"<<ichan<<endl;
 //         pthread_mutex_unlock(&cout_mutex);
-        
-        pthread_mutex_lock(&chan_mutex);
-        ichan=++(*chancount);//atomic
-        pthread_mutex_unlock(&chan_mutex); 
         for(int k=padding;k<sample+padding;++k)
         {
             x[k]=data[ichan*sample+k-padding];
@@ -100,11 +94,11 @@ void *threadfunc(void *arg) {
             y[k]=0;
         }
         
-        ib = mxGetCell(b,ichan);
-        ia = mxGetCell(a,ichan);
+        mxArray* ib= mxGetCell(b,ichan);
+        mxArray* ia= mxGetCell(a,ichan);
         
-        ib_e=mxGetPr(ib);
-        ia_e=mxGetPr(ia);
+        double* ib_e=mxGetPr(ib);
+        double* ia_e=mxGetPr(ia);
         
         const int* ib_dim=mxGetDimensions(ib);
         ib_n=MAX(ib_dim[0],ib_dim[1]);
@@ -153,10 +147,13 @@ void *threadfunc(void *arg) {
         {
             output[ichan*sample+j-padding]=y[sample+2*padding-1-j];
         }
-    }while( ichan<chan-1 );
-    free(y);
-    free(ry);
-    free(x);
+        pthread_mutex_lock(&chan_mutex);
+        ichan=++(*chancount);//atomic
+        pthread_mutex_unlock(&chan_mutex); 
+    }
+    mxFree(y);
+    mxFree(ry);
+    mxFree(x);
     
 //     pthread_mutex_lock(&cout_mutex);
 //     cout<<"Thread complete"<<endl;
