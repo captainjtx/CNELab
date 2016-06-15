@@ -80,9 +80,6 @@ void *threadfunc(void *arg) {
     
     int ib_n;
     int ia_n;
-    double* ia_e;
-    double* ib_e;
-    
     pthread_mutex_lock(&chan_mutex);
     ichan=++(*chancount);//atomic
     pthread_mutex_unlock(&chan_mutex);
@@ -93,10 +90,6 @@ void *threadfunc(void *arg) {
 //         cout<<"Computing Channel"<<ichan<<endl;
 //         pthread_mutex_unlock(&cout_mutex);
 
-        ia_e=filterConfig[ichan].a;
-        ib_e=filterConfig[ichan].b;
-        ia_n=filterConfig[ichan].na;
-        ib_n=filterConfig[ichan].nb;
         
         for(int k=padding;k<sample+padding;++k)
         {
@@ -192,8 +185,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
     mxArray *ia;
     double* ib_e;
     double* ia_e;
-    int ib_n;
-    int ia_n;
     
     pthread_t threads[threadNum];
     pthread_mutex_init(&chan_mutex,NULL);
@@ -285,16 +276,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
         ia_n=MAX(ia_dim[0],ia_dim[1]);
         
         filterConfig[i].a=new double[ia_n];
-        filterConfig[i].b=new double[ib_n];
-        
-        filterConfig[i].na=ia_n;
-        filterConfig[i].nb=ib_n;
-        
-        for(int j=0;j<ia_n;++j)
-        {filterConfig[i].a[j]=ia_e[j];}
-        
-        for(int j=0;j<ia_n;++j)
-        {filterConfig[i].b[j]=ib_e[j];}
+        filterConfig[i].a=new double[ib_n];
         
         padding=MAX(padding,ib_n);
         padding=MAX(padding,ia_n);
@@ -339,7 +321,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     {
         delete[] filterConfig[i].b;
         delete[] filterConfig[i].a;
+        delete filterConfig[i];
     }
-    delete[] filterConfig;
     return;
 }

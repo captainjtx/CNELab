@@ -74,6 +74,7 @@ if ~isempty(fchan)
     end
     d(:,fchan)=fd(ext+1:end-ext,fchan);
 end
+
 %needs to be cascaded in future
 for f=1:length(fchan)
     i=fchan(f);
