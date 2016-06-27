@@ -14,8 +14,8 @@ if nargin <4
     mode=0;
 end
 
-TrX=size(X,2);
-TrY=size(Y,2);
+TrX=size(X,3);
+TrY=size(Y,3);
 Nx=size(X,1);
 Ny=size(Y,1);
 Nch=length(CHi);
@@ -23,7 +23,7 @@ cx=zeros(Nch,Nch);
 cy=zeros(Nch,Nch);
 
 for i=1:TrX
-    x=X(:,i,CHi);
+    x=X(:,CHi,i);
     x=reshape(x,Nx,Nch);
     if mode
         cv=x'*x;   
@@ -34,7 +34,7 @@ for i=1:TrX
 end
 
 for i=1:TrY
-    y=Y(:,i,CHi);
+    y=Y(:,CHi,i);
     y=reshape(y,Ny,Nch);
     if mode
         cv=y'*y;   

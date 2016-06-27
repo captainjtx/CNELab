@@ -9,14 +9,14 @@ onset=round(fs*ms_before/1000);
 
 stats={};
 
-fig=figure('name',['S',num2str(i_sub)]);
+fig=figure('name','S1');
 
 len=800;%classification data length in ms
 
 step=50;%step in ms
 
-f1=[8,60];
-f2=[32,200];
+f1=[8,12];
+f2=[12,32];
 col={'g','k','r','b',};
 exp={};
 
@@ -38,8 +38,7 @@ for fi=1:length(f1)
     for i=1:size(ecogO,3)
         ecogO(:,:,i)=filter_symmetric(b,a,ecogO(:,:,i),[],0,'iir');
     end
-    ecogC=permute(ecogC,[1 3 2]);
-    ecogO=permute(ecogO,[1 3 2]);
+    
     for env=0:1
         %**************************************************************************
         erM=[];
@@ -64,14 +63,14 @@ for fi=1:length(f1)
                 dch=[];
                 doh=[];
                 
-                NCh=size(do,3);
+                NCh=size(do,2);
                 
                 if env
                     for k=1:NCh
-                        dch(:,:,k)=abs(hilbert(dc(:,:,k)));
+                        dch(:,k,:)=reshape(abs(hilbert(squeeze(dc(:,k,:)))),size(dc,1),1,size(dc,3));
                         %             dch(:,:,k)=filtfilt(h,1,dch(:,:,k));
                         
-                        doh(:,:,k)=abs(hilbert(do(:,:,k)));
+                        doh(:,k,:)=reshape(abs(hilbert(squeeze(do(:,k,:)))),size(do,1),1,size(do,3));
                         %             doh(:,:,k)=filtfilt(h,1,doh(:,:,k));
                     end
                 end
@@ -80,8 +79,8 @@ for fi=1:length(f1)
                 K=5;
                 r=1;
                 eR=[];
-                CVc = cvpartition(size(dc,2),'Kfold',K);
-                CVo = cvpartition(size(do,2),'Kfold',K);
+                CVc = cvpartition(size(dc,3),'Kfold',K);
+                CVo = cvpartition(size(do,3),'Kfold',K);
                 
                 for n=1:K
                     TrCI=CVc.training(n);
@@ -98,8 +97,8 @@ for fi=1:length(f1)
                         data_c=dc;
                     end
                     
-                    [W,Lmb,P]=csp_weights(data_c(:,TrCI,:),data_o(:,TrOI,:),Chi,1);
-                    [trC,trO,tsC,tsO]=CSPFeatures(data_c(:,TrCI,Chi), data_o(:,TrOI,Chi), data_c(:,TsCI,Chi), data_o(:,TsOI,Chi), Nf, W);
+                    [W,Lmb,P]=csp_weights(data_c(:,:,TrCI),data_o(:,:,TrOI),Chi,1);
+                    [trC,trO,tsC,tsO]=CSPFeatures(data_c(:,Chi,TrCI), data_o(:,Chi,TrOI), data_c(:,Chi,TsCI), data_o(:,Chi,TsOI), Nf, W);
                     %    figure(2);
                     %         clf
                     %                 plot(tsO(:,1),tsO(:,4),'kd');
