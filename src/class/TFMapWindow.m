@@ -615,7 +615,7 @@ classdef TFMapWindow < handle
             end
             obj.fig=figure('MenuBar','none','Name','Time-Frequency Map','units','pixels',...
                 'Position',[100 100 300 700],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
-                'Resize','on','DockControls','off');
+                'Resize','on','DockControls','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt));
             
             obj.file_menu=uimenu(obj.fig,'label','File');
             obj.save_menu=uimenu(obj.file_menu,'label','Save');
@@ -1057,7 +1057,7 @@ classdef TFMapWindow < handle
                 set(obj.TFMapFig,'Tag','Old');
                 set(obj.TFMapFig,'name',[name,' Old'])
             end
-            obj.TFMapFig=figure('Name',obj.event,'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
+            obj.TFMapFig=figure('Name',obj.event,'NumberTitle','off',...
                 'color','w','DockControls','off','Tag','Act');
         end
         function ComputeCallback(obj,src)
@@ -1150,7 +1150,7 @@ classdef TFMapWindow < handle
             
             if isempty(obj.TFMapFig)||~ishandle(obj.TFMapFig)
                 delete(obj.TFMapFig(ishandle(obj.TFMapFig)));
-                obj.TFMapFig=figure('Name',obj.event,'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
+                obj.TFMapFig=figure('Name',obj.event,'NumberTitle','off',...
                     'color','w','DockControls','off','Tag','Act','position',[fpos(1)+fpos(3)+20,fpos(2),650,450]);
             else
                 figure(obj.TFMapFig);
@@ -1472,9 +1472,6 @@ classdef TFMapWindow < handle
         end
         
         function KeyPress(obj,src,evt)
-            if strcmpi(get(src,'Name'),'Obsolete TFMap')
-                return
-            end
             if ~isempty(evt.Modifier)
                 if length(evt.Modifier)==1
                     if ismember('command',evt.Modifier)||ismember('control',evt.Modifier)

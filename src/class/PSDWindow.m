@@ -100,7 +100,7 @@ classdef PSDWindow < handle
         function obj=PSDWindow(bsp)
             obj.bsp=bsp;
             obj.width=300;
-            obj.height=380;
+            obj.height=410;
             
             if ~isempty(bsp.Evts)
                 obj.event_list_=unique(bsp.Evts(:,2));
@@ -154,12 +154,9 @@ classdef PSDWindow < handle
                 return
             end
             
-            obj.width=300;
-            obj.height=410;
-            
             obj.fig=figure('MenuBar','none','Name','Power Spectrum Density','units','pixels',...
                 'Position',[100 400 obj.width obj.height],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
-                'Resize','on','DockControls','off');
+                'Resize','on','DockControls','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt));
             obj.file_menu=uimenu(obj.fig,'label','File');
             obj.save_menu=uimenu(obj.file_menu,'label','Save');
             obj.save_fig_menu=uimenu(obj.save_menu,'label','Figure','callback',@(src,evts) obj.PSDSaveWin.buildfig(),'Accelerator','p');
@@ -617,16 +614,18 @@ classdef PSDWindow < handle
         end
         
         function NewCallback(obj)
-            if ~isempty(obj.PSDFig)&&ishandle(obj.PSDFig)
-                set(obj.PSDFig,'Name','PSD Old');
-            end
-            obj.PSDFig=figure('Name','PSD','NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'Tag','Act');
+            
+%             if ~isempty(obj.PSDFig)&&ishandle(obj.PSDFig)
+%                 set(obj.PSDFig,'Name','PSD Old');
+%             end
+%             
+            fpos=get(obj.fig,'position');
+%             
+            obj.PSDFig=figure('Name','PSD','NumberTitle','off','Tag','Act',...
+                'Position',[fpos(1)+fpos(3)+20,fpos(2),400,300]);
         end
         
         function KeyPress(obj,src,evt)
-            if strcmpi(get(src,'Name'),'Obsolete PSD')
-                return
-            end
             if ~isempty(evt.Modifier)
                 if length(evt.Modifier)==1
                     if ismember('command',evt.Modifier)||ismember('control',evt.Modifier)
@@ -741,8 +740,7 @@ classdef PSDWindow < handle
                 fpos=[100 400 obj.width obj.height];
             end
             if isempty(obj.PSDFig)||~ishandle(obj.PSDFig)||~strcmpi(get(obj.PSDFig,'Tag'),'Act')
-                obj.PSDFig=figure('Name','PSD','NumberTitle','off',...
-                    'WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'Tag','Act',...
+                obj.PSDFig=figure('Name','PSD','NumberTitle','off','Tag','Act',...
                     'Position',[fpos(1)+fpos(3)+20,fpos(2),400,300]);
             end
             figure(obj.PSDFig)

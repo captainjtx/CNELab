@@ -12,4 +12,5 @@ lib/vlc-matlab
 db/cfg/defaultconfig.cfg
 *.mexmaci64
 *.mexw64
+*.swp
 

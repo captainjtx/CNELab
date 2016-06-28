@@ -1208,7 +1208,7 @@ classdef SpatialMapWindow < handle
             obj.valid=1;
             obj.fig=figure('MenuBar','none','Name','Spatial-Spectral Map','units','pixels',...
                 'Position',[100 100 300 700],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
-                'Resize','on','DockControls','off');
+                'Resize','on','DockControls','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt));
             
             obj.export_menu=uimenu(obj.fig,'label','Export');
             obj.export_pic_menu=uimenu(obj.export_menu,'label','Pictures','callback',@(src,evts) ExportPictureCallback(obj),'Accelerator','p');
@@ -1738,12 +1738,12 @@ classdef SpatialMapWindow < handle
             
             if obj.data_input==3
                 for i=1:length(obj.event_group)
-                    obj.SpatialMapFig(i)=figure('Name',[obj.event_group{i}],'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
+                    obj.SpatialMapFig(i)=figure('Name',[obj.event_group{i}],'NumberTitle','off',...
                         'units','pixels','position',[fpos(1)+fpos(3)+20+(obj.fig_w+20)*(i-1),fpos(2),obj.fig_w,obj.fig_h],'Resize','off',...
                         'doublebuffer','off','Tag','Act');
                 end
             else
-                obj.SpatialMapFig=figure('Name',[obj.event],'NumberTitle','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),...
+                obj.SpatialMapFig=figure('Name',[obj.event],'NumberTitle','off',...
                     'units','pixels','position',[fpos(1)+fpos(3)+20,fpos(2),obj.fig_w,obj.fig_h],'Resize','off',...
                     'doublebuffer','off','Tag','Act');
             end
@@ -2209,9 +2209,6 @@ classdef SpatialMapWindow < handle
         
         
         function KeyPress(obj,src,evt)
-            if strcmpi(get(src,'Tag'),'Old')
-                return
-            end
             if ~isempty(evt.Modifier)
                 if length(evt.Modifier)==1
                     if ismember('command',evt.Modifier)||ismember('control',evt.Modifier)
