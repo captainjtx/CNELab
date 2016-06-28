@@ -1,6 +1,6 @@
-f=load('/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Open.mat','-mat');
+f=load('Z:\Tianxiao\data\BMI\handopenclose\S2/Open.mat','-mat');
 open=f.Open;
-f=load('/Users/tengi/Desktop/Projects/data/BMI/handopenclose/S1/Close.mat','-mat');
+f=load('Z:\Tianxiao\data\BMI\handopenclose\S2/Close.mat','-mat');
 close=f.Close;
 %%
 fs=open.fs;
