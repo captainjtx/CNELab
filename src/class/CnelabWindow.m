@@ -23,7 +23,7 @@ classdef CnelabWindow < handle
         
         function val=get.valid(obj)
             try
-                val=ishandle(obj.fig)&&isvalid(obj.fig);
+                val=ishandle(obj.fig)&&isgraphics(obj.fig);
             catch
                 val=0;
             end
@@ -217,7 +217,7 @@ classdef CnelabWindow < handle
             [jh,gh]=javacomponent(tmp,[0,0.16,1,0.28],opt);
             set(gh,'Units','Norm','Position',[0,0.16,1,0.28]);
             javaMethodEDT('setLookAndFeel',javax.swing.UIManager,originalLnF);
-
+            warning('off','MATLAB:uitabgroup:OldVersion');
         end
         
         function OnClose(obj)

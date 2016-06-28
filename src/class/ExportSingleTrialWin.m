@@ -108,7 +108,7 @@ classdef ExportSingleTrialWin<handle
         
         function val=get.valid(obj)
             try
-                val=ishandle(obj.fig)&&isvalid(obj.fig);
+                val=ishandle(obj.fig)&&isgraphics(obj.fig);
             catch
                 val=0;
             end

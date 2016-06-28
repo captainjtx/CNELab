@@ -518,7 +518,7 @@ classdef BioSigPlot < hgsetget
         function delete(obj)
             %             Delete the figure
             saveConfig(obj);
-            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+            if isa(obj.WinVideo,'VideoWindow') && isgraphics(obj.WinVideo)
                 delete(obj.WinVideo)
             end
             
@@ -557,7 +557,7 @@ classdef BioSigPlot < hgsetget
                 obj.AverageMapWin.OnClose();
             end
             
-            if isa(obj.WinFastEvts,'FastEventWindow') && isvalid(obj.WinFastEvts)
+            if isa(obj.WinFastEvts,'FastEventWindow') && isgraphics(obj.WinFastEvts)
                 delete(obj.WinFastEvts);
             end
             
@@ -567,7 +567,7 @@ classdef BioSigPlot < hgsetget
             end
             
             
-            if ~isempty(obj.SPFObj)&&isvalid(obj.SPFObj)&&isa(obj.SPFObj,'SPFPlot')
+            if ~isempty(obj.SPFObj)&&isgraphics(obj.SPFObj)&&isa(obj.SPFObj,'SPFPlot')
                 delete(obj.SPFObj);
             end
             
@@ -1242,7 +1242,7 @@ classdef BioSigPlot < hgsetget
             end
             set(obj.EdtTime,'String',obj.Time_);
             
-            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+            if isa(obj.WinVideo,'VideoWindow') && isgraphics(obj.WinVideo)
                 if ~isempty(prevTime)
                     obj.VideoLineTime=obj.Time+obj.VideoLineTime-prevTime;
                 else
@@ -1646,7 +1646,7 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         function obj=set.PlaySpeed_(obj,val)
             obj.PlaySpeed_=val;
-            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+            if isa(obj.WinVideo,'VideoWindow') && isgraphics(obj.WinVideo)
                 obj.WinVideo.PlaySpeed=val;
             end
         end
@@ -1696,7 +1696,7 @@ classdef BioSigPlot < hgsetget
         
         function val=get.valid(obj)
             try
-                val=ishandle(obj.Fig)&&isvalid(obj.Fig);
+                val=ishandle(obj.Fig)&&isgraphics(obj.Fig);
             catch
                 val=0;
             end
@@ -1809,7 +1809,7 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
 
         function WinVideoFcn(obj)
-            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+            if isa(obj.WinVideo,'VideoWindow') && isgraphics(obj.WinVideo)
                 %Bring Video Figure To The Front If Exists
                 figure(obj.WinVideo.Fig)
             else
@@ -1914,7 +1914,7 @@ classdef BioSigPlot < hgsetget
                 ontop=true;
             end
             
-            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+            if isa(obj.WinVideo,'VideoWindow') && isgraphics(obj.WinVideo)
                 obj.WinVideo.IsOnTop=ontop;
             end
             
@@ -2288,7 +2288,7 @@ classdef BioSigPlot < hgsetget
             if strcmpi(obj.VideoTimer.Running,'off')
                 start(obj.VideoTimer);
             end
-            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+            if isa(obj.WinVideo,'VideoWindow') && isgraphics(obj.WinVideo)
                 obj.WinVideo.play;
             end
         end
@@ -2299,7 +2299,7 @@ classdef BioSigPlot < hgsetget
             if strcmpi(obj.VideoTimer.Running,'on')
                 stop(obj.VideoTimer);
             end
-            if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+            if isa(obj.WinVideo,'VideoWindow') && isgraphics(obj.WinVideo)
                 obj.WinVideo.pause;
             end
         end
