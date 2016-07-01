@@ -155,7 +155,7 @@ classdef TFMapFigureSave<handle
          end
          
         
-        function DirCallback(obj)
+        function DirCallback(obj,src)
             obj.dest_dir_=get(src,'string');
         end
         function FormatCallback(obj,src)

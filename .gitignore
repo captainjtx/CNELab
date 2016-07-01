@@ -18,3 +18,5 @@ db/cfg/defaultconfig.cfg
 db/cfg/defaultconfig.cfg
 
 db/cfg/defaultconfig.cfg
+
+*.cfg

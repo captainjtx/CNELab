@@ -72,7 +72,7 @@ if ~isempty(fchan)
     else
         fd=FastFilter(jb,ja,fd);
     end
-    d(:,fchan)=fd(ext+1:end-ext,fchan);
+    d(:,fchan)=fd(ext+1:end-ext,:);
 end
 
 %needs to be cascaded in future

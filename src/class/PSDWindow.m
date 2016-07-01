@@ -801,7 +801,7 @@ classdef PSDWindow < handle
             xlabel('Frequency (Hz)');
             ylabel(['Power ',obj.unit]);
             legend('-DynamicLegend');
-            set(a,'box','off');
+            set(h,'box','off');
             
             if obj.auto_scale
                 ylim(h,'auto');

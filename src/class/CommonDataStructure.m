@@ -754,7 +754,7 @@ classdef CommonDataStructure < handle
             st=matfile(filename,'Writable',true);
             field=who(st);
             if length(field)>1
-                h=msgbox('The file contain more than one field, try to load the first one...','CommonDataStructure','warn');
+                h=msgbox('Un recognized data structure, it contains more than one field','CommonDataStructure','error');
             end
             
             data=st.(field{1});
