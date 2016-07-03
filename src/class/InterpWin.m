@@ -69,7 +69,7 @@ classdef InterpWin < handle
                 'xlimmode','manual','ylimmode','manual');
             
             %needs relative positions
-            plot_contact(a,obj.col,obj.row,obj.r,obj.height,obj.width,obj.channames);
+            plot_contact(a,[],obj.col,obj.row,obj.r,obj.height,obj.width,obj.channames);
             %**************************************************************
             %transform to pixels
             obj.col=round(obj.col*obj.width);
@@ -92,8 +92,6 @@ classdef InterpWin < handle
                 set(a,'YLim',[1,obj.height]);
                 set(a,'YDir','reverse');
             end
-            
-            obj.valid=1;
         end
         
         function Click(obj)
@@ -191,7 +189,6 @@ classdef InterpWin < handle
         end
         
         function OnClose(obj)
-            obj.valid=0;
             h = obj.fig;
             if ishandle(h)
                 delete(h);

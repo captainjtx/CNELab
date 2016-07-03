@@ -1038,6 +1038,9 @@ classdef TFMapWindow < handle
         
         function EventCallback(obj,src)
             obj.event_=obj.event_list{get(src,'value')};
+            if ~isempty(obj.TFMapFig)&&ishandle(obj.TFMapFig)
+                set(obj.TFMapFig,'name',obj.event_);
+            end
             obj.normalization_event=obj.event_;
         end
         

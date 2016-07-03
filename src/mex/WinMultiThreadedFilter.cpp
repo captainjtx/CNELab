@@ -105,7 +105,10 @@ DWORD WINAPI threadfunc(void *arg) {
         ib_e=filterConfig[ichan].b;
         ia_n=filterConfig[ichan].na;
         ib_n=filterConfig[ichan].nb;
-        
+        for(int k=0;k<padding;++k)
+        {
+            x[k]=0;
+        }
         for(int k=padding;k<sample+padding;++k)
         {
             x[k]=data[ichan*sample+k-padding];
@@ -131,7 +134,7 @@ DWORD WINAPI threadfunc(void *arg) {
             y[j]/=ia_e[0];
         }
         //filter backward
-        for(int k=0;k<sample+padding;++k)
+        for(int k=0;k<sample+2*padding;++k)
         {
             ry[k]=y[sample+2*padding-1-k];
         }

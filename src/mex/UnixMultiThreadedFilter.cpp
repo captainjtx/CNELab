@@ -86,18 +86,19 @@ void *threadfunc(void *arg) {
     pthread_mutex_lock(&chan_mutex);
     ichan=++(*chancount);//atomic
     pthread_mutex_unlock(&chan_mutex);
-    
+        
     while(ichan<chan)
     {
-//         pthread_mutex_lock(&cout_mutex);
-//         cout<<"Computing Channel"<<ichan<<endl;
-//         pthread_mutex_unlock(&cout_mutex);
 
         ia_e=filterConfig[ichan].a;
         ib_e=filterConfig[ichan].b;
         ia_n=filterConfig[ichan].na;
         ib_n=filterConfig[ichan].nb;
         
+        for(int k=0;k<padding;++k)
+        {
+            x[k]=0;
+        }
         for(int k=padding;k<sample+padding;++k)
         {
             x[k]=data[ichan*sample+k-padding];
@@ -122,7 +123,7 @@ void *threadfunc(void *arg) {
             y[j]/=ia_e[0];
         }
         //filter backward
-        for(int k=0;k<sample+padding;++k)
+        for(int k=0;k<sample+2*padding;++k)
         {
             ry[k]=y[sample+2*padding-1-k];
         }
@@ -149,10 +150,10 @@ void *threadfunc(void *arg) {
         {
             output[ichan*sample+j-padding]=y[sample+2*padding-1-j];
         }
+        
         pthread_mutex_lock(&chan_mutex);
         ichan=++(*chancount);//atomic
-        pthread_mutex_unlock(&chan_mutex); 
-        
+        pthread_mutex_unlock(&chan_mutex);
     }
     delete[] y;
     delete[] ry;
@@ -161,6 +162,7 @@ void *threadfunc(void *arg) {
 //     pthread_mutex_lock(&cout_mutex);
 //     cout<<"Thread complete"<<endl;
 //     pthread_mutex_unlock(&cout_mutex);
+    
     pthread_exit( NULL );
 }
 

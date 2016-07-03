@@ -14,6 +14,8 @@ end
 
 fs=obj.SRate;
 ext=min(2*obj.SRate,round(size(d,1)/2));
+% ext=0;
+
 phs=0;
 ftyp='iir';
 order=obj.FilterOrder;
