@@ -97,7 +97,8 @@ for i=1:length(dd)
        end
     end
     
-    if any(sorted_bsp_selection(1,:)<obj.BufferStartSample)||any(sorted_bsp_selection(2,:)>obj.BufferEndSample)
+    needfilter=any(sorted_bsp_selection(1,:)<obj.BufferStartSample)||any(sorted_bsp_selection(2,:)>obj.BufferEndSample);
+    if needfilter
         alldata=CommonDataStructure.get_data_segment(obj.CDS{dd(i)},selection,[]);
         alldata=alldata*(obj.Montage{dd(i)}(obj.MontageRef(dd(i))).mat)';
         alldata=alldata(:,chan);
@@ -105,7 +106,7 @@ for i=1:length(dd)
         %if all ready loaded into the buffer, no need to reload from the
         %file
         selection=selection-obj.BufferStartSample+1;
-        alldata=obj.Data{dd(i)}(selection,chan);
+        alldata=obj.PreprocData{dd(i)}(selection,chan);
     end
     %filter before merge trial segments
     count=1;
@@ -113,7 +114,11 @@ for i=1:length(dd)
     seg=[];
     for t=1:size(sorted_bsp_selection,2)
         len=sorted_bsp_selection(2,t)-sorted_bsp_selection(1,t)+1;
-        tmpd=preprocessedData(obj,dd(i),alldata(count:count+len-1,:));
+        if needfilter
+            tmpd=preprocessedData(obj,dd(i),alldata(count:count+len-1,:));
+        else
+            tmpd=alldata(count:count+len-1,:);
+        end
         d=cat(1,d,tmpd);
         seg=cat(1,seg,sort_ind(t)*ones(length(tmpd),1));
         count=count+sorted_bsp_selection(2,t)-sorted_bsp_selection(1,t)+1;
