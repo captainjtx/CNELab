@@ -6,7 +6,7 @@ x=pos(1)-dw/2;
 y=1-(pos(2)+dh/2);
 
 text(x+dw/2,y+1.1*dh,channame,...
-    'fontsize',80*dh,'horizontalalignment','center','parent',axe,'interpreter','none')
+    'fontsize',80*dh,'horizontalalignment','center','parent',axe,'interpreter','none','tag','names');
 
 h=axes('parent',fig,'units','normalized','Position',[x,y,dw,dh],'Visible','off');
 

@@ -16,6 +16,7 @@ classdef TFMapWindow < handle
         ms_after_text
         unit_mag_radio
         unit_db_radio
+        
         normalization_popup
         scale_start_text
         scale_end_text
@@ -50,6 +51,9 @@ classdef TFMapWindow < handle
         
         smooth_x_edit
         smooth_y_edit
+        names_radio
+        
+        background_axe
         
     end
     properties
@@ -81,6 +85,7 @@ classdef TFMapWindow < handle
         smooth_x_
         smooth_y_
         disp_axis_
+        disp_channel_names_
     end
     
     properties (Dependent)
@@ -112,6 +117,7 @@ classdef TFMapWindow < handle
         smooth_x
         smooth_y
         disp_axis
+        disp_channel_names
     end
     properties
         tfmat
@@ -559,6 +565,18 @@ classdef TFMapWindow < handle
                 obj.normalization_event=val{1};
             end
         end
+        
+        
+        function val=get.disp_channel_names(obj)
+            val=obj.disp_channel_names_;
+        end
+        
+        function set.disp_channel_names(obj,val)
+            obj.disp_channel_names_=val;
+            if obj.valid
+                set(obj.names_radio,'value',val);
+            end
+        end
     end
     
     methods
@@ -606,6 +624,7 @@ classdef TFMapWindow < handle
             obj.smooth_x_=8;
             obj.smooth_y_=8;
             obj.disp_axis_=0;
+            obj.disp_channel_names_=0;
             obj.TFMapSaveWin=TFMapFigureSave(obj);
         end
         function buildfig(obj)
@@ -755,6 +774,10 @@ classdef TFMapWindow < handle
                 'units','normalized','position',[0,0,0.45,0.33],'callback',@(src,evts) AutoScaleCallback(obj,src));
             obj.disp_axis_radio=uicontrol('parent',tab_display,'style','radiobutton','string','Axis','value',obj.disp_axis,...
                 'units','normalized','position',[0.5,0.66,0.45,0.33],'callback',@(src,evts) AxisCallback(obj,src));
+            obj.names_radio=uicontrol('parent',tab_display,'style','radiobutton','string','Channel Names',...
+                'units','normalized','position',[0.5,0.33,0.45,0.33],'value',obj.disp_channel_names,...
+                'callback',@(src,evts) ChannelNamesCallback(obj,src));
+            
             obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.01,0.2,0.04],...
                 'callback',@(src,evts) ComputeCallback(obj));
             
@@ -1329,7 +1352,7 @@ classdef TFMapWindow < handle
             sh=obj.max_clim;
             cmax=-inf;
             
-            axe = axes('Parent',obj.TFMapFig,'units','normalized','Position',[0 0 1 1],'XLim',[0,1],'YLim',[0,1],'visible','off');
+            axe = axes('Parent',obj.TFMapFig,'units','normalized','Position',[0 0 1 1],'XLim',[0,1],'YLim',[0,1],'visible','off','tag','back');
             
             
             nref_tmp=nref;
@@ -1472,6 +1495,9 @@ classdef TFMapWindow < handle
                 obj.min_clim=min(sl);
                 obj.max_clim=max(sh);
             end
+            
+            obj.background_axe=axe;
+            obj.ChannelNamesCallback(obj.names_radio);
         end
         
         function KeyPress(obj,src,evt)
@@ -1545,6 +1571,19 @@ classdef TFMapWindow < handle
                     set(h,'visible','on');
                 else
                     set(h,'visible','off');
+                end
+            end
+        end
+        function ChannelNamesCallback(obj,src)
+            obj.disp_channel_names_=get(src,'value');
+            if ~isempty(obj.TFMapFig)&&ishandle(obj.TFMapFig)
+                if ishandle(obj.background_axe)
+                    h=findobj(obj.background_axe,'-regexp','Tag','names');
+                    if obj.disp_channel_names
+                        set(h,'visible','on');
+                    else
+                        set(h,'visible','off');
+                    end
                 end
             end
         end

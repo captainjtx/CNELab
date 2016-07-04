@@ -259,7 +259,7 @@ classdef ExportPictureWindow < handle
             uicontrol('parent',outp,'style','text','string','Directory: ',...
                 'units','normalized','position',[0,0.55,0.2,0.35]);
             obj.dest_dir_edit=uicontrol('parent',outp,'style','edit','string',obj.dest_dir,...
-                'units','normalized','position',[0.2,0.55,0.6,0.35]);
+                'units','normalized','position',[0.2,0.55,0.6,0.35],'Callback',@(src,evt)DirCallback(obj,src));
             
             obj.dest_dir_btn=uicontrol('parent',outp,'style','pushbutton','string','...','units','normalized',...
                 'position',[0.85,0.6,0.1,0.3],'callback',@(src,evt)DirCallback(obj,src));
@@ -326,7 +326,19 @@ classdef ExportPictureWindow < handle
         end
         
         function DirCallback(obj,src)
-            obj.dest_dir_=get(src,'string');
+            switch src
+                case obj.dest_dir_edit
+                    folder_name=get(src,'string');
+                    if isdir(folder_name)
+                        obj.dest_dir_=folder_name;
+                    end
+                case obj.dest_dir_btn
+                    start_path=obj.dest_dir;
+                    folder_name = uigetdir(start_path,'Select a directory');
+                    if folder_name
+                        obj.dest_dir=folder_name;
+                    end
+            end
         end
         
         function FormatCallback(obj,src)
