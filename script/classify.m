@@ -1,6 +1,9 @@
-f=load('Z:\Tianxiao\data\BMI\handopenclose\S2/Open.mat','-mat');
+clc
+clear
+
+f=load('Z:\Tianxiao\data\BMI\handopenclose\S1/Open.mat','-mat');
 open=f.Open;
-f=load('Z:\Tianxiao\data\BMI\handopenclose\S2/Close.mat','-mat');
+f=load('Z:\Tianxiao\data\BMI\handopenclose\S1/Close.mat','-mat');
 close=f.Close;
 %%
 fs=open.fs;
@@ -9,14 +12,15 @@ onset=round(fs*ms_before/1000);
 
 stats={};
 
-fig=figure('name','S1');
+fig=figure('name','S1 Motor','position',[100,100,600,450]);
 
 len=800;%classification data length in ms
 
 step=50;%step in ms
 
-f1=[8,12];
-f2=[12,32];
+f1=[8,60];
+f2=[32,200];
+
 col={'g','k','r','b',};
 exp={};
 
@@ -25,12 +29,32 @@ fir_h=fir1(32,.001,'low');
 len=round(len/1000*fs);
 step=round(step/1000*fs);
 
+%%
+%S1
+motor=[1:6,13:18,25:30,37:42,49:52,61:64,73:76,85:88,97:100,109:111];
+sensory=setdiff(1:120,motor);
+%%
+%%
+%S2
+% sensory=[75,61,49,37,25,13,1];
+% motor=setdiff(1:120,sensory);
+%%
+motorchannel=cell(length(motor),1);
+sensorychannel=cell(length(sensory),1);
+
+for i=1:length(motor)
+    motorchannel{i}=['C',num2str(motor(i))];
+end
+for i=1:length(sensory)
+    sensorychannel{i}=['C',num2str(sensory(i))];
+end
+H={};
 for fi=1:length(f1)
     [b,a]=butter(2,[f1(fi) f2(fi)]/(fs/2));
     ecogC=close.data;
     ecogO=open.data;
     
-    Chi=1:size(ecogC,2);
+    Chi=find(ismember(close.channame,sensorychannel));
     
     for i=1:size(ecogC,3)
         ecogC(:,:,i)=filter_symmetric(b,a,ecogC(:,:,i),[],0,'iir');
@@ -41,29 +65,26 @@ for fi=1:length(f1)
     
     for env=0:1
         %**************************************************************************
-        erM=[];
-        
         total=size(ecogC,1);
         tr=len/2:step:total;
-        
+        erM=zeros(25,length(tr));
         for s=1:25
             fprintf('Session%d:\n',s);
             tm=1;
             for i=1:length(tr)
                 t=tr(i);
                 fprintf('Processing Segment:%dms\n',(t-onset)*1000/fs);
-                dS=[max(t-len,1):t];
+                dS=max(t-len,1):t;
                 
                 do=ecogO(dS,:,:);
                 dc=ecogC(dS,:,:);
                 
                 %     dc=normalize_(dc,1);
                 %     do=normalize_(do,1);
-                
-                dch=[];
-                doh=[];
-                
                 NCh=size(do,2);
+                
+                dch=zeros(size(dc,1),NCh,size(dc,3));
+                doh=zeros(size(do,1),NCh,size(do,3));
                 
                 if env
                     for k=1:NCh
@@ -77,8 +98,7 @@ for fi=1:length(f1)
                 
                 Nf=2; % Nmber of CSP vectors
                 K=5;
-                r=1;
-                eR=[];
+                eR=zeros(K,1);
                 CVc = cvpartition(size(dc,3),'Kfold',K);
                 CVo = cvpartition(size(do,3),'Kfold',K);
                 
@@ -116,8 +136,7 @@ for fi=1:length(f1)
                     [w,th]=ldaweights(trC,trO);
                     [cC,dist]=LdaClassify(w,th,tsC);
                     [cO,dist]=LdaClassify(w,th,tsO);
-                    eR(r)=(sum(cC==1)+sum(cO==-1))/(length(cC)+length(cO))*100;
-                    r=r+1;
+                    eR(n)=(sum(cC==1)+sum(cO==-1))/(length(cC)+length(cO))*100;
                 end
                 erM(s,i)=mean(eR);
                 %         plot(eR,'o-');
@@ -131,23 +150,21 @@ for fi=1:length(f1)
         time=(tr-onset)*1000/fs;
         mean_er=mean(erM,1);
         std_er=std(erM);
-        
-        stat(env*2+fi).onset=[mean_er(time==0),std_er(time==0)];
-        [min_er,min_er_ind]=min(mean_er);
-        stat(env*2+fi).min=[min_er,std_er(min_er_ind),time(min_er_ind)];
-        shadedErrorBar(time,mean_er,std_er,col{env*2+fi},transparent)
-        exp{env*2+fi}=['color: ',col{env*2+fi},' env ',num2str(env),' freq ',num2str(fi)];
+        H=cat(1,H,shadedErrorBar(time,mean_er,std_er,col{env*2+fi},transparent));
         drawnow
+        
+%         stat(env*2+fi).onset=[mean_er(time==0),std_er(time==0)];
+%         [min_er,min_er_ind]=min(mean_er);
+%         stat(env*2+fi).min=[min_er,std_er(min_er_ind),time(min_er_ind)];      
+%         exp{env*2+fi}=['color: ',col{env*2+fi},' env ',num2str(env),' freq ',num2str(fi)];
+        
     end
 end
-
-set(gcf,'position',[100,100,600,400])
 set(gca,'fontsize',20)
 set(gcf,'color','white')
 set(findobj(gcf,'type','text'),'fontweight','bold')
 ylabel('Error Rate(%)')
 grid on
-grid minor
 axis tight
 plot([0,0],[0,100],':k','linewidth',3)
 xl=get(gca,'xlim');
@@ -157,4 +174,10 @@ plot(xl,[50,50],'--k','linewidth',3)
 ylim([0,100])
 xlabel('Time (ms)');
 ylabel('Error Rate(%)');
+xlim([-500,1500])
+text(20,95,'Onset','FontSize',18)
+%%
+legend([H{1}.mainLine,H{2}.mainLine,H{3}.mainLine,H{4}.mainLine],'LFB Raw','LFB Env','HFB Raw','HFB Env');
+set([H{1}.mainLine,H{2}.mainLine,H{3}.mainLine,H{4}.mainLine],'linewidth',2)   
+title('S1 Sensory')
 
