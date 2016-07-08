@@ -623,7 +623,7 @@ classdef TFMapWindow < handle
             obj.auto_scale_=0;
             obj.smooth_x_=8;
             obj.smooth_y_=8;
-            obj.disp_axis_=0;
+            obj.disp_axis_=1;
             obj.disp_channel_names_=0;
             obj.TFMapSaveWin=TFMapFigureSave(obj);
         end
@@ -1018,7 +1018,7 @@ classdef TFMapWindow < handle
                         delete(tmp);
                         %                         axes(h(i))
                         line([tonset,tonset],[obj.min_freq,obj.max_freq],'LineStyle',':',...
-                            'color','k','linewidth',1,'Parent',h(i))
+                            'color','k','linewidth',5,'Parent',h(i))
                     end
                 else
                     for i=1:length(h)
@@ -1089,7 +1089,7 @@ classdef TFMapWindow < handle
         function ComputeCallback(obj,src)
             
             option=obj.method;
-            
+            obj.tfmat={};
             units=obj.unit;
             %==========================================================================
             nL=round(obj.ms_before*obj.fs/1000);
@@ -1433,7 +1433,7 @@ classdef TFMapWindow < handle
                 end
                 
                 obj.tfmat{j}=tfm;
-                obj.tfmat_t=t;
+                obj.tfmat_t=t-obj.ms_before/1000;
                 obj.tfmat_f=f;
                 obj.tfmat_channel=channel(chanind);
                 obj.tfmat_dataset=dataset(chanind);
@@ -1441,8 +1441,6 @@ classdef TFMapWindow < handle
                 if ~isempty(tfm)&&option==2
                     cmax=max(max(max(abs(tfm))),cmax);
                 end
-                
-                AxisCallback(obj,[]);
             end
             
             if option==1
@@ -1465,9 +1463,10 @@ classdef TFMapWindow < handle
                 set(a,'fontsize',20);
                 xlabel('Time(s)');
                 ylabel('Frequency(Hz)');
+                set(a,'fontweight','bold');
             end
             
-            
+            AxisCallback(obj,[]);
             obj.DisplayOnsetCallback([]);
             
             

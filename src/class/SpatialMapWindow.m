@@ -1809,7 +1809,7 @@ classdef SpatialMapWindow < handle
                 %need to change the data
             end
             %Channel position******************************************************************
-            if isempty(chanpos)
+            if isempty(chanpos)||all(any(isnan(chanpos(:,1:2))))
                 errordlg('No channel position in the data !');
                 return
             end

@@ -294,6 +294,9 @@ for i=1:length(fnames)
     end
 end
 remakeMontageMenu(bsp);
+%scan for event file fiolder===============================================
+
+
 %scan for video============================================================
 %check if this is a right system
 %video feature is only supported in windows system as activex is required

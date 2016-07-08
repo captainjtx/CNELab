@@ -25,6 +25,9 @@ end
 
 if isfield(montage,'group')
     group_name=montage.group;
+else
+    group_name=cell(length(montage.name),1);
+    group_name(:)={'EEG'};
 end
 
 if isfield(montage,'name')
