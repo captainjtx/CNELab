@@ -272,15 +272,9 @@ end
 bsp.Evts=Event;
 %scan for montage file folder==============================================
 montage=cell(length(fnames),1);
-if length(fnames)==1
-    if isdir(fullfile(fpaths{1},'montage'))
-        montage{1}=CommonDataStructure.scanMontageFile(bsp.ChanNames,fullfile(fpaths{1},'montage'));
-    end
-else
-    for i=1:length(fnames)
-        if isdir(fullfile(fpaths{i},'montage',fnames{i}))
-            montage{i}=CommonDataStructure.scanMontageFile(bsp.ChanNames,fullfile(fpaths{i},'montage',fnames{i}));
-        end
+for i=1:length(fnames)
+    if isdir(fullfile(fpaths{i},'montage'))
+        montage{i}=CommonDataStructure.scanMontageFile(bsp.ChanNames{i},fullfile(fpaths{i},'montage'));
     end
 end
 

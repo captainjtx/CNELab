@@ -16,11 +16,8 @@ end
 
 mtg.group=C{3};
 
-for i=1:length(C{3})
-    if isempty(C{3}{i})
-        mtg.group{i}='EEG';
-    end
-end
+ind=cellfun(@isempty,C{3},'UniformOutput',true);
+mtg.group(ind)={'EEG'};
 
 end
 

@@ -929,14 +929,14 @@ classdef CommonDataStructure < handle
         
         function mtg=scanMontageFile(OriginalChanNames,FilePath,FileName)
             mtg=[];
-            if nargin==2
+            if nargin<2
+                return
+            elseif nargin==2
                 FileName={};
                 fn=dir(FilePath);
-                count=1;
                 for i=1:length(fn)
                     if ~fn(i).isdir
-                        FileName{count}=fn(i).name;
-                        count=count+1;
+                        FileName=cat(1,FileName,{fn(i).name});
                     end
                 end
             end
@@ -963,21 +963,84 @@ classdef CommonDataStructure < handle
                 if isempty(montage{i})
                     continue
                 end
-                [pathstr, name, ext] = fileparts(FileName{i});
+                [~, name, ~] = fileparts(FileName{i});
                 
-                if length(OriginalChanNames)==1
-                    channame=OriginalChanNames{1};
-                else
-                    channame=OriginalChanNames{i};
+                [montage_channames,mat,groupnames]=parseMontage(montage{i},OriginalChanNames);
+                
+                if ~all(sum(mat,2))
+                    continue
                 end
-                [montage_channames,mat,groupnames]=parseMontage(montage{i},channame);
                 
                 mtg{count}.name=name;
                 mtg{count}.channames=montage_channames;
                 mtg{count}.mat=mat;
                 mtg{count}.groupnames=groupnames;
                 count=count+1;
-                
+            end
+        end
+        function evt=scanEventFile(FilePath,FileName)
+            evt=[];
+            if nargin<1
+                return
+            elseif nargin==1
+                FileName={};
+                fn=dir(FilePath);
+                for i=1:length(fn)
+                    if ~fn(i).isdir
+                        FileName=cat(1,FileName,{fn(i).name});
+                    end
+                end
+            end
+            
+            evt=cell(1,length(FileName));
+            [FileName,FilePath,FilterIndex]=uigetfile({'*.txt;*.csv;*.mat;*.evt','Event Files (*.txt;*.csv;*.mat;*.evt)';...
+                '*.txt;*csv;*.evt','Text File (*.txt;*csv;*.evt)';
+                '*.mat','Matlab Mat File (*.mat)'},...
+                'select your events file',...
+                open_dir);
+            if FileName~=0
+                for i=1:length(FileName)
+                    if FilterIndex==1
+                        [~, ~, ext] = fileparts(FileName{i});
+                        if strcmpi(ext,'.txt')||strcmpi(ext,'.csv')||strcmpi(ext,'.evt')
+                            FilterIndex=2;
+                        elseif strcmpi(ext,'.mat')
+                            FilterIndex=3;
+                        end
+                    end
+                    
+                    filename=fullfile(FilePath,FileName{i});
+                    
+                    switch FilterIndex
+                        case 2
+                            fileID = fopen(filename);
+                            C = textscan(fileID,'%s%s%s%s',...
+                                'Delimiter',',','TreatAsEmpty',{'NA','na'},'CommentStyle','%');
+                            fclose(fileID);
+                            
+                            time=cellfun(@str2double,C{1},'UniformOutput',false);
+                            time=reshape(time,length(time),1);
+                            
+                            text=C{2};
+                            text=reshape(text,length(text),1);
+                            
+                            col=cellfun(@str2num,C{3},'UniformOutput',false);
+                            col=reshape(col,length(col),1);
+                            
+                            code=cellfun(@str2double,C{4},'UniformOutput',false);
+                            code=reshape(code,length(code),1);
+                            
+                            evt{i}=cat(2,time,text,col,code);
+                            
+                            cond=cellfun(@isnan,col,'UniformOutput',true);
+                            evt{i}(cond,4)={0};
+                            
+                        case 3
+                            evt{i}=ReadEventFromMatFile(filename);
+                        case 4
+                            evt{i}=ReadEventFromMatFile(filename);
+                    end
+                end
             end
         end
         
