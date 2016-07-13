@@ -141,6 +141,7 @@ classdef BioSigPlot < hgsetget
         MenuEventsWindow
         MenuFastEvent
         MenuEventsDisplay
+        EventOptMenu
         
         MenuDisplay
         MenuDisplayBuffer
@@ -218,6 +219,7 @@ classdef BioSigPlot < hgsetget
         ChanPosition
         Units                   %Units of the data
         Evts                    %List of events.
+        Evts_
         Time                    %Current time (in TimeUnit) of the current
         DispChans               %Number of channels to display for each data set.
         FirstDispChans          %First chan to display for each data set
@@ -296,7 +298,6 @@ classdef BioSigPlot < hgsetget
         ChanPosition_
         Units_
         
-        Evts_
         Time_
         DispChans_
         FirstDispChans_
@@ -476,8 +477,8 @@ classdef BioSigPlot < hgsetget
             obj.DragMode=0;
             obj.EditMode=0;
             obj.SelectedEvent_=[];
-            obj.Evts_={};
-            obj.IsEvtsSaved=true;
+            obj.Evts__=[];
+            obj.EventRef=0;
             obj.EventsWindowDisplay=true;
             obj.ControlPanelDisplay=true;
             obj.ToolbarDisplay=true;
@@ -522,17 +523,6 @@ classdef BioSigPlot < hgsetget
                 delete(obj.WinVideo)
             end
             
-%             if ~isempty(obj.Evts)&&~obj.IsEvtsSaved
-%                 default='yes';
-%                 choice=questdlg('There are changes in events, do you want to save them before exit?',...
-%                     'warning','yes','no',default);
-%                 switch choice
-%                     case 'yes'
-%                         SaveEvents(obj);
-%                     case 'no'
-%                 end
-%                 
-%             end
             if obj.TFMapWin.valid
                 obj.TFMapWin.OnClose();
             end
@@ -1033,35 +1023,42 @@ classdef BioSigPlot < hgsetget
                 val=obj.Evts_(:,1:2);
             end
         end
+        function val=get.Evts_(obj)
+            if obj.EventRef
+                val=obj.Evts__(obj.EventRef).event;
+            else
+                val={};
+            end
+        end
         function obj = set.Evts_(obj,val)
-            
-            oldval=obj.Evts_;
+            ref=obj.EventRef;
+            if ~ref
+                ref=1;
+            end
             
             if size(val,2)==2
                 val=obj.assignEventColor(val);
                 d=cell(size(val,1),1);
                 [d{:}]=deal(0);
-                obj.Evts_=cat(2,val,d);
+                obj.Evts__(ref).event=cat(2,val,d);
             else
-                obj.Evts_=val;
+                obj.Evts__(ref).event=val;
             end
-            if ~isempty(obj.Evts_)&&isempty(oldval)
-                obj.IsEvtsSaved=false;
-                
+            if ~obj.EventRef&&~isempty(val)
+                obj.EventRef=ref;
                 set(obj.MenuEventsWindow,'Enable','on');
                 set(obj.MenuEventsDisplay,'Enable','on');
                 obj.EventsWindowDisplay=true;
                 obj.EventsDisplay=true;
             elseif isempty(obj.Evts_)
-                obj.IsEvtsSaved=true;
+                obj.EventRef=0;
                 set(obj.MenuEventsWindow,'Enable','off');
                 set(obj.MenuEventsDisplay,'Enable','off');
                 obj.EventsWindowDisplay=false;
                 obj.EventsDisplay=false;
+                
             end
-            
             obj.synchEvts();
-            
             
             evts=obj.WinEvts.Evts_;
             if ~isempty(evts)
@@ -2373,8 +2370,6 @@ classdef BioSigPlot < hgsetget
         
         VideoTimer
         
-        IsEvtsSaved
-        
         MAudioPlayer
         UponText
         
@@ -2404,6 +2399,7 @@ classdef BioSigPlot < hgsetget
         SPCA_Seg_After
         
         Montage_
+        Evts__
         
         DownSample
         
@@ -2412,6 +2408,7 @@ classdef BioSigPlot < hgsetget
         BufferLength
         CDS
         VisualBuffer
+        EventRef
     end
     events
         SelectedFastEvtChange

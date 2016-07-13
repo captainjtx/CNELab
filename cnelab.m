@@ -268,7 +268,7 @@ if ~isempty(Event)
     non_dup(duplicate)=[];
     Event=Event(non_dup,:);
 end
-
+bsp.Evts__(1).name='Original';
 bsp.Evts=Event;
 %scan for montage file folder==============================================
 montage=cell(length(fnames),1);
@@ -289,8 +289,15 @@ for i=1:length(fnames)
 end
 remakeMontageMenu(bsp);
 %scan for event file fiolder===============================================
-
-
+if isdir(fullfile(fpaths{1},'events'))
+    [evts,names]=CommonDataStructure.scanEventFile(fullfile(fpaths{1},'events'));
+    for i=1:length(evts)
+        events(i).name=names{i};
+        events(i).event=evts{i};
+    end
+end
+bsp.Evts__=cat(1,bsp.Evts__,events(:));
+remakeEventMenu(bsp);
 %scan for video============================================================
 %check if this is a right system
 %video feature is only supported in windows system as activex is required

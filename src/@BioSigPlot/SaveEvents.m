@@ -64,7 +64,6 @@ if ~isempty(Events)
             case 5
                 save(filename,'-struct','Events','-mat');
         end
-        obj.IsEvtsSaved=true;
     end
 end
 end

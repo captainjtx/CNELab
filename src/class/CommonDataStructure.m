@@ -774,7 +774,7 @@ classdef CommonDataStructure < handle
             %default
             s.DataInfo.SampleRate=256;
             s.Data=data;
-%             s.DataInfo.TimeStamps=(1:size(data,1))/256;
+            %             s.DataInfo.TimeStamps=(1:size(data,1))/256;
         end
         
         function s=readFromEDF(filename)
@@ -823,16 +823,16 @@ classdef CommonDataStructure < handle
         function cds=multiload(varargin)
             cds=[];
             if nargin==0
-            [FileName,FilePath,FilterIndex]=uigetfile({...
-                '*.mat;*.cds;*.cds.old;*.medf;*.fif;*.edf',...
-                'Supported formats (*.mat;*.cds;*.cds.old;*.medf;*.fif;*.edf)';...
-                '*.cds','common data structure (*.cds)';...
-                '*.ocds','old common data structure (*.ocds)';...
-                '*.medf','matlab edf format (*.medf)';...
-                '*.fif','NeuroMag MEG format (*.fif)';...
-                '*.edf','Europeon Data Format (*.edf)'},...
-                'Select your data file','DataInfo.mat',...
-                'MultiSelect','on');
+                [FileName,FilePath,FilterIndex]=uigetfile({...
+                    '*.mat;*.cds;*.cds.old;*.medf;*.fif;*.edf',...
+                    'Supported formats (*.mat;*.cds;*.cds.old;*.medf;*.fif;*.edf)';...
+                    '*.cds','common data structure (*.cds)';...
+                    '*.ocds','old common data structure (*.ocds)';...
+                    '*.medf','matlab edf format (*.medf)';...
+                    '*.fif','NeuroMag MEG format (*.fif)';...
+                    '*.edf','Europeon Data Format (*.edf)'},...
+                    'Select your data file','DataInfo.mat',...
+                    'MultiSelect','on');
             elseif nargin==1
                 if iscell(varargin{1})
                     [FilePath,tmp_name,tmp_ext]=fileparts(varargin{1}{1});
@@ -946,7 +946,7 @@ classdef CommonDataStructure < handle
             for i=1:length(FileName)
                 filename=fullfile(FilePath,FileName{i});
                 
-                [pathstr, name, ext] = fileparts(FileName{i});
+                [~, ~, ext] = fileparts(FileName{i});
                 
                 if strcmpi(ext,'.txt')||strcmpi(ext,'.csv')||strcmpi(ext,'.mtg')
                     montage{i}=ReadMontage(filename);
@@ -978,7 +978,7 @@ classdef CommonDataStructure < handle
                 count=count+1;
             end
         end
-        function evt=scanEventFile(FilePath,FileName)
+        function [evt,names]=scanEventFile(FilePath,FileName)
             evt=[];
             if nargin<1
                 return
@@ -991,57 +991,54 @@ classdef CommonDataStructure < handle
                     end
                 end
             end
-            
             evt=cell(1,length(FileName));
-            [FileName,FilePath,FilterIndex]=uigetfile({'*.txt;*.csv;*.mat;*.evt','Event Files (*.txt;*.csv;*.mat;*.evt)';...
-                '*.txt;*csv;*.evt','Text File (*.txt;*csv;*.evt)';
-                '*.mat','Matlab Mat File (*.mat)'},...
-                'select your events file',...
-                open_dir);
-            if FileName~=0
-                for i=1:length(FileName)
-                    if FilterIndex==1
-                        [~, ~, ext] = fileparts(FileName{i});
-                        if strcmpi(ext,'.txt')||strcmpi(ext,'.csv')||strcmpi(ext,'.evt')
-                            FilterIndex=2;
-                        elseif strcmpi(ext,'.mat')
-                            FilterIndex=3;
-                        end
-                    end
-                    
-                    filename=fullfile(FilePath,FileName{i});
-                    
-                    switch FilterIndex
-                        case 2
-                            fileID = fopen(filename);
-                            C = textscan(fileID,'%s%s%s%s',...
-                                'Delimiter',',','TreatAsEmpty',{'NA','na'},'CommentStyle','%');
-                            fclose(fileID);
-                            
-                            time=cellfun(@str2double,C{1},'UniformOutput',false);
-                            time=reshape(time,length(time),1);
-                            
-                            text=C{2};
-                            text=reshape(text,length(text),1);
-                            
-                            col=cellfun(@str2num,C{3},'UniformOutput',false);
-                            col=reshape(col,length(col),1);
-                            
-                            code=cellfun(@str2double,C{4},'UniformOutput',false);
-                            code=reshape(code,length(code),1);
-                            
-                            evt{i}=cat(2,time,text,col,code);
-                            
-                            cond=cellfun(@isnan,col,'UniformOutput',true);
-                            evt{i}(cond,4)={0};
-                            
-                        case 3
-                            evt{i}=ReadEventFromMatFile(filename);
-                        case 4
-                            evt{i}=ReadEventFromMatFile(filename);
-                    end
+            names=evt;
+            for i=1:length(FileName)
+                [~, name, ext] = fileparts(FileName{i});
+                if strcmpi(ext,'.txt')||strcmpi(ext,'.csv')||strcmpi(ext,'.evt')
+                    FilterIndex=1;
+                elseif strcmpi(ext,'.mat')
+                    FilterIndex=2;
+                else
+                    FilterIndex=0;
+                end
+                
+                filename=fullfile(FilePath,FileName{i});
+                
+                switch FilterIndex
+                    case 1
+                        fileID = fopen(filename);
+                        C = textscan(fileID,'%s%s%s%s',...
+                            'Delimiter',',','TreatAsEmpty',{'NA','na'},'CommentStyle','%');
+                        fclose(fileID);
+                        
+                        time=cellfun(@str2double,C{1},'UniformOutput',false);
+                        
+                        time=reshape(time,length(time),1);
+                        
+                        text=C{2};
+                        text=reshape(text,length(text),1);
+                        
+                        col=cellfun(@str2num,C{3},'UniformOutput',false);
+                        col=reshape(col,length(col),1);
+                        
+                        code=cellfun(@str2double,C{4},'UniformOutput',false);
+                        code=reshape(code,length(code),1);
+                        
+                        evt{i}=cat(2,time,text,col,code);
+                        
+                        cond=cellfun(@isnan,code,'UniformOutput',true);
+                        evt{i}(cond,4)={0};
+                        names{i}=name;
+                    case 2
+                        evt{i}=ReadEventFromMatFile(filename);
+                        names{i}=name;
                 end
             end
+            
+            ind=~cellfun(@isempty,evt,'UniformOutput',true);
+            evt=evt(ind);
+            names=names(ind);
         end
         
         function f=get_start_file(obj)
@@ -1664,7 +1661,5 @@ classdef CommonDataStructure < handle
             end
         end
     end
-    
-    
 end
 

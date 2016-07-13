@@ -80,7 +80,7 @@ obj.MenuMontage=uimenu(obj.Fig,'Label','Montage');
 obj.MenuEvent=uimenu(obj.Fig,'Label','Event');
 obj.MenuNewEvent=uimenu(obj.MenuEvent,'Label','New','Callback',@(src,evt)NewEvent(obj));
 obj.MenuFastEvent=uimenu(obj.MenuEvent,'Label','Fast Event','Callback',@(src,evt) WinFastEvents(obj));
-obj.MenuAdvanceEvents=uimenu(obj.MenuEvent,'Label','Advance','Separator','on');
+obj.MenuAdvanceEvents=uimenu(obj.MenuEvent,'Label','Advance');
 obj.MenuAdvanceEventsCalculate=uimenu(obj.MenuAdvanceEvents,'Label','Detect',...
     'Callback',@(src,evt) AdvanceEvents(obj,src));
 obj.MenuAdvanceEventsFunction=uimenu(obj.MenuAdvanceEvents,'Label','Function',...
