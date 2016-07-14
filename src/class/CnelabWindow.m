@@ -137,18 +137,24 @@ classdef CnelabWindow < handle
             
             obj.file_listbox.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
             obj.file_listbox.setLayoutOrientation(javax.swing.JList.VERTICAL);
-            obj.file_listbox.setVisibleRowCount(10);
+            obj.file_listbox.setVisibleRowCount(9);
             obj.file_listbox.setSelectionBackground(java.awt.Color(0.2,0.6,1));
             obj.file_listbox.setSelectionForeground(java.awt.Color(1,1,1));
             obj.file_listbox.setFixedCellHeight(45);
             obj.file_listbox.setBackground(java.awt.Color(0.95,0.95,0.95));
-            obj.file_listbox.setBorder([]);
+            obj.file_listbox.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
             jRenderer = javaObjectEDT(src.java.LabelListBoxRenderer());
             jRenderer.setFileType(file_type);
             obj.file_listbox.setCellRenderer(jRenderer);
             set(handle(obj.file_listbox,'CallbackProperties'),'MousePressedCallback',@(h,e)mouse_press_list(obj));
-            [jh,gh]=javacomponent(obj.file_listbox,[0,0.11,1,0.89],file_p);
-            set(gh,'Units','normalized','position',[0,0.11,1,0.89]);
+            
+            jsp=javaObjectEDT(javax.swing.JScrollPane());
+            jsp.setViewportView(obj.file_listbox);
+            jsp.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+            jsp.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            jsp.setBorder(javax.swing.BorderFactory.createEmptyBorder());
+            [jh,gh]=javacomponent(jsp,[0,0.08,1,0.92],file_p);
+            set(gh,'Units','normalized','position',[0,0.07,1,0.93]);
             
             obj.open_btn = javaObjectEDT(com.mathworks.mwswing.MJButton('Open another data ...'));
             obj.open_btn.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
