@@ -1,9 +1,9 @@
 clc
 clear
 
-f=load('Z:\Tianxiao\data\BMI\handopenclose\S1/Open.mat','-mat');
+f=load('Z:\Tianxiao\data\BMI\handopenclose\S2/Open.mat','-mat');
 open=f.Open;
-f=load('Z:\Tianxiao\data\BMI\handopenclose\S1/Close.mat','-mat');
+f=load('Z:\Tianxiao\data\BMI\handopenclose\S2/Close.mat','-mat');
 close=f.Close;
 %%
 fs=open.fs;
@@ -31,13 +31,13 @@ step=round(step/1000*fs);
 
 %%
 %S1
-motor=[1:6,13:18,25:30,37:42,49:52,61:64,73:76,85:88,97:100,109:111];
-sensory=setdiff(1:120,motor);
+% motor=[1:6,13:18,25:30,37:42,49:52,61:64,73:76,85:88,97:100,109:111];
+% sensory=setdiff(1:120,motor);
 %%
 %%
 %S2
-% sensory=[75,61,49,37,25,13,1];
-% motor=setdiff(1:120,sensory);
+sensory=[75,61,49,37,25,13,1];
+motor=setdiff(1:120,sensory);
 %%
 motorchannel=cell(length(motor),1);
 sensorychannel=cell(length(sensory),1);
@@ -179,5 +179,6 @@ text(20,95,'Onset','FontSize',18)
 %%
 legend([H{1}.mainLine,H{2}.mainLine,H{3}.mainLine,H{4}.mainLine],'LFB Raw','LFB Env','HFB Raw','HFB Env');
 set([H{1}.mainLine,H{2}.mainLine,H{3}.mainLine,H{4}.mainLine],'linewidth',2)   
-title('S1 Sensory')
+title('S2 Sensory')
+legend('boxoff')
 
