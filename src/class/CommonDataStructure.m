@@ -967,7 +967,7 @@ classdef CommonDataStructure < handle
                 
                 [montage_channames,mat,groupnames]=parseMontage(montage{i},OriginalChanNames);
                 
-                if ~all(sum(mat,2))
+                if ~all(sum(abs(mat),2))
                     continue
                 end
                 
