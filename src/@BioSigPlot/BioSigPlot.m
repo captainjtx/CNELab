@@ -1044,7 +1044,7 @@ classdef BioSigPlot < hgsetget
             else
                 obj.Evts__(ref).event=val;
             end
-            if ~obj.EventRef&&~isempty(val)
+            if ~isempty(val)
                 obj.EventRef=ref;
                 set(obj.MenuEventsWindow,'Enable','on');
                 set(obj.MenuEventsDisplay,'Enable','on');
