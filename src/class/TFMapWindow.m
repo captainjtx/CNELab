@@ -1018,7 +1018,7 @@ classdef TFMapWindow < handle
                         delete(tmp);
                         %                         axes(h(i))
                         line([tonset,tonset],[obj.min_freq,obj.max_freq],'LineStyle',':',...
-                            'color','k','linewidth',5,'Parent',h(i))
+                            'color','k','linewidth',2,'Parent',h(i))
                     end
                 else
                     for i=1:length(h)

@@ -43,7 +43,8 @@ if length(obj.DisplayedData)>1
     
 end
 
-OriginalChanNames=obj.Montage{tmp}(obj.MontageRef(tmp)).channames;
+% OriginalChanNames=obj.Montage{tmp}(obj.MontageRef(tmp)).channames;
+OriginalChanNames=obj.Montage{tmp}(1).channames;
 
 montage=CommonDataStructure.scanMontageFile(OriginalChanNames,FilePath,FileName);
 
@@ -51,7 +52,7 @@ for i=1:length(montage)
     num=length(obj.Montage_{tmp});
     obj.Montage_{tmp}(num+1).name=montage{i}.name;
     obj.Montage_{tmp}(num+1).channames=montage{i}.channames;
-    obj.Montage_{tmp}(num+1).mat=montage{i}.mat*obj.Montage_{tmp}(obj.MontageRef(tmp)).mat;
+    obj.Montage_{tmp}(num+1).mat=montage{i}.mat*obj.Montage_{tmp}(1).mat;
     obj.Montage_{tmp}(num+1).groupnames=montage{i}.groupnames;
     obj.Montage_{tmp}(num+1).position=[];
 end
