@@ -289,6 +289,7 @@ for i=1:length(fnames)
 end
 remakeMontageMenu(bsp);
 %scan for event file fiolder===============================================
+events={};
 if isdir(fullfile(fpaths{1},'events'))
     [evts,names]=CommonDataStructure.scanEventFile(fullfile(fpaths{1},'events'));
     for i=1:length(evts)
@@ -296,8 +297,10 @@ if isdir(fullfile(fpaths{1},'events'))
         events(i).event=evts{i};
     end
 end
+if ~isempty(events)
 bsp.Evts__=cat(1,bsp.Evts__,events(:));
 remakeEventMenu(bsp);
+end
 %scan for video============================================================
 %check if this is a right system
 %video feature is only supported in windows system as activex is required
