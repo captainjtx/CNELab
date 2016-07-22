@@ -1,5 +1,5 @@
 function SynchDataWithVideo(obj)
-if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
+if isa(obj.WinVideo,'VideoWindow') && obj.WinVideo.valid
     frame=obj.WinVideo.CurrentFrameNumber;
     if ~isempty(obj.VideoTimeFrame)
         if isempty(frame)
@@ -10,7 +10,6 @@ if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
             
             dp=ceil(obj.NumberOfFrame*obj.WinVideo.CurrentPositionRatio);
             dp=min(max(1,dp),size(obj.VideoTimeFrame,1));
-            
             
 %             dp=ceil(obj.WinVideo.TotalFrameNumber*obj.WinVideo.CurrentPositionRatio);
 %             dp=min(max(1,dp),size(obj.VideoTimeFrame,1));

@@ -16,16 +16,22 @@ classdef VideoWindow  < handle
         TotalFrameNumber
         
         NotifyVideoChangeTime
-        
-       
     end
     properties(Dependent)
         PlaySpeed
         CurrentPosition %Current position in second
         CurrentPositionRatio %Current position of ratio, from 0 to 1
         IsOnTop
+        valid
     end
     methods
+        function val=get.valid(obj)
+            try
+                val=ishandle(obj.Fig)&&isgraphics(obj.Fig);
+            catch
+                val=0;
+            end
+        end
         function obj=VideoWindow(file,varargin)
             obj.NotifyVideoChangeTime=true;
             
