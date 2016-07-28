@@ -156,7 +156,3 @@ obj.MenuSpatialPCA=uimenu(obj.MenuAppDenoise,'Label','Spatial PCA',...
 obj.MenuTemporalPCA=uimenu(obj.MenuAppDenoise,'Label','Temporal PCA',...
     'Callback', @(src,evt) Temporal_PCA(obj));
 end
-
-
-
-

@@ -449,6 +449,8 @@ classdef BioSigPlot < hgsetget
             obj.UponAdjustPanel=false;
 
             obj.VideoLineTime=0;
+            obj.VideoStartTime=0;
+            
             obj.IsSelecting=0;
             obj.SelectionStart=[];
             obj.Selection_=ones(2,0);
@@ -991,14 +993,11 @@ classdef BioSigPlot < hgsetget
             obj.Config_=val;
             def=load('-mat',val);
             names=fieldnames(def);
-            names=names(~strcmpi('Position',names)&~strcmpi('VideoStartTime',names)...
-                &~strcmpi('VideoActxOpt',names));
+            names=names(~strcmpi('Position',names));
             for i=1:length(names)
                 set(obj,[names{i} '_'],def.(names{i}));
             end
             obj.Position=def.Position; %#ok<*MCSUP>
-            obj.VideoStartTime=def.VideoStartTime;
-            obj.VideoActxOpt=def.VideoActxOpt;
         end
         function obj = set.Title_(obj,val)
             if ~iscell(val)
@@ -1811,7 +1810,7 @@ classdef BioSigPlot < hgsetget
                 figure(obj.WinVideo.Fig)
             else
                 if ~isempty(obj.VideoFile)&& exist(obj.VideoFile,'file')==2
-                    obj.WinVideo=VideoWindow(obj.VideoFile,obj.VideoActxOpt); %VLC or WMPlayer
+                    obj.WinVideo=VideoWindow(obj.VideoFile); %VLC or WMPlayer
                     addlistener(obj.WinVideo,'VideoChangeTime',@(src,evt) SynchDataWithVideo(obj));
                     addlistener(obj.WinVideo,'VideoChangeState',@(src,ect) SynchVideoState(obj));
                     addlistener(obj.WinVideo,'VideoClosed',@(src,evt) StopPlay(obj));
@@ -2357,7 +2356,6 @@ classdef BioSigPlot < hgsetget
         FileNames
         StartTime
         
-        VideoActxOpt           %WMP or VLC
         VideoStartTime         %Start time of the first frame of the video
         VideoEndTime           %End time of the video
         

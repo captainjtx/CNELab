@@ -32,20 +32,20 @@ classdef VideoWindow  < handle
                 val=0;
             end
         end
-        function obj=VideoWindow(file,varargin)
+        function obj=VideoWindow(file)
             obj.NotifyVideoChangeTime=true;
-            
-            
-            if nargin==1
-                obj.ActxOpt='WMP';
-            else
-                obj.ActxOpt=varargin{1};
-            end
             
 %             videoobj=VideoReader(file);
 %             lastFrame = read(videoobj, inf);
 %             obj.TotalFrameNumber=videoobj.NumberOfFrames;
-            
+            info=actxcontrollist;
+            if ismember('VideoLAN.VLCPlugin.2',info(:,2))
+                %try VLC first
+                obj.ActxOpt='VLC';
+            else
+                obj.ActxOpt='WMP';
+            end
+
             if strcmpi(obj.ActxOpt,'WMP')
                 obj.ActxName='WMPlayer.OCX.7';
                 obj.File=file;
