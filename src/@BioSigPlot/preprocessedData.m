@@ -78,17 +78,20 @@ if ~isempty(fchan)
 end
 
 %needs to be cascaded in future
-for f=1:length(fchan)
-    i=fchan(f);
+for i=1:length(fn)
     if ~isnan(fn(i))&&fn(i)~=0
-        if notch_single
-            [b,a]=butter(order,[fn(i)-2,fn(i)+2]/(fs/2),'stop');
-            d(:,i)=filter_symmetric(b,a,d(:,i),ext,phs,ftyp);
-        else
-            d(:,i)=filter_harmonic(d(:,i),fn(i),fs,order);
+        if fn(i)>1&&fn(i)<fs/2-1
+            if notch_single
+                [b,a]=butter(order,[fn(i)-1,fn(i)+1]/(fs/2),'stop');
+                d(:,i)=filter_symmetric(b,a,d(:,i),ext,phs,ftyp);
+            else
+                d(:,i)=filter_harmonic(d(:,i),fn(i),fs,order);
+            end
         end
     end
-    d(:,i)=applyCustomFilters(obj,d(:,i),fcum(i));
+    if obj.Filtering{n}(i)
+        d(:,i)=applyCustomFilters(obj,d(:,i),fcum(i));
+    end
 end
 
 %apply subspace filter
@@ -109,7 +112,6 @@ function data=applyCustomFilters(obj,data,fcum)
 if fcum==1||fcum==2
     return
 else
-    
     CustomFilters=obj.CustomFilters;
     fs=obj.SRate;
     

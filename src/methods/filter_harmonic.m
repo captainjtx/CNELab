@@ -7,6 +7,11 @@ else
     order=2;
 end
 ext=min(fs*2,round(size(data,1)/2));
+
+if freq<=1||freq>=fs/2-1
+    return
+end
+
 for i=1:floor(fs/2/freq)
     f=freq*i;
     
