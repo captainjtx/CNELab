@@ -1861,6 +1861,7 @@ classdef SpatialMapWindow < handle
             if obj.normalization==1
                 nref=[];
                 baseline=[];
+                rtfm=[];
             elseif obj.normalization==2
                 if obj.normalization_start>obj.normalization_end
                     obj.normalization_start=obj.normalization_end-1;

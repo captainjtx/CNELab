@@ -36,17 +36,17 @@ for i=1:size(d,2)
         if fl==0||isempty(fl)||isnan(fl)||isinf(fl)
             if fh~=0
                 if fh<(fs/2)
-                    [b{i},a{i}]=butter(order,fh/(fs/2),'low');
+                    [b{i}{1},a{i}{1}]=butter(order,fh/(fs/2),'low');
                 end
             end
         else
             if fh==0||isempty(fh)||isnan(fh)||isinf(fh)
-                [b{i},a{i}]=butter(order,fl/(fs/2),'high');
+                [b{i}{1},a{i}{1}]=butter(order,fl/(fs/2),'high');
             else
                 if fl<fh
-                    [b{i},a{i}]=butter(order,[fl,fh]/(fs/2),'bandpass');
+                    [b{i}{1},a{i}{1}]=butter(order,[fl,fh]/(fs/2),'bandpass');
                 elseif fl>fh
-                    [b{i},a{i}]=butter(order,[fl,fh]/(fs/2),'stop');
+                    [b{i}{1},a{i}{1}]=butter(order,[fl,fh]/(fs/2),'stop');
                 end
             end
         end
@@ -54,12 +54,28 @@ for i=1:size(d,2)
         if ~isempty(b{i})
             fchan=cat(1,fchan,i);
             if isempty(a{i})
-                a{i}=1;
+                a{i}{1}=1;
             end
         end
+        
+        if ~isnan(fn(i))&&fn(i)~=0
+            if fn(i)>1&&fn(i)<fs/2-1
+                if notch_single
+                    [notch_b,notch_a]=butter(order,[fn(i)-1,fn(i)+1]/(fs/2),'stop');
+                else
+                    [notch_b,notch_a]=butter_harmonic(fn(i),fs,order);
+                end
+                b{i}=cat(1,b{i},notch_b);
+                a{i}=cat(1,a{i},notch_a);
+            end
+        end
+        
+        [custom_b,custom_a]=applyCustomFilters(obj,fcum(i));
+        b{i}=cat(1,b{i},{custom_b});
+        a{i}=cat(1,a{i},{custom_a});
     end
 end
-
+%multithreaded filter 
 if ~isempty(fchan)
     fd=d(:,fchan);
     fd=wextend('ar','sym',fd,ext,'b');
@@ -77,23 +93,6 @@ if ~isempty(fchan)
     d(:,fchan)=fd(ext+1:end-ext,:);
 end
 
-%needs to be cascaded in future
-for i=1:length(fn)
-    if ~isnan(fn(i))&&fn(i)~=0
-        if fn(i)>1&&fn(i)<fs/2-1
-            if notch_single
-                [b,a]=butter(order,[fn(i)-1,fn(i)+1]/(fs/2),'stop');
-                d(:,i)=filter_symmetric(b,a,d(:,i),ext,phs,ftyp);
-            else
-                d(:,i)=filter_harmonic(d(:,i),fn(i),fs,order);
-            end
-        end
-    end
-    if obj.Filtering{n}(i)
-        d(:,i)=applyCustomFilters(obj,d(:,i),fcum(i));
-    end
-end
-
 %apply subspace filter
 if ~isempty(obj.SPFObj)&&isvalid(obj.SPFObj)&&isa(obj.SPFObj,'SPFPlot')
     sample=obj.SPFObj.sample;
@@ -108,19 +107,19 @@ end
 
 end
 
-function data=applyCustomFilters(obj,data,fcum)
+function [b,a]=applyCustomFilters(obj,fcum)
 if fcum==1||fcum==2
+    b=1;
+    a=1;
     return
 else
     CustomFilters=obj.CustomFilters;
-    fs=obj.SRate;
     
     if isfield(CustomFilters{fcum-2},'fir')
         fir=CustomFilters{fcum-2}.fir;
         for i=1:length(fir)
             a=1;
             b=fir(i).h;
-            data=filter_symmetric(b,a,data,fs,0,'fir');
         end
         
     elseif isfield(CustomFilters{fcum-2},'iir')
@@ -129,7 +128,6 @@ else
         for i=1:length(iir)
             a=iir(i).a;
             b=iir(i).b;
-            data=filter_symmetric(b,a,data,fs,0,'iir');
         end
     end
 end

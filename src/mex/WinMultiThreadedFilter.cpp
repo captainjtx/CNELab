@@ -1,56 +1,16 @@
 #include <mex.h>
 #include <iostream>
 #include <windows.h>
+#include <list>
+#include "FilterParameter.h"
 using namespace std;
 
-#ifdef _WIN32
-#include <windows.h>
-#elif MACOS
-#include <sys/param.h>
-#include <sys/sysctl.h>
-#else
-#include <unistd.h>
-#endif
-
-struct fparam {
-  double* b;
-  double* a;
-  int nb;
-  int na;    
-} ;
-
- 
-int getNumberOfCores() {
-#ifdef WIN32
-    SYSTEM_INFO sysinfo;
-    GetSystemInfo(&sysinfo);
-    return sysinfo.dwNumberOfProcessors;
-#elif MACOS
-    int nm[2];
-    size_t len = 4;
-    uint32_t count;
- 
-    nm[0] = CTL_HW; nm[1] = HW_AVAILCPU;
-    sysctl(nm, 2, &count, &len, NULL, 0);
- 
-    if(count < 1) {
-    nm[1] = HW_NCPU;
-    sysctl(nm, 2, &count, &len, NULL, 0);
-    if(count < 1) { count = 1; }
-    }
-    return count;
-#else
-    return sysconf(_SC_NPROCESSORS_ONLN);
-#endif
-}
-
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#include "tools.h"
 
 const mxArray* b;
 const mxArray* a;
-HANDLE chanMutex; 
-fparam* filterConfig;
+
+list<FilterParameter*>* filterConfig;
 
 DWORD WINAPI threadfunc(void *arg) {
     void **args=(void **) arg;
@@ -72,7 +32,7 @@ DWORD WINAPI threadfunc(void *arg) {
     int ia_n;
     double* ia_e;
     double* ib_e;
-            
+    
     DWORD dwWaitResult;
     
     dwWaitResult = WaitForSingleObject(
@@ -100,11 +60,7 @@ DWORD WINAPI threadfunc(void *arg) {
             return 1;
     }
     while ( ichan<chan )
-    {      
-        ia_e=filterConfig[ichan].a;
-        ib_e=filterConfig[ichan].b;
-        ia_n=filterConfig[ichan].na;
-        ib_n=filterConfig[ichan].nb;
+    {
         for(int k=0;k<padding;++k)
         {
             x[k]=0;
@@ -114,47 +70,68 @@ DWORD WINAPI threadfunc(void *arg) {
             x[k]=data[ichan*sample+k-padding];
         }
         
-        for(int k=0;k<sample+2*padding;++k)
+        for(list<FilterParameter*>::iterator it=filterConfig[ichan].begin();it!=filterConfig[ichan].end();++it)
         {
-            y[k]=0;
-        }
-        
-
-        //filter forward
-        for (int j=padding;j<sample+padding;++j)
-        {
-            for(int m=0;m<ib_n;++m)
+//             pthread_mutex_lock(&cout_mutex);
+//             cout<<"Iterate "<<ichan<<endl;
+//             pthread_mutex_unlock(&cout_mutex);
+            
+            ia_e=(*it)->a;
+            ib_e=(*it)->b;
+            ia_n=(*it)->na;
+            ib_n=(*it)->nb;
+            
+            for(int k=0;k<sample+2*padding;++k)
             {
-                y[j]+=ib_e[m]*x[j-m];
+                y[k]=0;
             }
-            for(int m=1;m<ia_n;++m)
+            
+            
+            //filter forward
+            for (int j=padding;j<sample+padding;++j)
             {
-                y[j]-=ia_e[m]*y[j-m];
+                for(int m=0;m<ib_n;++m)
+                {
+                    y[j]+=ib_e[m]*x[j-m];
+                }
+                for(int m=1;m<ia_n;++m)
+                {
+                    y[j]-=ia_e[m]*y[j-m];
+                }
+                y[j]/=ia_e[0];
             }
-            y[j]/=ia_e[0];
-        }
-        //filter backward
-        for(int k=0;k<sample+2*padding;++k)
-        {
-            ry[k]=y[sample+2*padding-1-k];
-        }
-        
-        for(int k=0;k<sample+2*padding;++k)
-        {
-            y[k]=0;
-        }
-        
-        for (int j=padding;j<sample+padding;++j)
-        {
-            for(int m=0;m<ib_n;++m)
+            //filter backward
+            for(int k=0;k<sample+2*padding;++k)
             {
-                y[j]+=ib_e[m]*ry[j-m];
+                ry[k]=y[sample+2*padding-1-k];
             }
-            for(int m=1;m<ia_n;++m)
+            
+            for(int k=0;k<sample+2*padding;++k)
             {
-                y[j]-=ia_e[m]*y[j-m];
+                y[k]=0;
             }
-            y[j]/=ia_e[0];
+            
+            for (int j=padding;j<sample+padding;++j)
+            {
+                for(int m=0;m<ib_n;++m)
+                {
+                    y[j]+=ib_e[m]*ry[j-m];
+                }
+                for(int m=1;m<ia_n;++m)
+                {
+                    y[j]-=ia_e[m]*y[j-m];
+                }
+                y[j]/=ia_e[0];
+            }
+            
+            for(int k=0;k<padding;++k)
+            {
+                x[k]=0;
+            }
+            for(int k=padding;k<sample+padding;++k)
+            {
+                x[k]=y[sample+2*padding-1-k];
+            }
         }
         
         for (int j=padding;j<sample+padding;++j)
@@ -199,8 +176,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
 {
     mxArray *ib;
     mxArray *ia;
-    double* ib_e;
-    double* ia_e;
+    double* ib_f;
+    double* ia_f;
     int ib_n;
     int ia_n;
     void *args[6];
@@ -209,6 +186,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
     int padding=0;
     
     int threadNum=8;
+    double* data;
+    
+    int nb;
+    int na;
     
     try
     {
@@ -238,16 +219,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
         mexErrMsgIdAndTxt("MATLAB:mexcpp:nargout",
                 "FastFilter requires one output argument.");
     }
-    const mxArray *b;
-    const mxArray *a;
-    double* data;
     
     b = prhs[0];
     a = prhs[1];
     data=mxGetPr(prhs[2]);
-    
-    int nb;
-    int na;
     
     const mwSize* bdim = mxGetDimensions(b);
     mwSize bdim_n= mxGetNumberOfDimensions(b);
@@ -305,36 +280,35 @@ void mexFunction(int nlhs, mxArray *plhs[],
     
     //mxGetCell cannot be accessed inside thread in windows, maybe not threadsafe
     //So we define our own data structure...
-    filterConfig=new fparam[chan];
+    filterConfig=new list<FilterParameter*>[chan];
     
     for(int i=0;i<chan;++i)
     {
         ib= mxGetCell(b,i);
         ia= mxGetCell(a,i);
         
-        ib_e=mxGetPr(ib);
-        ia_e=mxGetPr(ia);
+        const mwSize* tmp = mxGetDimensions(ib);
+        int fnum=MAX(tmp[0],tmp[1]);
         
-        const int* ib_dim=mxGetDimensions(ib);
-        ib_n=MAX(ib_dim[0],ib_dim[1]);
-        
-        const int* ia_dim=mxGetDimensions(ia);
-        ia_n=MAX(ia_dim[0],ia_dim[1]);
-        
-        filterConfig[i].a=new double[ia_n];
-        filterConfig[i].b=new double[ib_n];
-        
-        filterConfig[i].na=ia_n;
-        filterConfig[i].nb=ib_n;
-        
-        for(int j=0;j<ia_n;++j)
-        {filterConfig[i].a[j]=ia_e[j];}
-        
-        for(int j=0;j<ia_n;++j)
-        {filterConfig[i].b[j]=ib_e[j];}
-        
-        padding=MAX(padding,ib_n);
-        padding=MAX(padding,ia_n);
+//         cout<<fnum<<" filters in chan "<<i<<endl;
+        for(int f=0;f<fnum;++f)
+        {
+            ib_f=mxGetCell(ib,f);
+            ia_f=mxGetCell(ia,f);
+            
+            const int* ib_dim=mxGetDimensions(ib_f);
+            ib_n=MAX(ib_dim[0],ib_dim[1]);
+            
+            const int* ia_dim=mxGetDimensions(ia_f);
+            ia_n=MAX(ia_dim[0],ia_dim[1]);
+            
+            FilterParameter* new_fp=new FilterParameter(ib_n,ia_n,mxGetPr(ib_f),mxGetPr(ia_f));
+            
+            filterConfig[i].push_back(new_fp);
+            
+            padding=MAX(padding,ib_n);
+            padding=MAX(padding,ia_n);
+        }
     }
 
     *chancount=-1;
@@ -363,8 +337,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
         
     for(int i=0;i<chan;++i)
     {
-        delete[] filterConfig[i].b;
-        delete[] filterConfig[i].a;
+        for (list<FilterParameter*>::iterator it=filterConfig[i].begin(); it!=filterConfig[i].end();++it)
+        {
+            delete *it;
+            filterConfig[i].erase(it);
+        }
     }
     delete[] filterConfig;
     return;
