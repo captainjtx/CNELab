@@ -348,8 +348,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
         for (list<FilterParameter*>::iterator it=filterConfig[i].begin(); it!=filterConfig[i].end();++it)
         {
             delete *it;
-            filterConfig[i].erase(it);
+//             filterConfig[i].erase(it);
         }
+        filterConfig[i].clear();
     }
     delete[] filterConfig;
     return;
