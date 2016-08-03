@@ -7,8 +7,7 @@ using namespace std;
 
 #include "tools.h"
 
-const mxArray* b;
-const mxArray* a;
+HANDLE chanMutex;
 
 list<FilterParameter*>* filterConfig;
 
@@ -85,7 +84,6 @@ DWORD WINAPI threadfunc(void *arg) {
             {
                 y[k]=0;
             }
-            
             
             //filter forward
             for (int j=padding;j<sample+padding;++j)
@@ -167,7 +165,7 @@ DWORD WINAPI threadfunc(void *arg) {
     delete[] y;
     delete[] ry;
     delete[] x;
-//     cout<<"Thread Complete"<<endl;
+    cout<<"Thread Complete"<<endl;
     return 0;
 }
 
@@ -176,8 +174,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
 {
     mxArray *ib;
     mxArray *ia;
-    double* ib_f;
-    double* ia_f;
+    mxArray* ib_f;
+    mxArray* ia_f;
     int ib_n;
     int ia_n;
     void *args[6];
@@ -191,6 +189,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
     int nb;
     int na;
     
+    const mxArray* b;
+    const mxArray* a;
     try
     {
         //the optimal thread number is cpu core number
@@ -211,7 +211,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
             FALSE,             // initially not owned
             NULL);             // unnamed mutex
 
-//     cout<<"Mutex created !"<<endl;
+    cout<<"Mutex created !"<<endl;
     if (nrhs != 3) {
         mexErrMsgIdAndTxt("MATLAB:FastFilter:nargin",
                 "FastFilter requires three input arguments.");
@@ -290,7 +290,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
         const mwSize* tmp = mxGetDimensions(ib);
         int fnum=MAX(tmp[0],tmp[1]);
         
-//         cout<<fnum<<" filters in chan "<<i<<endl;
+        cout<<fnum<<" filters in chan "<<i<<endl;
         for(int f=0;f<fnum;++f)
         {
             ib_f=mxGetCell(ib,f);
@@ -323,7 +323,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
         args[5]=output;
         
         hThread[i] = CreateThread( NULL, 0, threadfunc, args, 0, &threadID[i] );
-//         cout<<"create thread "<<i<<endl;
+        cout<<"create thread "<<i<<endl;
     }
     WaitForMultipleObjects(threadNum,hThread,TRUE,INFINITE);
     
