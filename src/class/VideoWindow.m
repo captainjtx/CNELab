@@ -58,7 +58,7 @@ classdef VideoWindow  < handle
             %Create Matlab Figure Container
             obj.Fig=figure('MenuBar','none','position',[200 100 figPos],...
                 'NumberTitle','off','Name',obj.ActxOpt,...
-                'CloseRequestFcn',@(src,evts) delete(obj),...
+                'CloseRequestFcn',@(src,evts) OnClose(obj),...
                 'ResizeFcn',@(src,evts) resize(obj),...
                 'ButtonDownFcn',@(src,evts) keyDown_Callback(obj));
             try
@@ -93,7 +93,7 @@ classdef VideoWindow  < handle
             obj.IsOnTop=true;
         end
         
-        function delete(obj)
+        function OnClose(obj)
             % Delete the figure
             
             h = obj.Fig;

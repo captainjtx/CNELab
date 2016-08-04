@@ -315,7 +315,7 @@ if ~isempty(regexp(computer,'WIN','ONCE'))
                 videofile=fullfile(fpaths{i},cds{i}.DataInfo.VideoName);
             end
             if ~isempty(videofile)
-                bsp.WinVideo=VideoWindow(videofile,bsp.VideoActxOpt); %VLC or WMPlayer
+                bsp.WinVideo=VideoWindow(videofile); %VLC or WMPlayer
                 addlistener(bsp.WinVideo,'VideoChangeTime',@(src,evt) SynchDataWithVideo(bsp));
                 addlistener(bsp.WinVideo,'VideoChangeState',@(src,ect) SynchVideoState(bsp));
                 addlistener(bsp.WinVideo,'VideoClosed',@(src,evt) StopPlay(bsp));

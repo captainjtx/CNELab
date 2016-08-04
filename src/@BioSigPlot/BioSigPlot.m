@@ -518,7 +518,7 @@ classdef BioSigPlot < hgsetget
             cfg.AdvanceEventsFcn=obj.AdvanceEventsFcn;
             save(fullfile(obj.CNELabDir,'/db/cfg/','defaultconfig.cfg'),'-struct','cfg');
         end
-        function delete(obj)
+        function OnClose(obj)
             %             Delete the figure
             saveConfig(obj);
             if isa(obj.WinVideo,'VideoWindow') && obj.WinVideo.valid
