@@ -53,10 +53,7 @@ void *threadfunc(void *arg) {
 //         pthread_mutex_lock(&cout_mutex);
 //         cout<<"Cmpute "<<ichan<<endl;
 //         pthread_mutex_unlock(&cout_mutex);
-        for(int k=padding;k<sample+padding;++k)
-        {
-            y[k]=data[ichan*sample+k-padding];
-        }
+        memcpy(y+padding,data+ichan*sample,sizeof(double)*sample);
         
         for(list<FilterParameter*>::iterator it=filterConfig[ichan].begin();it!=filterConfig[ichan].end();++it)
         {
@@ -68,19 +65,14 @@ void *threadfunc(void *arg) {
             ib_e=(*it)->b;
             ia_n=(*it)->na;
             ib_n=(*it)->nb;
-            for(int k=0;k<padding;++k)
-            {
-                x[k]=0;
-            }
+            memset(x,0,sizeof(double)*padding);
+            
             for(int k=padding;k<sample+padding;++k)
             {
                 x[k]=y[sample+2*padding-1-k];
             }
             
-            for(int k=0;k<sample+2*padding;++k)
-            {
-                y[k]=0;
-            }
+            memset(y,0,sizeof(double)*(sample+2*padding));
             
 //             pthread_mutex_lock(&cout_mutex);
 //             cout<<"Filter forward chan: "<<ichan<<endl;
@@ -105,15 +97,13 @@ void *threadfunc(void *arg) {
 //             pthread_mutex_unlock(&cout_mutex);
             
             //filter backward
+            
             for(int k=0;k<sample+2*padding;++k)
             {
                 ry[k]=y[sample+2*padding-1-k];
             }
             
-            for(int k=0;k<sample+2*padding;++k)
-            {
-                y[k]=0;
-            }
+            memset(y,0,sizeof(double)*(sample+2*padding));
             
             for (int j=padding;j<sample+padding;++j)
             {
