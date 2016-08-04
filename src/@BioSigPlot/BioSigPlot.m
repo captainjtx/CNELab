@@ -342,8 +342,6 @@ classdef BioSigPlot < hgsetget
         ChanSelect2Display_
         ChanSelect2Edit_
         
-        FileNames_
-        
         SelectedEvent_
         
         FastEvts_
@@ -688,7 +686,7 @@ classdef BioSigPlot < hgsetget
                         'ControlPanelDisplay',...
                         'LockLayout','ToolbarDisplay','DisplayGauge','XGrid','YGrid',...
                         'VideoTimerPeriod','BadChannels','AxesBackgroundColor',...
-                        'DefaultLineColor','Units','TimeUnit','FileNames','AdvanceEventsFcn'}))
+                        'DefaultLineColor','Units','TimeUnit','AdvanceEventsFcn'}))
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                 else
                     set@hgsetget(obj,varargin{i},varargin{i+1})
@@ -812,9 +810,6 @@ classdef BioSigPlot < hgsetget
         
         function obj = set.EventDisplayIndex(obj,val), obj.EventDisplayIndex=val; end
         function val = get.EventDisplayIndex(obj), val=obj.EventDisplayIndex; end
-        
-        function obj = set.FileNames(obj,val), set(obj,'FileNames',val); end
-        function val = get.FileNames(obj), val=obj.FileNames_; end
         
         function obj = set.BadChannels(obj,val), set(obj,'BadChannels',val); end
         function val = get.BadChannels(obj), val=obj.BadChannels_; end

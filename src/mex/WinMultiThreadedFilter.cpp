@@ -13,13 +13,12 @@ list<FilterParameter*>* filterConfig;
 
 DWORD WINAPI threadfunc(void *arg) {
     void **args=(void **) arg;
-    
-    double* data=(double*)args[0];
-    int sample=*((int* )args[1]);
-    int padding=*((int* )args[2]);
-    int* chancount=(int*)args[3];
-    int chan=*((int* )args[4]);
-    double* output=(double*)args[5];
+
+    int sample=*((int* )args[0]);
+    int padding=*((int* )args[1]);
+    int* chancount=(int*)args[2];
+    int chan=*((int* )args[3]);
+    double* output=(double*)args[4];
     
     double* y=new double[sample+2*padding];
     double* ry=new double [sample+2*padding];
@@ -59,12 +58,7 @@ DWORD WINAPI threadfunc(void *arg) {
             return 1;
     }
     while ( ichan<chan )
-    {
-        for(int k=padding;k<sample+padding;++k)
-        {
-            y[k]=data[ichan*sample+k-padding];
-        }
-        
+    {   
         for(list<FilterParameter*>::iterator it=filterConfig[ichan].begin();it!=filterConfig[ichan].end();++it)
         {
             ia_e=(*it)->a;
@@ -72,19 +66,11 @@ DWORD WINAPI threadfunc(void *arg) {
             ia_n=(*it)->na;
             ib_n=(*it)->nb;
             
-            for(int k=0;k<padding;++k)
-            {
-                x[k]=0;
-            }
-            for(int k=padding;k<sample+padding;++k)
-            {
-                x[k]=y[sample+2*padding-1-k];
-            }
+            memset(x,0,sizeof(double)*padding);
             
-            for(int k=0;k<sample+2*padding;++k)
-            {
-                y[k]=0;
-            }
+            memcpy(x+padding,output+ichan*sample,sizeof(double)*sample);
+            
+            memset(y,0,sizeof(double)*(sample+2*padding));
             //filter forward
             for (int j=padding;j<sample+padding;++j)
             {
@@ -104,10 +90,7 @@ DWORD WINAPI threadfunc(void *arg) {
                 ry[k]=y[sample+2*padding-1-k];
             }
             
-            for(int k=0;k<sample+2*padding;++k)
-            {
-                y[k]=0;
-            }
+            memset(y,0,sizeof(double)*(sample+2*padding));
             
             for (int j=padding;j<sample+padding;++j)
             {
@@ -278,7 +261,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
 //     printf("New List\n");
     filterConfig=new list<FilterParameter*>[chan];
     FilterParameter* new_fp;
-            
+    //initialize output with input data
+    memcpy(output,data,sizeof(double)*chan*sample);
     for(int i=0;i<chan;++i)
     {
         ib= mxGetCell(b,i);
@@ -312,12 +296,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
     
     for (int i=0;i<threadNum;++i)
     {
-        args[0]=data;
-        args[1]=&sample;
-        args[2]=&padding;
-        args[3]=chancount;
-        args[4]=&chan;
-        args[5]=output;
+        args[0]=&sample;
+        args[1]=&padding;
+        args[2]=chancount;
+        args[3]=&chan;
+        args[4]=output;
         
         hThread[i] = CreateThread( NULL, 0, threadfunc, args, 0, &threadID[i] );
 //         printf("create thread \n");

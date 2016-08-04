@@ -1,5 +1,6 @@
 function d=preprocessedData(obj,varargin)
 % t=ceil(obj.Time*obj.SRate+1):min(ceil((obj.Time+obj.WinLength)*obj.SRate),size(obj.Data{1},1));
+tic
 if nargin==2
     n=varargin{1};
     d=double(obj.Data{n}*(obj.Montage{n}(obj.MontageRef(n)).mat)');
@@ -104,6 +105,7 @@ if ~isempty(obj.SPFObj)&&isvalid(obj.SPFObj)&&isa(obj.SPFObj,'SPFPlot')
         d(sample,channel)=obj.SPFObj.subspacefilter(d(sample,channel));
     end
 end
+toc
 end
 
 function [b,a]=applyCustomFilters(obj,fcum)

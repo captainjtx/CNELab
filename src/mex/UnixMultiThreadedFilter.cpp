@@ -24,14 +24,13 @@ list<FilterParameter*>* filterConfig;
 void *threadfunc(void *arg) {
     void **args=(void **) arg;
     
-    double* data=(double*)args[0];
-    int sample=*((int* )args[1]);
-    int padding=*((int* )args[2]);
-    int* chancount=(int*)args[3];
+    int sample=*((int* )args[0]);
+    int padding=*((int* )args[1]);
+    int* chancount=(int*)args[2];
     
-    int chan=*((int* )args[4]);
+    int chan=*((int* )args[3]);
     
-    double* output=(double*)args[5];
+    double* output=(double*)args[4];
     
     double* y=new double [sample+2*padding];
     double* ry=new double [sample+2*padding];
@@ -53,7 +52,6 @@ void *threadfunc(void *arg) {
 //         pthread_mutex_lock(&cout_mutex);
 //         cout<<"Cmpute "<<ichan<<endl;
 //         pthread_mutex_unlock(&cout_mutex);
-        memcpy(y+padding,data+ichan*sample,sizeof(double)*sample);
         
         for(list<FilterParameter*>::iterator it=filterConfig[ichan].begin();it!=filterConfig[ichan].end();++it)
         {
@@ -67,13 +65,9 @@ void *threadfunc(void *arg) {
             ib_n=(*it)->nb;
             memset(x,0,sizeof(double)*padding);
             
-            for(int k=padding;k<sample+padding;++k)
-            {
-                x[k]=y[sample+2*padding-1-k];
-            }
+            memcpy(x+padding,output+ichan*sample,sizeof(double)*sample);
             
             memset(y,0,sizeof(double)*(sample+2*padding));
-            
 //             pthread_mutex_lock(&cout_mutex);
 //             cout<<"Filter forward chan: "<<ichan<<endl;
 //             pthread_mutex_unlock(&cout_mutex);
@@ -256,10 +250,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     filterConfig=new list<FilterParameter*>[chan];
     
     //initialize output with input data
-//     for(int i=0;i<chan*sample;++i)
-//     {
-//         output[i]=data[i];
-//     }
+    memcpy(output,data,sizeof(double)*chan*sample);
     
     for(int i=0;i<chan;++i)
     {
@@ -294,12 +285,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
     
     for (int i=0;i<threadNum;++i)
     {
-        args[0]=data;
-        args[1]=&sample;
-        args[2]=&padding;
-        args[3]=chancount;
-        args[4]=&chan;
-        args[5]=output;
+        args[0]=&sample;
+        args[1]=&padding;
+        args[2]=chancount;
+        args[3]=&chan;
+        args[4]=output;
         
         int rc = pthread_create(&threads[i],&attr,threadfunc,args);
         if (rc)
