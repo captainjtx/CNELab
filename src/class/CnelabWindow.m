@@ -280,7 +280,15 @@ classdef CnelabWindow < handle
             OnClose(obj);
         end
         function Demo(obj)
-            OnClose(obj);
+            if exist([obj.cnelab_path,'/demo/demo.cds'],'file')==2
+                obj.selectedFiles={[obj.cnelab_path,'/demo/demo.cds']};
+                obj.choice=2;
+                OnClose(obj);
+                notify(obj,'UserChoice');
+            else
+                errordlg(['Cannot find ',obj.cnelab_path,'/demo/demo.cds !']);
+                OnClose(obj);
+            end
         end
         
         function Reserved(obj)

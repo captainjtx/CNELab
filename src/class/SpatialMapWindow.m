@@ -1976,6 +1976,8 @@ classdef SpatialMapWindow < handle
                         end
                         tfm=tfm/length(event_tfm);
                         
+                        obj.tfmat(e).raw_trial_mat{j}=event_tfm;
+                        
                         %use baseline from all events**********************
                         if ~isempty(rtfm)
                             tfm=tfm./repmat(mean(rtfm{j},2),1,size(tfm,2));
@@ -1995,6 +1997,7 @@ classdef SpatialMapWindow < handle
                         obj.tfmat(e).event=evt{e};
                         obj.tfmat(e).trial_mat{j}=event_tfm;
                         obj.tfmat(e).data(:,j,:)=raw_data(:,ind);
+                        obj.tfmat(e).ref_mat=rtfm;
                     end
                 end
             else
@@ -2013,6 +2016,7 @@ classdef SpatialMapWindow < handle
                     obj.tfmat.dataset=dataset;
                     obj.tfmat.channame=channames;
                     obj.tfmat.trial_mat{j}=[];
+                    obj.tfmat.raw_trial_mat{j}=[];
                     obj.tfmat.data(:,j)=data(:,j);
                     obj.tfmat.event=evt{1};
                 end
@@ -2821,6 +2825,7 @@ classdef SpatialMapWindow < handle
                 for i=1:length(tf.trial_mat)
                     %i th channel
                     event_mat=tf.trial_mat{i};
+                    
                     if ~isempty(event_mat)
                         pow_val=[];
                         
@@ -2830,6 +2835,20 @@ classdef SpatialMapWindow < handle
                         end
                         
                         info(k).pow(:,i)=pow_val(:);
+                        
+                    end
+                    
+                    raw_event_mat=tf.raw_trial_mat{i};
+                    if ~isempty(raw_event_mat)
+                        raw_pow_val=[];
+                        
+                        for t=1:length(event_mat)
+                            %t th trial
+                            raw_pow_val=cat(1,raw_pow_val,mean(mean(raw_event_mat{t}(fi,ti))));
+                        end
+                        
+                        info(k).raw_pow(:,i)=raw_pow_val(:);
+                        
                     end
                 end
                 info(k).event=tf.event;
