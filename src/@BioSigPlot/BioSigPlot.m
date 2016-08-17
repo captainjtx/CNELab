@@ -153,7 +153,6 @@ classdef BioSigPlot < hgsetget
         MenuChannelLabel
         Menupanels
         MenuControlPanel
-        MenuLockLayout
         
         MenuColor
         MenuColorCanvas
@@ -249,7 +248,6 @@ classdef BioSigPlot < hgsetget
         AdvanceEventsDisplay
         EventsWindowDisplay     %true : show Events Window
         ControlPanelDisplay
-        LockLayout
         ToolbarDisplay
         DisplayGauge
         
@@ -327,7 +325,6 @@ classdef BioSigPlot < hgsetget
         AdvanceEventsDisplay_
         EventsWindowDisplay_
         ControlPanelDisplay_
-        LockLayout_
         ToolbarDisplay_
         DisplayGauge_
         
@@ -482,7 +479,6 @@ classdef BioSigPlot < hgsetget
             obj.EventsWindowDisplay=true;
             obj.ControlPanelDisplay=true;
             obj.ToolbarDisplay=true;
-            obj.LockLayout=true;
             
             obj.DisplayGauge=true;
             
@@ -684,7 +680,7 @@ classdef BioSigPlot < hgsetget
                         'EventDefaultColors','EventsWindowDisplay','AdvanceEventsFcn',...
                         'AdvanceEventDefaultColor','MouseMode','Title','Version',...
                         'ControlPanelDisplay',...
-                        'LockLayout','ToolbarDisplay','DisplayGauge','XGrid','YGrid',...
+                        'ToolbarDisplay','DisplayGauge','XGrid','YGrid',...
                         'VideoTimerPeriod','BadChannels','AxesBackgroundColor',...
                         'DefaultLineColor','Units','TimeUnit','AdvanceEventsFcn'}))
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
@@ -839,9 +835,6 @@ classdef BioSigPlot < hgsetget
         
         function obj = set.ControlPanelDisplay(obj,val), set(obj,'ControlPanelDisplay',val); end
         function val = get.ControlPanelDisplay(obj), val=obj.ControlPanelDisplay_; end
-        
-        function obj = set.LockLayout(obj,val), set(obj,'LockLayout',val); end
-        function val = get.LockLayout(obj), val=obj.LockLayout_; end
         
         function obj = set.ChanColors(obj,val), set(obj,'ChanColors',val); end
         function val = get.ChanColors(obj), val=obj.ChanColors_; end
@@ -1438,22 +1431,6 @@ classdef BioSigPlot < hgsetget
         end
         %==================================================================
         %******************************************************************
-        function obj = set.LockLayout_(obj,val)
-            if ischar(val)
-                obj.LockLayout_=strcmpi(val,'on');
-            else
-                obj.LockLayout_=val;
-            end
-            
-            if obj.LockLayout_
-                set(obj.MenuLockLayout,'Checked','on');
-            else
-                set(obj.MenuLockLayout,'Checked','off');
-            end
-            
-        end
-        %==================================================================
-        %******************************************************************
         function obj = set.DisplayGauge_(obj,val)
             if ischar(val)
                 obj.DisplayGauge_=strcmpi(val,'on');
@@ -1999,16 +1976,6 @@ classdef BioSigPlot < hgsetget
             end
             
             pos=get(obj.Fig,'position');
-            cbs=obj.ControlBarSize;
-            
-            if pos(3)<=cbs(1)
-                if obj.LockLayout
-                    pos(3)=cbs(1);
-                end
-            end
-            
-            screensize=get(0,'ScreenSize');
-            set(obj.Fig,'position',[screensize(3)/2-pos(3)/2 screensize(4)/2-pos(4)/2 pos(3) pos(4)]);
             
             ctrlsize=obj.ControlBarSize;
             
