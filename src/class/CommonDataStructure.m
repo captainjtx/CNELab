@@ -288,8 +288,8 @@ classdef CommonDataStructure < handle
             if nargin==1
                 %try to automatically detect the videochannel
                 videoChannel=[];
-                for i=1:size(obj.DataInfo.Data,2)
-                    [frame,ind]=unique(obj.DataInfo.Data(:,i));
+                for i=1:size(obj.Data,2)
+                    [frame,ind]=unique(obj.Data(:,i));
                     nv=frame<1;
                     frame(nv)=[];
                     
@@ -313,7 +313,7 @@ classdef CommonDataStructure < handle
             if ~isempty(videoChannel)
                 
                 %find the recording segments
-                frames=obj.DataInfo.Data(:,videoChannel);
+                frames=obj.Data(:,videoChannel);
                 
                 %eliminate the zeros due to UDP
                 ind=find(frames>=1);
