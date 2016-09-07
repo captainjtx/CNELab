@@ -1,9 +1,9 @@
 clc
 clear
 
-f=load('Z:\Tianxiao\data\BMI\handopenclose\S2/Open.mat','-mat');
+f=load('Z:\Tianxiao\data\BMI\handopenclose\S1/Open.mat','-mat');
 open=f.Open;
-f=load('Z:\Tianxiao\data\BMI\handopenclose\S2/Close.mat','-mat');
+f=load('Z:\Tianxiao\data\BMI\handopenclose\S1/Close.mat','-mat');
 close=f.Close;
 %%
 fs=open.fs;
@@ -54,7 +54,7 @@ for fi=1:length(f1)
     ecogC=close.data;
     ecogO=open.data;
     
-    Chi=find(ismember(close.channame,sensorychannel));
+    Chi=find(ismember(close.channame,motorchannel));
     
     for i=1:size(ecogC,3)
         ecogC(:,:,i)=filter_symmetric(b,a,ecogC(:,:,i),[],0,'iir');

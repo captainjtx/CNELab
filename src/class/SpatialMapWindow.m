@@ -1736,7 +1736,9 @@ classdef SpatialMapWindow < handle
             
             fpos=get(obj.fig,'position');
             
+            obj.SpatialMapFig=[];
             if obj.data_input==3
+                
                 for i=1:length(obj.event_group)
                     obj.SpatialMapFig(i)=figure('Name',[obj.event_group{i}],'NumberTitle','off',...
                         'units','pixels','position',[fpos(1)+fpos(3)+20+(obj.fig_w+20)*(i-1),fpos(2),obj.fig_w,obj.fig_h],'Resize','off',...
