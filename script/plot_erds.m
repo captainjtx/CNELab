@@ -53,7 +53,7 @@ set(gcf,'color','white');
 %%
 %add finger positions
 hold on
-trial=Open;
+trial=Close;
 yyaxis right
 a.YColor=[0,0,0];
 

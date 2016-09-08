@@ -23,8 +23,10 @@ for i=1:size(ers_chan,1)
     end
 end
 %%
-onset=find(abs(first_ers)<=100);
-early=find(first_ers<=-250);
-long=find((end_ers-first_ers)>=1200);
+names=bsp.SpatialMapWin.chan_names;
+
+onset=names(abs(first_ers)<=100);
+early=names(first_ers<=-250);
+long=names((end_ers-first_ers)>=1000);
 
 

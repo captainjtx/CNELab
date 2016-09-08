@@ -64,7 +64,6 @@ obj.MenuNotchFilterHarmonics=uimenu(obj.MenuNotchFilter,'Label','Harmonics','che
 obj.MenuChannel=uimenu(obj.Fig,'Label','Data');
 obj.MenuDataBuffer=uimenu(obj.MenuChannel,'Label','Buffer','Callback',@(src,evt)MnuDataBuffer(obj,src));
 obj.MenuChannelNumber=uimenu(obj.MenuChannel,'Label','Channels/Page','Callback',@(src,evt) MnuChan2Display(obj));
-obj.MenuChannelWidth=uimenu(obj.MenuChannel,'Label','Time/Page','Callback',@(src,evt) MnuWidth2Display(obj));
 obj.MenuGain=uimenu(obj.MenuChannel,'Label','Gain','Callback',@(src,evt) MnuChanGain(obj,src));
 obj.MenuDetrend=uimenu(obj.MenuChannel,'Label','Detrend');
 obj.MenuDetrendConstant=uimenu(obj.MenuDetrend,'Label','Constant','Callback',@(src,evt)DetrendData(obj,src));

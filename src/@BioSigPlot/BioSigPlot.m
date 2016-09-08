@@ -26,6 +26,9 @@ classdef BioSigPlot < hgsetget
         JBtnEnd
         JBtnSelectWin
         
+        JChannelNumberSpinner
+        
+        
         TxtInfo1
         TxtInfo2
         TxtInfo3
@@ -53,15 +56,9 @@ classdef BioSigPlot < hgsetget
         JBtnGainIncrease
         JBtnGainDecrease
         
-        JBtnWidthIncrease
-        JBtnWidthDecrease
-        
         JBtnAutoScale
         JBtnMaskChannel
         JBtnUnMaskChannel
-        
-        JBtnHeightIncrease
-        JBtnHeightDecrease
         
         TxtScale
         ArrScale
@@ -124,7 +121,6 @@ classdef BioSigPlot < hgsetget
         MenuChannel
         MenuDataBuffer
         MenuChannelNumber
-        MenuChannelWidth
         MenuGain
         MenuDetrend
         MenuDetrendConstant
@@ -404,9 +400,39 @@ classdef BioSigPlot < hgsetget
             
             obj.Data=obj.uniform(data);
             
-            obj.buildfig;
+            %These variables are need for buildfig
+            %%
             g=varargin;
+            
+            
+            n=find(strcmpi('WinLength',g(1:2:end)))*2;
+            if ~isempty(n)
+                obj.WinLength_=g{n};
+                g(n-1:n)=[];
+            else
+                obj.WinLength_=15;
+            end
+            
+            n=find(strcmpi('SRate',g(1:2:end)))*2;
+            if ~isempty(n)
+                obj.SRate_=g{n};
+                g(n-1:n)=[];
+            else
+                obj.SRate_=256;
+            end
+            
+            n=find(strcmpi('TotalSample',g(1:2:end)))*2;
+            if ~isempty(n)
+                obj.TotalSample=g{n};
+                g(n-1:n)=[];
+            else
+                obj.TotalSample=size(obj.Data{1},1);
+            end
+            %%
+            obj.buildfig;
+            
             varInitial(obj,g);
+            
             scanFilterBank(obj);
             %Show up
             resetView(obj);
@@ -482,11 +508,9 @@ classdef BioSigPlot < hgsetget
             
             obj.DisplayGauge=true;
             
-            obj.TotalSample=size(obj.Data{1},1);
             obj.BufferLength=obj.TotalSample;
             obj.BufferTime=0;
             obj.VisualBuffer=inf;
-            obj.WinLength_=15;
             
             obj.Version_='CNELab(Clinical Neuro-Engineering Lab)';
             obj.DataView_='Vertical';
@@ -730,9 +754,9 @@ classdef BioSigPlot < hgsetget
         function val = get.Title(obj), val=obj.Title_; end
         function obj = set.Config(obj,val), set(obj,'Config',val); end
         function val = get.Config(obj), val=obj.Config_; end
-        function obj = set.SRate(obj,val), set(obj,'SRate',val); end
+        
         function val = get.SRate(obj), val=obj.SRate_; end
-        function obj = set.WinLength(obj,val), set(obj,'WinLength',val); end
+        
         function val = get.WinLength(obj), val=obj.WinLength_; end
         function obj = set.Gain(obj,val), set(obj,'Gain',val); end
         function val = get.Gain(obj), val=obj.Gain_; end
@@ -971,7 +995,11 @@ classdef BioSigPlot < hgsetget
         %**********************Private Properties*************************
         %*****************************************************************
         function val=get.TotalTime(obj)
-            val=obj.TotalSample/obj.SRate;
+            if ~isempty(obj.SRate)&&obj.SRate
+                val=obj.TotalSample/obj.SRate;
+            else
+                val=[];
+            end
         end
         %******************************************************************
         function obj = set.Config_(obj,val)
@@ -996,11 +1024,6 @@ classdef BioSigPlot < hgsetget
                 set(obj.Fig,'Name',[val{obj.DisplayedData},' -- ',obj.Version]);
             end
             obj.Title_=val;
-        end
-        %*****************************************************************
-        
-        function obj = set.SRate_(obj,val)
-            obj.SRate_=val;
         end
         %******************************************************************
         function val = get.Evts(obj)
@@ -1534,6 +1557,8 @@ classdef BioSigPlot < hgsetget
             end
             obj.DispChans_=reshape(tmp,length(tmp),1);
             
+            obj.JChannelNumberSpinner.setValue(max(obj.DispChans_(obj.DisplayedData)));
+            
         end
         
         %==================================================================
@@ -1672,6 +1697,28 @@ classdef BioSigPlot < hgsetget
         
         function val=get.cnelab_path(obj)
             [val,~,~]=fileparts(which('cnelab.m'));
+        end
+        
+        function obj=set.TotalSample(obj,val)
+            obj.TotalSample=val;
+            
+            if ~isempty(obj.JWindowTimeSpinner)&&~siempty(obj.TotalTime)
+                obj.JWindowTimeSpinner.getModel().setMaximum(java.lang.Double(obj.TotalTime));
+            end
+        end
+        
+        function obj = set.WinLength(obj,val)
+            set(obj,'WinLength',val); 
+            
+            obj.JWindowTimeSpinner.setValue(java.lang.Double(val));
+            obj.JWindowTimeSpinner.getModel().setStepSize(java.lang.Double(val/15));
+        end
+        %*****************************************************************
+        function obj = set.SRate(obj,val)
+            set(obj,'SRate',val);
+            if ~isempty(obj.TotalTime)&&~isempty(obj.JWindowTimeSpinner)
+                obj.JWindowTimeSpinner.getModel().setMaximum(java.lang.Double(obj.TotalTime));
+            end
         end
     end
     
@@ -1853,11 +1900,6 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         %Callback for number of channels per page limitaion
         MnuChan2Display(obj)
-        
-        %==================================================================
-        %******************************************************************
-        %Callback for number of channels per page limitaion
-        MnuWidth2Display(obj)
         %==================================================================
         %******************************************************************
         %Callback for Video Load
@@ -2046,20 +2088,6 @@ classdef BioSigPlot < hgsetget
             elseif val>obj.TotalTime
                 val=obj.TotalTime;
             end
-            
-            if (val+obj.Time)>(obj.BufferTime+obj.BufferLength)
-                obj.BufferLength=val*2;
-                
-                %need to reload data buffer
-                t_start=max(0,obj.Time_-obj.BufferLength/10);
-                t_end=min(t_start+obj.BufferLength,obj.TotalTime);
-                obj.BufferTime=t_start;
-                for i=1:length(obj.CDS)
-                    obj.Data{i}=obj.CDS{i}.get_data_segment(obj.CDS{i},round(t_start*obj.SRate)+1:round(t_end*obj.SRate)+1,[]);
-                end
-                recalculate(obj);
-            end
-            obj.WinLength=val;
         end
         
         function ChangeFilter(obj,src)
@@ -2189,6 +2217,38 @@ classdef BioSigPlot < hgsetget
             if length(col)~=1||col~=0
                set(obj,'ChanColors',obj.applyPanelVal(obj.ChanColors_,col));
             end
+        end
+        
+        function ChannelNumberSpinnerCallback(obj)
+            val=obj.JChannelNumberSpinner.getValue();
+            
+            dd=obj.DisplayedData;
+            
+            for i=1:length(dd)
+                obj.DispChans(dd(i))=val;
+            end
+        end
+        
+        function WindowTimeSpinnerCallback(obj)
+            val=obj.JWindowTimeSpinner.getValue();
+            
+            if val==obj.WinLength||val==0
+                return
+            end
+            
+            if (val+obj.Time)>(obj.BufferTime+obj.BufferLength)
+                obj.BufferLength=val*2;
+                
+                %need to reload data buffer
+                t_start=max(0,obj.Time_-obj.BufferLength/10);
+                t_end=min(t_start+obj.BufferLength,obj.TotalTime);
+                obj.BufferTime=t_start;
+                for i=1:length(obj.CDS)
+                    obj.Data{i}=obj.CDS{i}.get_data_segment(obj.CDS{i},round(t_start*obj.SRate)+1:round(t_end*obj.SRate)+1,[]);
+                end
+                recalculate(obj);
+            end
+            set(obj,'WinLength',val); 
         end
     end
     
@@ -2370,6 +2430,7 @@ classdef BioSigPlot < hgsetget
         CDS
         VisualBuffer
         EventRef
+        JWindowTimeSpinner
     end
     events
         SelectedFastEvtChange
