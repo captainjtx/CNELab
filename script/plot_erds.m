@@ -32,7 +32,7 @@ for f=1:length(freq)
 end
 %%
 axis tight
-ylim([-10,10])
+ylim([-12,12])
 a=gca;
 a.FontSize=20;
 

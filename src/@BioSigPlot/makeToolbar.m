@@ -1,11 +1,10 @@
 function makeToolbar(obj)
 import src.java.PushButton;
 import src.java.TogButton;
+import src.java.ToolbarSpinner;
 import javax.swing.ButtonGroup;
-import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.JComponent;
-import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 
 d=obj.JToolbar.getPreferredSize();
@@ -71,7 +70,7 @@ label = javaObjectEDT(JLabel('Channel'));
 obj.JToolbar.add(label);
 
 model = javaObjectEDT(SpinnerNumberModel(max(obj.ChanNumber),1,max(obj.ChanNumber),1));  
-obj.JChannelNumberSpinner =javaObjectEDT(JSpinner(model));
+obj.JChannelNumberSpinner =javaObjectEDT(ToolbarSpinner(model));
     
 obj.JToolbar.add(obj.JChannelNumberSpinner);
 
@@ -85,7 +84,7 @@ label = javaObjectEDT(JLabel(' Window (s)'));
 obj.JToolbar.add(label);
 
 model = javaObjectEDT(SpinnerNumberModel(obj.WinLength,0,obj.TotalTime,obj.WinLength/15));  
-obj.JWindowTimeSpinner =javaObjectEDT(JSpinner(model));
+obj.JWindowTimeSpinner =javaObjectEDT(ToolbarSpinner(model));
 
 % tf = obj.JWindowTimeSpinner.getEditor().getTextField();
 % tf.setFocusable(false);
