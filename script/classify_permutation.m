@@ -12,7 +12,7 @@ onset=round(fs*ms_before/1000);
 
 stats={};
 
-fig=figure('name','S1 Ave Motor','position',[100,100,600,450]);
+fig=figure('name','S1 Motor','position',[100,100,600,450]);
 
 len=800;%classification data length in ms
 
@@ -33,23 +33,14 @@ step=round(step/1000*fs);
 %S1
 motor=[1:6,13:18,25:30,37:42,49:52,61:64,73:76,85:88,97:100,109:111];
 sensory=setdiff(1:120,motor);
-ers=[1:7,14:19,26:32,38:43,52:53];
-
-
 %%
 %%
 %S2
 % sensory=[75,61,49,37,25,13,1];
 % motor=setdiff(1:120,sensory);
-% ers=[109:111,97,98,85,86,73:75,61:63,51,49,25];
-
-motor=union(motor,ers);
-sensory=union(sensory,ers);
-
 %%
 motorchannel=cell(length(motor),1);
 sensorychannel=cell(length(sensory),1);
-erschannel=cell(length(ers),1);
 
 for i=1:length(motor)
     motorchannel{i}=['C',num2str(motor(i))];
@@ -57,17 +48,21 @@ end
 for i=1:length(sensory)
     sensorychannel{i}=['C',num2str(sensory(i))];
 end
-
-for i=1:length(ers)
-    erschannel{i}=['C',num2str(ers(i))];
-end
 H={};
+
+permutation=1000;
+p=0.05;
+
+for perm=1:permutation
+    tr_num=size(close.data,3)+size(open.data,3);
+    
 for fi=1:length(f1)
     [b,a]=butter(2,[f1(fi) f2(fi)]/(fs/2));
+    
+    
     ecogC=close.data;
     ecogO=open.data;
     
-    %This is where to select channels
     Chi=find(ismember(close.channame,motorchannel));
     
     for i=1:size(ecogC,3)
@@ -131,15 +126,8 @@ for fi=1:length(f1)
                         data_c=dc;
                     end
                     
-%                     [W,Lmb,P]=csp_weights(data_c(:,:,TrCI),data_o(:,:,TrOI),Chi,1);
-%                     [trC,trO,tsC,tsO]=CSPFeatures(data_c(:,Chi,TrCI), data_o(:,Chi,TrOI), data_c(:,Chi,TsCI), data_o(:,Chi,TsOI), Nf, W);
-                    
-                    trC=10*log10(squeeze(sum(sum(data_c(:,Chi,TrCI).^2,1),2)));
-                    trO=10*log10(squeeze(sum(sum(data_o(:,Chi,TrOI).^2,1),2)));
-                    
-                    tsC=10*log10(squeeze(sum(sum(data_c(:,Chi,TsCI).^2,1),2)));
-                    tsO=10*log10(squeeze(sum(sum(data_o(:,Chi,TsOI).^2,1),2)));
-                    
+                    [W,Lmb,P]=csp_weights(data_c(:,:,TrCI),data_o(:,:,TrOI),Chi,1);
+                    [trC,trO,tsC,tsO]=CSPFeatures(data_c(:,Chi,TrCI), data_o(:,Chi,TrOI), data_c(:,Chi,TsCI), data_o(:,Chi,TsOI), Nf, W);
                     %    figure(2);
                     %         clf
                     %                 plot(tsO(:,1),tsO(:,4),'kd');
@@ -181,6 +169,7 @@ for fi=1:length(f1)
         
     end
 end
+end
 set(gca,'fontsize',20)
 set(gcf,'color','white')
 set(findobj(gcf,'type','text'),'fontweight','bold')
@@ -200,6 +189,6 @@ text(20,95,'Onset','FontSize',18)
 %%
 legend([H{1}.mainLine,H{2}.mainLine,H{3}.mainLine,H{4}.mainLine],'LFB Raw','LFB Env','HFB Raw','HFB Env');
 set([H{1}.mainLine,H{2}.mainLine,H{3}.mainLine,H{4}.mainLine],'linewidth',2)   
-% title('S2 Motor')
+title('S2 Sensory')
 legend('boxoff')
 

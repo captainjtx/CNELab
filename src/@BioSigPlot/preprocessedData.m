@@ -44,7 +44,7 @@ for i=1:size(d,2)
                 if fl<fh
                     [b{i}{1},a{i}{1}]=butter(order,[fl,fh]/(fs/2),'bandpass');
                 elseif fl>fh
-                    [b{i}{1},a{i}{1}]=butter(order,[fl,fh]/(fs/2),'stop');
+                    [b{i}{1},a{i}{1}]=butter(order,[fh,fl]/(fs/2),'stop');
                 end
             end
         end
@@ -83,12 +83,12 @@ if ~isempty(fchan)
     ja=a(fchan);
     jb=b(fchan);
     
-    if ismac
+    if isunix
         fd=UnixMultiThreadedFilter(jb,ja,fd);
     elseif ispc
         fd=WinMultiThreadedFilter(jb,ja,fd);
-    else
-        fd=FastFilter(jb,ja,fd);
+%     else
+%         fd=FastFilter(jb,ja,fd);
     end
     d(:,fchan)=fd(ext+1:end-ext,:);
 end

@@ -10,7 +10,7 @@ using namespace std;
 
 //global variable
 pthread_mutex_t chan_mutex;
-// pthread_mutex_t cout_mutex;
+// pthread_mutex_t cout_mutex;//for debug
 
 pthread_attr_t attr;
 
@@ -55,14 +55,19 @@ void *threadfunc(void *arg) {
         
         for(list<FilterParameter*>::iterator it=filterConfig[ichan].begin();it!=filterConfig[ichan].end();++it)
         {
-//             pthread_mutex_lock(&cout_mutex);
-//             cout<<"Iterate "<<ichan<<endl;
-//             pthread_mutex_unlock(&cout_mutex);
-            
             ia_e=(*it)->a;
             ib_e=(*it)->b;
             ia_n=(*it)->na;
             ib_n=(*it)->nb;
+            
+//             pthread_mutex_lock(&cout_mutex);
+//             cout<<"Iterate "<<ichan<<endl;
+//             for(int i=0;i<ia_n;++i)
+//                 cout<<ia_e[i]<<" ";
+//             cout<<endl;
+//             pthread_mutex_unlock(&cout_mutex);
+            
+            
             memset(x,0,sizeof(double)*padding);
             
             memcpy(x+padding,output+ichan*sample,sizeof(double)*sample);
@@ -111,17 +116,16 @@ void *threadfunc(void *arg) {
                 }
                 y[j]/=ia_e[0];
             }
-            
+            for (int j=padding;j<sample+padding;++j)
+            {
+                output[ichan*sample+j-padding]=y[sample+2*padding-1-j];
+            }
 //             pthread_mutex_lock(&cout_mutex);
 //             cout<<"Copy chan: "<<ichan<<endl;
 //             pthread_mutex_unlock(&cout_mutex);
         }
         
-        for (int j=padding;j<sample+padding;++j)
-        {
-            output[ichan*sample+j-padding]=y[sample+2*padding-1-j];
-        }
-        
+
 //         pthread_mutex_lock(&cout_mutex);
 //         cout<<"Next chan: "<<ichan<<endl;
 //         pthread_mutex_unlock(&cout_mutex);
@@ -174,7 +178,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     
     pthread_t threads[threadNum];
     pthread_mutex_init(&chan_mutex,NULL);
-//     pthread_mutex_init(&cout_mutex,NULL);
+//     pthread_mutex_init(&cout_mutex,NULL);//for debug
     
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
@@ -313,7 +317,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 //     cout<<"Desctruction of threads"<<endl;
     
     pthread_mutex_destroy(&chan_mutex);
-//     pthread_mutex_destroy(&cout_mutex);
+//     pthread_mutex_destroy(&cout_mutex);//for debug
     
 //     cout<<"Desctruction of filterConfig"<<endl;
     //desctruction of filterConfig

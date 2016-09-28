@@ -104,11 +104,10 @@ DWORD WINAPI threadfunc(void *arg) {
                 }
                 y[j]/=ia_e[0];
             }
-        }
-        
-        for (int j=padding;j<sample+padding;++j)
-        {
-            output[ichan*sample+j-padding]=y[sample+2*padding-1-j];
+            for (int j=padding;j<sample+padding;++j)
+            {
+                output[ichan*sample+j-padding]=y[sample+2*padding-1-j];
+            }
         }
         
         dwWaitResult = WaitForSingleObject(

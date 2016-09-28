@@ -751,28 +751,38 @@ classdef CommonDataStructure < handle
         function s=readFromMAT(filename)
             %Raw mat data
             s=CommonDataStructure.initial();
+            
+            %default
+            fs=256;
+            
             st=matfile(filename,'Writable',true);
             field=who(st);
             if length(field)>1
-                h=msgbox('Un recognized data structure, it contains more than one field','CommonDataStructure','error');
+                %try to load gHI simulink file format
+                if length(field)==2&&any(strcmp('y',field))&&any(strcmp('SR',field))
+                    data=st.('y');
+                    data=squeeze(data);
+                    fs=st.('SR');
+                else
+                    h=msgbox('Un recognized data structure, it contains more than one field','CommonDataStructure','error');
+                end
+            else
+                data=st.(field{1});
             end
             
-            data=st.(field{1});
-            pause(1)
+            pause(0.5);
             try
                 close(h)
             catch
             end
             
             if size(data,2)>size(data,1)
-                
                 %                 choice=questdlg('The data seems to be row-wise, do you want to transpose it?','CommonDataStructure','Yes','No','Yes');
                 %                 if strcmpi(choice,'Yes')
                 data=data';
                 %                 end
             end
-            %default
-            s.DataInfo.SampleRate=256;
+            s.DataInfo.SampleRate=fs;
             s.Data=data;
             %             s.DataInfo.TimeStamps=(1:size(data,1))/256;
         end

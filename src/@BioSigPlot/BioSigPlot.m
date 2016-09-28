@@ -1175,8 +1175,13 @@ classdef BioSigPlot < hgsetget
             newcell=cell(1,obj.DataNumber);
             
             for i=1:obj.DataNumber
-                newcell{i}=NaN*ones(obj.MontageChanNumber(i),length(val));
+                if ~isempty(oldcell{i})
+                    newcell{i}=oldcell{i};
+                else
+                    newcell{i}=NaN*ones(obj.MontageChanNumber(i),length(val));
+                end
             end
+            
             
             if ~obj.IsChannelSelected
                 %If there is no channel celected
@@ -1191,13 +1196,6 @@ classdef BioSigPlot < hgsetget
                     newcell{i}(obj.ChanSelect2Edit{i},:)=ones(length(obj.ChanSelect2Edit{i}),1)*val;
                 end
             end
-            
-            for i=1:obj.DataNumber
-                if ~isempty(oldcell{i})
-                    newcell{i}(isnan(newcell{i}(:,1)),:)=oldcell{i}(isnan(newcell{i}(:,1)),:);
-                end
-            end
-            
         end
         %==================================================================
         %******************************************************************
