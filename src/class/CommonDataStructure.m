@@ -546,28 +546,47 @@ classdef CommonDataStructure < handle
             
             %obj.data construction
             if isfield(oldcds,'data')
-                if isfield(oldcds.data,'data')
-                    s.Data=oldcds.data.data;
-                end
-                if isfield(oldcds.data,'annotations')
-                    s.DataInfo.Annotations=oldcds.data.annotations;
-                end
-                if isfield(oldcds.data,'artifact')
-                    s.DataInfo.Artifact=oldcds.data.artifact;
-                end
-                if isfield(oldcds.data,'timestamps')
-                    s.DataInfo.TimeStamps=oldcds.data.timestamps;
-                end
                 
-                if isfield(oldcds.data,'triggerCodes')
-                    s.DataInfo.TriggerCodes=oldcds.data.triggerCodes;
+                if length(oldcds.data)>1
+                    %multi depth file, ilknur
+                    prev_depth=inf;
+                    for i=1:length(oldcds.data)
+                        if isfield(oldcds.data(i),'timestamps')
+                            s.DataInfo.TimeStamps=cat(1,s.DataInfo.TimeStamps,oldcds.data(i).timestamps(:));
+                        end
+                        if isfield(oldcds.data(i),'depth')&&oldcds.data(i).depth~=prev_depth
+                            s.DataInfo.Annotations=cat(1,s.DataInfo.Annotations,{size(s.Data,1),['Depth ' num2str(oldcds.data(i).depth)]});
+                            prev_depth=oldcds.data(i).depth;
+                        end
+                        if isfield(oldcds.data(i),'data')
+                            s.Data=cat(1,s.Data,oldcds.data(i).data);
+                        end
+                    end
+                    s.DataInfo.TimeStamps=0:size(s.Data,1)-1;
+                else
+                    if isfield(oldcds.data,'data')
+                        s.Data=oldcds.data.data;
+                    end
+                    if isfield(oldcds.data,'annotations')
+                        s.DataInfo.Annotations=oldcds.data.annotations;
+                    end
+                    if isfield(oldcds.data,'artifact')
+                        s.DataInfo.Artifact=oldcds.data.artifact;
+                    end
+                    if isfield(oldcds.data,'timestamps')
+                        s.DataInfo.TimeStamps=oldcds.data.timestamps;
+                    end
+                    
+                    if isfield(oldcds.data,'triggerCodes')
+                        s.DataInfo.TriggerCodes=oldcds.data.triggerCodes;
+                    end
                 end
             end
             
             %obj.Montage construction
             if isfield(oldcds,'montage')
                 if isfield(oldcds.montage,'ChannelNames')
-                    s.Montage.ChannelNames=oldcds.montage.ChannelNames;
+                    s.Montage.ChannelNames=oldcds.montage.ChannelNames(1:size(s.Data,2));
                 end
                 if isfield(oldcds.montage,'GroupNames')
                     s.Montage.GroupNames=oldcds.montage.GroupNames;
@@ -1547,7 +1566,7 @@ classdef CommonDataStructure < handle
                     cds.Data=cds.Data(:,chan);
                 end
                 cds.fs=fs;
-                cds.DataInfo.TimeStamps=(1:size(cds.Data,1))/fs;
+                cds.DataInfo.TimeStamps=(0:size(cds.Data,1)-1)/fs;
                 
                 if isempty(out_path)
                     out_path=fileparts(which(f_in));
