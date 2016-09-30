@@ -51,6 +51,10 @@ import src.java.PushButton;
 btn_d=javaObjectEDT(java.awt.Dimension());
 
 obj.EventPanel=uipanel(obj.Fig,'units','pixels','BorderType','none','position',[0,0,obj.EventPanelWidth,100],'visible','off');
+obj.EventNavPanel=uipanel(obj.EventPanel,'units','pixels','BorderType','none',...
+    'position',[0,100-obj.EventNavPanelHeight,obj.EventPanelWidth,obj.EventNavPanelHeight],'visible','off');
+obj.EventListPanel=uipanel(obj.EventPanel,'units','pixels','BorderType','none',...
+    'position',[0,0,obj.EventPanelWidth,100-obj.EventNavPanelHeight],'visible','off');
 
 position = getpixelposition(obj.EventPanel);
 btn_d.width=position(3)*0.12;
@@ -62,31 +66,31 @@ col=javaObjectEDT(java.awt.Color(col(1),col(2),col(3)));
 obj.JBtnPrevEvent=javaObjectEDT(PushButton([obj.cnelab_path,'/db/icon/prev_page.png'],btn_d,char('previous event of same name (ctrl + shift left)'),col));
 set(handle(obj.JBtnPrevEvent,'CallbackProperties'),'MousePressedCallback',@(h,e) ChangeTime(obj,-4));
 
-[jh,gh]=javacomponent(obj.JBtnPrevEvent,[0.02 0.96 0.12 0.03],obj.EventPanel);
-set(gh,'Units','Norm','Position',[0.02 0.96 0.12 0.03]);
+[jh,gh]=javacomponent(obj.JBtnPrevEvent,[0.02 0.02 0.12 0.96],obj.EventNavPanel);
+set(gh,'Units','Norm','Position',[0.02 0.02 0.12 0.96]);
 
 obj.JBtnPrevEvent1=javaObjectEDT(PushButton([obj.cnelab_path,'/db/icon/prev_sec.png'],btn_d,char('previous event'),col));
 set(handle(obj.JBtnPrevEvent1,'CallbackProperties'),'MousePressedCallback',@(h,e) ChangeTime(obj,-3));
 
-[jh,gh]=javacomponent(obj.JBtnPrevEvent1,[0.15 0.96 0.12 0.03],obj.EventPanel);
-set(gh,'Units','Norm','Position',[0.15 0.96 0.12 0.03]);
+[jh,gh]=javacomponent(obj.JBtnPrevEvent1,[0.15 0.02 0.12 0.96],obj.EventNavPanel);
+set(gh,'Units','Norm','Position',[0.15 0.02 0.12 0.96]);
 
 %%
-obj.EventInfo=uicontrol(obj.EventPanel,'String','#|','Style','text',...
-    'units','normalized','position',[0.28 0.965 0.44 0.03],...
-    'HorizontalAlignment','center','FontUnits','normalized','FontSize',0.8);
+obj.EventInfo=uicontrol(obj.EventNavPanel,'String','#|','Style','text',...
+    'units','normalized','position',[0.28 0.02 0.44 0.93],...
+    'HorizontalAlignment','center','FontUnits','normalized','FontSize',0.6);
 %%
 obj.JBtnNextEvent1=javaObjectEDT(PushButton([obj.cnelab_path,'/db/icon/next_sec.png'],btn_d,char('next event'),col));
 set(handle(obj.JBtnNextEvent1,'CallbackProperties'),'MousePressedCallback',@(h,e) ChangeTime(obj,3));
 
-[jh,gh]=javacomponent(obj.JBtnNextEvent1,[0.73 0.96 0.12 0.03],obj.EventPanel);
-set(gh,'Units','Norm','Position',[0.73 0.96 0.12 0.03]);
+[jh,gh]=javacomponent(obj.JBtnNextEvent1,[0.73 0.02 0.12 0.96],obj.EventNavPanel);
+set(gh,'Units','Norm','Position',[0.73 0.02 0.12 0.96]);
 
 obj.JBtnNextEvent=javaObjectEDT(PushButton([obj.cnelab_path,'/db/icon/next_page.png'],btn_d,char('next event of same name (ctrl + shift right)'),col));
 set(handle(obj.JBtnNextEvent,'CallbackProperties'),'MousePressedCallback',@(h,e) ChangeTime(obj,4));
 
-[jh,gh]=javacomponent(obj.JBtnNextEvent,[0.86 0.96 0.12 0.03],obj.EventPanel);
-set(gh,'Units','Norm','Position',[0.86 0.96 0.12 0.03]);
+[jh,gh]=javacomponent(obj.JBtnNextEvent,[0.86 0.02 0.12 0.96],obj.EventNavPanel);
+set(gh,'Units','Norm','Position',[0.86 0.02 0.12 0.96]);
 
 end
 function makeControls(obj)

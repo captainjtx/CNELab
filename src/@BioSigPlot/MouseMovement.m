@@ -12,6 +12,8 @@ if obj.ResizeMode
     
     pos1(3)=max(1,min(pos(1)-obj.AdjustWidth/2,fpos(3)-obj.AdjustWidth-10));
     set(obj.EventPanel,'Position',pos1);
+    set(obj.EventNavPanel,'position',[0 pos1(4)-obj.EventNavPanelHeight pos1(3) obj.EventNavPanelHeight]);
+    set(obj.EventListPanel,'position',[0 0 pos1(3) pos1(4)-obj.EventNavPanelHeight]);
     
     pos2(1)=pos1(1)+pos1(3);
     set(obj.AdjustPanel,'Position',pos2);

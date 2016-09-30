@@ -70,9 +70,7 @@ if opt==-4
     [C,I]=min(abs(t-startTime));
     
     if ~isempty(ind)
-        if obj.Evts_{ind(I),1}<obj.Time
-            obj.Time=obj.Evts_{ind(I),1}-9/10*obj.WinLength;
-        end
+        obj.Time=obj.Evts_{ind(I),1}-(startTime-obj.Time);
         obj.SelectedEvent=ind(I);
     end
     
@@ -84,9 +82,7 @@ elseif opt==4
     [C,I]=min(abs(t-startTime));
     
     if ~isempty(ind)
-        if obj.Evts_{ind(I),1}>obj.Time+obj.WinLength
-            obj.Time=obj.Evts_{ind(I),1}-obj.WinLength/10;
-        end
+        obj.Time=obj.Evts_{ind(I),1}-(startTime-obj.Time);
         obj.SelectedEvent=ind(I);
     end 
 elseif opt==-3

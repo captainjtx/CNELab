@@ -1045,7 +1045,9 @@ classdef BioSigPlot < hgsetget
             if ~ref
                 ref=1;
             end
-            
+            %order the events according to its time
+            [~,order]=sort([val{:,1}]);
+            val=val(order,:);
             if size(val,2)==2
                 val=obj.assignEventColor(val);
                 d=cell(size(val,1),1);
@@ -1973,6 +1975,11 @@ classdef BioSigPlot < hgsetget
             w=150;
         end
         
+        function h=EventNavPanelHeight(obj)
+            pos=get(obj.EventPanel,'position');
+            h=min(30,pos(4)-1);
+        end
+        
         function w=AdjustWidth(obj)
             w=10;
         end
@@ -2055,7 +2062,12 @@ classdef BioSigPlot < hgsetget
                 end
             end
             
+            newPosEvent=get(obj.EventPanel,'Position');
+            
             set(obj.ControlPanel,'position',[0 0 pos(3) ctrlsize(2)]);
+            
+            set(obj.EventNavPanel,'position',[0 newPosEvent(4)-obj.EventNavPanelHeight newPosEvent(3) obj.EventNavPanelHeight]);
+            set(obj.EventListPanel,'position',[0 0 newPosEvent(3) newPosEvent(4)-obj.EventNavPanelHeight]);
             obj.resizeAxes(MainPos);
         end
         
@@ -2393,6 +2405,9 @@ classdef BioSigPlot < hgsetget
         UponText
         
         EventPanel
+        EventNavPanel
+        EventListPanel
+        
         AdjustPanel
         
         PrevMouseTime
