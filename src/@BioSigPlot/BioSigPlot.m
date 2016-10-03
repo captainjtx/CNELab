@@ -1046,8 +1046,10 @@ classdef BioSigPlot < hgsetget
                 ref=1;
             end
             %order the events according to its time
-            [~,order]=sort([val{:,1}]);
-            val=val(order,:);
+            if ~isempty(val)
+                [~,order]=sort([val{:,1}]);
+                val=val(order,:);
+            end
             if size(val,2)==2
                 val=obj.assignEventColor(val);
                 d=cell(size(val,1),1);
@@ -2254,7 +2256,7 @@ classdef BioSigPlot < hgsetget
                 t_end=min(t_start+obj.BufferLength,obj.TotalTime);
                 obj.BufferTime=t_start;
                 for i=1:length(obj.CDS)
-                    obj.Data{i}=obj.CDS{i}.get_data_segment(obj.CDS{i},round(t_start*obj.SRate)+1:round(t_end*obj.SRate)+1,[]);
+                    obj.Data{i}=obj.CDS{i}.get_data_segment(obj.CDS{i},round(t_start*obj.SRate)+1:round(t_end*obj.SRate),[]);
                 end
                 recalculate(obj);
             end

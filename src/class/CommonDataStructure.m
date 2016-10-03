@@ -1501,7 +1501,7 @@ classdef CommonDataStructure < handle
                 pathstr=fileinfo.path;
             end
             
-            dat=zeros(length(sample),length(channel));
+            dat=ones(length(sample),length(channel))*nan;
             
             for f=1:length(filenames)
                 waitbar(f/length(filenames));
