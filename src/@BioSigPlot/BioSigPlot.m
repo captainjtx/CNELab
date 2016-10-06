@@ -2262,6 +2262,13 @@ classdef BioSigPlot < hgsetget
             end
             set(obj,'WinLength',val); 
         end
+        function MaskChannel(obj,opt)
+            
+            obj.Mask=obj.applyPanelVal(obj.Mask_,opt);
+            
+        end
+
+
     end
     
     methods
@@ -2278,7 +2285,6 @@ classdef BioSigPlot < hgsetget
         ChangeTime(obj,opt)
         redrawChangeBlock(obj,opt)
         showGauge(obj)
-        MaskChannel(obj,src)
         MnuChanGain(obj,src)
         MnuVisualBuffer(obj,src)
         MnuDataBuffer(obj,src)
