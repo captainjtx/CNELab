@@ -59,9 +59,9 @@ classdef CommonDataStructure < handle
         function val=get.Data(obj)
             ft=obj.file_type;
             if ft==2&&~isempty(obj.MatFile)
-                val=obj.MatFile.Data;
+                val=double(obj.MatFile.Data);
             else
-                val=obj.dat;
+                val=double(obj.dat);
             end
         end
         
@@ -295,7 +295,7 @@ classdef CommonDataStructure < handle
                 %find the recording segments
                 frames=obj.Data(:,videoChannel);
                 
-                %eliminate the zeros due to UDP
+                %eliminate the zeros due to UDP drops
                 ind=find(frames>=1);
                 frames=frames(ind);
                 

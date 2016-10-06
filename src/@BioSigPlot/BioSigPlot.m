@@ -539,8 +539,8 @@ classdef BioSigPlot < hgsetget
         function OnClose(obj)
             %             Delete the figure
             saveConfig(obj);
-            if isa(obj.WinVideo,'VideoWindow') && obj.WinVideo.valid
-                delete(obj.WinVideo)
+            if obj.WinVideo.valid
+                obj.WinVideo.OnClose();
             end
             
             if obj.TFMapWin.valid
@@ -1046,10 +1046,10 @@ classdef BioSigPlot < hgsetget
                 ref=1;
             end
             %order the events according to its time
-            if ~isempty(val)
-                [~,order]=sort([val{:,1}]);
-                val=val(order,:);
-            end
+%             if ~isempty(val)
+%                 [~,order]=sort([val{:,1}]);
+%                 val=val(order,:);
+%             end
             if size(val,2)==2
                 val=obj.assignEventColor(val);
                 d=cell(size(val,1),1);

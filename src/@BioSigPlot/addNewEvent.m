@@ -1,6 +1,5 @@
 function addNewEvent(obj,newEvent)
 obj.RedrawEvtsSkip=true;
-
 obj.Evts_=cat(1,obj.Evts_,newEvent);
 count=0;
 for i=1:length(obj.Axes)
