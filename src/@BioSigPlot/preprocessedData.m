@@ -50,7 +50,6 @@ for i=1:size(d,2)
         end
         
         if ~isempty(b{i})
-            fchan=cat(1,fchan,i);
             if isempty(a{i})
                 a{i}{1}=1;
             end
@@ -60,11 +59,13 @@ for i=1:size(d,2)
             if fn(i)>1&&fn(i)<fs/2-1
                 if notch_single
                     [notch_b,notch_a]=butter(order,[fn(i)-1,fn(i)+1]/(fs/2),'stop');
+                    b{i}=cat(1,b{i},{notch_b});
+                    a{i}=cat(1,a{i},{notch_a});
                 else
                     [notch_b,notch_a]=butter_harmonic(fn(i),fs,order);
+                    b{i}=cat(1,b{i},notch_b);
+                    a{i}=cat(1,a{i},notch_a);
                 end
-                b{i}=cat(1,b{i},notch_b);
-                a{i}=cat(1,a{i},notch_a);
             end
         end
         
@@ -72,6 +73,10 @@ for i=1:size(d,2)
         if custom_b~=1||custom_a~=1
             b{i}=cat(1,b{i},{custom_b});
             a{i}=cat(1,a{i},{custom_a});
+        end
+        
+        if ~isempty(b{i})
+            fchan=cat(1,fchan,i);
         end
     end
 end

@@ -1,9 +1,9 @@
 clc
 clear
 
-f=load('Z:\Tianxiao\data\BMI\handopenclose\S1/Open.mat','-mat');
+f=load('/Users/tengi/Desktop/Projects/data/China/handopenclose/S2/Open.mat','-mat');
 open=f.Open;
-f=load('Z:\Tianxiao\data\BMI\handopenclose\S1/Close.mat','-mat');
+f=load('/Users/tengi/Desktop/Projects/data/China/handopenclose/S2/Close.mat','-mat');
 close=f.Close;
 %%
 fs=open.fs;
@@ -170,6 +170,6 @@ text(20,95,'Onset','FontSize',18)
 %%
 legend([H{1}.mainLine,H{2}.mainLine,H{3}.mainLine],'8-13Hz','13-30Hz','60-200Hz');
 set([H{1}.mainLine,H{2}.mainLine,H{3}.mainLine],'linewidth',2)   
-title('S1')
+title('S2')
 legend('boxoff')
 
