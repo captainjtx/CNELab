@@ -279,31 +279,11 @@ classdef CommonDataStructure < handle
             close(wait_bar_h);
         end
         
-        function success=extractTimeFrameFromData(obj,varargin)
+        function success=extractTimeFrameFromData(obj,videoChannel)
             success=false;
             
             if isempty(obj.DataInfo.SampleRate)
                 error('Sample rate missing!');
-            end
-            if nargin==1
-                %try to automatically detect the videochannel
-                videoChannel=[];
-                for i=1:size(obj.Data,2)
-                    [frame,ind]=unique(obj.Data(:,i));
-                    nv=frame<1;
-                    frame(nv)=[];
-                    
-                    if sum(diff(frame)==1)>(0.5*length(frame))
-                        videoChannel=i;
-                        break
-                    end
-                end
-                
-                if isempty(videoChannel)
-                    error('Can not find the timeframe channel for video!');
-                end
-            else
-                videoChannel=varargin{1};
             end
             
             if ischar(videoChannel)
@@ -319,7 +299,7 @@ classdef CommonDataStructure < handle
                 ind=find(frames>=1);
                 frames=frames(ind);
                 
-                [tmp,I]=max(frames);
+                [~,I]=max(frames);
                 
                 frames=frames(1:I);
                 ind=ind(1:I);
