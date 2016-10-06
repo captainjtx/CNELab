@@ -1,10 +1,11 @@
 classdef CnelabWindow < handle
     properties
-        valid
         fig
         
         open_btn
         file_listbox
+        file_listbox_model
+        jRenderer
         
         cfg
         
@@ -13,14 +14,28 @@ classdef CnelabWindow < handle
         selectedFiles
         
         cfg_name
+        
     end
     
     properties (Dependent)
         cnelab_path
+        file_type
+        valid
     end
         
     methods
-        
+        function val=get.file_type(obj)
+            val=ones(1,length(obj.cfg.files));
+            
+            for i=1:length(obj.cfg.files)
+                for j=1:length(obj.cfg.files{i})
+                    [~,~,ext]=fileparts(obj.cfg.files{i}{j});
+                    if ~strcmp(ext,'.cds')
+                        val(i)=-1;
+                    end
+                end
+            end
+        end
         function val=get.valid(obj)
             try
                 val=ishandle(obj.fig)&&isgraphics(obj.fig);
@@ -41,8 +56,19 @@ classdef CnelabWindow < handle
             else
                 cfg.files={};
                 cfg.skip=0;
-                obj.cfg=cfg;
+                obj.cfg=cfg;    
             end
+            %check if file still there
+            file_nonexist=[];
+            for i=1:length(obj.cfg.files)
+                for j=1:length(obj.cfg.files{i})
+                    if ~exist(obj.cfg.files{i}{j},'file')
+                        file_nonexist=cat(1,file_nonexist,i);
+                        break
+                    end
+                end
+            end
+            obj.cfg.files(file_nonexist)=[];
             obj.choice=-1;
         end
         
@@ -121,18 +147,12 @@ classdef CnelabWindow < handle
                         end
                     end
                 end
-                obj.file_listbox=javaObjectEDT(javax.swing.JList(list_str));
-                obj.file_listbox.setSelectedIndex(0);
-            end
-            file_type=ones(1,length(obj.cfg.files));
-            
-            for i=1:length(obj.cfg.files)
-                for j=1:length(obj.cfg.files{i})
-                    [~,~,ext]=fileparts(obj.cfg.files{i}{j});
-                    if ~strcmp(ext,'.cds')
-                        file_type(i)=-1;
-                    end
+                obj.file_listbox_model=javaObjectEDT(javax.swing.DefaultListModel);
+                for i=1:length(list_str)
+                    obj.file_listbox_model.addElement(list_str{i});
                 end
+                obj.file_listbox=javaObjectEDT(javax.swing.JList(obj.file_listbox_model));
+                obj.file_listbox.setSelectedIndex(0);
             end
             
             obj.file_listbox.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
@@ -143,9 +163,9 @@ classdef CnelabWindow < handle
             obj.file_listbox.setFixedCellHeight(45);
             obj.file_listbox.setBackground(java.awt.Color(0.95,0.95,0.95));
             obj.file_listbox.setBorder(javax.swing.border.EmptyBorder(0,0,0,0));
-            jRenderer = javaObjectEDT(src.java.LabelListBoxRenderer());
-            jRenderer.setFileType(file_type);
-            obj.file_listbox.setCellRenderer(jRenderer);
+            obj.jRenderer = javaObjectEDT(src.java.LabelListBoxRenderer());
+            obj.jRenderer.setFileType(obj.file_type);
+            obj.file_listbox.setCellRenderer(obj.jRenderer);
             set(handle(obj.file_listbox,'CallbackProperties'),'MousePressedCallback',@(h,e)mouse_press_list(obj));
             
             jsp=javaObjectEDT(javax.swing.JScrollPane());
@@ -231,6 +251,7 @@ classdef CnelabWindow < handle
             if ishandle(h)
                 delete(h);
             end
+            obj.saveConfig();
         end
         
         function mouse_enter(obj)
@@ -244,6 +265,7 @@ classdef CnelabWindow < handle
         end
         function mouse_press_btn(obj)
             obj.choice=1;
+            
             OnClose(obj);
             notify(obj,'UserChoice')
         end
@@ -256,6 +278,22 @@ classdef CnelabWindow < handle
                 obj.selectedFiles=obj.cfg.files{ind+1};
             end
             obj.choice=2;
+            
+            for i=1:length(obj.selectedFiles)
+                if ~exist(obj.selectedFiles{i},'file')
+                    %file does not exist
+                    %delete the file history
+                    errordlg(['Can not find ',obj.selectedFiles{i}]);
+                    obj.cfg.files(ind+1)=[];
+                    obj.file_listbox_model.remove(ind);
+                    obj.jRenderer.setFileType(obj.file_type);
+                    if ~isempty(obj.cfg.files)
+                        obj.file_listbox.setSelectedIndex(0);
+                    end
+%                     obj.file_listbox.setCellRenderer(obj.jRenderer);
+                    return
+                end
+            end
             OnClose(obj);
             notify(obj,'UserChoice');
         end
