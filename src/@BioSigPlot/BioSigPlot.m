@@ -539,8 +539,10 @@ classdef BioSigPlot < hgsetget
         function OnClose(obj)
             %             Delete the figure
             saveConfig(obj);
-            if obj.WinVideo.valid
-                obj.WinVideo.OnClose();
+            if ~isempty(obj.WinVideo)
+                if obj.WinVideo.valid
+                    obj.WinVideo.OnClose();
+                end
             end
             
             if obj.TFMapWin.valid
