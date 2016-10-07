@@ -11,3 +11,4 @@ lib/vlc-matlab
 *.cpp~
 *.swp
 demo/demo.cds
+db/cfg/defaultconfig.cfg
