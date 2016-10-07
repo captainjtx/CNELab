@@ -585,7 +585,12 @@ classdef CommonDataStructure < handle
                 end
                 
                 if isfield(oldcds.montage,'SampleRate')
-                    s.DataInfo.SampleRate=oldcds.montage.SampleRate;
+                    %sometimes Ilknur save as string
+                    if ischar(oldcds.montage.SampleRate)
+                        s.DataInfo.SampleRate=str2double(oldcds.montage.SampleRate);
+                    else
+                        s.DataInfo.SampleRate=oldcds.montage.SampleRate;
+                    end
                     s.DataInfo.TimeStamps=s.DataInfo.TimeStamps/s.DataInfo.SampleRate;
                     evts=s.DataInfo.Annotations;
                     evts(:,1)=num2cell(cell2mat(evts(:,1))/s.DataInfo.SampleRate);
