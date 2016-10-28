@@ -379,7 +379,6 @@ classdef SpatialMapWindow < handle
             end
         end
         
-        
         function val=get.interp_missing(obj)
             val=obj.interp_missing_;
         end
@@ -459,8 +458,8 @@ classdef SpatialMapWindow < handle
                             for t=1:length(event_mat)
                                 erd_val=cat(1,erd_val,mean(mean(event_mat{t}(fi,ti))));
                             end
-                            
-                            tmp(i)=ttest(erd_val,obj.erd_t,'Tail','Left','Alpha',obj.p);
+                            %transform to log10 scale before ttest
+                            tmp(i)=ttest(log10(erd_val),log10(obj.erd_t),'Tail','Left','Alpha',obj.p);
                         end
                     end
                 end
@@ -487,8 +486,8 @@ classdef SpatialMapWindow < handle
                             for t=1:length(event_mat)
                                 ers_val=cat(1,ers_val,mean(mean(event_mat{t}(fi,ti))));
                             end
-                            
-                            tmp(i)=ttest(ers_val,obj.ers_t,'Tail','Right','Alpha',obj.p);
+                            %transform to log10 scale before ttest
+                            tmp(i)=ttest(log10(ers_val),log10(obj.ers_t),'Tail','Right','Alpha',obj.p);
                         end
                     end
                 end

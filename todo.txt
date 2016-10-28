@@ -200,3 +200,10 @@ montage editor
 %notch order of 2 +-1 Hz
 
 % navigate by 1 event bug
+
+Video seeking by event, time setting
+Save Event Bug
+Video Fast forward
+Add vs redistributable 
+Save TFMap Matrix
+Data Time exceeds video

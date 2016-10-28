@@ -26,7 +26,7 @@ k=1;
 for i=1:shft:ln-wd+1
     if ~typ
         data=x(i:i+wd-1).*W;
-        xf=2*abs(fft(data,nf));
+        xf=2*abs(fft(data,nf)).^2;
     else
         data=x(i:i+wd-1);
         [xf,w]=pmtm(data,1.5,nf,fs);

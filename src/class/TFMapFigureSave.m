@@ -42,7 +42,7 @@ classdef TFMapFigureSave<handle
             obj.width=300;
             obj.height=180;
             
-            obj.res_ppi_=300;
+            obj.res_ppi_=150;
             
             if ~isempty(obj.parent.bsp.FileDir)&&exist([obj.parent.bsp.FileDir,'/app/tfmap'],'dir')~=7
                 mkdir(obj.parent.bsp.FileDir,'/app/tfmap');
