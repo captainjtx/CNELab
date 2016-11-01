@@ -30,7 +30,7 @@ else
     t=obj.VideoLineTime+obj.VideoTimerPeriod*obj.PlaySpeed;
 end
 %stop if exceeds data length
-if t>obj.DataTime
+if t>obj.TotalTime
     PausePlay(obj);
     error('Data time exceeds video length');
 end
