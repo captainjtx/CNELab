@@ -6,6 +6,7 @@ demo/behv.avi
 *.m~
 db/cfg/cnelab.cfg
 db/icon/dev.pptx
+db/cfg/user.cfg
 lib/vlc-matlab
 *~
 *.cpp~
