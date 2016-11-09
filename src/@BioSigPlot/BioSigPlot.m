@@ -27,6 +27,7 @@ classdef BioSigPlot < hgsetget
         JBtnSelectWin
         
         JChannelNumberSpinner
+        JSensitivitySpinner
         
         
         TxtInfo1
@@ -80,6 +81,7 @@ classdef BioSigPlot < hgsetget
         MenuSaveSettings
         MenuSaveData
         MenuSaveEvents
+        MenuSavePosition
         
         MenuSaveAs
         MenuSaveAsFigure
@@ -121,7 +123,6 @@ classdef BioSigPlot < hgsetget
         MenuChannel
         MenuDataBuffer
         MenuChannelNumber
-        MenuGain
         MenuDetrend
         MenuDetrendConstant
         MenuDetrendLinear
@@ -1837,6 +1838,8 @@ classdef BioSigPlot < hgsetget
                     addlistener(obj.WinVideo,'VideoChangeTime',@(src,evt) SynchDataWithVideo(obj));
                     addlistener(obj.WinVideo,'VideoChangeState',@(src,ect) SynchVideoState(obj));
                     addlistener(obj.WinVideo,'VideoClosed',@(src,evt) StopPlay(obj));
+                else
+                    obj.LoadVideo();
                 end
             end
         end
@@ -2263,6 +2266,15 @@ classdef BioSigPlot < hgsetget
                 recalculate(obj);
             end
             set(obj,'WinLength',val); 
+        end
+        
+        function SensitivitySpinnerCallback(obj)
+            val=obj.JSensitivitySpinner.getValue();
+            
+            if val==0
+                return
+            end
+            obj.Gain=obj.applyPanelVal(obj.Gain_,1/val);
         end
         function MaskChannel(obj,opt)
             

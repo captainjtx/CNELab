@@ -17,6 +17,7 @@ obj.MenuLoadSpatialMaps=uimenu(obj.MenuLoad,'Label','Spatial Maps','Callback',@(
 
 obj.MenuSave=uimenu(obj.MenuFile,'Label','Save');
 obj.MenuSaveEvents=uimenu(obj.MenuSave,'Label','Events','Callback',@(src,evt) SaveData(obj,src),'Accelerator','e');
+obj.MenuSavePosition=uimenu(obj.MenuSave,'Label','Position','Callback',@(src,evt) SaveData(obj,src));
 obj.MenuSaveSettings=uimenu(obj.MenuSave,'Label','Settings','Callback',@(src,evt) SaveData(obj,src));
 obj.MenuSaveData=uimenu(obj.MenuSave,'Label','Data','Callback',@(src,evt) SaveData(obj,src));
 
@@ -64,7 +65,6 @@ obj.MenuNotchFilterHarmonics=uimenu(obj.MenuNotchFilter,'Label','Harmonics','che
 obj.MenuChannel=uimenu(obj.Fig,'Label','Data');
 obj.MenuDataBuffer=uimenu(obj.MenuChannel,'Label','Buffer','Callback',@(src,evt)MnuDataBuffer(obj,src));
 obj.MenuChannelNumber=uimenu(obj.MenuChannel,'Label','Channels/Page','Callback',@(src,evt) MnuChan2Display(obj));
-obj.MenuGain=uimenu(obj.MenuChannel,'Label','Gain','Callback',@(src,evt) MnuChanGain(obj,src));
 obj.MenuDetrend=uimenu(obj.MenuChannel,'Label','Detrend');
 obj.MenuDetrendConstant=uimenu(obj.MenuDetrend,'Label','Constant','Callback',@(src,evt)DetrendData(obj,src));
 obj.MenuDetrendLinear=uimenu(obj.MenuDetrend,'Label','Linear','Callback',@(src,evt)DetrendData(obj,src));
