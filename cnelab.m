@@ -294,7 +294,7 @@ if isdir(fullfile(fpaths{1},'events'))
     [evts,names]=CommonDataStructure.scanEventFile(fullfile(fpaths{1},'events'));
     for i=1:length(evts)
         events(i).name=names{i};
-        events(i).event=evts{i};
+        events(i).event=bsp.assignEventColor(evts{i});
     end
 end
 if ~isempty(events)

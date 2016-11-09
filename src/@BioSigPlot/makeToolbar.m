@@ -46,7 +46,6 @@ set(handle(obj.JTogVertical,'CallbackProperties'),'MousePressedCallback',@(h,e) 
 obj.JToolbar.add(obj.JTogVertical);
 
 obj.JToolbar.addSeparator();
-
 obj.JBtnPlaySlower=javaObjectEDT(PushButton([obj.cnelab_path,'/db/icon/slower.png'],btn_d,char('Slower'),col));
 set(handle(obj.JBtnPlaySlower,'CallbackProperties'),'MousePressedCallback',@(h,e) PlaySlower(obj));
 obj.JToolbar.add(obj.JBtnPlaySlower);
@@ -66,7 +65,7 @@ obj.JToolbar.add(obj.JTogVideo);
 %tool
 obj.JToolbar.addSeparator();
 
-label = javaObjectEDT(JLabel('Channel'));
+label = javaObjectEDT(JLabel('Chan '));
 obj.JToolbar.add(label);
 
 model = javaObjectEDT(SpinnerNumberModel(max(obj.ChanNumber),1,max(obj.ChanNumber),1));  
@@ -80,7 +79,7 @@ obj.JChannelNumberSpinner.setPreferredSize(spinner_d);
 % obj.JChannelNumberSpinner.getEditor().getTextField().setColumns(1);
 set(handle(obj.JChannelNumberSpinner,'CallbackProperties'),'StateChangedCallback',@(h,e) ChannelNumberSpinnerCallback(obj));
 
-label = javaObjectEDT(JLabel(' Window (s)'));
+label = javaObjectEDT(JLabel(' Win (s) '));
 obj.JToolbar.add(label);
 
 model = javaObjectEDT(SpinnerNumberModel(obj.WinLength,0,obj.TotalTime,obj.WinLength/15));  
@@ -96,6 +95,20 @@ obj.JWindowTimeSpinner.setMinimumSize(spinner_d);
 obj.JWindowTimeSpinner.setPreferredSize(spinner_d);
 % obj.JChannelNumberSpinner.getEditor().getTextField().setColumns(1);
 set(handle(obj.JWindowTimeSpinner,'CallbackProperties'),'StateChangedCallback',@(h,e) WindowTimeSpinnerCallback(obj));
+
+label = javaObjectEDT(JLabel(' Sen '));
+obj.JToolbar.add(label);
+
+model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(1),java.lang.Double(0),[],java.lang.Double(10)));  
+obj.JSensitivitySpinner =javaObjectEDT(ToolbarSpinner(model));
+    
+obj.JToolbar.add(obj.JSensitivitySpinner);
+
+obj.JSensitivitySpinner.setMaximumSize(spinner_d);
+obj.JSensitivitySpinner.setMinimumSize(spinner_d);
+obj.JSensitivitySpinner.setPreferredSize(spinner_d);
+% obj.JChannelNumberSpinner.getEditor().getTextField().setColumns(1);
+set(handle(obj.JSensitivitySpinner,'CallbackProperties'),'StateChangedCallback',@(h,e) SensitivitySpinnerCallback(obj));
 
 obj.JToolbar.addSeparator();
 
