@@ -1,4 +1,4 @@
-function updateVideo(obj)
+function SynchVideoWithData(obj)
 
 if isa(obj.WinVideo,'VideoWindow') && isvalid(obj.WinVideo)
     if ~strcmpi(obj.WinVideo.Status,'Playing')

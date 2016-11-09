@@ -207,6 +207,7 @@ classdef CommonDataStructure < handle
         function save(obj,varargin)
             title=[];
             fnames=[];
+            folders=true;
             if isempty(varargin)
             elseif length(varargin)==1
                 fnames=varargin{1};
@@ -218,6 +219,8 @@ classdef CommonDataStructure < handle
                         title=varargin{i+1};
                     elseif strcmpi(varargin{i},'FileSize')
                         obj.file_size=varargin{i+1};
+                    elseif strcmpi(varargin{i},'Folders')
+                        folders=varargin{i+1};
                     else
                         msgbox('Invalid argument-value pair!','CommonDataStructure.save','error');
                         return
@@ -263,17 +266,19 @@ classdef CommonDataStructure < handle
                 
             end
             
-            FilePath=fileparts(fnames);
-            if exist([FilePath,'/montage'],'dir')~=7
-                mkdir(FilePath,'montage');
-            end
-            
-            if exist([FilePath,'/position'],'dir')~=7
-                mkdir(FilePath,'position');
-            end
-            
-            if exist([FilePath,'/events'],'dir')~=7
-                mkdir(FilePath,'events');
+            if folders
+                FilePath=fileparts(fnames);
+                if exist([FilePath,'/montage'],'dir')~=7
+                    mkdir(FilePath,'montage');
+                end
+                
+                if exist([FilePath,'/position'],'dir')~=7
+                    mkdir(FilePath,'position');
+                end
+                
+                if exist([FilePath,'/events'],'dir')~=7
+                    mkdir(FilePath,'events');
+                end
             end
             
             close(wait_bar_h);
@@ -788,6 +793,8 @@ classdef CommonDataStructure < handle
             end
             s.DataInfo.SampleRate=fs;
             s.Data=data;
+            s.Montage.ChannelNames=cell(size(data,2),1);
+            s.Montage.ChannelNames=cellfun(@num2str,num2cell(1:size(data,2)),'UniformOutput',false);
             %             s.DataInfo.TimeStamps=(1:size(data,1))/256;
         end
         
@@ -1191,6 +1198,12 @@ classdef CommonDataStructure < handle
                     elseif strcmpi(name,'TimeStamps')
                         %timestamp will be specified automatically when creating the
                         %dataset
+                    elseif strcmpi(name,'VideoName')
+                        current_data_info.VideoName=varargin{i+1};
+                    elseif strcmpi(name,'VideoStartTime')
+                        current_data_info.Video.StartTime=varargin{i+1};
+                    elseif strcmpi(name,'VideoEndTime')
+                        current_data_info.Video.EndTime=varargin{i+1};
                     elseif strcmpi(name,'ChannelPosition')
                         current_montage.ChannelPosition=varargin{i+1};
                     elseif strcmpi(name,'ChannelNames')
@@ -1525,6 +1538,9 @@ classdef CommonDataStructure < handle
             if length(varargin)==1
                 %Only load specific channel
                 chan=varargin{1};
+            elseif length(varargin)==2
+                chan=varargin{1};
+                vname=varargin{2};
             end
             
             [out_path,out_name,~]=fileparts(output_filename);
@@ -1539,6 +1555,7 @@ classdef CommonDataStructure < handle
                 cds=CommonDataStructure.Load(f_in);
                 cds.prevf=[out_name,'_',num2str(i-1),'.cds'];
                 cds.nextf=[out_name,'_',num2str(i+1),'.cds'];
+                cds.DataInfo.VideoName=vname;
                 
                 if i==1
                     cds.prevf=[];
@@ -1606,14 +1623,19 @@ classdef CommonDataStructure < handle
                 fullname=fullfile(pathstr,filenames{f});
                 switch CommonDataStructure.dataStructureCheck(fullname)
                     case 2
-                        fileobj=matfile(fullname);
+                        fileobj=matfile(fullname,'Writable',true);
                         fileobj.Data(i_start:i_end,:)=data(i_start+filesample(f,1)-ind_start:i_end+filesample(f,1)-ind_start,:);
                     otherwise
                         msgbox('Invalid file format! Please convert your file into CommonDataStructure','CommonDataStructure.save','error');
+
                         return
                         %                         fileobj=CommonDataStructure.Load(fullname);
                         %                         fileobj.Data(i_start:i_end,:)=data(i_start+filesample(f,1)-ind_start:i_end+filesample(f,1)-ind_start,:);
                 end
+            end
+            try
+                close(wait_bar_h)
+            catch
             end
         end
         

@@ -191,6 +191,7 @@ classdef VideoWindow  < handle
             if strcmpi(obj.ActxOpt,'WMP')
                 obj.Actx.controls.currentPosition=val;
             elseif strcmpi(obj.ActxOpt,'VLC')
+                obj.Actx.input.time=val*1000;
             end
         end
         
@@ -241,23 +242,31 @@ classdef VideoWindow  < handle
                     val=obj.Actx.status;
                 end
             elseif strcmpi(obj.ActxOpt,'VLC')
-                switch (obj.Actx.input.state)
-                    case 0
-                        val='Idle';
-                    case 1
-                        val='Openning';
-                    case 2
-                        val='Buffering';
-                    case 3
-                        val='Playing';
-                    case 4
-                        val='Paused';
-                    case 5
-                        val='Stopped';
-                    case 6
-                        val='Ended';
-                    case 7
-                        val='Error';
+                try
+                    if ishandle(obj.Actx)
+                        switch (obj.Actx.input.state)
+                            case 0
+                                val='Idle';
+                            case 1
+                                val='Openning';
+                            case 2
+                                val='Buffering';
+                            case 3
+                                val='Playing';
+                            case 4
+                                val='Paused';
+                            case 5
+                                val='Stopped';
+                            case 6
+                                val='Ended';
+                            case 7
+                                val='Error';
+                        end
+                    else
+                        val='Closed';
+                    end
+                catch
+                    val='Error';
                 end
                         
             end

@@ -1,5 +1,22 @@
 function SaveData(obj,src)
 if src==obj.MenuSaveSettings
+    for i=1:length(obj.CDS)
+        if obj.CDS{i}.file_type==2
+            CommonDataStructure.write_file_info(obj.CDS{i},...
+                'SampleRate',obj.SRate,...
+                'Annotations',obj.Evts,...
+                'MaskChanNames',obj.MontageChanNames{i}(obj.Mask{i}==0),...
+                'VideoName',obj.VideoFile,...
+                'VideoStartTime',obj.VideoStartTime,...
+                'VideoEndTime',obj.VideoEndTime);
+            %                 'ChannelNames',chanNames(dataset==i),...
+            %                 'GroupNames',groupnames(dataset==i),...
+            %                 'MontageName',obj.Montage{i}(obj.MontageRef(i)).name,...
+        else
+            
+        end
+    end
+elseif src==obj.MenuSavePosition
     [~,dataset,~,~,~,~,pos]=get_datainfo(obj,false);
     for i=1:length(obj.CDS)
         if obj.CDS{i}.file_type==2
@@ -7,16 +24,10 @@ if src==obj.MenuSaveSettings
                 chanpos=pos(dataset==i,:);
             else
                 chanpos=[];
-            end            
+            end  
             
             CommonDataStructure.write_file_info(obj.CDS{i},...
-                'SampleRate',obj.SRate,...
-                'Annotations',obj.Evts,...
-                'MaskChanNames',obj.MontageChanNames{i}(obj.Mask{i}==0),...
                 'ChannelPosition',chanpos);
-            %                 'ChannelNames',chanNames(dataset==i),...
-            %                 'GroupNames',groupnames(dataset==i),...
-            %                 'MontageName',obj.Montage{i}(obj.MontageRef(i)).name,...
         else
             
         end
@@ -93,7 +104,7 @@ else
                 cds.Montage.ChannelPosition=[];
             end
             
-            cds.save('title',['DataSet-',num2str(dd(i))]);
+            cds.save('title',['DataSet-',num2str(dd(i))],'folders',false);
         end
         
     elseif src==obj.MenuSaveAsMergeData
@@ -128,7 +139,7 @@ else
         
         cds.Montage.MaskChanNames=maskchan;
         
-        cds.save('title','Merged Data');
+        cds.save('title','Merged Data','folders',false);
     end
 end
 end

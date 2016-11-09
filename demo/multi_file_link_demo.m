@@ -5,7 +5,7 @@ names={f.name};
 input_files={};
 
 for i=1:length(names)
-    if regexp(names{i},'rest_')
+    if regexp(names{i},'language_')
         input_files=cat(1,input_files,names(i));
     end
 end
@@ -31,7 +31,9 @@ end
 fs=2400;
 
 %output filename
-out_filename='REST';
+out_filename='language';
+
+video_filename='speech.avi';
 
 %selected channels (optional)
 chan=1:10;
