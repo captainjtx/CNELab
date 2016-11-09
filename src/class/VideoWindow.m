@@ -191,6 +191,7 @@ classdef VideoWindow  < handle
             if strcmpi(obj.ActxOpt,'WMP')
                 obj.Actx.controls.currentPosition=val;
             elseif strcmpi(obj.ActxOpt,'VLC')
+                obj.Actx.input.time=val*1000;
             end
         end
         

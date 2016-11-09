@@ -2306,7 +2306,7 @@ classdef BioSigPlot < hgsetget
         LoadFilter(obj)
         NewMontage(obj)
         MnuFigurePosition(obj)
-        updateVideo(obj)
+        SynchVideoWithData(obj)
         LoadChannelPosition(obj)
         SavePosition(obj)
         Interpolate(obj)

@@ -7,10 +7,8 @@ if isa(obj.WinVideo,'VideoWindow') && obj.WinVideo.valid
             %The TotalFrameNumber get from VideoReader seems to be
             %inaccurate, Video must be stopped before the recording to get
             %the exact number of frames recorded !
-            
             dp=ceil(obj.NumberOfFrame*obj.WinVideo.CurrentPositionRatio);
             dp=min(max(1,dp),size(obj.VideoTimeFrame,1));
-            
 %             dp=ceil(obj.WinVideo.TotalFrameNumber*obj.WinVideo.CurrentPositionRatio);
 %             dp=min(max(1,dp),size(obj.VideoTimeFrame,1));
             
