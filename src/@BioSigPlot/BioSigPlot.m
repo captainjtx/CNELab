@@ -1260,6 +1260,7 @@ classdef BioSigPlot < hgsetget
                 else
                     obj.VideoLineTime=obj.Time;
                 end
+                SynchVideoWithData(obj);
             end
             
         end

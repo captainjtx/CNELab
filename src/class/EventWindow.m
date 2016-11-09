@@ -36,10 +36,8 @@ classdef EventWindow  < handle
                 if obj.EventTime<obj.bsp.Time||obj.EventTime>obj.bsp.Time+obj.bsp.WinLength
                     obj.bsp.Time=obj.EventTime;
                 end
-                
             end
         end
-        
         
         function val=get.Evts(obj)
             val=obj.Evts_;

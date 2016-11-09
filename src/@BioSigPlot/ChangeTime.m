@@ -37,7 +37,6 @@ switch opt
 end
 t=max(0,min(timemax,t));
 obj.Time=t;
-SynchVideoWithData(obj);
 end
 
 function MovebyEvent(obj,opt)
