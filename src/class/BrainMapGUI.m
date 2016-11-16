@@ -6,6 +6,11 @@ classdef BrainMapGUI<handle
         EditAnnotation
         ListAnnotation
         
+        Toolbar
+        JToolbar
+        RadioSaveFile
+        
+        
         MenuFile
         MenuFileOpen
         
@@ -15,6 +20,10 @@ classdef BrainMapGUI<handle
         AnnotationFileID
         
         Annotations_
+        
+        IconPlay
+        IconStop
+        JTogPlay
     end
     properties(Dependent)
         AnnotationDir
@@ -35,7 +44,8 @@ classdef BrainMapGUI<handle
                 'WindowButtonUpFcn',@(src,evt) MouseUp(obj),'ResizeFcn',@(src,evt) Resize(obj),...
                 'WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'WindowKeyReleaseFcn',@(src,evt) KeyRelease(obj,src,evt),'Units','Pixels','Visible','on',...
                 'position',[screensize(3)/2-200,screensize(4)/2-150,400,300],'Name','BrainMap Simulink Control');
-            
+            obj.RadioSaveFile=uicontrol(obj.Fig,'style','radiobutton','units','normalized','position',[0,0.85,0.5,0.15],'string','Save Data','value',0,...
+                'Callback',@(src,evt)saveFileCallback(obj,src));
             obj.AnnotationPanel=uipanel(obj.Fig,'units','normalized','BorderType','none','position',[0.5,0,0.5,1]);
             
             uicontrol(obj.AnnotationPanel,'String','Annotation','Style','text','units','normalized','position',[0.05,0.9,0.9,0.08])
@@ -47,10 +57,84 @@ classdef BrainMapGUI<handle
                 'units','normalized','position',[0.05,0.01,0.9,0.75],...
                 'callback',@(src,evt)listAnnotationCallback(obj));
             
+            
+            
             obj.ModelDir=pwd;
             obj.MakeMenu();
+            obj.MakeToolbar();
         end
         
+        function MakeToolbar(obj)
+            import src.java.PushButton;
+            import src.java.TogButton;
+            import src.java.ToolbarSpinner;
+            import javax.swing.ButtonGroup;
+            import javax.swing.SpinnerNumberModel;
+            import javax.swing.JComponent;
+            import javax.swing.JLabel;
+            obj.Toolbar=uitoolbar(obj.Fig);
+            drawnow
+            obj.JToolbar=get(get(obj.Toolbar,'JavaContainer'),'ComponentPeer');
+            d=obj.JToolbar.getPreferredSize();
+            btn_d=java.awt.Dimension();
+            btn_d.width=d.height;
+            btn_d.height=d.height;
+            
+            spinner_d=java.awt.Dimension();
+            spinner_d.width=d.height*2.5;
+            spinner_d.height=d.height;
+            col=obj.JToolbar.getBackground();
+            
+            [path,~,~] = fileparts(mfilename('fullpath'));
+            obj.IconPlay=javaObjectEDT(javax.swing.ImageIcon([path,'/../../db/icon/play.png']));
+            obj.IconStop=javaObjectEDT(javax.swing.ImageIcon([path,'/../../db/icon/stop.png']));
+            obj.JTogPlay=javaObjectEDT(PushButton([path,'/../../db/icon/play.png'],btn_d,char('Play'),col));
+            set(handle(obj.JTogPlay,'CallbackProperties'),'MousePressedCallback',@(h,e) StartPlay(obj));
+            obj.JToolbar.add(obj.JTogPlay);
+            obj.JToolbar.repaint;
+            obj.JToolbar.revalidate;
+        end
+        
+        function StartPlay(obj)
+            status = get_param(obj.ModelNameWithoutExtension,'SimulationStatus');
+            set_param(strcat(obj.ModelNameWithoutExtension,'/FileSave'),'Value',num2str(get(obj.RadioSaveFile,'value')));
+            if strcmp(status,'stopped')
+                set_param(obj.ModelNameWithoutExtension,'SimulationCommand','Start');
+                obj.JTogPlay.setIcon(obj.IconStop);
+                set(handle(obj.JTogPlay,'CallbackProperties'),'MousePressedCallback',@(h,e) StopPlay(obj));
+                
+                screensize=get(0,'ScreenSize');
+                open_system(strcat(obj.ModelNameWithoutExtension,'/BipolarScope'),'window');
+%                 set_param(strcat(obj.ModelNameWithoutExtension,'/BipolarScope'),'position',[300,screensize(4)/3,screensize(3)-300,screensize(4)/3*2]);
+                open_system(strcat(obj.ModelNameWithoutExtension,'/BehvScope'),'window');
+%                 set_param(strcat(obj.ModelNameWithoutExtension,'/BehvScope'),'position',[300,0,screensize(3)-300,screensize(4)/3]);
+                figure(obj.Fig);
+            end
+        end
+        function StopPlay(obj)
+            status = get_param(obj.ModelNameWithoutExtension,'SimulationStatus');
+            if strcmp(status,'running')
+                set_param(obj.ModelNameWithoutExtension,'SimulationCommand','Stop');
+                obj.JTogPlay.setIcon(obj.IconPlay);
+                set(handle(obj.JTogPlay,'CallbackProperties'),'MousePressedCallback',@(h,e) StartPlay(obj));
+            end
+        end
+        
+        function saveFileCallback(obj,src)
+            s=get(src,'value');
+            set_param(strcat(obj.ModelNameWithoutExtension,'/FileSave'),'Value',num2str(s));
+            
+            modelTime = get_param(obj.ModelNameWithoutExtension,'SimulationTime');
+            anno=['DataSave',num2str(s)];
+            obj.Annotations=cat(1,obj.Annotations,{modelTime,anno});
+            try
+                fprintf(obj.AnnotationFileID,'%f,%s\n',modelTime,anno);
+            catch
+                disp('Creating new annotation file');
+                obj.AnnotationFileID=fopen(fullfile(obj.AnnotationDir,[obj.ModelNameWithoutExtension,'.txt']),'at');
+                fprintf(obj.AnnotationFileID,'%f,%s\n',modelTime,anno);
+            end
+        end
         function insertAnnotation(obj)
             modelTime = get_param(obj.ModelNameWithoutExtension,'SimulationTime');
             if isempty(modelTime)
@@ -101,6 +185,8 @@ classdef BrainMapGUI<handle
                 end
                 obj.AnnotationFileID=fopen(fullfile(obj.AnnotationDir,[obj.ModelNameWithoutExtension,'.txt']),'wt');
             end
+            
+            figure(obj.Fig);
         end
         
         
