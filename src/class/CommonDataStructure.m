@@ -1035,7 +1035,7 @@ classdef CommonDataStructure < handle
                         
                         time=cellfun(@str2double,C{1},'UniformOutput',false);
                         
-                        time=reshape(time,length(time),1);
+                        time=time(:);
                         
                         text=C{2};
                         text=reshape(text,length(text),1);
@@ -1082,7 +1082,6 @@ classdef CommonDataStructure < handle
         end
         
         function val=search_field(obj,structure,field,opt)
-            
             if strcmpi(structure,'datainfo')
                 structure='DataInfo';
             elseif strcmpi(structure,'patientinfo')
@@ -1269,6 +1268,8 @@ classdef CommonDataStructure < handle
                 
             end
             current_data_info=obj.DataInfo;
+            current_montage=obj.Montage;
+            
             fs=current_data_info.SampleRate;
             
             [pathstr, ~, ~] = fileparts(current_data_info.FileName);
@@ -1282,6 +1283,7 @@ classdef CommonDataStructure < handle
                 end
                 
                 current_data_info=current_file.DataInfo;
+                current_montage=current_file.Montage;
                 
                 [~,name,ext]=fileparts(firstfile);
             else
@@ -1290,8 +1292,26 @@ classdef CommonDataStructure < handle
             end
             filenames{1}=[name,ext];
             %searching forward
+            units=current_data_info.Units;
+            channelnames=current_montage.ChannelNames;
+            groupnames=current_montage.GroupNames;
+            channelposition=current_montage.ChannelPosition;
+            masknames=current_montage.MaskChanNames;
             while 1
                 ts=current_data_info.TimeStamps;
+                if isempty(units)
+                    units=current_data_info.Units;
+                end
+                if isempty(channelnames)
+                    channelnames=current_montage.ChannelNames;
+                end
+                if isempty(groupnames)
+                    groupnames=current_montage.GroupNames;
+                end
+                
+                if all(all(isnan(channelposition)))
+                    channelposition=current_montage.ChannelPosition;
+                end
                 
                 if isempty(ts)
                     %this will require to load Data, extremly slow, so it
@@ -1326,9 +1346,7 @@ classdef CommonDataStructure < handle
                 if isempty(current_data_info.NextFile)||exist(fname,'file')~=2
                     break
                 end
-                
-                %                 current_data_info.FileName=filenames{end};
-                %                 current_file.DataInfo=current_data_info;
+               
                 filenames=cat(1,filenames,current_data_info.NextFile);
                 
                 current_file=matfile(fname,'Writable',true);
@@ -1336,6 +1354,7 @@ classdef CommonDataStructure < handle
                     current_file=CommonDataStructure.Load(fname);
                 end
                 current_data_info=current_file.DataInfo;
+                current_montage=current_file.Montage;
             end
             
             %it is your responsibility to keep all common field consistent
@@ -1343,13 +1362,13 @@ classdef CommonDataStructure < handle
             fileinfo.path=pathstr;
             fileinfo.filesample=filesample;
             fileinfo.filenames=filenames;
-            fileinfo.fs=CommonDataStructure.search_field(obj,'DataInfo','SampleRate','once');
-            fileinfo.units=CommonDataStructure.search_field(obj,'DataInfo','Units','once');
+            fileinfo.fs=fs;
+            fileinfo.units=units;
             fileinfo.events=evts;
-            fileinfo.channelnames=CommonDataStructure.search_field(obj,'Montage','ChannelNames','once');
-            fileinfo.groupnames=CommonDataStructure.search_field(obj,'Montage','GroupNames','once');
-            fileinfo.channelposition=CommonDataStructure.search_field(obj,'Montage','ChannelPosition','once');
-            fileinfo.masknames=CommonDataStructure.search_field(obj,'Montage','MaskChanNames','union');
+            fileinfo.channelnames=channelnames;
+            fileinfo.groupnames=groupnames;
+            fileinfo.channelposition=channelposition;
+            fileinfo.masknames=masknames;
             
         end
         
@@ -1535,6 +1554,7 @@ classdef CommonDataStructure < handle
             %sample rate must be specified along with creating the data
             
             chan=[];
+            vname='';
             if length(varargin)==1
                 %Only load specific channel
                 chan=varargin{1};

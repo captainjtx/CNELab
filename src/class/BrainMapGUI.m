@@ -137,7 +137,8 @@ classdef BrainMapGUI<handle
         end
         function insertAnnotation(obj)
             modelTime = get_param(obj.ModelNameWithoutExtension,'SimulationTime');
-            if isempty(modelTime)
+            anno=get(obj.EditAnnotation,'string');
+            if isempty(modelTime)||isempty(anno)
                 return
             end
             

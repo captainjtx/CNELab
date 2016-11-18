@@ -22,7 +22,6 @@ buffer_size=300; % in megabytes, if you want to load the entire data, set it to 
 
 visual_buffer_size=2; % in megabytes
 %**************************************************************************
-
 cds=[];
 
 switch cnb.choice

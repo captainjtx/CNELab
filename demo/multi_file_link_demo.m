@@ -5,7 +5,7 @@ names={f.name};
 input_files={};
 
 for i=1:length(names)
-    if regexp(names{i},'language_')
+    if regexp(names{i},'motor_')
         input_files=cat(1,input_files,names(i));
     end
 end
@@ -31,11 +31,11 @@ end
 fs=2400;
 
 %output filename
-out_filename='language';
+out_filename='motor';
 
-video_filename='speech.avi';
+video_filename='';
 
 %selected channels (optional)
 chan=1:10;
          
-CommonDataStructure.create_new_data_from_mat(input_files,out_filename,fs);
+CommonDataStructure.create_new_data_from_mat(input_files,out_filename,fs,video_filename);

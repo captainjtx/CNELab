@@ -126,7 +126,7 @@ for i=1:length(dd)
 
     dataset=cat(2,dataset,dd(i)*ones(1,size(d,2)));
     channel=cat(2,channel,reshape(chan,1,length(chan)));
-    data=cat(2,data,d);
+    data=[data,d];
     
     chanNames=cat(1,chanNames,reshape(obj.MontageChanNames{dd(i)}(chan),length(obj.MontageChanNames{dd(i)}(chan)),1));
     if ~isempty(obj.Montage{dd(i)}(obj.MontageRef(dd(i))).groupnames)
