@@ -70,6 +70,7 @@ end
 %**************************************************************************
 fileinfo=cell(length(cds),1);
 for i=1:length(cds)
+    %this can be expensive
     fileinfo{i}=cds{i}.get_file_info(cds{i});
 end
 
