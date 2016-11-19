@@ -36,6 +36,6 @@ out_filename='motor';
 video_filename='';
 
 %selected channels (optional)
-chan=1:10;
+chan=2:155;
          
-CommonDataStructure.create_new_data_from_mat(input_files,out_filename,fs,video_filename);
+CommonDataStructure.create_new_data_from_mat(input_files,out_filename,fs,chan,video_filename);

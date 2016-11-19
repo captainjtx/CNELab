@@ -1066,7 +1066,6 @@ classdef CommonDataStructure < handle
             current_data=obj.DataInfo;
             [pathstr, name, ext] = fileparts(current_data.FileName);
             while ~isempty(current_data.PrevFile)
-                
                 fname=fullfile(pathstr,current_data.PrevFile);
                 if exist(fname,'file')~=2
                     break
@@ -1076,7 +1075,7 @@ classdef CommonDataStructure < handle
                 %you need to retrieve the the substructure to access below
                 current_data=tmp.DataInfo;
             end
-            [~,f,ext]=fileparts(current_data.FileName);
+            [~,f,ext]=fileparts(tmp.Properties.Source);
             f=[f,ext];
             f=fullfile(pathstr,f);
         end
@@ -1235,7 +1234,7 @@ classdef CommonDataStructure < handle
             %obj can either be the class instance or the matfile object
             %if it is a matfile object, you have to guarantee that the mat
             %file is in the correct format of CommonDataStructure
-            fileinfo=[];
+            
             evts=[];
             filenames={};
             filesample=[];
@@ -1335,18 +1334,15 @@ classdef CommonDataStructure < handle
                     new_t=new_t+filesample(end,2);
                 end
                 filesample=cat(1,filesample,new_t);
-                
-                
-                if isempty(current_data_info.NextFile)
-                    break
-                end
-                
                 fname=fullfile(pathstr,current_data_info.NextFile);
                 
+                allfiles=current_data_info.AllFiles;
+                allfilesamples=current_data_info.FileSample;
+
                 if isempty(current_data_info.NextFile)||exist(fname,'file')~=2
                     break
                 end
-               
+                
                 filenames=cat(1,filenames,current_data_info.NextFile);
                 
                 current_file=matfile(fname,'Writable',true);
@@ -1357,11 +1353,18 @@ classdef CommonDataStructure < handle
                 current_montage=current_file.Montage;
             end
             
+            if isempty(allfiles)
+                allfiles=filenames;
+            end
+            
+            if isempty(allfilesamples)
+                allfilesamples=filesample;
+            end
             %it is your responsibility to keep all common field consistent
             %in all files, I just take care of the missing ones
             fileinfo.path=pathstr;
-            fileinfo.filesample=filesample;
-            fileinfo.filenames=filenames;
+            fileinfo.filesample=allfilesamples;
+            fileinfo.filenames=allfiles;
             fileinfo.fs=fs;
             fileinfo.units=units;
             fileinfo.events=evts;
@@ -1369,7 +1372,6 @@ classdef CommonDataStructure < handle
             fileinfo.groupnames=groupnames;
             fileinfo.channelposition=channelposition;
             fileinfo.masknames=masknames;
-            
         end
         
         function [dat,eof,evts]=get_data_by_start_end(varargin)
@@ -1555,6 +1557,7 @@ classdef CommonDataStructure < handle
             
             chan=[];
             vname='';
+            filesample=[];
             if length(varargin)==1
                 %Only load specific channel
                 chan=varargin{1};
@@ -1564,6 +1567,10 @@ classdef CommonDataStructure < handle
             end
             
             [out_path,out_name,~]=fileparts(output_filename);
+            info=CommonDataStructure;
+            total_sample=0;
+            all_files={};
+
             for i=1:length(input_filenames)
                 f_in=input_filenames{i};
                 
@@ -1578,7 +1585,7 @@ classdef CommonDataStructure < handle
                 cds.DataInfo.VideoName=vname;
                 
                 if i==1
-                    cds.prevf=[];
+                    cds.prevf=[out_name,'.info'];
                 end
                 if i==length(input_filenames)
                     cds.nextf=[];
@@ -1589,12 +1596,32 @@ classdef CommonDataStructure < handle
                 end
                 cds.fs=fs;
                 cds.DataInfo.TimeStamps=(0:size(cds.Data,1)-1)/fs;
+                total_sample=total_sample+size(cds.Data,1);
                 
                 if isempty(out_path)
                     out_path=fileparts(which(f_in));
                 end
+                
+                new_t=[1,length(cds.DataInfo.TimeStamps)];
+                if ~isempty(filesample)
+                    new_t=new_t+filesample(end,2);
+                end
+                
                 cds.save(fullfile(out_path,oname));
+                
+                filesample=cat(1,filesample,new_t);
+                all_files=cat(1,all_files,oname);
             end
+            info.fs=fs;
+            info.nextf=[];
+            info.DataInfo.TimeStamps=(0:total_sample-1)/fs;
+            chan_num=size(cds.Data,2);
+            info.Montage.ChannelNames=cell(chan_num,1);
+            info.Montage.ChannelNames=cellfun(@num2str,num2cell(1:chan_num),'UniformOutput',false);
+            info.DataInfo.VideoName=vname;
+            info.DataInfo.FileSample=filesample;
+            info.DataInfo.AllFiles=all_files;
+            info.save(fullfile(out_path,[out_name,'.info']));
         end
     end
     methods
