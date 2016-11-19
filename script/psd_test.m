@@ -101,23 +101,23 @@ for i=1:size(data,3)
     
     [pxx,f]=pwelch(trial,wd,ov,nfft,fs,'onesided');
     
-    [pxx_baseline,~]=pwelch(close.data(baseline,idx,i),wd,ov,nfft,fs,'onesided');
-    [pxx_move,~]=pwelch(close.data(t,idx,i),wd,ov,nfft,fs,'onesided');
+    [pxx_baseline,~]=pwelch(close.data(baseline,:,i),wd,ov,nfft,fs,'onesided');
+    [pxx_move,~]=pwelch(close.data(t,:,i),wd,ov,nfft,fs,'onesided');
     
-%     small_lfb(:,i)=sum(pxx(f>=lfb(1)&f<=lfb(2),small_idx),1)';
-%     small_lfb_baseline(:,i)=sum(pxx_baseline(f>=lfb(1)&f<=lfb(2),small_idx),1)';
-%     small_hfb(:,i)=sum(pxx(f>=hfb(1)&f<=hfb(2),small_idx),1)';
-%     small_hfb_baseline(:,i)=sum(pxx_baseline(f>=hfb(1)&f<=hfb(2),small_idx),1)';
-%     small_ufb(:,i)=sum(pxx(f>=ufb(1)&f<=ufb(2),small_idx),1)';
-%     small_ufb_baseline(:,i)=sum(pxx_baseline(f>=ufb(1)&f<=ufb(2),small_idx),1)';
-%     
-%     
-%     large_lfb(:,i)=sum(pxx(f>=lfb(1)&f<=lfb(2),large_idx),1)';
-%     large_lfb_baseline(:,i)=sum(pxx_baseline(f>=lfb(1)&f<=lfb(2),large_idx),1)';
-%     large_hfb(:,i)=sum(pxx(f>=hfb(1)&f<=hfb(2),large_idx),1)';
-%     large_hfb_baseline(:,i)=sum(pxx_baseline(f>=hfb(1)&f<=hfb(2),large_idx),1)';
-%     large_ufb(:,i)=sum(pxx(f>=ufb(1)&f<=ufb(2),large_idx),1)';
-%     large_ufb_baseline(:,i)=sum(pxx_baseline(f>=ufb(1)&f<=ufb(2),large_idx),1)';
+    small_lfb(:,i)=sum(pxx(f>=lfb(1)&f<=lfb(2),small_idx),1)';
+    small_lfb_baseline(:,i)=sum(pxx_baseline(f>=lfb(1)&f<=lfb(2),small_idx),1)';
+    small_hfb(:,i)=sum(pxx(f>=hfb(1)&f<=hfb(2),small_idx),1)';
+    small_hfb_baseline(:,i)=sum(pxx_baseline(f>=hfb(1)&f<=hfb(2),small_idx),1)';
+    small_ufb(:,i)=sum(pxx(f>=ufb(1)&f<=ufb(2),small_idx),1)';
+    small_ufb_baseline(:,i)=sum(pxx_baseline(f>=ufb(1)&f<=ufb(2),small_idx),1)';
+    
+    
+    large_lfb(:,i)=sum(pxx(f>=lfb(1)&f<=lfb(2),large_idx),1)';
+    large_lfb_baseline(:,i)=sum(pxx_baseline(f>=lfb(1)&f<=lfb(2),large_idx),1)';
+    large_hfb(:,i)=sum(pxx(f>=hfb(1)&f<=hfb(2),large_idx),1)';
+    large_hfb_baseline(:,i)=sum(pxx_baseline(f>=hfb(1)&f<=hfb(2),large_idx),1)';
+    large_ufb(:,i)=sum(pxx(f>=ufb(1)&f<=ufb(2),large_idx),1)';
+    large_ufb_baseline(:,i)=sum(pxx_baseline(f>=ufb(1)&f<=ufb(2),large_idx),1)';
     
     baseline_pxx=baseline_pxx+pxx_baseline;
     move_pxx=move_pxx+pxx_move;
@@ -164,9 +164,9 @@ bp=boxplot(10*log10(cat(1,mean(small_lfb,2)./mean(small_lfb_baseline,2),...
     {freq,contact},'labelverbosity','all','labelorientation','horizontal',...
     'OutlierSize',10,'positions',[1,2,3,4,5,6]);
 
-ttest2(10*log10(mean(small_lfb,2)./mean(small_lfb_baseline,2)),10*log10(mean(large_lfb,2)./mean(large_lfb_baseline,2)),'tail','right')
-ttest2(10*log10(mean(small_hfb,2)./mean(small_hfb_baseline,2)),10*log10(mean(large_hfb,2)./mean(large_hfb_baseline,2)),'tail','right')
-ttest2(10*log10(mean(small_ufb,2)./mean(small_ufb_baseline,2)),10*log10(mean(large_ufb,2)./mean(large_ufb_baseline,2)),'tail','right')
+[h1,p1]=ttest2(10*log10(mean(small_lfb,2)./mean(small_lfb_baseline,2)),10*log10(mean(large_lfb,2)./mean(large_lfb_baseline,2)),'tail','right')
+[h2,p2]=ttest2(10*log10(mean(small_hfb,2)./mean(small_hfb_baseline,2)),10*log10(mean(large_hfb,2)./mean(large_hfb_baseline,2)),'tail','right')
+[h3,p3]=ttest2(10*log10(mean(small_ufb,2)./mean(small_ufb_baseline,2)),10*log10(mean(large_ufb,2)./mean(large_ufb_baseline,2)),'tail','right')
 title(s);
 %
 hold on
