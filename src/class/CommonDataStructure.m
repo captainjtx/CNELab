@@ -1296,6 +1296,9 @@ classdef CommonDataStructure < handle
             groupnames=current_montage.GroupNames;
             channelposition=current_montage.ChannelPosition;
             masknames=current_montage.MaskChanNames;
+            allfiles=[];
+            allfilesamples=[];
+            
             while 1
                 ts=current_data_info.TimeStamps;
                 if isempty(units)
@@ -1336,8 +1339,12 @@ classdef CommonDataStructure < handle
                 filesample=cat(1,filesample,new_t);
                 fname=fullfile(pathstr,current_data_info.NextFile);
                 
-                allfiles=current_data_info.AllFiles;
-                allfilesamples=current_data_info.FileSample;
+                if isfield(current_data_info,'AllFiles')
+                    allfiles=current_data_info.AllFiles;
+                end
+                if isfield(current_data_info,'FileSample')
+                    allfilesamples=current_data_info.FileSample;
+                end
 
                 if isempty(current_data_info.NextFile)||exist(fname,'file')~=2
                     break
