@@ -1065,14 +1065,22 @@ classdef BioSigPlot < hgsetget
                 obj.EventRef=ref;
                 set(obj.MenuEventsWindow,'Enable','on');
                 set(obj.MenuEventsDisplay,'Enable','on');
-                obj.EventsWindowDisplay=true;
-                obj.EventsDisplay=true;
+                if ~obj.EventsWindowDisplay
+                    obj.EventsWindowDisplay=true;
+                end
+                if ~obj.EventsDisplay
+                    obj.EventsDisplay=true;
+                end
             elseif isempty(obj.Evts_)
                 obj.EventRef=0;
                 set(obj.MenuEventsWindow,'Enable','off');
                 set(obj.MenuEventsDisplay,'Enable','off');
-                obj.EventsWindowDisplay=false;
-                obj.EventsDisplay=false;
+                if obj.EventsWindowDisplay
+                    obj.EventsWindowDisplay=false;
+                end
+                if obj.EventsDisplay
+                    obj.EventsDisplay=false;
+                end
                 
             end
             obj.synchEvts();
@@ -1082,9 +1090,7 @@ classdef BioSigPlot < hgsetget
                 [obj.EventSummaryIndex,obj.EventSummaryNumber]=...
                     EventWindow.findIndexOfEvent(evts(:,2),[evts{:,1}]);
             end
-            
             notify(obj,'EventListChange');
-            
         end
         
         function obj = set.SelectedFastEvt_(obj,val)
