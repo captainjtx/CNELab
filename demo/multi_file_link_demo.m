@@ -5,7 +5,7 @@ names={f.name};
 input_files={};
 
 for i=1:length(names)
-    if regexp(names{i},'motor_')
+    if regexp(names{i},'motor_.*.mat')
         input_files=cat(1,input_files,names(i));
     end
 end
@@ -31,11 +31,11 @@ end
 fs=2400;
 
 %output filename
-out_filename='motor';
+out_filename='behv';
 
 video_filename='';
 
 %selected channels (optional)
-chan=2:155;
+chan=148:156;
          
 CommonDataStructure.create_new_data_from_mat(input_files,out_filename,fs,chan,video_filename);
