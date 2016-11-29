@@ -9,7 +9,6 @@ end
 %CNELAB launcher, %inspired by xcode
 cnb=CnelabWindow;
 cnb.buildfig;
-
 addlistener(cnb,'UserChoice',@(src,evts)cnelab_init(cnb));
 end
 
@@ -76,7 +75,7 @@ end
 
 fs=fileinfo{1}.fs;
 
-%The buffer lenght in samples
+%The buffer length in samples
 %If two dataset is retrieved at the sample time, the buffer needed will be
 %doubled. If future test demonstrate that dynamic buffer had a low cost,
 %automatic memory control might be implemented instead.
@@ -270,6 +269,7 @@ if ~isempty(Event)
 end
 bsp.Evts__(1).name='Original';
 bsp.Evts=Event;
+bsp.EventsWindowDisplay=true;
 %scan for montage file folder==============================================
 montage=cell(length(fnames),1);
 for i=1:length(fnames)
@@ -349,5 +349,4 @@ cnb.cfg.files=cnb.cfg.files(1:min(9,length(cnb.cfg.files)));
 cnb.saveConfig();
 
 % license('inuse');
-
 end
