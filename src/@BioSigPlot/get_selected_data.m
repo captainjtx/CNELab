@@ -43,7 +43,7 @@ if ~isempty(obj.Evts_)
 end
 
 if ~isempty(bsp_selection)
-    [tmp,sort_ind]=sort(bsp_selection(1,:));
+    [~,sort_ind]=sort(bsp_selection(1,:));
     SelectionSort=bsp_selection(:,sort_ind);
     interval=0;
     for i=1:size(SelectionSort,2)

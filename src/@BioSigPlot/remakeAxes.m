@@ -39,7 +39,7 @@ if strcmp(obj.DataView,'Horizontal')
             
         end
         obj.Axes(i)=axes('parent',obj.MainPanel,'XLim',[1-obj.ChanNameMargin floor(obj.WinLength*obj.SRate)+obj.GaugeMargin],'XTick',1:obj.SRate:floor(obj.WinLength*obj.SRate),...
-            'TickLength',[.005 0],'position',position,'color',backgroundColor,'YAxisLocation','right','Layer','bottom','LineWdith',1);
+            'TickLength',[.005 0],'position',position,'color',backgroundColor,'YAxisLocation','right','Layer','bottom','LineWidth',1);
     end
 elseif strcmp(obj.DataView,'Vertical')
     for i=1:n
