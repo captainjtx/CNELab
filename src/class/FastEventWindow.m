@@ -4,8 +4,10 @@
 %tjiang3@uh.edu
 classdef FastEventWindow  < handle
     properties
+        fig
+        
         FastEvts % A n*2 cell; Column 1: Event name ; Column 2: Event color
-        Fig
+        
         Table
         
         BtnDelete
@@ -17,27 +19,39 @@ classdef FastEventWindow  < handle
     properties (Dependent=true)
         SelectedFastEvt
         Data
+        valid
     end
     
     methods
-        function obj=FastEventWindow(bsp,FastEvts,SelectedEvt)
+        function obj=FastEventWindow(bsp)
             obj.bsp=bsp;
+            
+            FastEvts=bsp.FastEvts;
             
             if isempty(FastEvts)
                 FastEvts={'New Event',bsp.EventDefaultColors(1,:)};
             end
             
-            obj.FastEvts=FastEvts;
+            obj.FastEvts=FastEvts; 
             
-            obj.Fig=figure('MenuBar','none','position',[500 100 300 500],...
+            addlistener(bsp,'SelectedFastEvtChange',@(src,evt) synchSelect(obj));
+        end
+        function buildfig(obj)
+            if obj.valid
+                figure(obj.fig);
+                return
+            end
+            obj.fig=figure('MenuBar','none','position',[500 100 300 500],...
                 'NumberTitle','off','Name','FastEvents',...
-                'CloseRequestFcn',@(src,evts) delete(obj));
-            tmp=cell(size(FastEvts,1),3);
+                'CloseRequestFcn',@(src,evts) OnClose(obj));
+            SelectedEvt=obj.bsp.SelectedFastEvt;
             
-            for i=1:size(FastEvts,1)
+            tmp=cell(size(obj.FastEvts,1),3);
+            
+            for i=1:size(obj.FastEvts,1)
                 tmp{i,1}=false;
-                tmp{i,2}=FastEvts{i,1};
-                tmp{i,3}=FastEventWindow.colorgen(FastEvts{i,2},'');
+                tmp{i,2}=obj.FastEvts{i,1};
+                tmp{i,3}=FastEventWindow.colorgen(obj.FastEvts{i,2},'');
             end
             if ~isempty(SelectedEvt)
                 tmp{SelectedEvt,1}=true;
@@ -47,7 +61,7 @@ classdef FastEventWindow  < handle
             columnFormat={'logical','char','char'};
             columnEditable=[true,true,false];
             columnWidth={50,170,40};
-            obj.Table=uitable(obj.Fig,'units','normalized',...
+            obj.Table=uitable(obj.fig,'units','normalized',...
                 'position',[0 0.1 1 0.9],...
                 'ColumnName',columnName,...
                 'ColumnFormat',columnFormat,...
@@ -57,20 +71,24 @@ classdef FastEventWindow  < handle
                 'CellSelectionCallback',@(src,evt) cellClick(obj,src,evt),...
                 'CellEditCallback',@(src,evt) cellEdit(obj,src,evt));
             
-            obj.BtnDelete=uicontrol(obj.Fig,'Style','pushbutton','string','delete',...
+            obj.BtnDelete=uicontrol(obj.fig,'Style','pushbutton','string','delete',...
                 'Units','normalized','Position',[0.79,0.01,0.2,0.05],...
                 'tooltipstring','delete the selected event','callback',@(src,evt) deleteFastEvent(obj));
             
-            obj.BtnDelete=uicontrol(obj.Fig,'Style','pushbutton','string','new',...
+            obj.BtnDelete=uicontrol(obj.fig,'Style','pushbutton','string','new',...
                 'Units','normalized','Position',[0.01,0.01,0.2,0.05],...
                 'tooltipstring','create a new event','callback',@(src,evt) newFastEvent(obj));
-            
-            addlistener(bsp,'SelectedFastEvtChange',@(src,evt) synchSelect(obj));
         end
-        
-        function delete(obj)
+        function val=get.valid(obj)
+            try
+                val=ishandle(obj.fig)&&isgraphics(obj.fig);
+            catch
+                val=0;
+            end
+        end
+        function OnClose(obj)
             % Delete the figure
-            h = obj.Fig;
+            h = obj.fig;
             notify(obj,'FastEvtsClosed');
             if ishandle(h)
                 delete(h);

@@ -78,7 +78,7 @@ obj.MenuMontage=uimenu(obj.Fig,'Label','Montage');
 %First Order Menu-----------------------------------------------------Event
 obj.MenuEvent=uimenu(obj.Fig,'Label','Event');
 obj.MenuNewEvent=uimenu(obj.MenuEvent,'Label','New','Callback',@(src,evt)NewEvent(obj));
-obj.MenuFastEvent=uimenu(obj.MenuEvent,'Label','Fast Event','Callback',@(src,evt) WinFastEvents(obj));
+obj.MenuFastEvent=uimenu(obj.MenuEvent,'Label','Fast Event','Callback',@(src,evt)obj.WinFastEvts.buildfig());
 obj.MenuAdvanceEvents=uimenu(obj.MenuEvent,'Label','Trigger');
 obj.MenuAdvanceEventsCalculate=uimenu(obj.MenuAdvanceEvents,'Label','Detect',...
     'Callback',@(src,evt) AdvanceEvents(obj,src));

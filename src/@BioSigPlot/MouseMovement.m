@@ -133,8 +133,7 @@ else
         set(obj.Fig,'pointer','cross');
         obj.VideoLineTime=time;
         
-        updateVideo(obj);
-        
+        SynchVideoWithData(obj);
     end
     
     updateInfoPanel(obj,time,ndata,nchan);

@@ -456,6 +456,9 @@ classdef BioSigPlot < hgsetget
             obj.CSPMapWin=CSPMapWindow(obj);
             obj.PSDWin=PSDWindow(obj);
             obj.AverageMapWin=AverageMapWindow(obj);
+            obj.WinFastEvts=FastEventWindow(obj);
+            addlistener(obj.WinFastEvts,'FastEvtsChange',@(src,evt) set(obj,'FastEvts',obj.WinFastEvts.FastEvts));
+            addlistener(obj.WinFastEvts,'SelectedFastEvtChange',@(src,evt) set(obj,'SelectedFastEvt',obj.WinFastEvts.SelectedFastEvt));
             
             obj.IsInitialize=false;
             
@@ -570,8 +573,8 @@ classdef BioSigPlot < hgsetget
                 obj.AverageMapWin.OnClose();
             end
             
-            if isa(obj.WinFastEvts,'FastEventWindow') && ishandle(obj.WinFastEvts)
-                delete(obj.WinFastEvts);
+            if obj.WinFastEvts.valid
+                obj.WinFastEvts.OnClose();
             end
             
             h = obj.Fig;
@@ -1973,13 +1976,6 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         LoadDataSet(obj)
         %==================================================================
-        %******************************************************************
-        
-        function WinFastEvents(obj)
-            obj.WinFastEvts=FastEventWindow(obj,obj.FastEvts,obj.SelectedFastEvt);
-            addlistener(obj.WinFastEvts,'FastEvtsChange',@(src,evt) set(obj,'FastEvts',obj.WinFastEvts.FastEvts));
-            addlistener(obj.WinFastEvts,'SelectedFastEvtChange',@(src,evt) set(obj,'SelectedFastEvt',obj.WinFastEvts.SelectedFastEvt));
-        end
         %******************************************************************
         function s=ControlBarSize(obj) %#ok<MANU>
             s=[1100,35];

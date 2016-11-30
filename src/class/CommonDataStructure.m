@@ -1065,6 +1065,7 @@ classdef CommonDataStructure < handle
         function f=get_start_file(obj)
             current_data=obj.DataInfo;
             [pathstr, name, ext] = fileparts(current_data.FileName);
+            tmp=matfile(current_data.FileName);
             while ~isempty(current_data.PrevFile)
                 fname=fullfile(pathstr,current_data.PrevFile);
                 if exist(fname,'file')~=2
