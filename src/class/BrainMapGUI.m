@@ -43,7 +43,7 @@ classdef BrainMapGUI<handle
                 'WindowButtonMotionFcn',@(src,evt) MouseMovement(obj),'WindowButtonDownFcn',@(src,evt) MouseDown(obj),...
                 'WindowButtonUpFcn',@(src,evt) MouseUp(obj),'ResizeFcn',@(src,evt) Resize(obj),...
                 'WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'WindowKeyReleaseFcn',@(src,evt) KeyRelease(obj,src,evt),'Units','Pixels','Visible','on',...
-                'position',[screensize(3)/2-200,screensize(4)/2-150,400,300],'Name','BrainMap Simulink Control');
+                'position',[10,screensize(4)-390,400,300],'Name','BrainMap Simulink Control');
             obj.RadioSaveFile=uicontrol(obj.Fig,'style','radiobutton','units','normalized','position',[0,0.85,0.5,0.15],'string','Save Data','value',0,...
                 'Callback',@(src,evt)saveFileCallback(obj,src));
             obj.AnnotationPanel=uipanel(obj.Fig,'units','normalized','BorderType','none','position',[0.5,0,0.5,1]);
@@ -103,11 +103,17 @@ classdef BrainMapGUI<handle
                 obj.JTogPlay.setIcon(obj.IconStop);
                 set(handle(obj.JTogPlay,'CallbackProperties'),'MousePressedCallback',@(h,e) StopPlay(obj));
                 
-                screensize=get(0,'ScreenSize');
-                open_system(strcat(obj.ModelNameWithoutExtension,'/BipolarScope'),'window');
-%                 set_param(strcat(obj.ModelNameWithoutExtension,'/BipolarScope'),'position',[300,screensize(4)/3,screensize(3)-300,screensize(4)/3*2]);
-                open_system(strcat(obj.ModelNameWithoutExtension,'/BehvScope'),'window');
-%                 set_param(strcat(obj.ModelNameWithoutExtension,'/BehvScope'),'position',[300,0,screensize(3)-300,screensize(4)/3]);
+                try
+                    open_system(strcat(obj.ModelNameWithoutExtension,'/BipolarScope1'),'window');
+                    open_system(strcat(obj.ModelNameWithoutExtension,'/BipolarScope2'),'window');
+                    open_system(strcat(obj.ModelNameWithoutExtension,'/BehvScope'),'window');
+                catch
+                    try
+                        open_system(strcat(obj.ModelNameWithoutExtension,'/BipolarScope'),'window');
+                        open_system(strcat(obj.ModelNameWithoutExtension,'/BehvScope'),'window');
+                    catch
+                    end
+                end
                 figure(obj.Fig);
             end
         end
@@ -184,7 +190,7 @@ classdef BrainMapGUI<handle
                 if exist(obj.AnnotationDir,'dir')~=7
                     mkdir(obj.ModelDir,'events');
                 end
-                obj.AnnotationFileID=fopen(fullfile(obj.AnnotationDir,[obj.ModelNameWithoutExtension,'.txt']),'wt');
+                obj.AnnotationFileID=fopen(fullfile(obj.AnnotationDir,[obj.ModelNameWithoutExtension,'.txt']),'at');
             end
             
             figure(obj.Fig);

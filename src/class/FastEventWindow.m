@@ -176,6 +176,5 @@ classdef FastEventWindow  < handle
         SelectedFastEvtChange
         FastEvtsClosed
         FastEvtsChange
-    end
-    
+    end    
 end
