@@ -1310,8 +1310,9 @@ classdef BioSigPlot < hgsetget
         %******************************************************************
         function obj = set.AxesBackgroundColor_(obj,val)
             obj.AxesBackgroundColor_=val;
-            if ~isempty(obj.Axes)
-                set(obj.Axes(obj.DisplayedData(ishandle(obj.Axes(obj.DisplayedData)))),'color',val);
+            try
+                set(obj.Axes,'color',val);
+            catch
             end
             
         end

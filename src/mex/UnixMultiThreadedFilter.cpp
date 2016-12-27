@@ -159,6 +159,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
         threadNum=8;
     }
     
+//     cout<<threadNum<<endl;
+    
     double* output;
     double* data;
     int nb;

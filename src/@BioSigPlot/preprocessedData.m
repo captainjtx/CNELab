@@ -89,7 +89,10 @@ if ~isempty(fchan)
     jb=b(fchan);
     
     if isunix
+        tic
+%         fd=filter(jb{1}{1},ja{1}{1},fd);
         fd=UnixMultiThreadedFilter(jb,ja,fd);
+        toc
     elseif ispc
         fd=WinMultiThreadedFilter(jb,ja,fd);
 %     else

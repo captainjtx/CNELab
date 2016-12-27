@@ -32,4 +32,25 @@ nfft=256;
 figure('Name','Fiter demo');
 plot([f,f],10*log10(psd));
 legend('band pass','notch')
+%%
+order=3;
+fs=1200;
+[b1,a1]=butter(order,[5,50]/(fs/2),'bandpass');
+sig=rand(10000,200);
+
+b=cell(200,1);
+a=cell(200,1);
+[b{:}]=deal({b1});
+[a{:}]=deal({a1});
+
+tic
+fsig=UnixMultiThreadedFilter(b,a,sig);
+toc
+
+tic
+for i=1:size(sig,2)
+    fsig=filtfilt(b1,a1,sig(:,i));
+end
+toc
+
 
