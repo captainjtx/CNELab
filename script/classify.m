@@ -1,10 +1,10 @@
 clc
 clear
 
-f=load('/Users/tengi/Desktop/Projects/data/China/handopenclose/S1/Open.mat','-mat');
-open=f.Open;
-f=load('/Users/tengi/Desktop/Projects/data/China/handopenclose/S1/Close.mat','-mat');
-close=f.Close;
+f=load('/Users/tengi/Desktop/Projects/data/China/abduction/S1/Abd.mat','-mat');
+open=f.Abd;
+f=load('/Users/tengi/Desktop/Projects/data/China/abduction/S1/Add.mat','-mat');
+close=f.Add;
 %%
 fs=open.fs;
 ms_before=open.ms_before;
@@ -12,7 +12,7 @@ onset=round(fs*ms_before/1000);
 
 stats={};
 
-fig=figure('name','S1 Motor','position',[100,100,600,450]);
+fig=figure('name','S1','position',[100,100,600,450]);
 
 len=800;%classification data length in ms
 
@@ -29,6 +29,54 @@ fir_h=fir1(32,.001,'low');
 len=round(len/1000*fs);
 step=round(step/1000*fs);
 
+ave_m=zeros(114,30);
+
+ave_m([1,12,13],1)=1/3;
+ave_m([2,3,14,15],2)=1/4;
+ave_m([4,5,16,17],3)=1/4;
+ave_m([6,7,18,19],4)=1/4;
+ave_m([8,9,20,21],5)=1/4;
+ave_m([10,11,22,23],6)=1/4;
+ave_m([24,25,35,36],7)=1/4;
+ave_m([26,37,38],8)=1/3;
+ave_m([27,28,39,40],9)=1/4;
+ave_m([29,30,41,42],10)=1/4;
+ave_m([31,32,43,44],11)=1/4;
+ave_m([33,34,45,46],12)=1/4;
+ave_m([47,48,59,60],13)=1/4;
+ave_m([49,50,61],14)=1/3;
+ave_m([51,52,62,63],15)=1/4;
+ave_m([53,54,64,65],16)=1/4;
+ave_m([55,56,66,67],17)=1/4;
+ave_m([57,58,68,69],18)=1/4;
+ave_m([70,71,80,81],19)=1/4;
+ave_m([82,83],20)=1/2;
+ave_m([72,73,84,85],21)=1/4;
+ave_m([74,75,86,87],22)=1/4;
+ave_m([76,77,88,89],23)=1/4;
+ave_m([78,79,90,91],24)=1/4;
+ave_m([92,93,103,104],25)=1/4;
+ave_m([94,105,106],26)=1/3;
+ave_m([95,96,107,108],27)=1/4;
+ave_m([97,98,109,110],28)=1/4;
+ave_m([99,100,111,112],29)=1/4;
+ave_m([101,102,113,114],30)=1/4;
+
+ave_m=zeros(119,30);
+for i=1:6
+    for j=1:5
+        if i==1&&j==1
+            ave_m(1,1)=1/3;
+            ave_m(12,1)=1/3;
+            ave_m(13,1)=1/3;
+        else
+            ave_m((j-1)*24+(i-1)*2,(j-1)*6+i)=1/4;
+            ave_m((j-1)*24+(i-1)*2+1,(j-1)*6+i)=1/4;
+            ave_m((j-1)*24+(i-1)*2+12,(j-1)*6+i)=1/4;
+            ave_m((j-1)*24+(i-1)*2+13,(j-1)*6+i)=1/4;
+        end
+    end
+end
 %%
 %S1
 motor=[1:6,13:18,25:30,37:42,49:52,61:64,73:76,85:88,97:100,109:111];
@@ -52,9 +100,16 @@ H={};
 for fi=1:length(f1)
     [b,a]=butter(2,[f1(fi) f2(fi)]/(fs/2));
     ecogC=close.data;
+%     for i=1:size(close.data,3)
+%         ecogC(:,:,i)=close.data(:,:,i)*ave_m;
+%     end
     ecogO=open.data;
+%     for i=1:size(open.data,3)
+%         ecogO(:,:,i)=open.data(:,:,i)*ave_m;
+%     end
     
-    Chi=find(ismember(close.channame,motorchannel));
+    Chi=find(ismember(close.channame,sensorychannel));
+%     Chi=1:30;
     
     for i=1:size(ecogC,3)
         ecogC(:,:,i)=filter_symmetric(b,a,ecogC(:,:,i),[],0,'iir');
@@ -174,11 +229,12 @@ plot(xl,[50,50],'--k','linewidth',3)
 ylim([0,100])
 xlabel('Time (ms)');
 ylabel('Error Rate(%)');
-xlim([-500,1500])
+xlim([-700,1500])
 text(20,95,'Onset','FontSize',18)
 %%
 legend([H{1}.mainLine,H{2}.mainLine,H{3}.mainLine,H{4}.mainLine],'LFB Raw','LFB Env','HFB Raw','HFB Env');
 set([H{1}.mainLine,H{2}.mainLine,H{3}.mainLine,H{4}.mainLine],'linewidth',2)   
-title('S2 Sensory')
+title('S1 Sensory')
 legend('boxoff')
+set(gcf,'position',[  645   234   600   400]);
 

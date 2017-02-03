@@ -623,6 +623,7 @@ classdef PSDWindow < handle
 %             
             obj.PSDFig=figure('Name','PSD','NumberTitle','off','Tag','Act',...
                 'Position',[fpos(1)+fpos(3)+20,fpos(2),400,300]);
+            obj.line_h={};
         end
         
         function KeyPress(obj,src,evt)
@@ -742,6 +743,7 @@ classdef PSDWindow < handle
             if isempty(obj.PSDFig)||~ishandle(obj.PSDFig)||~strcmpi(get(obj.PSDFig,'Tag'),'Act')
                 obj.PSDFig=figure('Name','PSD','NumberTitle','off','Tag','Act',...
                     'Position',[fpos(1)+fpos(3)+20,fpos(2),400,300]);
+                obj.line_h={};
             end
             figure(obj.PSDFig)
             if ~obj.hold
