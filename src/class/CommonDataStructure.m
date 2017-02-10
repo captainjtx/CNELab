@@ -1190,6 +1190,9 @@ classdef CommonDataStructure < handle
                         current_data_info.TimeStamps=linspace(0,len/varargin{i+1},len);
                     elseif strcmpi(name,'Annotations')
                         evts=varargin{i+1};
+                        if isempty(evts)
+                            continue
+                        end
                         t_len=current_data_info.TimeStamps(end)-current_data_info.TimeStamps(1);
                         tmp_evt=evts(cell2mat(evts(:,1))>=time&cell2mat(evts(:,1))<=(time+t_len),:);
                         tmp_evt(:,1)=num2cell(cell2mat(tmp_evt(:,1))-time);
@@ -1299,6 +1302,10 @@ classdef CommonDataStructure < handle
             masknames=current_montage.MaskChanNames;
             allfiles=[];
             allfilesamples=[];
+            video.VideoStartTime=[];
+            video.TimeFrame=[];
+            video.NumberOfFrame=[];
+            video.FileName=[];
             
             while 1
                 ts=current_data_info.TimeStamps;
@@ -1343,6 +1350,12 @@ classdef CommonDataStructure < handle
                 if isfield(current_data_info,'AllFiles')
                     allfiles=current_data_info.AllFiles;
                 end
+                if isfield(current_data_info,'Video')
+                    video=current_data_info.Video;
+                end
+                if isfield(current_data_info,'VideoName')
+                    video.FileName=current_data_info.VideoName;
+                end
                 if isfield(current_data_info,'FileSample')
                     allfilesamples=current_data_info.FileSample;
                 end
@@ -1380,6 +1393,7 @@ classdef CommonDataStructure < handle
             fileinfo.groupnames=groupnames;
             fileinfo.channelposition=channelposition;
             fileinfo.masknames=masknames;
+            fileinfo.video=video;
         end
         
         function [dat,eof,evts]=get_data_by_start_end(varargin)

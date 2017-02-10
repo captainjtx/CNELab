@@ -138,18 +138,15 @@ VideoStartTime=0;
 VideoTimeFrame=[];
 NumberOfFrame=[];
 for i=1:length(cds)
-    if ~isempty(cds{i}.DataInfo.Video.StartTime)
-        VideoStartTime=cds{i}.DataInfo.Video.StartTime;
+    if ~isempty(fileinfo{i}.video.StartTime)
+        VideoStartTime=fileinfo{i}.video.StartTime;
     end
     
-    if ~isempty(cds{i}.DataInfo.Video.TimeFrame)
-        VideoTimeFrame=cds{i}.DataInfo.Video.TimeFrame;
+    if ~isempty(fileinfo{i}.video.TimeFrame)
+        VideoTimeFrame=fileinfo{i}.video.TimeFrame;
     end
-end
-
-for i=1:length(cds)
-    if isfield(cds{i}.DataInfo.Video,'NumberOfFrame')
-        NumberOfFrame=cds{i}.DataInfo.Video.NumberOfFrame;
+    if ~isempty(fileinfo{i}.video.NumberOfFrame)
+        NumberOfFrame=fileinfo{i}.video.NumberOfFrame;
     end
 end
 
@@ -307,12 +304,12 @@ end
 %currently only one video is supported
 if ~isempty(regexp(computer,'WIN','ONCE'))
     for i=1:length(cds)
-        if ~isempty(cds{i}.DataInfo.VideoName)
+        if ~isempty(fileinfo{i}.video.FileName)
             videofile=[];
-            if exist(cds{i}.DataInfo.VideoName,'file')==2
-                videofile=cds{i}.DataInfo.VideoName;
-            elseif exist(fullfile(fpaths{i},cds{i}.DataInfo.VideoName),'file')==2
-                videofile=fullfile(fpaths{i},cds{i}.DataInfo.VideoName);
+            if exist(fileinfo{i}.video.FileName,'file')==2
+                videofile=fileinfo{i}.video.FileName;
+            elseif exist(fullfile(fpaths{i},fileinfo{i}.video.FileName),'file')==2
+                videofile=fullfile(fpaths{i},fileinfo{i}.video.FileName);
             end
             if ~isempty(videofile)
                 bsp.WinVideo=VideoWindow(videofile); %VLC or WMPlayer
