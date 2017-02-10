@@ -308,8 +308,11 @@ if ~isempty(regexp(computer,'WIN','ONCE'))
             videofile=[];
             if exist(fileinfo{i}.video.FileName,'file')==2
                 videofile=fileinfo{i}.video.FileName;
-            elseif exist(fullfile(fpaths{i},fileinfo{i}.video.FileName),'file')==2
-                videofile=fullfile(fpaths{i},fileinfo{i}.video.FileName);
+            else
+                [~,videoname,ext]=fileparts(fileinfo{i}.video.FileName);
+                if exist(fullfile(fpaths{i},[videoname,ext]),'file')==2
+                    videofile=fullfile(fpaths{i},[videoname,ext]);
+                end
             end
             if ~isempty(videofile)
                 bsp.WinVideo=VideoWindow(videofile); %VLC or WMPlayer
