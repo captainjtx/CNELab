@@ -30,6 +30,7 @@ obj.EventRef=j;
 obj.Evts=obj.Evts__(j).event;
 set(obj.EventOptMenu,'checked','off');
 set(src,'checked','on');
+
 end
 
 

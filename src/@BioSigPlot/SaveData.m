@@ -140,6 +140,33 @@ else
         cds.Montage.MaskChanNames=maskchan;
         
         cds.save('title','Merged Data','folders',false);
+    elseif src==obj.MenuSaveAsEDF
+        data=data(1:downsample:end,:);
+        
+        header.samplingrate=obj.SRate/downsample;
+        header.channels=chanNames;
+        if isempty(obj.RecordingTime)
+            t=datetime('now');
+        else
+            t=obj.RecordingTime;
+        end
+        
+        header.year=t.Year;
+        header.month=t.Month;
+        header.day=t.Day;
+        header.hour=t.Hour;
+        header.minute=t.Minute;
+        header.second=t.Second;
+        
+        [FileName,FilePath]=uiputfile({'*.edf','Europen Data Format (*.edf)'}...
+            ,'Save as EDF',obj.FileDir);
+        
+        if ~FileName
+            return
+        end
+        [~,FileName,~]=fileparts(FileName);
+        fnames=fullfile(FilePath,FileName);
+        lab_write_edf(fnames,data',header);
     end
 end
 end

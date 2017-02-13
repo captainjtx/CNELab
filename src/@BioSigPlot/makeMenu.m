@@ -12,7 +12,7 @@ obj.MenuLoadEvents=uimenu(obj.MenuLoad,'Label','Events','Callback',@(src,evt) ob
 obj.MenuLoadMontage=uimenu(obj.MenuLoad,'Label','Montage','Callback',@(src,evt) obj.LoadMontage);
 obj.MenuLoadFilter=uimenu(obj.MenuLoad,'Label','Filter','Callback',@(src,evt) obj.LoadFilter);
 obj.MenuLoadVideo=uimenu(obj.MenuLoad,'Label','Video','Callback',@(src,evt) obj.LoadVideo);
-obj.MenuLoadChannelPosition=uimenu(obj.MenuLoad,'Label','Position','Callback',@(src,evt) obj.LoadChannelPosition,'Accelerator','n');
+obj.MenuLoadChannelPosition=uimenu(obj.MenuLoad,'Label','Position','Callback',@(src,evt) obj.LoadChannelPosition);
 obj.MenuLoadSpatialMaps=uimenu(obj.MenuLoad,'Label','Spatial Maps','Callback',@(src,evt) obj.AverageMapWin.buildfig());
 
 obj.MenuSave=uimenu(obj.MenuFile,'Label','Save');
@@ -25,6 +25,7 @@ obj.MenuSaveData=uimenu(obj.MenuSave,'Label','Data','Callback',@(src,evt) SaveDa
 obj.MenuSaveAs=uimenu(obj.MenuFile,'Label','Save As...');
 obj.MenuSaveAsData=uimenu(obj.MenuSaveAs,'Label','Data(sel)','Callback',@(src,evt) SaveData(obj,src),'Accelerator','s');
 obj.MenuSaveAsMergeData=uimenu(obj.MenuSaveAs,'Label','Merge Data','Callback',@(src,evt) SaveData(obj,src));
+obj.MenuSaveAsEDF=uimenu(obj.MenuSaveAs,'Label','EDF(sel)','Callback',@(src,evt) SaveData(obj,src));
 obj.MenuSaveAsEvents=uimenu(obj.MenuSaveAs,'Label','Events','Callback',@(src,evt) obj.SaveEvents);
 obj.MenuSaveAsMontage=uimenu(obj.MenuSaveAs,'Label','Montage','Callback',@(src,evt) obj.SaveMontage);
 obj.MenuSaveAsPosition=uimenu(obj.MenuSaveAs,'Label','Position','Callback',@(src,evt) obj.SavePosition);
@@ -71,13 +72,13 @@ obj.MenuDetrendLinear=uimenu(obj.MenuDetrend,'Label','Linear','Callback',@(src,e
 obj.MenuDownSample=uimenu(obj.MenuChannel,'Label','Downsample');
 obj.MenuSaveDownSample=uimenu(obj.MenuDownSample,'Label','For Save','callback',@(src,evts) MnuDownSample(obj,src));
 obj.MenuVisualDownSample=uimenu(obj.MenuDownSample,'Label','For Visualization','callback',@(src,evts) MnuDownSample(obj,src));
-
+obj.MenuRecordingTime=uimenu(obj.MenuSettings,'Label','Recording Time','callback',@(src,evts)MnuRecordingTime(obj,src));
 %First Order Menu---------------------------------------------------Montage
 obj.MenuMontage=uimenu(obj.Fig,'Label','Montage');
 %**************************************************************************
 %First Order Menu-----------------------------------------------------Event
 obj.MenuEvent=uimenu(obj.Fig,'Label','Event');
-obj.MenuNewEvent=uimenu(obj.MenuEvent,'Label','New','Callback',@(src,evt)NewEvent(obj));
+obj.MenuNewEvent=uimenu(obj.MenuEvent,'Label','New','Callback',@(src,evt)NewEvent(obj),'Accelerator','n');
 obj.MenuFastEvent=uimenu(obj.MenuEvent,'Label','Fast Event','Callback',@(src,evt)obj.WinFastEvts.buildfig());
 obj.MenuAdvanceEvents=uimenu(obj.MenuEvent,'Label','Trigger');
 obj.MenuAdvanceEventsCalculate=uimenu(obj.MenuAdvanceEvents,'Label','Detect',...

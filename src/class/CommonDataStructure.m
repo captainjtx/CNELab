@@ -422,7 +422,12 @@ classdef CommonDataStructure < handle
             s.PatientInfo.Side=[];
             s.PatientInfo.Study=[];
             s.PatientInfo.Task=[];
-            s.PatientInfo.Time=[];
+            s.PatientInfo.Time.Year=[];
+            s.PatientInfo.Time.Month=[];
+            s.PatientInfo.Time.Day=[];
+            s.PatientInfo.Time.Hour=[];
+            s.PatientInfo.Time.Minute=[];
+            s.PatientInfo.Time.Second=[];
             s.PatientInfo.Location=[];
         end
         

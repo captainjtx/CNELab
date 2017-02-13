@@ -88,6 +88,7 @@ classdef BioSigPlot < hgsetget
         MenuSaveAsEvents
         MenuSaveAsData
         MenuSaveAsMergeData
+        MenuSaveAsEDF
         MenuSaveAsMontage
         MenuSaveAsPosition
         
@@ -129,6 +130,7 @@ classdef BioSigPlot < hgsetget
         MenuDownSample
         MenuSaveDownSample
         MenuVisualDownSample
+        MenuRecordingTime
         
         MenuMontage
         MontageOptMenu
@@ -506,7 +508,8 @@ classdef BioSigPlot < hgsetget
             obj.SelectedEvent_=[];
             obj.Evts__=[];
             obj.EventRef=0;
-            obj.EventsWindowDisplay=true;
+            obj.EventsWindowDisplay=false;
+            
             obj.ControlPanelDisplay=true;
             obj.ToolbarDisplay=true;
             
@@ -1973,6 +1976,33 @@ classdef BioSigPlot < hgsetget
                 end
             end
         end
+        
+        %==================================================================
+        %******************************************************************
+        function MnuRecordingTime(obj,src)
+            %**************************************************************
+            % Dialog box to change the sampling frequency
+            %**************************************************************
+            if isempty(obj.RecordingTime)
+                t=datetime('now');
+            else
+                t=obj.RecordingTime;
+            end
+            choice=inputdlg({'Year: ','Month: ','Day: ','Hour: ','Minute: ','Second: '},'Data time',1,...
+                {num2str(t.Year),num2str(t.Month),num2str(t.Day),num2str(t.Hour),num2str(t.Minute),num2str(t.Second)});
+            if ~isempty(choice)
+                year=round(str2double(choice{1}));
+                month=round(str2double(choice{2}));
+                day=round(str2double(choice{3}));
+                hour=round(str2double(choice{4}));
+                minute=round(str2double(choice{5}));
+                second=round(str2double(choice{6}));
+                dt=datetime(year,month,day,hour,minute,second);
+                if dt~=NaT
+                    obj.RecordingTime=dt;
+                end
+            end
+        end
         %==================================================================
         %******************************************************************
         LoadDataSet(obj)
@@ -2470,6 +2500,8 @@ classdef BioSigPlot < hgsetget
         VisualBuffer
         EventRef
         JWindowTimeSpinner
+        
+        RecordingTime
     end
     events
         SelectedFastEvtChange

@@ -266,7 +266,11 @@ if ~isempty(Event)
 end
 bsp.Evts__(1).name='Original';
 bsp.Evts=Event;
-bsp.EventsWindowDisplay=true;
+if isempty(Event)
+    bsp.EventsWindowDisplay=false;
+else
+    bsp.EventsWindowDisplay=true;
+end
 %scan for montage file folder==============================================
 montage=cell(length(fnames),1);
 for i=1:length(fnames)
