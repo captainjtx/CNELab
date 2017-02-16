@@ -1,7 +1,7 @@
-figure('position',[100,100,500,300]);
+figure('position',[100,100,500,200]);
 
-imagesc([1,0,-1,0])
+imagesc([7,0,-7,0])
 axis off
 colormap jet
-colorbar('Fontsize',25,'Ticks',[-1,-0.5,0,0.5,1])
+colorbar('Fontsize',30,'Ticks',[-6,-3,0,3,6])
 set(gcf,'color','w')

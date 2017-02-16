@@ -6,7 +6,7 @@ clear
 % studyName='HandRelexionExtension';
 % studyName='Finger Abdution';
 % studyName='Individual Finger Movement';
-studyName='Hand Dynamomoter';
+studyName='S2';
 
 %task start name
 % task_start_name='HandOpenRelaxClose Start';
@@ -15,7 +15,7 @@ studyName='Hand Dynamomoter';
 % task_start_name='Rest Start';
 % task_start_name='FingerAbduction Start';
 % task_start_name='Individual Finger Start';
-task_start_name='Hand Dynamometer Start';
+task_start_name='Start Recording';
 %task end name
 % task_end_name='HandOpenRelaxClose End';
 % task_end_name='HandOpenCloseRelax End';
@@ -23,13 +23,13 @@ task_start_name='Hand Dynamometer Start';
 % task_end_name='Rest End';
 % task_end_name='FingerAbduction End';
 % task_end_name='Individual Finger End';
-task_end_name='Hand Dynamometer End';
+task_end_name='Stop Recording';
 
 %seconds before the task
-sBefore=2;
+sBefore=0;
 
 %seconds after the task
-sAfter=2;
+sAfter=0;
 
 %low pass filter order
 order=2;
@@ -221,6 +221,10 @@ cds.DataInfo.TimeStamps=ts-ts(1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 cds.save
 
-[FileName,FilePath]=uiputfile('*.mat','save your events file','anno.mat');
-save(fullfile(FilePath,'events',FileName),'-struct','events','-mat');
+[FileName,FilePath]=uiputfile('*.txt','save your events file','anno.txt');
+fid=fopen(fullfile(FilePath,'events',FileName),'w');
+for i=1:length(events.text)
+    fprintf(fid,'%f,%s\n',events.stamp(i),events.text{i});
+end
+% save(fullfile(FilePath,'events',FileName),'-struct','events','-mat');
 

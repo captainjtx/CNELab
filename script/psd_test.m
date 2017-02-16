@@ -75,9 +75,9 @@ large_ufb_baseline=large_ufb;
 freq_1=cell(small_num+large_num,1);
 freq_2=freq_1;
 freq_3=freq_1;
-[freq_1{:}]=deal('LFB');
-[freq_2{:}]=deal('HFB');
-[freq_3{:}]=deal('UFB');
+[freq_1{:}]=deal('\nLFB');
+[freq_2{:}]=deal('\nHFB');
+[freq_3{:}]=deal('\nUFB');
 freq=cat(1,freq_1,freq_2,freq_3);
 
 contact_1=cell(small_num+large_num,1);
