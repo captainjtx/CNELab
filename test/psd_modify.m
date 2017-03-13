@@ -1,21 +1,25 @@
 a=gcf;
-a=patch('Faces',[1,2,3,4],'Vertices',[8,-90;32,-90;32,-25;8,-25],'facecolor',[0,0.8,0.8],'facealpha',1,'edgecolor','none');
+
+delete(findobj(a,'type','patch'));
+a=patch('Faces',[1,2,3,4],'Vertices',[8,-45;32,-45;32,30;8,30],'facecolor',[195, 234, 165]/255,'facealpha',1,'edgecolor','none');
 uistack(a,'bottom')
-a=patch('Faces',[1,2,3,4],'Vertices',[60,-90;200,-90;200,-25;60,-25],'facecolor',[0.7,0.7,0],'facealpha',1,'edgecolor','none');
+a=patch('Faces',[1,2,3,4],'Vertices',[60,-45;280,-45;280,30;60,30],'facecolor',[164, 234, 225]/255,'facealpha',1,'edgecolor','none');
+uistack(a,'bottom')
+a=patch('Faces',[1,2,3,4],'Vertices',[300,-45;800,-45;800,30;300,30],'facecolor',[237, 239, 127]/255,'facealpha',1,'edgecolor','none');
+uistack(a,'bottom')
 
 set(gcf,'color','w')
-set(gca,'linewidth',2)
-set(findobj(gca,'type','line'),'linewidth',3)
-title('S2 power spectrum density')
+set(gca,'linewidth',2.5)
+set(findobj(gca,'type','line'),'linewidth',2.5)
 
-legend(findobj(gca,'type','line'),{'Hand movement','Baseline'})
-legend('boxoff')
-set(gca,'fontsize',15)
+legend(findobj(gca,'type','line'),{'Movement','Baseline'})
+set(gca,'fontsize',18)
 axis tight
-ylim([-100,-20]);
+ylim([-50,30]);
+xlim([0,1000]);
 set(gca,'fontweight','bold')
-uistack(a,'bottom')
-
+ylabel('PSD (dB)')
+title('');
 %%
 set(gcf,'position',[100,100,500,400])
 set(gca,'position',[0.13,0.15,0.75,0.78])

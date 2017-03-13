@@ -181,6 +181,7 @@ classdef BioSigPlot < hgsetget
         MenuTemporalPCA
         MenuRemovePulse
         MenuSpatialPCA
+        MenuRawMap
         
         MenuInterpolate
         
@@ -384,6 +385,7 @@ classdef BioSigPlot < hgsetget
         TFMapWin
         PSDWin
         SpatialMapWin
+        RawMapWin
         InterpolateWin
         
         ExportTrialWin
@@ -450,6 +452,7 @@ classdef BioSigPlot < hgsetget
             
             obj.TFMapWin=TFMapWindow(obj);
             obj.SpatialMapWin=SpatialMapWindow(obj);
+            obj.RawMapWin=RawMapWindow(obj);
             
             obj.InterpolateWin=InterpWin(obj);
             
@@ -461,7 +464,6 @@ classdef BioSigPlot < hgsetget
             obj.WinFastEvts=FastEventWindow(obj);
             addlistener(obj.WinFastEvts,'FastEvtsChange',@(src,evt) set(obj,'FastEvts',obj.WinFastEvts.FastEvts));
             addlistener(obj.WinFastEvts,'SelectedFastEvtChange',@(src,evt) set(obj,'SelectedFastEvt',obj.WinFastEvts.SelectedFastEvt));
-            
             obj.IsInitialize=false;
             
 %             set(obj.Fig,'Visible','on')
@@ -558,6 +560,10 @@ classdef BioSigPlot < hgsetget
             
             if obj.SpatialMapWin.valid
                 obj.SpatialMapWin.OnClose();
+            end
+            
+            if obj.RawMapWin.valid
+                obj.RawMapWin.OnClose();
             end
             
             if obj.InterpolateWin.valid
@@ -1266,15 +1272,12 @@ classdef BioSigPlot < hgsetget
             end
             set(obj.EdtTime,'String',obj.Time_);
             
-            if isa(obj.WinVideo,'VideoWindow') && obj.WinVideo.valid
-                if ~isempty(prevTime)
-                    obj.VideoLineTime=obj.Time+obj.VideoLineTime-prevTime;
-                else
-                    obj.VideoLineTime=obj.Time;
-                end
-                SynchVideoWithData(obj);
+            if ~isempty(prevTime)
+                obj.VideoLineTime=obj.Time+obj.VideoLineTime-prevTime;
+            else
+                obj.VideoLineTime=obj.Time;
             end
-            
+            SynchVideoWithData(obj);
         end
         
         function obj = set.Gain_(obj,val)
@@ -1653,6 +1656,7 @@ classdef BioSigPlot < hgsetget
                     set(obj.LineVideo(i),'XData',[t t]);
                 end
             end
+            notify(obj,'VideoLineChange');
         end
         %==================================================================
         %******************************************************************
@@ -2508,5 +2512,6 @@ classdef BioSigPlot < hgsetget
         EventListChange
         SelectedEventChange
         SelectionChange
+        VideoLineChange
     end
 end

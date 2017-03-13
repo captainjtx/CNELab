@@ -1140,7 +1140,6 @@ classdef SpatialMapWindow < handle
             end
         end
         function varinitial(obj)
-            obj.valid=0;
             obj.data_input_=3;%average event
             obj.ms_before_=1500;
             obj.ms_after_=1500;

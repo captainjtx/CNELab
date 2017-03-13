@@ -31,13 +31,13 @@ clear
 % 
 % event=cat(1,event_1,event_2,event_3,event_4);
 %***********************************
-tmp=load('/Users/tengi/Desktop/Projects/data/Turkey/s2/app/spatial map/small_8-32_start-100_len500_trial.mat','-mat');
+tmp=load('/Users/tengi/Desktop/Projects/data/Turkey/s1/app/spatial map/small_8-32_start-100_len500_trial.mat','-mat');
 trial_info_lfb(1)=tmp.info;
-tmp=load('/Users/tengi/Desktop/Projects/data/Turkey/s2/app/spatial map/large_8-32_start-100_len500_trial.mat','-mat');
+tmp=load('/Users/tengi/Desktop/Projects/data/Turkey/s1/app/spatial map/large_8-32_start-100_len500_trial.mat','-mat');
 trial_info_lfb(2)=tmp.info;
-tmp=load('/Users/tengi/Desktop/Projects/data/Turkey/s2/app/spatial map/small_60-200_start-100_len500_trial.mat','-mat');
+tmp=load('/Users/tengi/Desktop/Projects/data/Turkey/s1/app/spatial map/small_60-200_start-100_len500_trial.mat','-mat');
 trial_info_hfb(1)=tmp.info;
-tmp=load('/Users/tengi/Desktop/Projects/data/Turkey/s2/app/spatial map/large_60-200_start-100_len500_trial.mat','-mat');
+tmp=load('/Users/tengi/Desktop/Projects/data/Turkey/s1/app/spatial map/large_60-200_start-100_len500_trial.mat','-mat');
 trial_info_hfb(2)=tmp.info;
 
 

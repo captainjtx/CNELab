@@ -32,7 +32,11 @@ end
 
 set(a,'XLim',[1,size(mapvq,2)]);
 set(a,'YLim',[1,size(mapvq,1)]);
-set(a,'CLim',[sl sh]);
+
+if ~isempty(sl)&&~isempty(sh)
+    set(a,'CLim',[sl sh]);
+end
+
 set(a,'YDir','reverse','FontSize',round(15*ratio));
 colormap(a,jet);
 if colbar

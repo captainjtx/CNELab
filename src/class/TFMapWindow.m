@@ -2,7 +2,6 @@ classdef TFMapWindow < handle
     %TFMAPWINDOW Summary of this class goes here
     %   Detailed explanation goes here
     properties
-        valid
         bsp
         fig
         TFMapFig
@@ -89,6 +88,7 @@ classdef TFMapWindow < handle
     end
     
     properties (Dependent)
+        valid
         fs
         method
         data_input
@@ -597,7 +597,6 @@ classdef TFMapWindow < handle
             end
         end
         function varinitial(obj)
-            obj.valid=0;
             obj.method_=1;
             obj.data_input_=1;%selection
             obj.ms_before_=1500;
@@ -799,7 +798,6 @@ classdef TFMapWindow < handle
             obj.normalization_event=obj.event;
         end
         function OnClose(obj)
-            obj.valid=0;
             h = obj.fig;
             if ishandle(h)
                 delete(h);
@@ -1203,7 +1201,7 @@ classdef TFMapWindow < handle
                         nref(1)=1;
                         needupdate=1;
                     end
-                    if nref(1)<=0;
+                    if nref(1)<=0
                         nref(1)=1;
                         needupdate=1;
                     end
@@ -1223,7 +1221,7 @@ classdef TFMapWindow < handle
                         nref(1)=1;
                         needupdate=1;
                     end
-                    if nref(1)<=0;
+                    if nref(1)<=0
                         nref(1)=1;
                         needupdate=1;
                     end
