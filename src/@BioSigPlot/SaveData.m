@@ -24,7 +24,7 @@ elseif src==obj.MenuSavePosition
                 chanpos=pos(dataset==i,:);
             else
                 chanpos=[];
-            end  
+            end
             
             CommonDataStructure.write_file_info(obj.CDS{i},...
                 'ChannelPosition',chanpos);
@@ -36,7 +36,7 @@ elseif src==obj.MenuSaveEvents
     for i=1:length(obj.CDS)
         if obj.CDS{i}.file_type==2
             CommonDataStructure.write_file_info(obj.CDS{i},...
-                'Annotations',obj.Evts);        
+                'Annotations',obj.Evts);
         else
         end
     end
@@ -79,35 +79,36 @@ else
         end
     end
     
+    %     if src==obj.MenuSaveAsData
+    %         for i=1:length(dd)
+    %             cds=CommonDataStructure;
+    %
+    %             cds.Data=data(1:downsample:end,dataset==dd(i));
+    %             cds.DataInfo.Annotations=evts;
+    %             cds.DataInfo.SampleRate=obj.SRate/downsample;
+    % %             cds.DataInfo.Units=obj.Units{dd(i)}(channel);
+    %             cds.DataInfo.VideoName=obj.VideoFile;
+    %             cds.DataInfo.TimeStamps=linspace(0,obj.DataTime,size(cds.Data,1));
+    %
+    %             cds.DataInfo.Video.StartTime=obj.VideoStartTime;
+    %             cds.DataInfo.Video.TimeFrame=obj.VideoTimeFrame;
+    %             cds.DataInfo.Video.NumberOfFrame=obj.NumberOfFrame;
+    %
+    %             cds.Montage.ChannelNames=chanNames(dataset==dd(i));
+    %             cds.Montage.Name=obj.Montage{dd(i)}(obj.MontageRef(dd(i))).name;
+    %             cds.Montage.GroupNames=groupnames(dataset==dd(i));
+    %             cds.Montage.MaskChanNames=obj.MontageChanNames{dd(i)}(obj.Mask{dd(i)}==0);
+    %             if ~isempty(pos)
+    %                 cds.Montage.ChannelPosition=pos(dataset==dd(i),:);
+    %             else
+    %                 cds.Montage.ChannelPosition=[];
+    %             end
+    %
+    %             cds.save('title',['DataSet-',num2str(dd(i))],'folders',false);
+    %         end
+    %
+    %     else
     if src==obj.MenuSaveAsData
-        for i=1:length(dd)
-            cds=CommonDataStructure;
-            
-            cds.Data=data(1:downsample:end,dataset==dd(i));
-            cds.DataInfo.Annotations=evts;
-            cds.DataInfo.SampleRate=obj.SRate/downsample;
-%             cds.DataInfo.Units=obj.Units{dd(i)}(channel);
-            cds.DataInfo.VideoName=obj.VideoFile;
-            cds.DataInfo.TimeStamps=linspace(0,obj.DataTime,size(cds.Data,1));
-            
-            cds.DataInfo.Video.StartTime=obj.VideoStartTime;
-            cds.DataInfo.Video.TimeFrame=obj.VideoTimeFrame;
-            cds.DataInfo.Video.NumberOfFrame=obj.NumberOfFrame;
-            
-            cds.Montage.ChannelNames=chanNames(dataset==dd(i));
-            cds.Montage.Name=obj.Montage{dd(i)}(obj.MontageRef(dd(i))).name;
-            cds.Montage.GroupNames=groupnames(dataset==dd(i));
-            cds.Montage.MaskChanNames=obj.MontageChanNames{dd(i)}(obj.Mask{dd(i)}==0);
-            if ~isempty(pos)
-                cds.Montage.ChannelPosition=pos(dataset==dd(i),:);
-            else
-                cds.Montage.ChannelPosition=[];
-            end
-            
-            cds.save('title',['DataSet-',num2str(dd(i))],'folders',false);
-        end
-        
-    elseif src==obj.MenuSaveAsMergeData
         
         cds=CommonDataStructure;
         
@@ -118,7 +119,7 @@ else
         for i=2:length(dd)
             units=cat(2,units,obj.Units{dd(i)});
         end
-%         cds.DataInfo.Units=units;
+        %         cds.DataInfo.Units=units;
         
         cds.DataInfo.VideoName=obj.VideoFile;
         cds.DataInfo.TimeStamps=linspace(0,obj.DataTime,size(cds.Data,1));

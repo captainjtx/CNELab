@@ -87,7 +87,6 @@ classdef BioSigPlot < hgsetget
         MenuSaveAsFigure
         MenuSaveAsEvents
         MenuSaveAsData
-        MenuSaveAsMergeData
         MenuSaveAsEDF
         MenuSaveAsMontage
         MenuSaveAsPosition
