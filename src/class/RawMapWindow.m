@@ -90,6 +90,7 @@ classdef RawMapWindow < handle
             obj.VideoTimerPeriod_=0.1;
             obj.cmin_=0;
             obj.cmax_=1;
+            obj.speed_=10;
         end
         
         function buildfig(obj)
@@ -198,7 +199,7 @@ classdef RawMapWindow < handle
             
             obj.JToolbar.add(label);
             
-            model = javaObjectEDT(SpinnerNumberModel(10,1,100,1));
+            model = javaObjectEDT(SpinnerNumberModel(java.lang.Integer(obj.speed_),java.lang.Integer(1),java.lang.Integer(100),java.lang.Integer(1)));
             obj.JSpeedSpinner =javaObjectEDT(ToolbarSpinner(model));
             
             obj.JToolbar.add(obj.JSpeedSpinner);
@@ -214,7 +215,7 @@ classdef RawMapWindow < handle
             
             obj.JToolbar.add(label);
             
-            model = javaObjectEDT(SpinnerNumberModel(1,1,100,1));
+            model = javaObjectEDT(SpinnerNumberModel(java.lang.Integer(obj.speed_),java.lang.Integer(1),java.lang.Integer(100),java.lang.Integer(1)));
             obj.JStepSpinner =javaObjectEDT(ToolbarSpinner(model));
             
             obj.JToolbar.add(obj.JStepSpinner);
@@ -243,8 +244,8 @@ classdef RawMapWindow < handle
         end
         function set.speed(obj,val)
             obj.speed_=val;
-            obj.JSpeedSpinner.setValue(java.lang.Double(val));
-            obj.JSpeedSpinner.getModel().setStepSize(java.lang.Double(val/5));
+            obj.JSpeedSpinner.setValue(java.lang.Integer(val));
+%             obj.JSpeedSpinner.getModel().setStepSize((1,java.lang.Integer(val/5)));
         end
         function OnClose(obj)
             h = obj.fig;
@@ -633,13 +634,12 @@ classdef RawMapWindow < handle
         
         function SpeedSpinnerCallback(obj)
             val=obj.JSpeedSpinner.getValue();
-            
             if val==obj.speed||val==0
                 return
             end
             
             obj.speed=val;
-            set(obj.VideoTimer,'period',1/val);
+            set(obj.VideoTimer,'period',round(1000*(1/val))/1000);
         end
         
         
