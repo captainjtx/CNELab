@@ -1271,10 +1271,12 @@ classdef BioSigPlot < hgsetget
             end
             set(obj.EdtTime,'String',obj.Time_);
             
-            if ~isempty(prevTime)
-                obj.VideoLineTime=obj.Time+obj.VideoLineTime-prevTime;
-            else
-                obj.VideoLineTime=obj.Time;
+            if obj.VideoLineTime<obj.Time||obj.VideoLineTime>obj.Time+obj.WinLength
+                if ~isempty(prevTime)
+                    obj.VideoLineTime=obj.Time+obj.VideoLineTime-prevTime;
+                else
+                    obj.VideoLineTime=obj.Time;
+                end
             end
             SynchVideoWithData(obj);
         end
