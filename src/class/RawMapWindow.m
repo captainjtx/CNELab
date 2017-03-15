@@ -618,7 +618,7 @@ classdef RawMapWindow < handle
         function PlayRawMap(obj)
             obj.bsp.VideoLineTime=obj.bsp.VideoLineTime+obj.JStepSpinner.getValue()/obj.fs;
             if(obj.bsp.VideoLineTime>obj.bsp.Time+obj.bsp.WinLength)
-                obj.bsp.Time=obj.bsp.Time+obj.bsp.WinLength;
+                obj.bsp.Time=obj.bsp.Time+floor((obj.bsp.VideoLineTime-obj.bsp.Time)/obj.bsp.WinLength)*obj.bsp.WinLength;
             end
         end
         
@@ -628,7 +628,7 @@ classdef RawMapWindow < handle
         function PlayBack(obj)
             obj.bsp.VideoLineTime=obj.bsp.VideoLineTime-obj.JStepSpinner.getValue()/obj.fs;
             if(obj.bsp.VideoLineTime<obj.bsp.Time)
-                obj.bsp.Time=obj.bsp.Time-obj.bsp.WinLength;
+                obj.bsp.Time=obj.bsp.Time-ceil((obj.bsp.Time-obj.bsp.VideoLineTime)/obj.bsp.WinLength)*obj.bsp.WinLength;
             end
         end
         
