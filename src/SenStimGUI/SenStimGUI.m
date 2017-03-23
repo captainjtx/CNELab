@@ -89,7 +89,6 @@ classdef SenStimGUI<handle
             import javax.swing.ImageIcon;
             import javax.swing.JPanel;
             import javax.swing.JRadioButton;
-            import src.java.checkboxtree.FileLoadTree;
             
             screensize=get(0,'ScreenSize');
             obj.Fig=figure('MenuBar','none','ToolBar','none','DockControls','off','NumberTitle','off','RendererMode','manual',...
