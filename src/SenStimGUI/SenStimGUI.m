@@ -56,15 +56,9 @@ classdef SenStimGUI<handle
     
     methods
         function obj=SenStimGUI()
-            try
-                xippmex();
-            catch
-                errordlg('Cannot find NIP !');
-                return;
-            end
             obj.varInit();
-            obj.refresh();
             obj.buildfig();
+            obj.refresh();
         end
         function varInit(obj)
             obj.DEFAULT_FREQ = 60.0; %Hz
@@ -97,28 +91,9 @@ classdef SenStimGUI<handle
                 'WindowButtonUpFcn',@(src,evt) MouseUp(obj),'ResizeFcn',@(src,evt) Resize(obj),...
                 'WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'WindowKeyReleaseFcn',@(src,evt) KeyRelease(obj,src,evt),...
                 'Units','Pixels','Visible','on',...
-                'position',[10,screensize(4)-390,350,600],'Name','BrainMap Simulink Control');
+                'position',[10,screensize(4)-640,350,600],'Name','BrainMap Simulink Control');
             
             tabgp = uitabgroup(obj.Fig,'Position',[0 0.2 1 0.8]);
-            
-            tab1 = uitab(tabgp,'Title','Front end');
-            port_names={'Port A','Port B','Port C','Port D'};
-            
-            for port=1:4
-                for num=1:4
-                    uicontrol('Parent',tab1,'Style','text','string',port_names{port},'units','normalized',...
-                        'position',[0,1-0.22*port,0.2,0.22],'HorizontalAlignment','center');
-                    obj.stim_popups(port,num)=uicontrol('Parent',tab1,'Style','popup',...
-                        'String',{'1','2'},'units','normalized','Position',[num*0.2,1-0.22*port,0.2,0.22],'value',2,...
-                        'visible','off','callback',@(src,evts) FrontEndChange(obj,src,port,num));
-%                     obj.stim_popups_res(port,1)=uicontrol('Parent',tab1,'Style','popup',...
-%                         'String',{'1 uA','2 uA','5 uA','10 uA','20 uA'},'units','normalized','Position',[num*0.2,1-0.25*port,0.2,0.125],'value',2,...
-%                         'enable','off','callback',@(src,evts) FrontEndResChange(obj,src,port,num));
-                end
-            end
-            
-            obj.refresh_btn=uicontrol('parent',tab1,'style','pushbutton','string','Refresh','units','normalized','position',[0.8,0.01,0.2,0.08],...
-                'callback',@(src,evts) refresh(obj));
             
             tab2 = uitab(tabgp,'Title','Stim');
             
@@ -161,7 +136,7 @@ classdef SenStimGUI<handle
                 'string','Amplitude (mA)','horizontalalignment','left','fontunits','normalized','fontsize',0.4);
             model = javaObjectEDT(SpinnerNumberModel(0,0,obj.max_amp,0.1));
             obj.JAmplitudeSpinner =javaObjectEDT(JSpinner(model));
-            [jh,gh]=javacomponent(obj.JAmplitudeSpinner,[0,0,0,0],hp_stim_parameter);
+            [jh,gh]=javacomponent(obj.JAmplitudeSpinner,[0,0,1,0.1],hp_stim_parameter);
             set(gh,'Units','Norm','Position',[0.6,0.86,0.4,0.13]);
             set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) AmplitudeSpinnerCallback(obj));
             
@@ -238,6 +213,26 @@ classdef SenStimGUI<handle
             
             obj.info_text=uicontrol('parent',obj.Fig,'style','text','String','','units','normalized','position',[0,0,1,0.18]);
             
+             tab1 = uitab(tabgp,'Title','Front end');
+            port_names={'Port A','Port B','Port C','Port D'};
+            
+            for port=1:4
+                for num=1:4
+                    uicontrol('Parent',tab1,'Style','text','string',port_names{port},'units','normalized',...
+                        'position',[0,1-0.22*port,0.2,0.22],'HorizontalAlignment','center');
+                    obj.stim_popups(port,num)=uicontrol('Parent',tab1,'Style','popup',...
+                        'String',{'1','2'},'units','normalized','Position',[num*0.2,1-0.22*port,0.18,0.22],'value',2,...
+                        'visible','off','callback',@(src,evts) FrontEndChange(obj,src,port,num));
+%                     obj.stim_popups_res(port,1)=uicontrol('Parent',tab1,'Style','popup',...
+%                         'String',{'1 uA','2 uA','5 uA','10 uA','20 uA'},'units','normalized','Position',[num*0.2,1-0.25*port,0.2,0.125],'value',2,...
+%                         'enable','off','callback',@(src,evts) FrontEndResChange(obj,src,port,num));
+                end
+            end
+            
+            obj.refresh_btn=uicontrol('parent',tab1,'style','pushbutton','string','Refresh','units','normalized','position',[0.8,0.01,0.2,0.08],...
+                'callback',@(src,evts) refresh(obj));
+            
+            set(tabgp,'selectedtab',tab1);
         end
         
         function val=get.frontends(obj)
@@ -261,7 +256,7 @@ classdef SenStimGUI<handle
             
             for i=1:32:length(obj.chan)
                 port=round(obj.chan(i)/128)+1;
-                num=round((i-(port-1)*128)/32)+1;
+                num=round((obj.chan(i)-(port-1)*128)/32)+1;
                 
                 version=get(obj.stim_popups(port,num),'value');
                 
@@ -322,7 +317,7 @@ classdef SenStimGUI<handle
             
             for i=1:32:length(obj.chan)
                 %set to maximum step size
-                xippmex('stim','res',i,5);
+                xippmex('stim','res',obj.chan(i),5);
             end
             
             for port=1:4
@@ -554,7 +549,7 @@ classdef SenStimGUI<handle
                 stim.amp, stim_params.td, stim.pol);
             
             xippmex('stim',stim_str);
-            
+            disp(stim_str);
         end
         %%
     end
