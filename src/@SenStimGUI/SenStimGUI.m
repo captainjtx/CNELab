@@ -3,7 +3,7 @@ classdef SenStimGUI<handle
         Fig
         conf
         chan
-        type
+        
         stim_popups
         refresh_btn
         
@@ -223,9 +223,6 @@ classdef SenStimGUI<handle
                     obj.stim_popups(port,num)=uicontrol('Parent',tab1,'Style','popup',...
                         'String',{'1','2'},'units','normalized','Position',[num*0.2,1-0.22*port,0.18,0.22],'value',2,...
                         'visible','off','callback',@(src,evts) FrontEndChange(obj,src,port,num));
-%                     obj.stim_popups_res(port,1)=uicontrol('Parent',tab1,'Style','popup',...
-%                         'String',{'1 uA','2 uA','5 uA','10 uA','20 uA'},'units','normalized','Position',[num*0.2,1-0.25*port,0.2,0.125],'value',2,...
-%                         'enable','off','callback',@(src,evts) FrontEndResChange(obj,src,port,num));
                 end
             end
             
@@ -239,13 +236,15 @@ classdef SenStimGUI<handle
             val=[0,0];
             for port=1:4
                 for num=1:4
-                    version=get(obj.stim_popups(port,num),'value');
-                    
-                    switch version
-                        case 1
-                            val(1)=val(1)+1;
-                        case 2
-                            val(2)=val(2)+1;
+                    if strcmp(get(obj.stim_popups(port,num),'visible'),'on')
+                        version=get(obj.stim_popups(port,num),'value');
+                        
+                        switch version
+                            case 1
+                                val(1)=val(1)+1;
+                            case 2
+                                val(2)=val(2)+1;
+                        end
                     end
                 end
             end
@@ -255,8 +254,8 @@ classdef SenStimGUI<handle
             val=0;
             
             for i=1:32:length(obj.chan)
-                port=round(obj.chan(i)/128)+1;
-                num=round((obj.chan(i)-(port-1)*128)/32)+1;
+                port=floor(obj.chan(i)/128)+1;
+                num=floor((obj.chan(i)-(port-1)*128)/32)+1;
                 
                 version=get(obj.stim_popups(port,num),'value');
                 
@@ -307,7 +306,9 @@ classdef SenStimGUI<handle
             obj.JBipolarSpinner2.setEnabled(true);
         end
         function FrontEndChange(obj,src,port,num)
-            
+            obj.JAmplitudeSpinner.setValue(java.lang.Double(0));
+            obj.JAmplitudeSpinner.getModel().setMaximum(java.lang.Double(obj.max_amp));
+            obj.JAmplitudeSpinner.getModel().setStepSize(java.lang.Double(abs(obj.max_amp)/100));
         end
         
         function refresh(obj)
@@ -329,8 +330,6 @@ classdef SenStimGUI<handle
                     end
                 end
             end
-            %default to Micro+Stim1
-            obj.type=ones(length(obj.chan),1);
             
             obj.JAmplitudeSpinner.setValue(java.lang.Double(0));
             obj.JAmplitudeSpinner.getModel().setMaximum(java.lang.Double(obj.max_amp));
@@ -355,6 +354,7 @@ classdef SenStimGUI<handle
         function OnClose(obj)
             try
                 delete(obj.Fig)
+                xippmex('close');
             catch
             end
         end
@@ -506,8 +506,8 @@ classdef SenStimGUI<handle
             %equally divide currents between frontends
             
             for i=1:32:length(obj.chan)
-                port=round(obj.chan(i)/128)+1;
-                num=round((i-(port-1)*128)/32)+1;
+                port=floor(obj.chan(i)/128)+1;
+                num=floor((obj.chan(i)-(port-1)*128)/32)+1;
                 
                 elec=cat(2,elec,stim.elec+obj.chan(i)-1);
                 
@@ -516,15 +516,15 @@ classdef SenStimGUI<handle
                 switch version
                     case 1
                         if equal_current
-                            amp=cat(2,amp,floor(0.93/(stim.amp/sum(fe))*127)*ones(size(stim.elec)));
+                            amp=cat(2,amp,floor(stim.amp/sum(fe)/0.93*127)*ones(size(stim.elec)));
                         else
                             amp=cat(2,amp,127)*ones(size(stim.elec));
                         end
                     case 2
                         if equal_current
-                            amp=cat(2,amp,floor(1.53/(stim.amp/sum(fe))*75)*ones(size(stim.elec)));
+                            amp=cat(2,amp,floor(stim.amp/sum(fe)/1.53*75)*ones(size(stim.elec)));
                         else
-                            amp=cat(2,amp,floor(1.53/(stim.amp-0.93*fe(1))*75)*ones(size(stim.elec)));
+                            amp=cat(2,amp,floor((stim.amp-0.93*fe(1))/1.53*75)*ones(size(stim.elec)));
                         end
                 end
             end
@@ -541,12 +541,11 @@ classdef SenStimGUI<handle
                     stim.pol=repmat([stim.pol,~stim.pol],1,sum(fe));
             end
             stim.elec=elec;
-            stim.tl=stim.tl*ones(size(stim.elec));
-            stim.tl=stim.tl*ones(size(stim.elec));
+            stim.amp=amp;
 
             stim_str = stim_param_to_string(stim.elec, ...
                 stim.tl, stim.freq, stim.dur, ...
-                stim.amp, stim_params.td, stim.pol);
+                stim.amp, stim.td, stim.pol);
             
             xippmex('stim',stim_str);
             disp(stim_str);
