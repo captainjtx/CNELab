@@ -28,6 +28,8 @@ while 1
     end
 end
 
+xippmex=which('xippmex');
+
 addpath(pwd,'-frozen');
 addpath(genpath([pwd filesep 'src']),'-frozen');
 addpath(genpath([pwd filesep 'db']),'-frozen');
@@ -35,6 +37,11 @@ addpath(genpath([pwd filesep 'lib']),'-frozen');
 addpath(genpath([pwd filesep 'script']),'-frozen');
 addpath(genpath([pwd filesep 'test']),'-frozen');
 addpath(genpath([pwd filesep 'demo']),'-frozen');
+
+if ~isempty(xippmex)
+    disp('... xippmex skipped as already being installed ...');
+    rmpath([pwd filesep 'lib' filesep 'xippmex']);
+end
 
 %%
 if ispc
