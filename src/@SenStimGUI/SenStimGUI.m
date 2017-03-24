@@ -518,7 +518,7 @@ classdef SenStimGUI<handle
                         if equal_current
                             amp=cat(2,amp,floor(stim.amp/sum(fe)/0.93*127)*ones(size(stim.elec)));
                         else
-                            amp=cat(2,amp,127)*ones(size(stim.elec));
+                            amp=cat(2,amp,127*ones(size(stim.elec)));
                         end
                     case 2
                         if equal_current
