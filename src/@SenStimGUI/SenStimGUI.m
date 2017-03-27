@@ -64,7 +64,7 @@ classdef SenStimGUI<handle
         function obj=SenStimGUI(varargin)
             obj.varInit();
             obj.buildfig();
-            %obj.refresh();
+            obj.refresh();
         end
         function varInit(obj)
             obj.DEFAULT_FREQ = 60.0; %Hz
@@ -408,10 +408,13 @@ classdef SenStimGUI<handle
             
             if get(obj.stim_monopolar_radio,'value')
                 def={[num2str(obj.JMonopolarSpinner.getValue()),' ',...
+                    num2str(amp),'mA ',...
                     num2str(freq),'Hz ',num2str(tl),'ms']};
             elseif get(obj.stim_bipolar_radio,'value')
                 def={[num2str(obj.JBipolarSpinner1.getValue()),'-',...
-                    num2str(obj.JBipolarSpinner2.getValue()),' ',num2str(freq),'Hz ',num2str(tl),'ms']};
+                    num2str(obj.JBipolarSpinner2.getValue()),' ',...
+                    num2str(amp),'mA ',...
+                    num2str(freq),'Hz ',num2str(tl),'ms']};
             end
             
             title='Save stimulation';
