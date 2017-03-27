@@ -377,7 +377,7 @@ classdef SenStimGUI<handle
             catch
             end
             try
-                fclos(obj.log_fid);
+                fclose(obj.log_fid);
             catch
             end
             try
