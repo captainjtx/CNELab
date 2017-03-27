@@ -15,7 +15,7 @@ classdef SenStimGUI<handle
         JBipolarSpinner2
         
         saved_list
-      
+        
         JAmplitudeSpinner
         JPhaseDurationSpinner
         JFrequencySpinner
@@ -30,6 +30,7 @@ classdef SenStimGUI<handle
         cathodic_radio
         single_pulse_radio
         fast_settle_radio
+        multi_stim_radio
         
         stop_btn
         stim_btn
@@ -48,6 +49,11 @@ classdef SenStimGUI<handle
         MAX_TD
         DEFAULT_FS
         MAX_FS
+        
+        STIM_COUNT
+        DEFAULT_PORT
+        udp_fid
+        log_fid
     end
     properties(Dependent)
         max_amp
@@ -55,15 +61,15 @@ classdef SenStimGUI<handle
     end
     
     methods
-        function obj=SenStimGUI()
+        function obj=SenStimGUI(varargin)
             obj.varInit();
             obj.buildfig();
-            obj.refresh();
+            %obj.refresh();
         end
         function varInit(obj)
             obj.DEFAULT_FREQ = 60.0; %Hz
             obj.MAX_FREQ=1000;
-            obj.DEFAULT_DUR = 0.2; %ms
+            obj.DEFAULT_DUR = 0.3; %ms
             obj.MAX_DUR=10;
             obj.DEFAULT_TL = 2000.0; %ms
             obj.MAX_TL=60000;
@@ -71,7 +77,12 @@ classdef SenStimGUI<handle
             obj.MAX_TD=100;
             obj.DEFAULT_FS = 0.0; %ms
             obj.MAX_FS=100;
-            
+            obj.STIM_COUNT=0;
+            obj.DEFAULT_PORT=1126;
+            obj.udp_fid=udp('127.0.0.1',obj.DEFAULT_PORT);
+            fopen(obj.udp_fid);
+            obj.log_fid=fopen('stim.log','w');
+            fprintf(obj.log_fid,'%%elec    amplitude(mA)    phase duration(ms)    frequency(Hz)    train length(ms)    stim string\n');
         end
         function buildfig(obj)
             import javax.swing.JSlider;
@@ -188,7 +199,7 @@ classdef SenStimGUI<handle
             
             hp_saved_list=uipanel('parent',tab2,'units','normalized','position',[0.6,0.25,0.4,0.55]);
             obj.saved_list= uicontrol('parent',hp_saved_list,'style','listbox','units','normalized','position',[0.01,0.16,0.98,0.82],...
-                'string',{},'callback',@(src,evt) ListCallback(obj,src));
+                'string',{},'callback',@(src,evt) ListCallback(obj,src),'max',1,'min',0);
             
             obj.delete_list_btn=uicontrol('parent',hp_saved_list,'style','pushbutton','string','Delete','units','normalized','position',[0.62,0.01,0.36,0.12],...
                 'callback',@(src,evts) deleteStim(obj));
@@ -205,6 +216,9 @@ classdef SenStimGUI<handle
             obj.fast_settle_radio=uicontrol('parent',hp_other_option,'units','normalized','style','radiobutton','position',[0.61,0.55,0.3,0.4],...
                 'callback',@(src,evts) FastSettleCallback(obj),'string','Fast Settle');
             
+            obj.multi_stim_radio=uicontrol('parent',hp_other_option,'units','normalized','style','radiobutton','position',[0.01,0.05,0.3,0.4],...
+                'callback',@(src,evts) MultiStimCallback(obj,src),'string','Multi Stim');
+            
             obj.stop_btn=uicontrol('parent',tab2,'style','pushbutton','string','Stop','units','normalized','position',[0.01,0.01,0.25,0.07],...
                 'callback',@(src,evts) StopStim(obj));
             
@@ -213,7 +227,7 @@ classdef SenStimGUI<handle
             
             obj.info_text=uicontrol('parent',obj.Fig,'style','text','String','','units','normalized','position',[0,0,1,0.18]);
             
-             tab1 = uitab(tabgp,'Title','Front end');
+            tab1 = uitab(tabgp,'Title','Front end');
             port_names={'Port A','Port B','Port C','Port D'};
             
             for port=1:4
@@ -226,7 +240,7 @@ classdef SenStimGUI<handle
                 end
             end
             
-            obj.refresh_btn=uicontrol('parent',tab1,'style','pushbutton','string','Refresh','units','normalized','position',[0.8,0.01,0.2,0.08],...
+            obj.refresh_btn=uicontrol('parent',tab1,'style','pushbutton','string','Read Frontends ','units','normalized','position',[0.68,0.01,0.3,0.08],...
                 'callback',@(src,evts) refresh(obj));
             
             set(tabgp,'selectedtab',tab1);
@@ -238,7 +252,6 @@ classdef SenStimGUI<handle
                 for num=1:4
                     if strcmp(get(obj.stim_popups(port,num),'visible'),'on')
                         version=get(obj.stim_popups(port,num),'value');
-                        
                         switch version
                             case 1
                                 val(1)=val(1)+1;
@@ -277,11 +290,11 @@ classdef SenStimGUI<handle
         function TrainDelaySpinnerCallback(obj)
         end
         function AmplitudeSpinnerCallback(obj)
-%             obj.JAmplitudeSpinner.setValue(obj.JAmplitudeSpinner.getValue());
+            %             obj.JAmplitudeSpinner.setValue(obj.JAmplitudeSpinner.getValue());
         end
         
         function PhaseDurationSpinnerCallback(obj)
-%             obj.JPhaseDurationSpinner.setValue(obj.JPhaseDurationSpinner.getValue());
+            %             obj.JPhaseDurationSpinner.setValue(obj.JPhaseDurationSpinner.getValue());
         end
         
         function MonopolarSpinnerCallback(obj)
@@ -309,6 +322,7 @@ classdef SenStimGUI<handle
             obj.JAmplitudeSpinner.setValue(java.lang.Double(0));
             obj.JAmplitudeSpinner.getModel().setMaximum(java.lang.Double(obj.max_amp));
             obj.JAmplitudeSpinner.getModel().setStepSize(java.lang.Double(abs(obj.max_amp)/100));
+            saveConfig(obj)
         end
         
         function refresh(obj)
@@ -334,7 +348,7 @@ classdef SenStimGUI<handle
             obj.JAmplitudeSpinner.setValue(java.lang.Double(0));
             obj.JAmplitudeSpinner.getModel().setMaximum(java.lang.Double(obj.max_amp));
             obj.JAmplitudeSpinner.getModel().setStepSize(java.lang.Double(abs(obj.max_amp)/100));
-            
+            saveConfig(obj);
         end
         
         function MakeToolbar(obj)
@@ -353,8 +367,21 @@ classdef SenStimGUI<handle
         %for future ...
         function OnClose(obj)
             try
-                delete(obj.Fig)
+                
                 xippmex('close');
+            catch
+            end
+            saveConfig(obj);
+            try
+                fclose(obj.udp_fid);
+            catch
+            end
+            try
+                fclos(obj.log_fid);
+            catch
+            end
+            try
+                delete(obj.Fig);
             catch
             end
         end
@@ -375,8 +402,17 @@ classdef SenStimGUI<handle
         
         function saveStim(obj)
             prompt={'Name: '};
-
-            def={'New Stim'};
+            amp=obj.JAmplitudeSpinner.getValue();
+            freq=obj.JFrequencySpinner.getValue();
+            tl=obj.JTrainLengthSpinner.getValue();
+            
+            if get(obj.stim_monopolar_radio,'value')
+                def={[num2str(obj.JMonopolarSpinner.getValue()),' ',...
+                    num2str(freq),'Hz ',num2str(tl),'ms']};
+            elseif get(obj.stim_bipolar_radio,'value')
+                def={[num2str(obj.JBipolarSpinner1.getValue()),'-',...
+                    num2str(obj.JBipolarSpinner2.getValue()),' ',num2str(freq),'Hz ',num2str(tl),'ms']};
+            end
             
             title='Save stimulation';
             answer=inputdlg(prompt,title,1,def);
@@ -384,64 +420,65 @@ classdef SenStimGUI<handle
             if isempty(answer)
                 return
             end
-
+            
             len=length(obj.savedStim);
             obj.savedStim(len+1).name=answer{1};
-            obj.savedStim(len+1).amplitude=obj.JAmplitudeSpinner.getValue();
-            obj.savedStim(len+1).phase_duration=obj.JPhaseDurationSpinner.getValue();
-            obj.savedStim(len+1).frequency=obj.JFrequencySpinner.getValue();
-            obj.savedStim(len+1).train_length=obj.JTrainLengthSpinner.getValue();
-            obj.savedStim(len+1).train_delay=obj.JTrainDelaySpinner.getValue();
-            obj.savedStim(len+1).fast_settle=obj.JFastSettleSpinner.getValue();
-            obj.savedStim(len+1).cathodic_first=get(obj.cathodic_radio,'value');
-            obj.savedStim(len+1).single_pulse=get(obj.single_pulse_radio,'value');
-            obj.savedStim(len+1).fast_settle=get(obj.fast_settle_radio,'value');
-            obj.savedStim(len+1).monopolar=get(obj.stim_monopolar_radio,'value');
-            obj.savedStim(len+1).bipolar=get(obj.stim_bipolar_radio,'value');
-            obj.savedStim(len+1).chan=[];
+            obj.savedStim(len+1).amp=amp;
+            obj.savedStim(len+1).dur=obj.JPhaseDurationSpinner.getValue();
+            obj.savedStim(len+1).freq=freq;
+            obj.savedStim(len+1).tl=tl;
+            obj.savedStim(len+1).td=obj.JTrainDelaySpinner.getValue();
+            obj.savedStim(len+1).fs=obj.JFastSettleSpinner.getValue();
+            obj.savedStim(len+1).pol=get(obj.cathodic_radio,'value');
+            obj.savedStim(len+1).sp=get(obj.single_pulse_radio,'value');
+            obj.savedStim(len+1).mono=get(obj.stim_monopolar_radio,'value');
+            obj.savedStim(len+1).bip=get(obj.stim_bipolar_radio,'value');
+            obj.savedStim(len+1).fs_bool=get(obj.fast_settle_radio,'value');
+            obj.savedStim(len+1).elec=[];
             
-            if obj.savedStim(len+1).monopolar
-                obj.savedStim(len+1).chan=obj.JMonopolarSpinner.getValue();
-            elseif obj.savedStim(len+1).bipolar
-                obj.savedStim(len+1).chan=[obj.JBipolarSpinner1.getValue(),obj.JBipolarSpinner2.getValue()];
+            if obj.savedStim(len+1).mono
+                obj.savedStim(len+1).elec=obj.JMonopolarSpinner.getValue();
+            elseif obj.savedStim(len+1).bip
+                obj.savedStim(len+1).elec=[obj.JBipolarSpinner1.getValue(),obj.JBipolarSpinner2.getValue()];
             end
-            
             set(obj.saved_list,'string',cat(1,get(obj.saved_list,'string'),answer(1)));
+            set(obj.saved_list,'value',length(get(obj.saved_list,'string')));
         end
         
         function ListCallback(obj,src)
-            stim=obj.savedStim(get(src,'value'));
+            ind=get(src,'value');
+            ind=ind(end);
+            stim=obj.savedStim(ind);
             
-            set(obj.stim_monopolar_radio,'value',stim.monopolar);
-            if(stim.monopolar)
+            set(obj.stim_monopolar_radio,'value',stim.mono);
+            if(stim.mono)
                 obj.JMonopolarSpinner.setEnabled(true);
-                obj.JMonopolarSpinner.setValue(stim.chan);
+                obj.JMonopolarSpinner.setValue(stim.elec);
             else
                 obj.JMonopolarSpinner.setEnabled(false);
             end
             
-            if(stim.bipolar)
+            if(stim.bip)
                 obj.JBipolarSpinner1.setEnabled(true);
                 obj.JBipolarSpinner2.setEnabled(true);
-                obj.JBipolarSpinner1.setValue(stim.chan(1));
-                obj.JBipolarSpinner2.setValue(stim.chan(2));
+                obj.JBipolarSpinner1.setValue(stim.elec(1));
+                obj.JBipolarSpinner2.setValue(stim.elec(2));
             else
                 obj.JBipolarSpinner1.setEnabled(false);
                 obj.JBipolarSpinner2.setEnabled(false);
             end
-            set(obj.stim_bipolar_radio,'value',stim.bipolar);
+            set(obj.stim_bipolar_radio,'value',stim.bip);
             
             
-            obj.JAmplitudeSpinner.setValue(stim.amplitude);
-            obj.JPhaseDurationSpinner.setValue(stim.phase_duration);
-            obj.JFrequencySpinner.setValue(stim.frequency);
-            obj.JTrainLengthSpinner.setValue(stim.train_length);
-            obj.JTrainDelaySpinner.setValue(stim.train_delay);
-            
-            obj.JFastSettleSpinner.setValue(stim.fast_settle);
-            set(obj.cathodic_radio,'value',stim.cathodic_first);
-            set(obj.single_pulse_radio,'value',stim.single_pulse);
-            set(obj.fast_settle_radio,'value',stim.fast_settle);
+            obj.JAmplitudeSpinner.setValue(stim.amp);
+            obj.JPhaseDurationSpinner.setValue(stim.dur);
+            obj.JFrequencySpinner.setValue(stim.freq);
+            obj.JTrainLengthSpinner.setValue(stim.tl);
+            obj.JTrainDelaySpinner.setValue(stim.td);
+            obj.JFastSettleSpinner.setValue(stim.fs);
+            set(obj.cathodic_radio,'value',stim.pol);
+            set(obj.single_pulse_radio,'value',stim.sp);
+            set(obj.fast_settle_radio,'value',stim.fs_bool);
         end
         function resetStim(obj)
         end
@@ -456,6 +493,11 @@ classdef SenStimGUI<handle
             obj.savedStim(ind)=[];
             
             set(obj.saved_list,'string',list);
+            if(isempty(list))
+                set(obj.saved_list,'value',0);
+            else
+                set(obj.saved_list,'value',1);
+            end
         end
         
         function CathodicCallback(obj)
@@ -478,78 +520,140 @@ classdef SenStimGUI<handle
             %halt stimulation immediately
             xippmex('stim','enable',0);
         end
-        
-        
-        
         function Stim(obj)
-            stim.tl=obj.JTrainLengthSpinner.getValue();
-            stim.dur=obj.JPhaseDurationSpinner.getValue();
-            stim.td=obj.JTrainDelaySpinner.getValue();
-            stim.freq=obj.JFrequencySpinner.getValue();
-            stim.pol=get(obj.cathodic_radio,'value');
+            stim.tl=[];
+            stim.dur=[];
+            stim.td=[];
+            stim.freq=[];
+            stim.pol=[];
+            stim.amp=[];
+            stim.elec=[];
             
-            stim.amp=obj.JAmplitudeSpinner.getValue();
-
             
-            if(get(obj.stim_monopolar_radio,'value'))
-                stim.elec=obj.JMonopolarSpinner.getValue();
-            elseif (get(obj.stim_bipolar_radio,'value'))
-                stim.elec=[obj.JBipolarSpinner1.getValue(),obj.JBipolarSpinner2.getValue()];
+            
+            if(get(obj.multi_stim_radio,'value'))
+                list=get(obj.saved_list,'value');
+                for i=1:length(list)
+                    st=obj.savedStim(list(i));
+                    st=divideCurrent(obj,st);
+                    
+                    stim.tl=cat(2,stim.tl,st.tl);
+                    stim.dur=cat(2,stim.dur,st.dur);
+                    stim.td=cat(2,stim.td,st.td);
+                    stim.freq=cat(2,stim.freq,st.freq);
+                    stim.pol=cat(2,stim.pol,st.pol);
+                    stim.amp=cat(2,stim.amp,st.amp);
+                    stim.elec=cat(2,stim.elec,st.elec);
+                end
+            else
+                stim.tl=obj.JTrainLengthSpinner.getValue();
+                stim.dur=obj.JPhaseDurationSpinner.getValue();
+                stim.td=obj.JTrainDelaySpinner.getValue();
+                stim.freq=obj.JFrequencySpinner.getValue();
+                stim.pol=get(obj.cathodic_radio,'value');
+                
+                stim.amp=obj.JAmplitudeSpinner.getValue();
+                
+                
+                if(get(obj.stim_monopolar_radio,'value'))
+                    stim.elec=obj.JMonopolarSpinner.getValue();
+                elseif (get(obj.stim_bipolar_radio,'value'))
+                    stim.elec=[obj.JBipolarSpinner1.getValue(),obj.JBipolarSpinner2.getValue()];
+                end
+                
+                %map electrodes
+                stim=divideCurrent(obj,stim);
+            end
+            stim_str = stim_param_to_string(stim.elec, ...
+                stim.tl, stim.freq, stim.dur, ...
+                stim.amp, stim.td, stim.pol);
+            disp(stim_str);
+            obj.STIM_COUNT=obj.STIM_COUNT+1;
+            xippmex('stim',stim_str);
+            
+            fwrite(obj.udp_fid,obj.STIM_COUNT);
+            
+            if get(obj.stim_monopolar_radio,'value')
+                elec_str=num2str(get(obj.JMonopolarSpinner,'value'));
+            elseif get(obj.stim_bipolar_radio,'value')
+                elec_str=[num2str(get(obj.JBipolarSpinner1,'value')),'-',num2str(get(obj.JBipolarSpinner2,'value'))];
             end
             
-            %map electrodes
+            fprintf(obj.log_fid,'%d    %s    %f    %f    %d    %f    %s\n',...
+                obj.STIM_COUNT,elec_str,get(obj.JAmplitudeSpinner,'value'),...
+                get(obj.JPhaseDurationSpinner,'value'),...
+                get(obj.JFrequencySpinner,'value'),...
+                get(obj.JTrainLengthSpinner,'value'),...
+                stim_str);
+        end
+        
+        function stim=divideCurrent(obj,st)
             elec=[];
             amp=[];
             fe=obj.frontends;
-            
-            equal_current=stim.amp<0.93*sum(fe);
-            %equally divide currents between frontends
-            
+            equal_current=st.amp<0.93*sum(fe);
             for i=1:32:length(obj.chan)
                 port=floor(obj.chan(i)/128)+1;
                 num=floor((obj.chan(i)-(port-1)*128)/32)+1;
                 
-                elec=cat(2,elec,stim.elec+obj.chan(i)-1);
+                elec=cat(2,elec,st.elec+obj.chan(i)-1);
                 
                 version=get(obj.stim_popups(port,num),'value');
                 
                 switch version
                     case 1
                         if equal_current
-                            amp=cat(2,amp,floor(stim.amp/sum(fe)/0.93*127)*ones(size(stim.elec)));
+                            amp=cat(2,amp,floor(st.amp/sum(fe)/0.93*127)*ones(size(st.elec)));
                         else
-                            amp=cat(2,amp,127*ones(size(stim.elec)));
+                            amp=cat(2,amp,127*ones(size(st.elec)));
                         end
                     case 2
                         if equal_current
-                            amp=cat(2,amp,floor(stim.amp/sum(fe)/1.53*75)*ones(size(stim.elec)));
+                            amp=cat(2,amp,floor(st.amp/sum(fe)/1.53*75)*ones(size(st.elec)));
                         else
-                            amp=cat(2,amp,floor((stim.amp-0.93*fe(1))/1.53*75)*ones(size(stim.elec)));
+                            amp=cat(2,amp,floor((st.amp-0.93*fe(1))/1.53*75)*ones(size(st.elec)));
                         end
                 end
             end
             
             
-            stim.tl=stim.tl*ones(size(elec));
-            stim.dur=stim.dur*ones(size(elec));
-            stim.td=stim.td*ones(size(elec));
-            stim.freq=stim.freq*ones(size(elec));
-            switch length(stim.elec)
-                case 1
-                    stim.pol=stim.pol*ones(size(elec));
-                case 2
-                    stim.pol=repmat([stim.pol,~stim.pol],1,sum(fe));
+            stim.tl=st.tl*ones(size(elec));
+            stim.dur=st.dur*ones(size(elec));
+            stim.td=st.td*ones(size(elec));
+            stim.freq=st.freq*ones(size(elec));
+            if length(st.elec)==1
+                stim.pol=st.pol*ones(size(elec));
+            else
+                stim.pol=repmat([st.pol,~st.pol],1,sum(fe));
             end
-            stim.elec=elec;
-            stim.amp=amp;
-
-            stim_str = stim_param_to_string(stim.elec, ...
-                stim.tl, stim.freq, stim.dur, ...
-                stim.amp, stim.td, stim.pol);
             
-            xippmex('stim',stim_str);
-            disp(stim_str);
+            stim.amp=amp;
+            stim.elec=elec;
         end
         %%
+        function MultiStimCallback(obj,src)
+            if(get(src,'value'))
+                set(obj.saved_list,'max',10);
+                set(obj.saved_list,'min',1);
+            else
+                set(obj.saved_list,'max',1);
+                set(obj.saved_list,'min',0);
+            end
+        end
+        
+        function saveConfig(obj)
+            fid=fopen('frontend.cfg','w');
+            ports={'A','B','C','D'};
+            for port=1:4
+                for num=1:4
+                    if strcmp(get(obj.stim_popups(port,num),'visible'),'on')
+                        version=get(obj.stim_popups(port,num),'val');
+                        fprintf(fid,'Port%s: Micro+Stim %d\n',ports{port},version);
+                    end
+                end
+            end
+            fclose(fid);
+        end
+        
     end
 end
