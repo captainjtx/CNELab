@@ -54,6 +54,7 @@ classdef SenStimGUI<handle
         DEFAULT_PORT
         udp_fid
         log_fid
+        anno_fid
     end
     properties(Dependent)
         max_amp
@@ -64,7 +65,7 @@ classdef SenStimGUI<handle
         function obj=SenStimGUI(varargin)
             obj.varInit();
             obj.buildfig();
-            %obj.refresh();
+            obj.refresh();
         end
         function varInit(obj)
             obj.DEFAULT_FREQ = 60.0; %Hz
@@ -82,7 +83,10 @@ classdef SenStimGUI<handle
             obj.udp_fid=udp('127.0.0.1',obj.DEFAULT_PORT);
             fopen(obj.udp_fid);
             obj.log_fid=fopen('stim.log','w');
-            fprintf(obj.log_fid,'%%elec    amplitude(mA)    phase duration(ms)    frequency(Hz)    train length(ms)    stim string\n');
+            obj.anno_fid=fopen('anno.txt','w');
+            
+            fprintf(obj.log_fid,'%%COUNT stim string\n\r');
+            fprintf(obj.anno_fid,'%%COUNT elec    amplitude(mA)    phase duration(ms)    frequency(Hz)    train length(ms)\n\r');
         end
         function buildfig(obj)
             import javax.swing.JSlider;
@@ -235,7 +239,7 @@ classdef SenStimGUI<handle
                     uicontrol('Parent',tab1,'Style','text','string',port_names{port},'units','normalized',...
                         'position',[0,1-0.22*port,0.2,0.22],'HorizontalAlignment','center');
                     obj.stim_popups(port,num)=uicontrol('Parent',tab1,'Style','popup',...
-                        'String',{'1','2'},'units','normalized','Position',[num*0.2,1-0.22*port,0.18,0.22],'value',2,...
+                        'String',{'Stim1','Stim2'},'units','normalized','Position',[num*0.2,1-0.22*port,0.18,0.22],'value',2,...
                         'visible','off','callback',@(src,evts) FrontEndChange(obj,src,port,num));
                 end
             end
@@ -327,7 +331,13 @@ classdef SenStimGUI<handle
         
         function refresh(obj)
             xippmex('close');
-            xippmex();
+            try
+                xippmex
+            catch
+                errordlg('Cannot find NIP !');
+                return
+            end
+            
             obj.chan=xippmex('elec','stim');
             
             for i=1:32:length(obj.chan)
@@ -377,7 +387,11 @@ classdef SenStimGUI<handle
             catch
             end
             try
-                fclos(obj.log_fid);
+                fclose(obj.log_fid);
+            catch
+            end
+            try
+                fclose(obj.anno_fid);
             catch
             end
             try
@@ -408,10 +422,13 @@ classdef SenStimGUI<handle
             
             if get(obj.stim_monopolar_radio,'value')
                 def={[num2str(obj.JMonopolarSpinner.getValue()),' ',...
+                    num2str(amp),'mA ',...
                     num2str(freq),'Hz ',num2str(tl),'ms']};
             elseif get(obj.stim_bipolar_radio,'value')
                 def={[num2str(obj.JBipolarSpinner1.getValue()),'-',...
-                    num2str(obj.JBipolarSpinner2.getValue()),' ',num2str(freq),'Hz ',num2str(tl),'ms']};
+                    num2str(obj.JBipolarSpinner2.getValue()),' ',...
+                    num2str(amp),'mA ',...
+                    num2str(freq),'Hz ',num2str(tl),'ms']};
             end
             
             title='Save stimulation';
@@ -529,10 +546,20 @@ classdef SenStimGUI<handle
             stim.amp=[];
             stim.elec=[];
             
+            obj.STIM_COUNT=obj.STIM_COUNT+1;
+            
             if(get(obj.multi_stim_radio,'value'))
                 list=get(obj.saved_list,'value');
                 for i=1:length(list)
                     st=obj.savedStim(list(i));
+                    fprintf(obj.anno_fid,'%d,%s,%f,%f,%d,%f\n\r',...
+                    obj.STIM_COUNT,...
+                    num2str(st.elec),...
+                    st.amp,...
+                    st.dur,...
+                    st.freq,...
+                    st.tl);
+                
                     st=divideCurrent(obj,st);
                     
                     stim.tl=cat(2,stim.tl,st.tl);
@@ -559,6 +586,14 @@ classdef SenStimGUI<handle
                     stim.elec=[obj.JBipolarSpinner1.getValue(),obj.JBipolarSpinner2.getValue()];
                 end
                 
+                fprintf(obj.anno_fid,'%d,%s,%f,%f,%d,%f\n\r',...
+                    obj.STIM_COUNT,...
+                    num2str(stim.elec),...
+                    stim.amp,...
+                    stim.dur,...
+                    stim.freq,...
+                    stim.tl);
+                
                 %map electrodes
                 stim=divideCurrent(obj,stim);
             end
@@ -566,23 +601,10 @@ classdef SenStimGUI<handle
                 stim.tl, stim.freq, stim.dur, ...
                 stim.amp, stim.td, stim.pol);
             disp(stim_str);
-            obj.STIM_COUNT=obj.STIM_COUNT+1;
+            
             xippmex('stim',stim_str);
-            
-            fwrite(obj.udp_fid,obj.STIM_COUNT);
-            
-            if get(obj.stim_monopolar_radio,'value')
-                elec_str=num2str(get(obj.JMonopolarSpinner,'value'));
-            elseif get(obj.stim_bipolar_radio,'value')
-                elec_str=[num2str(get(obj.JBipolarSpinner1,'value')),'-',num2str(get(obj.JBipolarSpinner2,'value'))];
-            end
-            
-            fprintf(obj.log_fid,'%d    %s    %f    %f    %d    %f    %s\n',...
-                obj.STIM_COUNT,elec_str,get(obj.JAmplitudeSpinner,'value'),...
-                get(obj.JPhaseDurationSpinner,'value'),...
-                get(obj.JFrequencySpinner,'value'),...
-                get(obj.JTrainLengthSpinner,'value'),...
-                stim_str);
+            fwrite(obj.udp_fid,obj.STIM_COUNT,'double');
+            fprintf(obj.log_fid,'%d    %s\n\r',obj.STIM_COUNT,stim_str);
         end
         
         function stim=divideCurrent(obj,st)
@@ -609,7 +631,7 @@ classdef SenStimGUI<handle
                         if equal_current
                             amp=cat(2,amp,floor(st.amp/sum(fe)/1.53*75)*ones(size(st.elec)));
                         else
-                            amp=cat(2,amp,floor((st.amp-0.93*fe(1))/1.53*75)*ones(size(st.elec)));
+                            amp=cat(2,amp,floor((st.amp-0.93*fe(1))/fe(2)/1.53*75)*ones(size(st.elec)));
                         end
                 end
             end
@@ -646,7 +668,7 @@ classdef SenStimGUI<handle
                 for num=1:4
                     if strcmp(get(obj.stim_popups(port,num),'visible'),'on')
                         version=get(obj.stim_popups(port,num),'val');
-                        fprintf(fid,'Port%s: Micro+Stim %d\n',ports{port},version);
+                        fprintf(fid,'Port%s: Micro+Stim %d\n\r',ports{port},version);
                     end
                 end
             end
