@@ -529,8 +529,6 @@ classdef SenStimGUI<handle
             stim.amp=[];
             stim.elec=[];
             
-            
-            
             if(get(obj.multi_stim_radio,'value'))
                 list=get(obj.saved_list,'value');
                 for i=1:length(list)
