@@ -85,8 +85,8 @@ classdef SenStimGUI<handle
             obj.log_fid=fopen('stim.log','w');
             obj.anno_fid=fopen('anno.txt','w');
             
-            fprintf(obj.log_fid,'%%COUNT stim string\n\r');
-            fprintf(obj.anno_fid,'%%COUNT elec    amplitude(mA)    phase duration(ms)    frequency(Hz)    train length(ms)\n\r');
+            fprintf(obj.log_fid,'%%COUNT stim string\r\n');
+            fprintf(obj.anno_fid,'%%COUNT elec    amplitude(mA)    phase duration(ms)    frequency(Hz)    train length(ms)\r\n');
         end
         function buildfig(obj)
             import javax.swing.JSlider;
@@ -552,7 +552,7 @@ classdef SenStimGUI<handle
                 list=get(obj.saved_list,'value');
                 for i=1:length(list)
                     st=obj.savedStim(list(i));
-                    fprintf(obj.anno_fid,'%d,%s,%f,%f,%d,%f\n\r',...
+                    fprintf(obj.anno_fid,'%d,%s,%f,%f,%d,%f\r\n',...
                     obj.STIM_COUNT,...
                     num2str(st.elec),...
                     st.amp,...
@@ -586,7 +586,7 @@ classdef SenStimGUI<handle
                     stim.elec=[obj.JBipolarSpinner1.getValue(),obj.JBipolarSpinner2.getValue()];
                 end
                 
-                fprintf(obj.anno_fid,'%d,%s,%f,%f,%d,%f\n\r',...
+                fprintf(obj.anno_fid,'%d,%s,%f,%f,%d,%f\r\n',...
                     obj.STIM_COUNT,...
                     num2str(stim.elec),...
                     stim.amp,...
@@ -604,7 +604,7 @@ classdef SenStimGUI<handle
             
             xippmex('stim',stim_str);
             fwrite(obj.udp_fid,obj.STIM_COUNT,'double');
-            fprintf(obj.log_fid,'%d    %s\n\r',obj.STIM_COUNT,stim_str);
+            fprintf(obj.log_fid,'%d    %s\r\n',obj.STIM_COUNT,stim_str);
         end
         
         function stim=divideCurrent(obj,st)
@@ -668,7 +668,7 @@ classdef SenStimGUI<handle
                 for num=1:4
                     if strcmp(get(obj.stim_popups(port,num),'visible'),'on')
                         version=get(obj.stim_popups(port,num),'val');
-                        fprintf(fid,'Port%s: Micro+Stim %d\n\r',ports{port},version);
+                        fprintf(fid,'Port%s: Micro+Stim %d\r\n',ports{port},version);
                     end
                 end
             end
