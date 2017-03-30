@@ -105,8 +105,7 @@ for i=1:length(dd)
     else
         %if all ready loaded into the buffer, no need to reload from the
         %file
-        selection=selection-obj.BufferStartSample+1;
-        alldata=obj.PreprocData{dd(i)}(selection,chan);
+        alldata=obj.PreprocData{dd(i)}(sample-obj.BufferStartSample+1,chan);
     end
     %filter before merge trial segments
     count=1;
