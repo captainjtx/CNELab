@@ -68,11 +68,11 @@ classdef SenStimGUI<handle
             obj.refresh();
         end
         function varInit(obj)
-            obj.DEFAULT_FREQ = 60.0; %Hz
+            obj.DEFAULT_FREQ = 50.0; %Hz
             obj.MAX_FREQ=1000;
             obj.DEFAULT_DUR = 0.3; %ms
             obj.MAX_DUR=10;
-            obj.DEFAULT_TL = 2000.0; %ms
+            obj.DEFAULT_TL = 1000.0; %ms
             obj.MAX_TL=60000;
             obj.DEFAULT_TD = 0.0; %ms
             obj.MAX_TD=100;
