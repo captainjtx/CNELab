@@ -55,6 +55,8 @@ classdef SenStimGUI<handle
         udp_fid
         log_fid
         anno_fid
+        
+        stim_timer
     end
     properties(Dependent)
         max_amp
@@ -68,7 +70,7 @@ classdef SenStimGUI<handle
             obj.refresh();
         end
         function varInit(obj)
-            obj.DEFAULT_FREQ = 60.0; %Hz
+            obj.DEFAULT_FREQ = 50.0; %Hz
             obj.MAX_FREQ=1000;
             obj.DEFAULT_DUR = 0.3; %ms
             obj.MAX_DUR=10;
@@ -79,14 +81,14 @@ classdef SenStimGUI<handle
             obj.DEFAULT_FS = 0.0; %ms
             obj.MAX_FS=100;
             obj.STIM_COUNT=0;
-            obj.DEFAULT_PORT=1126;
+            obj.DEFAULT_PORT=11260;
             obj.udp_fid=udp('127.0.0.1',obj.DEFAULT_PORT);
             fopen(obj.udp_fid);
             obj.log_fid=fopen('stim.log','w');
-            obj.anno_fid=fopen('anno.txt','w');
-            
-            fprintf(obj.log_fid,'%%COUNT stim string\r\n');
-            fprintf(obj.anno_fid,'%%COUNT elec    amplitude(mA)    phase duration(ms)    frequency(Hz)    train length(ms)\r\n');
+            obj.anno_fid=fopen('anno.stim','w');
+            obj.stim_timer = timer('TimerFcn',@ (src,evts) EnableStim(obj),'BusyMode','queue','StartDelay',obj.DEFAULT_TL/1000);
+            fprintf(obj.log_fid,'%%COUNT stim string\n\r');
+            fprintf(obj.anno_fid,'%%COUNT elec    amplitude(mA)    phase duration(ms)    frequency(Hz)    train length(ms)\n\r');
         end
         function buildfig(obj)
             import javax.swing.JSlider;
@@ -106,7 +108,7 @@ classdef SenStimGUI<handle
                 'WindowButtonUpFcn',@(src,evt) MouseUp(obj),'ResizeFcn',@(src,evt) Resize(obj),...
                 'WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'WindowKeyReleaseFcn',@(src,evt) KeyRelease(obj,src,evt),...
                 'Units','Pixels','Visible','on',...
-                'position',[10,screensize(4)-640,350,600],'Name','BrainMap Simulink Control');
+                'position',[10,screensize(4)-640,350,600],'Name','Ripple Stimulation Control');
             
             tabgp = uitabgroup(obj.Fig,'Position',[0 0.2 1 0.8]);
             
@@ -249,7 +251,13 @@ classdef SenStimGUI<handle
             
             set(tabgp,'selectedtab',tab1);
         end
-        
+        function EnableStim(obj)
+            stop(obj.stim_timer);
+            set(obj.stim_btn,'enable','on');
+        end
+        function DisableStim(obj)
+            set(obj.stim_btn,'enable','off');
+        end
         function val=get.frontends(obj)
             val=[0,0];
             for port=1:4
@@ -290,6 +298,7 @@ classdef SenStimGUI<handle
         function FrequencySpinnerCallback(obj)
         end
         function TrainLengthSpinnerCallback(obj)
+            set(obj.stim_timer,'StartDelay',obj.JTrainLengthSpinner.getValue()/1000);
         end
         function TrainDelaySpinnerCallback(obj)
         end
@@ -396,6 +405,9 @@ classdef SenStimGUI<handle
             end
             try
                 delete(obj.Fig);
+            catch
+            end
+            try delete(obj.stim_timer)
             catch
             end
         end
@@ -552,7 +564,7 @@ classdef SenStimGUI<handle
                 list=get(obj.saved_list,'value');
                 for i=1:length(list)
                     st=obj.savedStim(list(i));
-                    fprintf(obj.anno_fid,'%d,%s,%f,%f,%d,%f\r\n',...
+                    fprintf(obj.anno_fid,'%d,%s,%f,%f,%d,%f\n\r',...
                     obj.STIM_COUNT,...
                     num2str(st.elec),...
                     st.amp,...
@@ -586,7 +598,7 @@ classdef SenStimGUI<handle
                     stim.elec=[obj.JBipolarSpinner1.getValue(),obj.JBipolarSpinner2.getValue()];
                 end
                 
-                fprintf(obj.anno_fid,'%d,%s,%f,%f,%d,%f\r\n',...
+                fprintf(obj.anno_fid,'%d,%s,%f,%f,%d,%f\n\r',...
                     obj.STIM_COUNT,...
                     num2str(stim.elec),...
                     stim.amp,...
@@ -603,8 +615,10 @@ classdef SenStimGUI<handle
             disp(stim_str);
             
             xippmex('stim',stim_str);
+            DisableStim(obj);
+            start(obj.stim_timer);
             fwrite(obj.udp_fid,obj.STIM_COUNT,'double');
-            fprintf(obj.log_fid,'%d    %s\r\n',obj.STIM_COUNT,stim_str);
+            fprintf(obj.log_fid,'%d    %s\n\r',obj.STIM_COUNT,stim_str);
         end
         
         function stim=divideCurrent(obj,st)
@@ -668,7 +682,7 @@ classdef SenStimGUI<handle
                 for num=1:4
                     if strcmp(get(obj.stim_popups(port,num),'visible'),'on')
                         version=get(obj.stim_popups(port,num),'val');
-                        fprintf(fid,'Port%s: Micro+Stim %d\r\n',ports{port},version);
+                        fprintf(fid,'Port%s: Micro+Stim %d\n\r',ports{port},version);
                     end
                 end
             end
