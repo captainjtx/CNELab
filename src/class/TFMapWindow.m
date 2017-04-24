@@ -802,17 +802,21 @@ classdef TFMapWindow < handle
             if ishandle(h)
                 delete(h);
             end
+            obj.fig=[];
             
             h = obj.TFMapFig;
             if ishandle(h)
                 delete(h);
             end
             
+            
             h=obj.TFMapSaveWin;
             
             if h.valid
                 delete(h.fig);
             end
+            
+            
         end
         function MethodCallback(obj,src)
             obj.method=get(src,'value');
@@ -1075,6 +1079,11 @@ classdef TFMapWindow < handle
                 obj.normalization_event=obj.event;
             end
         end
+        function CloseTFMapFig(obj,src)
+            delete(src);
+            obj.TFMapFig=[];
+            
+        end
         function NewCallback(obj)
             if ~isempty(obj.TFMapFig)&&ishandle(obj.TFMapFig)
                 name=get(obj.TFMapFig,'Name');
@@ -1082,8 +1091,10 @@ classdef TFMapWindow < handle
                 set(obj.TFMapFig,'name',[name,' Old'])
             end
             obj.TFMapFig=figure('Name',obj.event,'NumberTitle','off',...
-                'color','w','DockControls','off','Tag','Act');
+                'color','w','DockControls','off','Tag','Act','CloseRequestFcn',@(src,evts) CloseTFMapFig(obj,src));
         end
+        
+        
         function ComputeCallback(obj,src)
             
             option=obj.method;
@@ -1175,7 +1186,8 @@ classdef TFMapWindow < handle
             if isempty(obj.TFMapFig)||~ishandle(obj.TFMapFig)
                 delete(obj.TFMapFig(ishandle(obj.TFMapFig)));
                 obj.TFMapFig=figure('Name',obj.event,'NumberTitle','off',...
-                    'color','w','DockControls','off','Tag','Act','position',[fpos(1)+fpos(3)+20,fpos(2),650,450]);
+                    'color','w','DockControls','off','Tag','Act','position',[fpos(1)+fpos(3)+20,fpos(2),650,450],...
+                    'CloseRequestFcn',@(src,evts) CloseTFMapFig(obj,src));
             else
                 figure(obj.TFMapFig);
                 clf
