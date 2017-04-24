@@ -1494,6 +1494,7 @@ classdef TFMapWindow < handle
             end
             
             obj.background_axe=axe;
+            
             obj.ChannelNamesCallback(obj.names_radio);
         end
         
@@ -1572,7 +1573,9 @@ classdef TFMapWindow < handle
             end
         end
         function ChannelNamesCallback(obj,src)
-            obj.disp_channel_names_=get(src,'value');
+            if(~isempty(src)&&ishandle(src))
+                obj.disp_channel_names_=get(src,'value');
+            end
             if ~isempty(obj.TFMapFig)&&ishandle(obj.TFMapFig)
                 if ishandle(obj.background_axe)
                     h=findobj(obj.background_axe,'-regexp','Tag','names');
