@@ -227,7 +227,11 @@ classdef TFMapWindow < handle
             end
         end
         function val=get.event(obj)
+            
             val=obj.event_;
+            if(isempty(val))
+                val='';
+            end
         end
         function set.event(obj,val)
             if obj.valid
