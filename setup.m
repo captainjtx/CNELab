@@ -79,6 +79,7 @@ if ~any(strcmp(spath,pwd))
     fid = fopen(fullfile(pref_dir,'javaclasspath.txt'),'a');
     fprintf(fid,'%s\n',pwd);
     fclose(fid);
+    warndlg('Add java class path, restart Matlab to ensure function !');
 end
 
 try
