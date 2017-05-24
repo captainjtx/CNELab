@@ -149,6 +149,8 @@ classdef BrainMapGUI<handle
             end
             
             anno=get(obj.EditAnnotation,'string');
+            anno = strrep(anno,',',' ');
+            
             obj.Annotations=cat(1,obj.Annotations,{modelTime,anno});
             
             %directly write into text file
