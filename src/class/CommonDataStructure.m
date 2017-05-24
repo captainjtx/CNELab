@@ -368,7 +368,7 @@ classdef CommonDataStructure < handle
                 end
                 
                 %check if it is cds file
-                if any(strcmp(mf,'Data'))&&any(strcmp(mf,'Montage'))&&any(strcmp(mf,'PatientInfo'))
+                if any(strcmp(field,'Data'))&&any(strcmp(field,'Montage'))&&any(strcmp(field,'PatientInfo'))&&any(strcmp(field,'DataInfo'))
                     FilterIndex=2;
                     return
                 end
@@ -778,7 +778,7 @@ classdef CommonDataStructure < handle
                     data=squeeze(data);
                     fs=st.('SR');
                 else
-                    h=msgbox('Un recognized data structure, it contains more than one field','CommonDataStructure','error');
+                    h=msgbox('Unrecognized data structure, it contains more than one field','CommonDataStructure','error');
                 end
             else
                 data=st.(field{1});
