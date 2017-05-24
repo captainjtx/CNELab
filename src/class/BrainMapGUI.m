@@ -43,7 +43,7 @@ classdef BrainMapGUI<handle
                 'WindowButtonMotionFcn',@(src,evt) MouseMovement(obj),'WindowButtonDownFcn',@(src,evt) MouseDown(obj),...
                 'WindowButtonUpFcn',@(src,evt) MouseUp(obj),'ResizeFcn',@(src,evt) Resize(obj),...
                 'WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'WindowKeyReleaseFcn',@(src,evt) KeyRelease(obj,src,evt),'Units','Pixels','Visible','on',...
-                'position',[10,screensize(4)-390,400,300],'Name','BrainMap Simulink Control');
+                'position',[10,screensize(4)-390,350,300],'Name','BrainMap Simulink Control');
             obj.RadioSaveFile=uicontrol(obj.Fig,'style','radiobutton','units','normalized','position',[0,0.85,0.5,0.15],'string','Save Data','value',0,...
                 'Callback',@(src,evt)saveFileCallback(obj,src));
             obj.AnnotationPanel=uipanel(obj.Fig,'units','normalized','BorderType','none','position',[0.5,0,0.5,1]);
@@ -137,7 +137,7 @@ classdef BrainMapGUI<handle
                 fprintf(obj.AnnotationFileID,'%f,%s\n',modelTime,anno);
             catch
                 disp('Creating new annotation file');
-                obj.AnnotationFileID=fopen(fullfile(obj.AnnotationDir,[obj.ModelNameWithoutExtension,'.txt']),'at');
+                obj.AnnotationFileID=fopen(fullfile(obj.AnnotationDir,[obj.ModelNameWithoutExtension,'-',datetime('now'),'.txt']),'at');
                 fprintf(obj.AnnotationFileID,'%f,%s\n',modelTime,anno);
             end
         end
@@ -156,7 +156,7 @@ classdef BrainMapGUI<handle
                 fprintf(obj.AnnotationFileID,'%f,%s\n',modelTime,anno);
             catch
                 disp('Creating new annotation file');
-                obj.AnnotationFileID=fopen(fullfile(obj.AnnotationDir,[obj.ModelNameWithoutExtension,'.txt']),'at');
+                obj.AnnotationFileID=fopen(fullfile(obj.AnnotationDir,[obj.ModelNameWithoutExtension,'-',datetime('now'),'.txt']),'at');
                 fprintf(obj.AnnotationFileID,'%f,%s\n',modelTime,anno);
             end
         end
@@ -190,7 +190,7 @@ classdef BrainMapGUI<handle
                 if exist(obj.AnnotationDir,'dir')~=7
                     mkdir(obj.ModelDir,'events');
                 end
-                obj.AnnotationFileID=fopen(fullfile(obj.AnnotationDir,[obj.ModelNameWithoutExtension,'.txt']),'at');
+                obj.AnnotationFileID=fopen(fullfile(obj.AnnotationDir,[obj.ModelNameWithoutExtension,'-',datetime('now'),'.txt']),'at');
             end
             
             figure(obj.Fig);
