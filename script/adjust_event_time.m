@@ -9,7 +9,7 @@ fileID = fopen(filename,'w');
 
 for i=1:length(C{1})
     if ~isempty(C{2}{i})
-        fprintf(fileID,'%f,%s\n',C{1}(i)-1896.761250,C{2}{i});
+        fprintf(fileID,'%f,%s\n',max(0,C{1}(i)-3926.586667),C{2}{i});
     end
 end
 
