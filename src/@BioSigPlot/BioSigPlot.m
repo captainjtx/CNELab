@@ -160,9 +160,8 @@ classdef BioSigPlot < hgsetget
         MenuApp
         MenuAdvanceEvents
         MenuAdvanceEventsCalculate
-        MenuAdvanceEventsLoad
+        MenuAdvanceEventsRefresh
         MenuAdvanceEventsFunction
-        MenuAdvanceEventsQRS
         
         MenuTFMap
         MenuSpatialMap
@@ -268,7 +267,6 @@ classdef BioSigPlot < hgsetget
         
         FastEvts
         SelectedFastEvt
-        AdvanceEventsFcn
         
         Evts2Display
         
@@ -342,7 +340,6 @@ classdef BioSigPlot < hgsetget
         
         FastEvts_
         SelectedFastEvt_
-        AdvanceEventsFcn_
     end
     properties (SetAccess=protected) %Readonly properties
         Data                        %(Read-Only)All the Signals
@@ -438,6 +435,7 @@ classdef BioSigPlot < hgsetget
             varInitial(obj,g);
             
             scanFilterBank(obj);
+            scanTriggerFunction(obj);
             %Show up
             resetView(obj);
             remakeMontage(obj);
@@ -541,7 +539,6 @@ classdef BioSigPlot < hgsetget
             cfg=load('-mat',obj.Config);
             cfg.FastEvts=obj.FastEvts;
             cfg.SelectedFastEvt=obj.SelectedFastEvt;
-            cfg.AdvanceEventsFcn=obj.AdvanceEventsFcn;
             save(fullfile(obj.CNELabDir,'/db/cfg/','defaultconfig.cfg'),'-struct','cfg');
         end
         function OnClose(obj)
@@ -715,12 +712,12 @@ classdef BioSigPlot < hgsetget
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                     NeedDrawSelect=true;
                 elseif any(strcmpi(g{i},{'PlaySpeed','FastEvts','SelectedFastEvt',...
-                        'EventDefaultColors','EventsWindowDisplay','AdvanceEventsFcn',...
+                        'EventDefaultColors','EventsWindowDisplay',...
                         'AdvanceEventDefaultColor','MouseMode','Title','Version',...
                         'ControlPanelDisplay',...
                         'ToolbarDisplay','DisplayGauge','XGrid','YGrid',...
                         'VideoTimerPeriod','BadChannels','AxesBackgroundColor',...
-                        'DefaultLineColor','Units','TimeUnit','AdvanceEventsFcn'}))
+                        'DefaultLineColor','Units','TimeUnit'}))
                     set@hgsetget(obj,[g{i} '_'],g{i+1})
                 else
                     set@hgsetget(obj,varargin{i},varargin{i+1})
@@ -898,9 +895,6 @@ classdef BioSigPlot < hgsetget
         
         function obj = set.SelectedFastEvt(obj,val), set(obj,'SelectedFastEvt',val); end
         function val = get.SelectedFastEvt(obj), val=obj.SelectedFastEvt_; end
-        
-        function obj = set.AdvanceEventsFcn(obj,val), set(obj,'AdvanceEventsFcn',val); end
-        function val = get.AdvanceEventsFcn(obj), val=obj.AdvanceEventsFcn_; end
         
         function val=get.FileDir(obj) 
             if ~isempty(obj.FileNames)
@@ -2345,6 +2339,7 @@ classdef BioSigPlot < hgsetget
         remakeMontageMenu(obj)
         ChangeMontage(obj,src,data,mtgref)
         scanFilterBank(obj)
+        scanTriggerFunction(obj)
         Power_Spectrum_Density(obj,src)
         SPF_Analysis(obj,src)
         SynchDataWithVideo(obj)

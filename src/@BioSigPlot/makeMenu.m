@@ -82,15 +82,12 @@ obj.MenuNewEvent=uimenu(obj.MenuEvent,'Label','New','Callback',@(src,evt)NewEven
 obj.MenuFastEvent=uimenu(obj.MenuEvent,'Label','Fast Event','Callback',@(src,evt)obj.WinFastEvts.buildfig());
 obj.MenuAdvanceEvents=uimenu(obj.MenuEvent,'Label','Trigger');
 obj.MenuAdvanceEventsCalculate=uimenu(obj.MenuAdvanceEvents,'Label','Detect',...
-    'Callback',@(src,evt) AdvanceEvents(obj,src));
-obj.MenuAdvanceEventsFunction=uimenu(obj.MenuAdvanceEvents,'Label','Function',...
-    'Callback',@(src,evt) AdvanceEvents(obj,src));
-obj.MenuAdvanceEventsQRS=uimenu(obj.MenuAdvanceEventsFunction,'Label','EKG(QRS)',...
-    'CallBack',@(src,evt) AdvanceEvents(obj,src),'checked','off');
-obj.MenuAdvanceEventsLoad=uimenu(obj.MenuAdvanceEventsFunction,'Label','Load',...
-    'Separator','on','Callback',@(src,evt) AdvanceEvents(obj,src));
+    'Callback',@(src,evt) AdvanceEvents(obj,src),'Accelerator','t');
 obj.MenuAdvanceEventsDisplay=uimenu(obj.MenuAdvanceEvents,'Label','Display',...
     'CallBack',@(src,evt) set(obj,'AdvanceEventsDisplay',~obj.AdvanceEventsDisplay));
+obj.MenuAdvanceEventsRefresh=uimenu(obj.MenuAdvanceEvents,'Label','Refresh',...
+    'Separator','on','Callback',@(src,evt) scanTriggerFunction(obj));
+obj.MenuAdvanceEventsFunction=uimenu(obj.MenuAdvanceEvents,'Label','$/db/trigger');
 
 %First Order Menu---------------------------------------------------Display
 obj.MenuDisplay=uimenu(obj.Fig,'Label','Display');

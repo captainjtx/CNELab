@@ -3,8 +3,7 @@ function scanFilterBank(obj)
 %"db/filters"
 %for customized filters
 
-
-listing=dir([obj.CNELabDir,'/db/filters/*mat']);
+listing=dir([obj.CNELabDir,'/db/filters/*.mat']);
 popStr=cell(2+length(listing),1);
 
 popStr{1}='Refresh';
