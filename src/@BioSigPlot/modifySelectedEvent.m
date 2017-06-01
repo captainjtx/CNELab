@@ -17,16 +17,20 @@ if strcmpi(opt,'delete')
     EventIndex=obj.EventDisplayIndex;
     EventTexts=obj.EventTexts;
     EventLines=obj.EventLines;
+    
     deletedInd=[];
     
-    for k=1:size(obj.EventDisplayIndex,1)
-        for i=1:size(obj.EventDisplayIndex,2)
-            if any(obj.EventDisplayIndex(k,i)==obj.SelectedEvent)
-                delete(obj.EventLines(k,i));
-                delete(obj.EventTexts(k,i));
-                deletedInd=[deletedInd,i];
-                %decrease the index of displayed event after deletion
-                EventIndex(:,i:end)=EventIndex(:,i:end)-1;
+    for i=1:length(obj.SelectedEvent)
+        del=find(obj.EventDisplayIndex(1,:)==obj.SelectedEvent(i));
+        if ~isempty(del)
+            delete(obj.EventLines(:,del));
+            delete(obj.EventTexts(:,del));
+            deletedInd=[deletedInd,del];
+            %decrease the index of displayed event after deletion
+            for col=1:size(EventIndex,2)
+                if EventIndex(1,col)>obj.SelectedEvent(i)
+                    EventIndex(:,col)=EventIndex(:,col)-1;
+                end
             end
         end
     end

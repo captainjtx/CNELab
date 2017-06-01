@@ -61,7 +61,15 @@ elseif src==obj.MenuSaveData
         end
     end
 else
-    [data,chanNames,dataset,channel,~,evts,groupnames,pos]=get_selected_data(obj);
+    [FileName,FilePath,FilterIndex]=uiputfile({...
+        '*.cds;*.mat','Common Data Structure Formats (*.cds;*.mat)';...
+        '*.edf','Europen Data Format (*.edf)'}...
+        ,'Save Selected Data',obj.FileDir);
+    if ~FileName
+        return
+    end
+    
+    [data,chanNames,dataset,~,~,evts,groupnames,pos]=get_selected_data(obj);
     dd=unique(dataset);
     
     downsample=1;
@@ -79,36 +87,7 @@ else
         end
     end
     
-    %     if src==obj.MenuSaveAsData
-    %         for i=1:length(dd)
-    %             cds=CommonDataStructure;
-    %
-    %             cds.Data=data(1:downsample:end,dataset==dd(i));
-    %             cds.DataInfo.Annotations=evts;
-    %             cds.DataInfo.SampleRate=obj.SRate/downsample;
-    % %             cds.DataInfo.Units=obj.Units{dd(i)}(channel);
-    %             cds.DataInfo.VideoName=obj.VideoFile;
-    %             cds.DataInfo.TimeStamps=linspace(0,obj.DataTime,size(cds.Data,1));
-    %
-    %             cds.DataInfo.Video.StartTime=obj.VideoStartTime;
-    %             cds.DataInfo.Video.TimeFrame=obj.VideoTimeFrame;
-    %             cds.DataInfo.Video.NumberOfFrame=obj.NumberOfFrame;
-    %
-    %             cds.Montage.ChannelNames=chanNames(dataset==dd(i));
-    %             cds.Montage.Name=obj.Montage{dd(i)}(obj.MontageRef(dd(i))).name;
-    %             cds.Montage.GroupNames=groupnames(dataset==dd(i));
-    %             cds.Montage.MaskChanNames=obj.MontageChanNames{dd(i)}(obj.Mask{dd(i)}==0);
-    %             if ~isempty(pos)
-    %                 cds.Montage.ChannelPosition=pos(dataset==dd(i),:);
-    %             else
-    %                 cds.Montage.ChannelPosition=[];
-    %             end
-    %
-    %             cds.save('title',['DataSet-',num2str(dd(i))],'folders',false);
-    %         end
-    %
-    %     else
-    if src==obj.MenuSaveAsData
+    if FilterIndex==1
         
         cds=CommonDataStructure;
         
@@ -140,8 +119,10 @@ else
         
         cds.Montage.MaskChanNames=maskchan;
         
-        cds.save('title','Merged Data','folders',false);
-    elseif src==obj.MenuSaveAsEDF
+        cds.save('title','Merged Data','folders',false,'FileName',fullfile(FilePath,FileName));
+    elseif FilterIndex==2
+
+        
         data=data(1:downsample:end,:);
         
         header.samplingrate=obj.SRate/downsample;
@@ -159,12 +140,6 @@ else
         header.minute=t.Minute;
         header.second=t.Second;
         
-        [FileName,FilePath]=uiputfile({'*.edf','Europen Data Format (*.edf)'}...
-            ,'Save as EDF',obj.FileDir);
-        
-        if ~FileName
-            return
-        end
         [~,FileName,~]=fileparts(FileName);
         fnames=fullfile(FilePath,FileName);
         lab_write_edf(fnames,data',header);

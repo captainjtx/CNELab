@@ -24,7 +24,6 @@ obj.MenuSaveData=uimenu(obj.MenuSave,'Label','Data','Callback',@(src,evt) SaveDa
 
 obj.MenuSaveAs=uimenu(obj.MenuFile,'Label','Save As...');
 obj.MenuSaveAsData=uimenu(obj.MenuSaveAs,'Label','Data(sel)','Callback',@(src,evt) SaveData(obj,src),'Accelerator','s');
-obj.MenuSaveAsEDF=uimenu(obj.MenuSaveAs,'Label','EDF(sel)','Callback',@(src,evt) SaveData(obj,src));
 obj.MenuSaveAsEvents=uimenu(obj.MenuSaveAs,'Label','Events','Callback',@(src,evt) obj.SaveEvents);
 obj.MenuSaveAsMontage=uimenu(obj.MenuSaveAs,'Label','Montage','Callback',@(src,evt) obj.SaveMontage);
 obj.MenuSaveAsPosition=uimenu(obj.MenuSaveAs,'Label','Position','Callback',@(src,evt) obj.SavePosition);
