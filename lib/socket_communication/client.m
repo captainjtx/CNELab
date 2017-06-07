@@ -1,7 +1,7 @@
 % CLIENT connect to a server and read a message
 %
 % Usage - message = client(host, port, number_of_retries)
-function message = client(host, port, number_of_retries)
+function message = cnelab_client(host, port, number_of_retries)
 
     import java.net.Socket
     import java.io.*
