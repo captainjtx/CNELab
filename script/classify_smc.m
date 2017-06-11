@@ -27,6 +27,7 @@ fir_h=fir1(32,.001,'low');
 len=round(len/1000*fs);
 step=round(step/1000*fs);
 
+K=5;
 %%
 %S1
 % motor=[1:6,13:18,25:30,37:42,49:52,61:64,73:76,85:88,97:100,109:111];
@@ -49,6 +50,13 @@ step=round(step/1000*fs);
 H={[],[]};
 for fi=1:length(f1)
     fig(fi)=figure('name',[num2str(f1(fi)),'-',num2str(f2(fi))],'position',[100,100,600,450]);
+end
+
+for s=1:25
+    for k=1:K
+        CVc(s) = cvpartition(size(close.data,3),'Kfold',K);
+        CVo(s) = cvpartition(size(open.data,3),'Kfold',K);
+    end
 end
 
 for ave=0:1
@@ -192,17 +200,15 @@ for ave=0:1
                     
                     
                     Nf=2; % Nmber of CSP vectors
-                    K=5;
+                    
                     eR=zeros(K,1);
-                    CVc = cvpartition(size(dc,3),'Kfold',K);
-                    CVo = cvpartition(size(do,3),'Kfold',K);
                     
                     for n=1:K
-                        TrCI=CVc.training(n);
-                        TrOI=CVo.training(n);
+                        TrCI=CVc(s).training(n);
+                        TrOI=CVo(s).training(n);
                         
-                        TsCI=CVc.test(n);
-                        TsOI=CVo.test(n);
+                        TsCI=CVc(s).test(n);
+                        TsOI=CVo(s).test(n);
                         
                         if env
                             data_o=doh;
@@ -238,7 +244,7 @@ for ave=0:1
                     %         title(mean(eR));
                 end
             end
-            
+            assignin('base',['ave',num2str(ave),'f',num2str(fi)],erM);
             figure(fig(fi));
             hold on
             transparent=1;
@@ -256,6 +262,7 @@ for ave=0:1
         end
     end
 end
+%%
 for i=1:length(fig)
     figure(fig(i));
     set(gca,'fontsize',20)
@@ -274,7 +281,7 @@ for i=1:length(fig)
     ylabel('Error Rate(%)');
     xlim([-500,1500])
     text(20,95,'Onset','FontSize',18)
-    legend([H{i}(1).mainLine,H{i}(2).mainLine],'High-density ECoG','Averaged ECoG');
+    
     
 end
 set([H{1}.mainLine,H{2}.mainLine],'linewidth',2)
@@ -283,4 +290,27 @@ set([H{1}.mainLine,H{2}.mainLine],'linewidth',2)
 %
 %title('S2')
 %legend('boxoff')
+h_lfb=[];
+h_hfb=[];
+%delete(findobj(fig,'type','patch'));
+deltaT=time(1)-time(2);
+col=[150, 150, 150]/255;
+for i=1:size(ave0f1,2)
+    h_lfb(i)=ttest(ave0f1(:,i),ave1f1(:,i),'Tail','left');
+    if h_lfb(i)
+        figure(fig(1))
+        a=patch('Faces',[1,2,3,4],'Vertices',[time(i)-deltaT/2,0;time(i)+deltaT/2,0;time(i)+deltaT/2,100;time(i)-deltaT/2,100],'facecolor',col,'facealpha',1,'edgecolor','none');
+        uistack(a,'bottom')
+    end
+    h_hfb(i)=ttest(ave0f2(:,i),ave1f2(:,i),'Tail','left');
+    if h_hfb(i)
+        figure(fig(2))
+        a=patch('Faces',[1,2,3,4],'Vertices',[time(i)-deltaT/2,0;time(i)+deltaT/2,0;time(i)+deltaT/2,100;time(i)-deltaT/2,100],'facecolor',col,'facealpha',1,'edgecolor','none');
+        uistack(a,'bottom')
+    end
+end
+
+for i=1:length(fig)
+    legend([H{i}(1).mainLine,H{i}(2).mainLine],'High-density ECoG','Averaged ECoG');
+end
 

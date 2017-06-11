@@ -406,6 +406,16 @@ classdef SpatialMapWindow < handle
             val=find(strcmpi(obj.event_group,obj.event));
         end
         function val=get.map_val(obj)
+            %use baseline from all events**********************
+            if ~isempty(rtfm)
+                tfm=tfm./repmat(mean(rtfm{j},2),1,size(tfm,2));
+                
+                for tmp=1:length(event_tfm)
+                    event_tfm{tmp}=event_tfm{tmp}./repmat(mean(rtfm{j},2),1,size(tfm,2));
+                end
+            end
+            %**************************************************
+            
             for k=1:length(obj.tfmat)
                 tf=obj.tfmat(k);
                 
@@ -1605,8 +1615,6 @@ classdef SpatialMapWindow < handle
             end
         end
         
-        
-        
         function FreqCallback(obj,src)
             switch src
                 case obj.max_freq_edit
@@ -1975,19 +1983,7 @@ classdef SpatialMapWindow < handle
                             tfm=tfm+event_tfm{k};
                         end
                         tfm=tfm/length(event_tfm);
-                        
-                        obj.tfmat(e).raw_trial_mat{j}=event_tfm;
-                        
-                        %use baseline from all events**********************
-                        if ~isempty(rtfm)
-                            tfm=tfm./repmat(mean(rtfm{j},2),1,size(tfm,2));
-                            
-                            for tmp=1:length(event_tfm)
-                                event_tfm{tmp}=event_tfm{tmp}./repmat(mean(rtfm{j},2),1,size(tfm,2));
-                            end
-                        end
-                        %**************************************************
-                        
+                                               
                         obj.tfmat(e).mat{j}=tfm;
                         obj.tfmat(e).t=t;
                         obj.tfmat(e).f=f;
@@ -2016,7 +2012,6 @@ classdef SpatialMapWindow < handle
                     obj.tfmat.dataset=dataset;
                     obj.tfmat.channame=channames;
                     obj.tfmat.trial_mat{j}=[];
-                    obj.tfmat.raw_trial_mat{j}=[];
                     obj.tfmat.data(:,j)=data(:,j);
                     obj.tfmat.event=evt{1};
                 end
@@ -2838,7 +2833,7 @@ classdef SpatialMapWindow < handle
                         
                     end
                     
-                    raw_event_mat=tf.raw_trial_mat{i};
+                    raw_event_mat=tf.trial_mat{i};
                     if ~isempty(raw_event_mat)
                         raw_pow_val=[];
                         

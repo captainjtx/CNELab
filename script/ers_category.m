@@ -8,9 +8,7 @@ for t=-500:25:1000
     ers_chan=cat(2,ers_chan,bsp.SpatialMapWin.ers_chan{1});
 end
 
-
 t=-500:25:1000;
-
 %%
 first_ers=ones(size(ers_chan,1),1)*nan;
 end_ers=ones(size(ers_chan,1),1)*nan;
@@ -28,5 +26,3 @@ names=bsp.SpatialMapWin.chan_names;
 onset=names(abs(first_ers)<=100);
 early=names(first_ers<=-250);
 long=names((end_ers-first_ers)>=1000);
-
-
