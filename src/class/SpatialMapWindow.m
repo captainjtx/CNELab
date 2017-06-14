@@ -406,26 +406,21 @@ classdef SpatialMapWindow < handle
             val=find(strcmpi(obj.event_group,obj.event));
         end
         function val=get.map_val(obj)
-            %use baseline from all events**********************
-            if ~isempty(rtfm)
-                tfm=tfm./repmat(mean(rtfm{j},2),1,size(tfm,2));
-                
-                for tmp=1:length(event_tfm)
-                    event_tfm{tmp}=event_tfm{tmp}./repmat(mean(rtfm{j},2),1,size(tfm,2));
-                end
-            end
             %**************************************************
             
             for k=1:length(obj.tfmat)
                 tf=obj.tfmat(k);
-                
+            
                 fi=(tf.f>=obj.min_freq)&(tf.f<=obj.max_freq);
                 ti=(tf.t>=obj.act_start/1000)&(tf.t<=obj.act_start/1000+obj.act_len/1000);
                 
                 mapv=zeros(1,length(tf.mat));
+                basev=zeros(1,length(tf.mat));
                 for i=1:length(tf.mat)
+                    basev(i)=mean(mean(tf.ref_mat{i}(fi,:),2));
                     mapv(i)=mean(mean(tf.mat{i}(fi,ti)));
                 end
+                mapv=mapv./basev;
                 
                 if strcmpi(obj.unit,'dB')
                     mapv=10*log10(mapv);
@@ -466,7 +461,7 @@ classdef SpatialMapWindow < handle
                             erd_val=[];
                             
                             for t=1:length(event_mat)
-                                erd_val=cat(1,erd_val,mean(mean(event_mat{t}(fi,ti))));
+                                erd_val=cat(1,erd_val,mean(mean(event_mat{t}(fi,ti)))./mean(mean(tf.ref_mat{i}(fi,:))));
                             end
                             %transform to log10 scale before ttest
                             tmp(i)=ttest(log10(erd_val),log10(obj.erd_t),'Tail','Left','Alpha',obj.p);
@@ -494,7 +489,7 @@ classdef SpatialMapWindow < handle
                         if ~isempty(event_mat)
                             ers_val=[];
                             for t=1:length(event_mat)
-                                ers_val=cat(1,ers_val,mean(mean(event_mat{t}(fi,ti))));
+                                ers_val=cat(1,ers_val,mean(mean(event_mat{t}(fi,ti)))./mean(mean(tf.ref_mat{i}(fi,:))));
                             end
                             %transform to log10 scale before ttest
                             tmp(i)=ttest(log10(ers_val),log10(obj.ers_t),'Tail','Right','Alpha',obj.p);
@@ -1993,7 +1988,12 @@ classdef SpatialMapWindow < handle
                         obj.tfmat(e).event=evt{e};
                         obj.tfmat(e).trial_mat{j}=event_tfm;
                         obj.tfmat(e).data(:,j,:)=raw_data(:,ind);
-                        obj.tfmat(e).ref_mat=rtfm;
+                        
+                        if isempty(rtfm)
+                            obj.tfmat(e).ref_mat{j}=ones(size(tfm,1),1);
+                        else
+                            obj.tfmat(e).ref_mat=rtfm;
+                        end
                     end
                 end
             else
@@ -2014,6 +2014,7 @@ classdef SpatialMapWindow < handle
                     obj.tfmat.trial_mat{j}=[];
                     obj.tfmat.data(:,j)=data(:,j);
                     obj.tfmat.event=evt{1};
+                    obj.tfmat.ref_mat{j}=ones(size(tfm,1),1);
                 end
             end
             
@@ -2826,7 +2827,7 @@ classdef SpatialMapWindow < handle
                         
                         for t=1:length(event_mat)
                             %t th trial
-                            pow_val=cat(1,pow_val,mean(mean(event_mat{t}(fi,ti))));
+                            pow_val=cat(1,pow_val,mean(mean(event_mat{t}(fi,ti)))./mean(mean(tf.ref_mat{i}(fi,:))));
                         end
                         
                         info(k).pow(:,i)=pow_val(:);

@@ -1,9 +1,9 @@
 clc
 clear
 
-f=load('/Users/tengi/Desktop/Projects/data/China/handopenclose/S1/Open.mat','-mat');
+f=load('/Users/tengi/Desktop/Projects/data/China/handopenclose/S2/Open.mat','-mat');
 open=f.Open;
-f=load('/Users/tengi/Desktop/Projects/data/China/handopenclose/S1/Close.mat','-mat');
+f=load('/Users/tengi/Desktop/Projects/data/China/handopenclose/S2/Close.mat','-mat');
 close=f.Close;
 %%
 fs=open.fs;
@@ -295,14 +295,16 @@ h_hfb=[];
 %delete(findobj(fig,'type','patch'));
 deltaT=time(1)-time(2);
 col=[150, 150, 150]/255;
+delete(findobj(fig,'type','patch','facecolor',col));
+a=findobj();
 for i=1:size(ave0f1,2)
-    h_lfb(i)=ttest(ave0f1(:,i),ave1f1(:,i),'Tail','left');
+    h_lfb(i)=ttest(ave0f1(:,i),ave1f1(:,i),'Tail','left','Alpha',0.001);
     if h_lfb(i)
         figure(fig(1))
         a=patch('Faces',[1,2,3,4],'Vertices',[time(i)-deltaT/2,0;time(i)+deltaT/2,0;time(i)+deltaT/2,100;time(i)-deltaT/2,100],'facecolor',col,'facealpha',1,'edgecolor','none');
         uistack(a,'bottom')
     end
-    h_hfb(i)=ttest(ave0f2(:,i),ave1f2(:,i),'Tail','left');
+    h_hfb(i)=ttest(ave0f2(:,i),ave1f2(:,i),'Tail','left','Alpha',0.001);
     if h_hfb(i)
         figure(fig(2))
         a=patch('Faces',[1,2,3,4],'Vertices',[time(i)-deltaT/2,0;time(i)+deltaT/2,0;time(i)+deltaT/2,100;time(i)-deltaT/2,100],'facecolor',col,'facealpha',1,'edgecolor','none');
@@ -313,4 +315,9 @@ end
 for i=1:length(fig)
     legend([H{i}(1).mainLine,H{i}(2).mainLine],'High-density ECoG','Averaged ECoG');
 end
+%%
+[~,l_min]=min(mean(ave0f1,1));
+[~,l_min_ave]=min(mean(ave1f1,1));
+[h,p]=ttest(ave0f1(:,l_min),ave1f1(:,l_min_ave),'tail','left','alpha',0.01)
+
 
