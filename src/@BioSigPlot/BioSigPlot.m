@@ -238,7 +238,7 @@ classdef BioSigPlot < hgsetget
         LineDefaultColors
         
         DataView                %View Mode {'Vertical'|'Horizontal'|'DAT*'}
-        MontageRef              %N° Montage
+        MontageRef              %NÂ° Montage
         XGrid                   %true : show Grid line on each sec
         YGrid                   %true : show Grid line on each channel
         EventsDisplay           %true : show Events
@@ -513,7 +513,7 @@ classdef BioSigPlot < hgsetget
             
             obj.DisplayGauge=true;
             
-            obj.BufferLength=obj.TotalSample;
+            obj.BufferLengthSample=obj.TotalSample;
             obj.BufferTime=0;
             obj.VisualBuffer=inf;
             
@@ -917,6 +917,12 @@ classdef BioSigPlot < hgsetget
             val=2;
         end
         %******************************************************************
+        function val = get.BufferLength(obj)
+            val=obj.BufferLengthSample/obj.SRate;
+        end
+        function obj=set.BufferLength(obj,val)
+            obj.BufferLengthSample=round(val*obj.SRate);
+        end
         function val = get.BufferStartSample(obj)
             val=min(max(1,round(obj.BufferTime*obj.SRate+1)),obj.TotalSample);
         end
@@ -2495,6 +2501,7 @@ classdef BioSigPlot < hgsetget
         TotalSample
         BufferTime
         BufferLength
+        BufferLengthSample
         CDS
         VisualBuffer
         EventRef
