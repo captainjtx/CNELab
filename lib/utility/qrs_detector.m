@@ -1,49 +1,46 @@
-function evts=ekg_qrs(ekg,fs,varargin)
-%get the qrs peaks of ekg signal
-%ekg:     ekg signal
-%fs:      sampling frequency
+function [r,d,pat]=qrs_detector(ecg,Fs)
+% [r,d,pat]=qrs_detector(ecg,Fs)
+%
+wl=fix(Fs*.3); %300ms Window of left side of the R Point
+wr=fix(Fs*.4); %400ms Window of right side of the R Point
+ecgd=(diff(ecg)); % Derivative of the ECG signal
+thr=threshold(ecgd,Fs); % Finds the threshold
+Q=16; % QRS search window;
+%close;
 
-%Optional input arguments:
-%timestamp (s)
+l=length(ecgd);
+k=1;
+pat=[];
+j=wl+1;
 
-%evts:    extracted qrs events
-if size(ekg,2)>1
-    error('More than two channels are selected!')
-end
-            
-if isempty(varargin)
-    timestamp=linspace(0,length(ekg)/fs,length(ekg));
-end
-if length(varargin)==1
-    timestamp=varargin{1};
-end
+for i=wl:(l-wr-1),
+    m=ecgd(j);
     
-% prompt={'Percentile Threshold (1-100): '};
-% title='Threshold for QRS detection';
-% 
-% if isempty(obj.QRS_Threshold)
-%     obj.QRS_Threshold=50;
-% end
-% 
-% def=num2str(obj.QRS_Threshold);
-% 
-% answer=inputdlg(prompt,title,1,def);
-% 
-% tmp=str2double(answer);
-% if isempty(tmp)||isnan(tmp)
-%     tmp=50;
-% end
-% 
-% obj.QRS_Threshold=tmp;
-
-% thr=prctile(abs(ekg),tmp);
-
-[r,d,pat]=qrs_detector(ekg,fs);
-
-evts=cell(length(r),2);
-evts(:,1)=num2cell(timestamp(r));
-[evts{:,2}]=deal('R');
-
-
+    if j>l-wr-Q
+        break;
+    end
+    
+    
+    if m>thr
+        if m>=max(ecgd((j-wl:j+wr))) % Checks the right and left side of the point
+            [mx,rx]=max(ecg((j:j+Q))); % If it is the maximum then
+            rx=rx-1;
+            r(k)=j+rx;
+            d(k)=mx;
+            pt=ecg(j+rx-wl:j+rx+wr);
+            
+            pat=[pat pt];
+            k=k+1;
+            j=j+wr;
+            
+        end
+    end
+    
+    j=j+1;
 end
-
+%figure;
+%plot(pat);
+%size(r)
+%pause;
+rr=diff(r)/Fs; %Displays the RR indervals
+%plot(rr);
