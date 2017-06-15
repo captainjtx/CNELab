@@ -1279,7 +1279,10 @@ classdef CommonDataStructure < handle
             current_montage=obj.Montage;
             
             fs=current_data_info.SampleRate;
-            
+            if isempty(fs)
+                warndlg('Empty sampling rate, default to 256 Hz !');
+                fs=256;
+            end
             [pathstr, ~, ~] = fileparts(current_data_info.FileName);
             
             if ~isempty(current_data_info.PrevFile)
