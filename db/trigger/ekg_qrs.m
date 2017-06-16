@@ -38,7 +38,7 @@ end
 
 % thr=prctile(abs(ekg),tmp);
 
-[r,d,pat]=qrs_detector(ekg,fs);
+[r,~,~]=qrs_detector(ekg,fs);
 
 evts=cell(length(r),2);
 evts(:,1)=num2cell(timestamp(r));

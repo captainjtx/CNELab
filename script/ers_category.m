@@ -1,14 +1,14 @@
 
 ers_chan=[];
 
-for t=-500:25:1000
+for t=-1000:5:1200
     bsp.SpatialMapWin.act_start=t;
     bsp.SpatialMapWin.ActCallback(bsp.SpatialMapWin.act_start_edit);
     
     ers_chan=cat(2,ers_chan,bsp.SpatialMapWin.ers_chan{1});
 end
 
-t=-500:25:1000;
+t=-1000:5:1200;
 %%
 first_ers=ones(size(ers_chan,1),1)*nan;
 end_ers=ones(size(ers_chan,1),1)*nan;
@@ -23,6 +23,6 @@ end
 %%
 names=bsp.SpatialMapWin.chan_names;
 
-onset=names(abs(first_ers)<=100);
-early=names(first_ers<=-250);
+onset=names(abs(first_ers)<=50);
+early=names(first_ers<=-100);
 long=names((end_ers-first_ers)>=1000);
