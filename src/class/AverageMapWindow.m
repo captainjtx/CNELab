@@ -74,7 +74,7 @@ classdef AverageMapWindow  < handle
         peak_
         contact_
         unit
-        interp_method
+        interp_scatter_
         extrap_method
         
         pos_t
@@ -92,6 +92,9 @@ classdef AverageMapWindow  < handle
         
         export_picture_win
         cmax
+        style_menu
+        map_interp_menu
+        map_scatter_menu
     end
     
     properties (Dependent=true)
@@ -121,7 +124,7 @@ classdef AverageMapWindow  < handle
         neg
         map_val
         
-        
+        interp_scatter
     end
     
     methods
@@ -149,7 +152,7 @@ classdef AverageMapWindow  < handle
             obj.width=300;
             obj.height=300;
             obj.unit='dB';
-            obj.interp_method='natural';
+            obj.interp_scatter='interp';
             obj.extrap_method='linear';
             obj.interp_missing_=0;
             obj.symmetric_scale_=1;
@@ -195,6 +198,9 @@ classdef AverageMapWindow  < handle
             
             obj.save_map_menu=uimenu(obj.save_menu,'label','Map','callback',@(src,evts) ExportMapCallback(obj));
             
+            obj.style_menu=uimenu(obj.fig,'label','Style');
+            obj.map_interp_menu=uimenu(obj.style_menu,'label','Interpolate','callback',@(src,evt) MapCallback(obj,src));
+            obj.map_scatter_menu=uimenu(obj.style_menu,'label','Scatter','callback',@(src,evt) MapCallback(obj,src));
             columnName={'Selected','FileName'};
             columnFormat={'logical','char'};
             columnEditable=[true,false];
@@ -309,7 +315,7 @@ classdef AverageMapWindow  < handle
                 'units','normalized','position',[0.5,0.25,0.45,0.25],'value',obj.peak,...
                 'callback',@(src,evts) PeakCallback(obj,src));
             
-            obj.contact_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Contact',...
+            obj.contact_radio=uicontrol('parent',hp_display,'style','radiobutton','string','Channel Name',...
                 'units','normalized','position',[0.5,0,0.45,0.25],'value',obj.contact,...
                 'callback',@(src,evts) ContactCallback(obj,src));
             
@@ -325,6 +331,7 @@ classdef AverageMapWindow  < handle
             
             obj.pos=obj.pos_;
             obj.neg=obj.neg_;
+            obj.interp_scatter=obj.interp_scatter_;
         end
         
         function OnClose(obj)
@@ -388,6 +395,9 @@ classdef AverageMapWindow  < handle
                 
             end
             len=length(obj.MapFiles);
+            if ischar(FileName)
+                FileName={FileName};
+            end
             for i=1:length(FileName)
                 obj.MapFiles_{len+i}=fullfile(FilePath,FileName{i});
             end
@@ -442,6 +452,7 @@ classdef AverageMapWindow  < handle
             mv=obj.map_val;
             %**************************************************************
             vmax=-inf;
+            chanpos=obj.all_chan_pos(obj.chan_ind,:);
             for i=1:size(mv,2)
                 %*********************
                 if obj.interp_missing
@@ -450,13 +461,25 @@ classdef AverageMapWindow  < handle
                     val=mv(:,i);
                 end
                 %*********************
-                spatialmap_grid(obj.SpatialMapFig(i),val,obj.interp_method,...
-                    obj.extrap_method,map_channames,map_pos(:,1),map_pos(:,2),map_pos(:,3),obj.width,obj.height,...
+                spatialmap_grid(obj.SpatialMapFig(i),val,obj.interp_scatter,...
+                    map_pos(:,1),map_pos(:,2),obj.width,obj.height,...
                     obj.min_clim,obj.max_clim,obj.color_bar,obj.resize);
                 h=findobj(obj.SpatialMapFig(i),'-regexp','tag','SpatialMapAxes');
-                if obj.contact
-                    plot_contact(h,allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.height,obj.width,[],...
-                        ~ismember(allchanpos,map_pos,'rows'),[],[]);
+                
+                if obj.contact||strcmp(obj.interp_scatter,'scatter')
+                    if obj.contact
+                        cn=map_channames;
+                    else
+                        cn=[];
+                    end
+                    
+                    if strcmp(obj.interp_scatter,'scatter')
+                        plot_contact(h,mapv,allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.height,obj.width,cn,...
+                            ~ismember(allchanpos,chanpos,'rows'),[],[]);
+                    else
+                        plot_contact(h,[],allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.height,obj.width,cn,...
+                            ~ismember(allchanpos,chanpos,'rows'),[],[]);
+                    end
                 end
                 
                 if obj.peak
@@ -776,7 +799,7 @@ classdef AverageMapWindow  < handle
             obj.height=round(obj.height/oldval*val);
             
             chanpos=obj.all_chan_pos(obj.chan_ind,:);
-            
+            allchanpos=obj.all_chan_pos;
             if ~NoSpatialMapFig(obj)
                 for i=1:length(obj.SpatialMapFig)
                     if ishandle(obj.SpatialMapFig(i))
@@ -786,9 +809,20 @@ classdef AverageMapWindow  < handle
                         if ~isempty(h)
                             delete(findobj(h,'Tag','contact'));
                             figure(obj.SpatialMapFig(i))
-                            if obj.contact
-                                plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
-                                    ~ismember(obj.all_chan_pos,chanpos,'rows'));
+                            if obj.contact||strcmp(obj.interp_scatter,'scatter')
+                                if obj.contact
+                                    cn=obj.channames;
+                                else
+                                    cn=[];
+                                end
+                                
+                                if strcmp(obj.interp_scatter,'scatter')
+                                    plot_contact(h,obj.map_val,allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.height,obj.width,cn,...
+                                        ~ismember(allchanpos,chanpos,'rows'),[],[]);
+                                else
+                                    plot_contact(h,[],allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.height,obj.width,cn,...
+                                        ~ismember(allchanpos,chanpos,'rows'),[],[]);
+                                end
                             end
                         end
                     end
@@ -829,7 +863,24 @@ classdef AverageMapWindow  < handle
                 set(obj.pos_slider,'enable','off');
             end
         end
+        function val=get.interp_scatter(obj)
+            val=obj.interp_scatter_;
+        end
         
+        function set.interp_scatter(obj,val)
+            obj.interp_scatter_=val;
+            
+            if obj.valid
+                switch val
+                    case 'interp'
+                        set(obj.map_interp_menu,'checked','on');
+                        set(obj.map_scatter_menu,'checked','off');
+                    case 'scatter'
+                        set(obj.map_scatter_menu,'checked','on');
+                        set(obj.map_interp_menu,'checked','off');
+                end
+            end
+        end
         function val=get.neg(obj)
             val=obj.neg_;
         end
@@ -971,11 +1022,11 @@ classdef AverageMapWindow  < handle
                 for i=1:length(obj.SpatialMapFig)
                     h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
                     if ~isempty(h)
-                        delete(findobj(h,'Tag','contact'));
                         figure(obj.SpatialMapFig(i))
+                        delete(findobj(h,'Tag','names'));
                         if obj.contact
-                            plot_contact(h,obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
-                                ~ismember(obj.all_chan_pos,chanpos,'rows'),[],[]);
+                            plot_contact(h,[],obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,obj.channames,...
+                                ~ismember(obj.all_chan_pos,chanpos,'rows')); 
                         end
                         
                     end
@@ -1099,10 +1150,10 @@ classdef AverageMapWindow  < handle
                     %*********************
                     h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
                     if ~isempty(h)
-                        if strcmpi(obj.interp_method,'natural')
+                        if strcmpi(obj.interp_scatter,'natural')
                             [x,y]=meshgrid((1:obj.width)/obj.width,(1:obj.height)/obj.height);
                             
-                            F= scatteredInterpolant(map_pos(:,1),map_pos(:,2),val,obj.interp_method,obj.extrap_method);
+                            F= scatteredInterpolant(map_pos(:,1),map_pos(:,2),val,obj.interp_scatter,obj.extrap_method);
                             mapvq=F(x,y);
 %                             mapvq = gaussInterpolant(col,row,mapv{i}',x,y);
                         else
@@ -1181,6 +1232,17 @@ classdef AverageMapWindow  < handle
                 end
                 fclose(fid);
             end
+        end
+        function MapCallback(obj,src)
+            switch src
+                case obj.map_interp_menu
+                    obj.interp_scatter='interp';
+                case obj.map_scatter_menu
+                    obj.interp_scatter='scatter';
+            end
+            
+            UpdateFigure(obj,src);
+                
         end
     end
     

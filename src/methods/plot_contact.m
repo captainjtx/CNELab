@@ -178,7 +178,7 @@ offset=[0;-10];
 offset=rotation_m*offset;
 for i=1:length(all_channames)
     if badchan(i)
-        c=[0.5,0.5,0.5];
+        c=[1,1,1];
     else
         c=[0,0,0];
     end
