@@ -49,14 +49,14 @@ if ispc
         mex([pwd filesep 'src' filesep 'mex' filesep 'WinMultiThreadedFilter.cpp']);
         movefile('WinMultiThreadedFilter.*',[pwd filesep 'src' filesep 'mex']);
     catch
-        disp('Cannot recompile WinMultiThreadedFilter.cpp');
+        disp('Cannot recompile WinMultiThreadedFilter.cpp, will try to use precompiled one ...');
     end
 elseif ismac||isunix
     try
         mex([pwd filesep 'src' filesep 'mex' filesep 'UnixMultiThreadedFilter.cpp']);
         movefile('UnixMultiThreadedFilter.*',[pwd filesep 'src' filesep 'mex']);
     catch
-        disp('Cannot recompile UnixMultiThreadedFilter.cpp');
+        disp('Cannot recompile UnixMultiThreadedFilter.cpp, will try to use precompiled one ...');
     end
 else
     %not sure what kind of computer fall into this category
