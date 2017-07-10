@@ -13,3 +13,4 @@ lib/vlc-matlab
 *.swp
 demo/demo.cds
 src/@AppWindow/
+demo/sample/*

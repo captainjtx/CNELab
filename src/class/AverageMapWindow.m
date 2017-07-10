@@ -1000,7 +1000,7 @@ classdef AverageMapWindow  < handle
             obj.peak_=get(src,'value');
             if ~NoSpatialMapFig(obj)
                 chanpos=obj.all_chan_pos(obj.chan_ind,:);
-                mapv=obj.map_val;
+                mapv=obj.map_val(obj.chan_ind);
                 for i=1:length(obj.SpatialMapFig)
                     h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
                     if ~isempty(h)

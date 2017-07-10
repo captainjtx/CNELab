@@ -33,6 +33,9 @@ badr=r(badchan);
 col=col(~badchan);
 row=row(~badchan);
 r=r(~badchan);
+if ~isempty(mapv)
+    mapv=mapv(~badchan);
+end
 % %**********************************
 if isempty(erdchan)
     erdchan=zeros(size(col));

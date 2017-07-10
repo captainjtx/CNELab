@@ -16,7 +16,7 @@ if length(varargin)==1
 end
 
 order=3;
-[b1,a1]=butter(order,[0.01,5]/(fs/2),'bandpass');
+[b1,a1]=butter(order,[0.1,5]/(fs/2),'bandpass');
 
 b=cell(size(traj,2),1);
 a=cell(size(traj,2),1);
