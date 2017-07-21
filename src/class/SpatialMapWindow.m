@@ -10,6 +10,7 @@ classdef SpatialMapWindow < handle
         
         advance_menu
         p_menu
+        fdr_menu
         
         more_menu
         corr_menu
@@ -99,6 +100,8 @@ classdef SpatialMapWindow < handle
         
         az_edit
         el_edit
+        
+        fdr %false discovery rate level
     end
     properties
         
@@ -464,11 +467,15 @@ classdef SpatialMapWindow < handle
                                 erd_val=cat(1,erd_val,mean(mean(event_mat{t}(fi,ti)))./mean(mean(tf.ref_mat{i}(fi,:))));
                             end
                             %transform to log10 scale before ttest
-                            tmp(i)=ttest(log10(erd_val),log10(obj.erd_t),'Tail','Left','Alpha',obj.p);
+                            [~,tmp(i)]=ttest(log10(erd_val),log10(obj.erd_t),'Tail','Left','Alpha',obj.p);
                         end
                     end
                 end
+                [~,pN]=FDR(tmp,obj.fdr);
                 
+                if(~isempty(pN))
+                    tmp=tmp<pN;
+                end
                 val{k}=tmp;
             end
         end
@@ -492,9 +499,14 @@ classdef SpatialMapWindow < handle
                                 ers_val=cat(1,ers_val,mean(mean(event_mat{t}(fi,ti)))./mean(mean(tf.ref_mat{i}(fi,:))));
                             end
                             %transform to log10 scale before ttest
-                            tmp(i)=ttest(log10(ers_val),log10(obj.ers_t),'Tail','Right','Alpha',obj.p);
+                            [~,tmp(i)]=ttest(log10(ers_val),log10(obj.ers_t),'Tail','Right','Alpha',obj.p);
                         end
                     end
+                end
+                [pID,pN]=FDR(tmp,obj.fdr);
+                
+                if(~isempty(pN))
+                    tmp=tmp<pN;
                 end
                 
                 val{k}=tmp;
@@ -1163,8 +1175,8 @@ classdef SpatialMapWindow < handle
             obj.min_clim_=-10;
             obj.erd_=0;
             obj.ers_=0;
-            obj.erd_t_=0.5;
-            obj.ers_t_=1.5;
+            obj.erd_t_=1;
+            obj.ers_t_=1;
             obj.resize_=1;
             obj.scale_by_max_=0;
             %             obj.display_mask_channel_=0;
@@ -1202,6 +1214,7 @@ classdef SpatialMapWindow < handle
             obj.export_movie_win=ExportMovieWindow(obj);
             
             obj.interp_scatter='interp';
+            obj.fdr=obj.p;
         end
         function buildfig(obj)
             if obj.valid
@@ -1225,6 +1238,7 @@ classdef SpatialMapWindow < handle
             obj.map_scatter_menu=uimenu(obj.map_menu,'label','Scatter','callback',@(src,evt) MapCallback(obj,src));
             
             obj.p_menu=uimenu(obj.advance_menu,'label','P-Value','callback',@(src,evts) PCallback(obj));
+            obj.fdr_menu=uimenu(obj.advance_menu,'label','FDR-Level','callback',@(src,evts) FDRCallback(obj));
             
             obj.more_menu=uimenu(obj.fig,'label','More');
             
@@ -2273,6 +2287,27 @@ classdef SpatialMapWindow < handle
                     end
                     
                     obj.stft_overlap=tmp;
+            end
+        end
+        function FDRCallback(obj)
+            prompt={'FDR for Multicomparision Correction'};
+            def={num2str(obj.fdr)};
+            
+            title='FDR Setting';
+            
+            answer=inputdlg(prompt,title,1,def);
+            
+            if isempty(answer)
+                return
+            end
+            tmp=str2double(answer{1});
+            if isempty(tmp)||isnan(tmp)
+                tmp=obj.fdr;
+            end
+            
+            obj.fdr=max(0,min(tmp,1));
+            if obj.auto_refresh
+                UpdateFigure(obj,[]);
             end
         end
         function PCallback(obj)

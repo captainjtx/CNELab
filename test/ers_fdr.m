@@ -1,4 +1,4 @@
-f=[300,800];
+f=[60,200];
 fr=s.f>=f(1)&s.f<=f(2);
 N=length(s.channame);
 
@@ -41,7 +41,7 @@ for c=1:N
        t_start(c)=tmp;
    end
 end
-fid=fopen(sprintf('s1_start_time_%d_%d.txt',f(1),f(2)),'w');
+fid=fopen(sprintf('s2_start_time_%d_%d.txt',f(1),f(2)),'w');
 for c=1:N
     if ~isnan(t_start(c))
         fprintf(fid,'%s,%f\n',s.channame{c},t_start(c));
