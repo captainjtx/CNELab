@@ -1,16 +1,28 @@
 %get psd from tfmap
+subj = 's1';
+
 s1_close=load('/Users/tengi/Desktop/Projects/data/Turkey/s1/Close.mat','-mat');
 s2_close=load('/Users/tengi/Desktop/Projects/data/Turkey/s2/Close.mat','-mat');
-close=s1_close.Close;
+close=s1_close;
 s='';
+
+sm1=ReadSpatialMap([subj,'_Close_8-32_start-100_len500.smw']);
+lfb_chan=sm1.name(sm1.sig==-1);
+sm2=ReadSpatialMap([subj,'_Close_60-280_start-100_len500.smw']);
+hfb_chan=sm2.name(sm2.sig==1);
+sm3=ReadSpatialMap([subj,'_Close_300-800_start-100_len500.smw']);
+ufb_chan=sm3.name(sm3.sig==1);
+
+ers_chan = hfb_chan;
+
 % ers_chan=close.channame;
 %S1
-ers_chan={'C88_S','C27_L','C80_S','C81_S','C18_L','C19_L','C20_L','C72_S','C73_S',...
-   'C74_S','C10_L','C11_L','C66_S','C67_S','C68_S'};
-
-hfb_chan={'C68_S','C67_S','C66_S','C10_L','C73_S','C72_S','C20_L','C19_L',...
-    'C18_L','C81_S','C80_S','C27_L','C88_S'};
-ufb_chan={'C11_L','C74_S'};
+% ers_chan={'C88_S','C27_L','C80_S','C81_S','C18_L','C19_L','C20_L','C72_S','C73_S',...
+%    'C74_S','C10_L','C11_L','C66_S','C67_S','C68_S'};
+% ers_chan = close.channame;
+% hfb_chan={'C68_S','C67_S','C66_S','C10_L','C73_S','C72_S','C20_L','C19_L',...
+%     'C18_L','C81_S','C80_S','C27_L','C88_S'};
+% ufb_chan={'C11_L','C74_S'};
 %S2
 % ers_chan={'C38_L','C39_L','C91_S','C92_S','C29_L','C30_L','C31_L','C32_L',...
 %     'C83_S','C84_S','C85_S','C21_L','C22_L','C23_L','C24_L','C75_S','C76_S',...
@@ -30,23 +42,23 @@ nfft=1024;
 fs=2400;
 
 lfb=[8,32];
-hfb=[60,200];
+hfb=[60,280];
 ufb=[300,800];
 
 fn=50;
 fh=3;
 % t=[0,1];%baseline
-t=[1.35,1.85];%movement
+t=[1.4,1.9];%movement
 
 baseline=[0,0.5];
 
 t=round(t(1)*fs:t(2)*fs)+1;
 baseline=round(baseline(1)*fs:baseline(2)*fs)+1;
 
-[b,a]=butter(2,1.5/(fs/2),'high');
-for i=1:size(close.data,3)
-    close.data(:,:,i)=filter_symmetric(b,a,close.data(:,:,i),fs,0,'iir');
-end
+% [b,a]=butter(2,1.5/(fs/2),'high');
+% for i=1:size(close.data,3)
+%     close.data(:,:,i)=filter_symmetric(b,a,close.data(:,:,i),fs,0,'iir');
+% end
 
 small_idx=~cellfun(@isempty,regexp(close.channame,'_S'));
 small_idx=small_idx&ismember(close.channame,ers_chan);
@@ -75,9 +87,9 @@ large_ufb_baseline=large_ufb;
 freq_1=cell(small_num+large_num,1);
 freq_2=freq_1;
 freq_3=freq_1;
-[freq_1{:}]=deal('\nLFB');
-[freq_2{:}]=deal('\nHFB');
-[freq_3{:}]=deal('\nUFB');
+[freq_1{:}]=deal('LFB');
+[freq_2{:}]=deal('HFB');
+[freq_3{:}]=deal('UFB');
 freq=cat(1,freq_1,freq_2,freq_3);
 
 contact_1=cell(small_num+large_num,1);
@@ -175,14 +187,15 @@ scatter([1,2,3,4,5,6],[mean(10*log10(mean(small_lfb,2)./mean(small_lfb_baseline,
     mean(10*log10(mean(small_ufb,2)./mean(small_ufb_baseline,2))),mean(10*log10(mean(large_ufb,2)./mean(large_ufb_baseline,2)))],50,'*r')
 
 set(gcf,'position',[500   299   350   280]);
-set(gca,'fontsize',16);
-set(findobj(gca,'type','text'),'fontsize',12)
+set(gca,'fontsize',16,'fontweight','bold');
+set(findobj(gca,'type','text'),'fontsize',12,'fontweight','bold')
 set(gcf,'color','w');
-ylim([-10,10]);
+ylim([-12,12]);
 plot([-10,10],[0,0],'k-.');
 set(findobj(gca,'type','line'),'linewidth',2)
 ylabel('ERD/ERS (dB)')
 hold on
+
 %%
 figure
 bp=boxplot(10*log10(cat(1,mean(small_lfb,2),...

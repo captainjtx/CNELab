@@ -475,6 +475,8 @@ classdef SpatialMapWindow < handle
                 
                 if(~isempty(pN))
                     tmp=tmp<pN;
+                else
+                    tmp(:)=0;
                 end
                 val{k}=tmp;
             end
@@ -507,6 +509,8 @@ classdef SpatialMapWindow < handle
                 
                 if(~isempty(pN))
                     tmp=tmp<pN;
+                else
+                    tmp(:)=0;
                 end
                 
                 val{k}=tmp;
