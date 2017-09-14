@@ -626,8 +626,8 @@ classdef TFMapWindow < handle
             obj.auto_scale_=0;
             obj.smooth_x_=8;
             obj.smooth_y_=8;
-            obj.disp_axis_=1;
-            obj.disp_channel_names_=0;
+            obj.disp_axis_=0;
+            obj.disp_channel_names_=1;
             obj.TFMapSaveWin=TFMapFigureSave(obj);
         end
         function buildfig(obj)
@@ -1100,7 +1100,6 @@ classdef TFMapWindow < handle
         
         
         function ComputeCallback(obj,src)
-            
             option=obj.method;
             obj.tfmat={};
             units=obj.unit;

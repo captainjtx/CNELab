@@ -162,6 +162,7 @@ classdef BioSigPlot < hgsetget
         MenuAdvanceEventsRefresh
         MenuAdvanceEventsFunction
         
+        MenuSignalMap
         MenuTFMap
         MenuSpatialMap
         MenuPSD
@@ -184,8 +185,6 @@ classdef BioSigPlot < hgsetget
         
         MenuCSP
         
-        
-        
         PanObj
         LineVideo
         LineMeasurer
@@ -196,11 +195,9 @@ classdef BioSigPlot < hgsetget
         WinEvts
         WinFastEvts
         
-        
         VideoListener
         
         ChannelLines
-        
     end
     properties (Dependent,SetObservable)
         Version
@@ -378,6 +375,7 @@ classdef BioSigPlot < hgsetget
         IconPause
         WinVideo
         TFMapWin
+        SignalMapWin
         PSDWin
         SpatialMapWin
         RawMapWin
@@ -449,6 +447,7 @@ classdef BioSigPlot < hgsetget
             obj.TFMapWin=TFMapWindow(obj);
             obj.SpatialMapWin=SpatialMapWindow(obj);
             obj.RawMapWin=RawMapWindow(obj);
+            obj.SignalMapWin = SignalMapWindow(obj);
             
             obj.InterpolateWin=InterpWin(obj);
             
@@ -461,7 +460,6 @@ classdef BioSigPlot < hgsetget
             addlistener(obj.WinFastEvts,'FastEvtsChange',@(src,evt) set(obj,'FastEvts',obj.WinFastEvts.FastEvts));
             addlistener(obj.WinFastEvts,'SelectedFastEvtChange',@(src,evt) set(obj,'SelectedFastEvt',obj.WinFastEvts.SelectedFastEvt));
             obj.IsInitialize=false;
-            
 %             set(obj.Fig,'Visible','on')
         end
         
@@ -551,6 +549,10 @@ classdef BioSigPlot < hgsetget
             
             if obj.TFMapWin.valid
                 obj.TFMapWin.OnClose();
+            end
+            
+            if obj.SignalMapWin.valid
+                obj.SignalMapWin.OnClose();
             end
             
             if obj.SpatialMapWin.valid

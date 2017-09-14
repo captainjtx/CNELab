@@ -24,8 +24,9 @@ classdef SPFPlot < BioSigPlot
             obj.Weight=weg;
             
             set(obj.Fig,'Name',method);
-            set(obj.BtnMaskChannel,'ClickedCallback',@(src,evt)maskSubspaceChannel(obj,src));
-            set(obj.BtnUnMaskChannel,'ClickedCallback',@(src,evt)maskSubspaceChannel(obj,src));
+            set(handle(obj.JBtnMaskChannel,'CallbackProperties'),'MousePressedCallback',@(src,evt)maskSubspaceChannel(obj,0));
+            set(handle(obj.JBtnUnMaskChannel,'CallbackProperties'),'MousePressedCallback',@(src,evt)maskSubspaceChannel(obj,1));
+ 
 %             set(obj.BtnGainIncrease,'ClickedCallback',@(src,evt)maskSubspaceChannel(obj,src));
 %             set(obj.BtnGainDecrease,'ClickedCallback',@(src,evt)maskSubspaceChannel(obj,src));
             
@@ -40,6 +41,8 @@ classdef SPFPlot < BioSigPlot
                 xlabel('Subspace Dimension')
                 ylabel('Subspace Weight')
             end
+            
+            enableDisableFig(obj.Fig,true);
         end
         
         function delete(obj)
@@ -48,13 +51,7 @@ classdef SPFPlot < BioSigPlot
             end
         end
         
-        function maskSubspaceChannel(obj,src)
-            
-            if src==obj.BtnUnMaskChannel
-                mask=1;
-            elseif src==obj.BtnMaskChannel
-                mask=0;
-            end
+        function maskSubspaceChannel(obj,mask)
             pmt=obj.Mask_;
             
             tmp=obj.applyPanelVal(obj.Mask_,mask);
