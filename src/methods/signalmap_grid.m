@@ -10,7 +10,7 @@ text(x+dw/2,y+dh,channame,...
 
 h=axes('parent',fig,'units','normalized','Position',[x,y,dw,dh*0.9],'Visible','off');
 
-line(t,sig,'LineStyle','-','color','k','linewidth',1,'Parent',h);
+line(t,sig,'LineStyle','-','color','k','linewidth',0.8,'Parent',h);
 
 if ~isempty(yl)
     set(h,'YLim',yl);

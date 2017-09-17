@@ -120,8 +120,8 @@ obj.MenuApp=uimenu(obj.Fig,'Label','Apps');
 obj.MenuPSD=uimenu(obj.MenuApp,'Label','Power Spectrum Density','callback',@(src,evt)obj.PSDWin.buildfig());
 obj.MenuTFMap=uimenu(obj.MenuApp,'Label','Time Frequency Map','callback',@(src,evt)obj.TFMapWin.buildfig());
 obj.MenuSpatialMap=uimenu(obj.MenuApp,'Label','Spatial Spectral Map','callback',@(src,evt) obj.SpatialMapWin.buildfig());
-obj.MenuRawMap=uimenu(obj.MenuApp,'Label','Raw Data Map','callback',@(src,evt) obj.RawMapWin.buildfig());
-obj.MenuSignalMap=uimenu(obj.MenuApp,'Label','Signal Map','callback',@(src,evt)obj.SignalMapWin.buildfig());
+obj.MenuRawMap=uimenu(obj.MenuApp,'Label','Spatial Data Map','callback',@(src,evt) obj.RawMapWin.buildfig());
+obj.MenuSignalMap=uimenu(obj.MenuApp,'Label','Raw Data Map','callback',@(src,evt)obj.SignalMapWin.buildfig());
 
 obj.MenuCrossCorr=uimenu(obj.MenuApp,'Label','Cross Correlation');
 
