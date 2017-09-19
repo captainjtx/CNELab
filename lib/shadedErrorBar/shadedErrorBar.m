@@ -1,4 +1,4 @@
-function varargout=shadedErrorBar(x,y,errBar,lineProps,transparent)
+function varargout=shadedErrorBar(x,y,errBar,varargin)
 % function H=shadedErrorBar(x,y,errBar,lineProps,transparent)
 %
 % Purpose 
@@ -49,9 +49,24 @@ function varargout=shadedErrorBar(x,y,errBar,lineProps,transparent)
 
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-% Error checking    
-narginchk(3,5);
+%Set default options
+ax = gca;
+transparent = 0;
+lineProps = {'-k'};
+if length(varargin) == 1
+    lineProps = varargin{1};
+end
 
+if length(varargin) == 2
+    transparent = varargin{2};
+end
+
+if length(varargin) == 3
+    ax = varargin{3};
+end
+
+if isempty(lineProps), lineProps={'-k'}; end
+if ~iscell(lineProps), lineProps={lineProps}; end
 
 %Process y using function handles if needed to make the error bar
 %dynamically
@@ -84,22 +99,9 @@ end
 if length(x) ~= length(errBar)
     error('length(x) must equal length(errBar)')
 end
-
-%Set default options
-defaultProps={'-k'};
-if nargin<4, lineProps=defaultProps; end
-if isempty(lineProps), lineProps=defaultProps; end
-if ~iscell(lineProps), lineProps={lineProps}; end
-
-if nargin<5, transparent=0; end
-
-
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 % Plot to get the parameters of the line 
-H.mainLine=plot(x,y,lineProps{:});
+H.mainLine=plot(ax,x,y,lineProps{:});
 
 
 % Work out the color of the shaded region and associated lines
@@ -147,12 +149,12 @@ H.patch=patch(xP,yP,1,'facecolor',patchColor,...
 
 
 %Make pretty edges around the patch. 
-H.edge(1)=plot(x,lE,'-','color',edgeColor);
-H.edge(2)=plot(x,uE,'-','color',edgeColor);
+H.edge(1)=plot(ax,x,lE,'-','color',edgeColor);
+H.edge(2)=plot(ax,x,uE,'-','color',edgeColor);
 
 %Now replace the line (this avoids having to bugger about with z coordinates)
 delete(H.mainLine)
-H.mainLine=plot(x,y,lineProps{:});
+H.mainLine=plot(ax,x,y,lineProps{:});
 
 
 if ~holdStatus, hold off, end

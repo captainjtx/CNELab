@@ -17,15 +17,18 @@ classdef SignalMapWindow < handle
         onset_radio
         compute_btn
         new_btn
-        auto_scale_radio
+        plot_error_radio
         
         file_menu
         save_menu
         save_fig_menu
+        export_menu
         
         disp_axis_radio
         names_radio
         background_axe
+        
+        mat
     end
     properties
         method_
@@ -35,7 +38,7 @@ classdef SignalMapWindow < handle
         event_
         display_onset_
         event_list_
-        auto_scale_
+        plot_error_
         disp_axis_
         disp_channel_names_
     end
@@ -53,7 +56,7 @@ classdef SignalMapWindow < handle
 
         event_list
         symmetric_scale
-        auto_scale
+        plot_error
         disp_axis
         disp_channel_names
     end
@@ -81,13 +84,13 @@ classdef SignalMapWindow < handle
         
         
         
-        function val=get.auto_scale(obj)
-            val=obj.auto_scale_;
+        function val=get.plot_error(obj)
+            val=obj.plot_error_;
         end
-        function set.auto_scale(obj,val)
-            obj.auto_scale_=val;
+        function set.plot_error(obj,val)
+            obj.plot_error_=val;
             if obj.valid
-                set(obj.auto_scale_radio,'value',val);
+                set(obj.plot_error_radio,'value',val);
             end
         end
         
@@ -221,7 +224,7 @@ classdef SignalMapWindow < handle
             obj.ms_after_=1500;
             obj.event_='';
             obj.display_onset_=1;
-            obj.auto_scale_=1;
+            obj.plot_error_=1;
             obj.disp_axis_=0;
             obj.disp_channel_names_=1;
         end
@@ -233,6 +236,9 @@ classdef SignalMapWindow < handle
             obj.fig=figure('MenuBar','none','Name','Signal Map','units','pixels',...
                 'Position',[100 100 300 400],'NumberTitle','off','CloseRequestFcn',@(src,evts) OnClose(obj),...
                 'Resize','on','DockControls','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt));
+            obj.file_menu=uimenu(obj.fig,'label','File');
+            obj.save_menu=uimenu(obj.file_menu,'label','Save');
+            obj.export_menu=uimenu(obj.file_menu,'label','Export','callback',@(src,evts)ExportObjToWorkspace(obj));
             
             hp=uipanel('units','normalized','Position',[0,0,1,1]);
             
@@ -266,8 +272,8 @@ classdef SignalMapWindow < handle
             obj.onset_radio=uicontrol('parent',tab_display,'style','radiobutton','string','Onset','value',obj.display_onset,...
                 'units','normalized','position',[0,0.66,0.45,0.33],'callback',@(src,evts) DisplayOnsetCallback(obj,src));
             
-            obj.auto_scale_radio=uicontrol('parent',tab_display,'style','radiobutton','string','Auto Scale','value',obj.auto_scale,...
-                'units','normalized','position',[0,0,0.45,0.33],'callback',@(src,evts) AutoScaleCallback(obj,src));
+            obj.plot_error_radio=uicontrol('parent',tab_display,'style','radiobutton','string','Plot Error','value',obj.plot_error,...
+                'units','normalized','position',[0,0.33,0.45,0.33],'callback',@(src,evts) PlotErrorCallback(obj,src));
             obj.disp_axis_radio=uicontrol('parent',tab_display,'style','radiobutton','string','Axis','value',obj.disp_axis,...
                 'units','normalized','position',[0.5,0.66,0.45,0.33],'callback',@(src,evts) AxisCallback(obj,src));
             obj.names_radio=uicontrol('parent',tab_display,'style','radiobutton','string','Channel Names',...
@@ -335,7 +341,19 @@ classdef SignalMapWindow < handle
                     set(obj.ms_after_edit,'visible','on');
             end
         end
-        
+        function ExportObjToWorkspace(obj)
+            prompt={'Assign a name:'};
+            title='Export Object';
+            
+            def={'mat'};
+            answer=inputdlg(prompt,title,1,def);
+            
+            if isempty(answer)
+                return
+            end
+            
+            assignin('base',answer{1},obj.mat);
+        end
         function MsBeforeCallback(obj,src)
             t=str2double(get(src,'string'));
             if isnan(t)
@@ -404,6 +422,10 @@ classdef SignalMapWindow < handle
         
         function ComputeCallback(obj,src)
             option=obj.method;
+            obj.mat.data = [];
+            obj.mat.fs = [];
+            obj.mat.ave_data = [];
+            obj.mat.channames = [];
             %==========================================================================
             nL=round(obj.ms_before*obj.fs/1000);
             nR=round(obj.ms_after*obj.fs/1000);
@@ -515,7 +537,6 @@ classdef SignalMapWindow < handle
                     
                     dw=dx/(x_len+dx);
                     dh=dy/(y_len+dy);
-                    
             end
             %**************************************************************
             axe = axes('Parent',obj.SignalMapFig,'units','normalized','Position',[0 0 1 1],...
@@ -538,35 +559,42 @@ classdef SignalMapWindow < handle
             end
             
             data=data(:,chanind);
-            ave_sig = 0;
             
+            ave_sig = [];
             for j=1:length(channames)
-                sig = 0;
+                sig = [];
                 if obj.data_input==3
-                    tfm=0;
                     %******************************************************
                     for i=1:length(i_event)
-                        sig = sig + data(segment==i,j);
+                        sig = cat(2, sig ,data(segment==i,j));
                     end
-                    sig = sig/length(i_event);
+                    obj.mat.data = cat(3,obj.mat.data,sig);
                 else
                     sig = data(:, j);
+                    obj.mat.data = cat(2,obj.mat.data,sig);
                 end
                 
                 if option==2
-                    signalmap_grid(obj.SignalMapFig,axe,linspace(-obj.ms_before, obj.ms_after, length(sig)),sig,chanpos(j,:),dw,dh,channames{j},[]);
+                    if obj.plot_error
+                        err = std(sig,0,2);
+                    else
+                        err = zeros(size(sig,1),1);
+                    end
+                    signalmap_grid(obj.SignalMapFig,axe,linspace(-obj.ms_before, obj.ms_after, size(sig,1)),...
+                        mean(sig,2),err,chanpos(j,:),dw,dh,channames{j},[]);
+                    ave_sig = cat(2, ave_sig, mean(sig,2));
                 end
-                
-                ave_sig = ave_sig+sig;
-                
-%                 if option==2
-%                     cmax=max(max(abs(sig)),cmax);
-%                 end
             end
             
-            ave_sig = ave_sig/length(channames);
             if option==1
-                signalmap_grid(obj.SignalMapFig,axe,linspace(-obj.ms_before, obj.ms_after, length(ave_sig)),ave_sig,chanpos,dw,dh,channames{j},[]);
+                if obj.plot_error
+                       err = std(reshape(obj.mat.data,size(obj.mat.data,1),size(obj.mat.data,2)*size(obj.mat.data,3)),0,2);
+                 else
+                       err = zeros(size(obj.mat.data,1),1);
+                end
+                signalmap_grid(obj.SignalMapFig,axe,linspace(-obj.ms_before, obj.ms_after, size(obj.mat.data, 1)),...
+                    mean(mean(obj.mat.data,3),2),err,chanpos,dw,dh,'Average',[]);
+                ave_sig = mean(mean(obj.mat.data,3),2);
 %                 cmax=max(max(abs(ave_sig)));
                 a=findobj(obj.SignalMapFig,'Type','Axes');
                 set(a,'visible','on');
@@ -584,6 +612,10 @@ classdef SignalMapWindow < handle
             obj.background_axe=axe;
             
             obj.ChannelNamesCallback(obj.names_radio);
+            
+            obj.mat.channames = channames;
+            obj.mat.fs = obj.fs;
+            obj.mat.ave_data = ave_sig;
         end
         
         function KeyPress(obj,src,evt)
@@ -628,6 +660,10 @@ classdef SignalMapWindow < handle
                     end
                 end
             end
+        end
+        
+        function PlotErrorCallback(obj, src)
+            obj.plot_error_ = get(src,'value');
         end
         
     end

@@ -1,4 +1,4 @@
-function h=signalmap_grid(fig,axe,t,sig,pos,dw,dh,channame,yl)
+function h=signalmap_grid(fig,axe,t,sig,err,pos,dw,dh,channame,yl)
 %TFMAP_GRID Summary of this function goes here
 %   Detailed explanation goes here
 %Orign of postion is top left corner
@@ -10,7 +10,7 @@ text(x+dw/2,y+dh,channame,...
 
 h=axes('parent',fig,'units','normalized','Position',[x,y,dw,dh*0.9],'Visible','off');
 
-line(t,sig,'LineStyle','-','color','k','linewidth',0.8,'Parent',h);
+shadedErrorBar(t,sig,err,{'LineStyle','-','color','k','linewidth',0.8},0,h);
 
 if ~isempty(yl)
     set(h,'YLim',yl);
