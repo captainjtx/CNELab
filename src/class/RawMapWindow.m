@@ -372,6 +372,13 @@ classdef RawMapWindow < handle
             [chanNames,dataset,channel,~,~,~,chanpos]=get_selected_datainfo(obj.bsp,omitMask);
             if isempty(chanpos)||any(all(isnan(chanpos(:,1:2))))
                 errordlg('No channel position in the data !');
+                map_mapv = [];
+                map_pos = [];
+                mapv = [];
+                chanpos = [];
+                channames = [];
+                allchanpos = [];
+                allchannames = [];
                 return
             end
             
@@ -422,6 +429,9 @@ classdef RawMapWindow < handle
         
         function ComputeCallback(obj)
             [map_mapv,map_pos,mapv,chanpos,~,allchanpos,~]=obj.get_data_info;
+            if isempty(map_mapv)
+                return
+            end
             %draw things
             
             delete(obj.RawMapFig(ishandle(obj.RawMapFig)));

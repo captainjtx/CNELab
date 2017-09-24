@@ -1,4 +1,4 @@
-function [W,Lmd,CSP,cx,cy]=csp_weights(X,Y,CHi,mode)
+function [W,Lmd,CSP,cx,cy]=csp_weights(X,Y,CHi,mode,varargin)
 % function W=CSP_Weights(X,Y,CHi,mode)
 % Computes the Common SPatial Pattern Weights for the data given
 % in X and Y having a structure (NxTRxCH)
@@ -13,6 +13,17 @@ function [W,Lmd,CSP,cx,cy]=csp_weights(X,Y,CHi,mode)
 if nargin <4
     mode=0;
 end
+
+if size(varargin) == 1
+    X_trial_weight = varargin{1};
+    Y_trial_weight = varargin{1};
+elseif size(varargin) == 2
+    X_trial_weight = varargin{1};
+    Y_trial_weight = varargin{2};
+end
+
+X_trial_weight = X_trial_weight/sum(X_trial_weight);
+Y_trial_weight = Y_trial_weight/sum(Y_trial_weight);
 
 TrX=size(X,3);
 TrY=size(Y,3);
@@ -30,7 +41,7 @@ for i=1:TrX
     else
         cv=cov(x);
     end
-    cx=cx+cv/trace(cv);
+    cx=cx+cv/trace(cv)*X_trial_weight(i);
 end
 
 for i=1:TrY
@@ -40,8 +51,8 @@ for i=1:TrY
         cv=y'*y;   
     else
         cv=cov(y);
-    end;
-    cy=cy+cv/trace(cv);
+    end
+    cy=cy+cv/trace(cv)*Y_trial_weight(i);
 end
 
 cx=cx/TrX;

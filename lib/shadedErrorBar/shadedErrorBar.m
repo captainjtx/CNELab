@@ -52,21 +52,23 @@ function varargout=shadedErrorBar(x,y,errBar,varargin)
 %Set default options
 ax = gca;
 transparent = 0;
-lineProps = {'-k'};
-if length(varargin) == 1
-    lineProps = varargin{1};
-end
+col = 'k';
+linestyle = '-';
+lw = 0.5;
 
-if length(varargin) == 2
-    transparent = varargin{2};
+for i =1:2:length(varargin)
+    if strcmpi(varargin{i}, 'parent')
+        ax = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'linestyle')
+        linestyle = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'color')
+        col = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'transparent')
+        transparent = varargin{i+1};
+    elseif strcmpi(varargin{i}, 'linewidth')
+        lw = varargin{i+1};
+    end
 end
-
-if length(varargin) == 3
-    ax = varargin{3};
-end
-
-if isempty(lineProps), lineProps={'-k'}; end
-if ~iscell(lineProps), lineProps={lineProps}; end
 
 %Process y using function handles if needed to make the error bar
 %dynamically
@@ -100,34 +102,29 @@ if length(x) ~= length(errBar)
     error('length(x) must equal length(errBar)')
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
-% Plot to get the parameters of the line 
-H.mainLine=plot(ax,x,y,lineProps{:});
-
-
 % Work out the color of the shaded region and associated lines
 % Using alpha requires the render to be openGL and so you can't
 % save a vector image. On the other hand, you need alpha if you're
 % overlaying lines. There we have the option of choosing alpha or a
 % de-saturated solid colour for the patch surface .
-
-col=get(H.mainLine,'color');
+H.mainLine=line(ax,'XData',x,'YData',y,'LineStyle',linestyle,'color',col,'LineWidth',lw);
+col = get(H.mainLine,'color');
 edgeColor=col+(1-col)*0.55;
 patchSaturation=0.15; %How de-saturated or transparent to make patch
 if transparent
     faceAlpha=patchSaturation;
     patchColor=col;
-    set(gcf,'renderer','openGL')
+    %set(gcf,'renderer','openGL')
 else
     faceAlpha=1;
     patchColor=col+(1-col)*(1-patchSaturation);
-    set(gcf,'renderer','painters')
+    %set(gcf,'renderer','painters')
 end
 
     
 %Calculate the error bars
 uE=y+errBar(1,:);
 lE=y-errBar(2,:);
-
 
 %Add the patch error bar
 holdStatus=ishold;
@@ -149,16 +146,12 @@ H.patch=patch(xP,yP,1,'facecolor',patchColor,...
 
 
 %Make pretty edges around the patch. 
-H.edge(1)=plot(ax,x,lE,'-','color',edgeColor);
-H.edge(2)=plot(ax,x,uE,'-','color',edgeColor);
-
-%Now replace the line (this avoids having to bugger about with z coordinates)
-delete(H.mainLine)
-H.mainLine=plot(ax,x,y,lineProps{:});
-
+H.edge(1)=line(ax,'XData',x,'YData',lE,'LineStyle','-','color',edgeColor,'LineWidth',lw);
+H.edge(2)=line(ax,'XData',x,'YData',uE,'LineStyle','-','color',edgeColor,'LineWidth',lw);
+uistack(H.mainLine, 'top');
+%Now replace the line (this avoids having to bugger about with z coordinates
 
 if ~holdStatus, hold off, end
-
 
 if nargout==1
     varargout{1}=H;

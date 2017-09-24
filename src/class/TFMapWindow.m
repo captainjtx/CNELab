@@ -44,6 +44,7 @@ classdef TFMapWindow < handle
         file_menu
         save_menu
         save_fig_menu
+        export_menu
         TFMapSaveWin
         
         disp_axis_radio
@@ -640,6 +641,7 @@ classdef TFMapWindow < handle
                 'Resize','on','DockControls','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt));
             
             obj.file_menu=uimenu(obj.fig,'label','File');
+            obj.export_menu = uimenu(obj.file_menu, 'label', 'Export', 'callback', @(src,evts) obj.ExportData());
             obj.save_menu=uimenu(obj.file_menu,'label','Save');
             obj.save_fig_menu=uimenu(obj.save_menu,'label','Figure','callback',@(src,evts) obj.TFMapSaveWin.buildfig(),'Accelerator','p');
             
@@ -1601,6 +1603,24 @@ classdef TFMapWindow < handle
                     end
                 end
             end
+        end
+        
+        function ExportData(obj)
+            prompt={'Assign a name:'};
+            title='Export TFmat';
+            
+            def={'mat'};
+            answer=inputdlg(prompt,title,1,def);
+            
+            if isempty(answer)
+                return
+            end
+            
+            mat.tfmat = obj.tfmat;
+            mat.t = obj.tfmat_t;
+            mat.f = obj.tfmat_f;
+            mat.channames = obj.tfmat_channame;
+            assignin('base',answer{1},mat);
         end
         
     end

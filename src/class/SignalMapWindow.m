@@ -18,6 +18,7 @@ classdef SignalMapWindow < handle
         compute_btn
         new_btn
         plot_error_radio
+        auto_scale_radio
         
         file_menu
         save_menu
@@ -28,6 +29,8 @@ classdef SignalMapWindow < handle
         names_radio
         background_axe
         
+        JMinSpinner
+        JMaxSpinner
         mat
     end
     properties
@@ -41,6 +44,9 @@ classdef SignalMapWindow < handle
         plot_error_
         disp_axis_
         disp_channel_names_
+        auto_scale_
+        cmin_
+        cmax_
     end
     
     properties (Dependent)
@@ -59,6 +65,9 @@ classdef SignalMapWindow < handle
         plot_error
         disp_axis
         disp_channel_names
+        auto_scale
+        cmin
+        cmax
     end
     methods
         function val=get.disp_axis(obj)
@@ -94,6 +103,42 @@ classdef SignalMapWindow < handle
             end
         end
         
+        function val=get.auto_scale(obj)
+            val=obj.auto_scale_;
+        end
+        function set.auto_scale(obj,val)
+            obj.auto_scale_=val;
+            if obj.valid
+                set(obj.auto_scale_radio,'value',val);
+            end
+        end
+        
+        function val=get.cmin(obj)
+            val=obj.cmin_;
+        end
+        function val=get.cmax(obj)
+            val=obj.cmax_;
+        end
+        
+        function set.cmin(obj,val)
+            if(val>obj.cmax)
+                return
+            end
+            obj.cmin_=val;
+            obj.JMinSpinner.setValue(java.lang.Double(val));
+            obj.JMinSpinner.getModel().setStepSize(java.lang.Double(abs(val)/10));
+            drawnow
+        end
+        
+        function set.cmax(obj,val)
+            if(val<obj.cmin)
+                return
+            end
+            obj.cmax_=val;
+            obj.JMaxSpinner.setValue(java.lang.Double(val));
+            obj.JMaxSpinner.getModel().setStepSize(java.lang.Double(abs(val)/10));
+            drawnow
+        end
         function val=get.method(obj)
             val=obj.method_;
         end
@@ -227,8 +272,13 @@ classdef SignalMapWindow < handle
             obj.plot_error_=1;
             obj.disp_axis_=0;
             obj.disp_channel_names_=1;
+            obj.auto_scale_ = 1;
+            obj.cmin_ = -1;
+            obj.cmax_ = 1;
         end
         function buildfig(obj)
+            import javax.swing.JSpinner;
+            import javax.swing.SpinnerNumberModel;
             if obj.valid
                 figure(obj.fig);
                 return
@@ -266,7 +316,23 @@ classdef SignalMapWindow < handle
                 'HorizontalAlignment','center','visible','off','callback',@(src,evts) MsAfterCallback(obj,src));
             
             hp_scale=uipanel('Parent',hp,'Title','','units','normalized','position',[0,0.4,1,0.2]);
-           
+            uicontrol('parent',hp_scale,'style','text','units','normalized','position',[0,0.4,0.12,0.5],...
+                'string','Y Min','horizontalalignment','left','fontunits','normalized','fontsize',0.3);
+            model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.cmin),[],[],java.lang.Double(0.1)));
+            obj.JMinSpinner =javaObjectEDT(JSpinner(model));
+            [jh,gh]=javacomponent(obj.JMinSpinner,[0,0,1,1],hp_scale);
+            set(gh,'Units','Norm','Position',[0.12,0.5,0.35,0.5]);
+            set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ScaleSpinnerCallback(obj));
+            
+            uicontrol('parent',hp_scale,'style','text','units','normalized','position',[0.5,0.4,0.12,0.5],...
+                'string','Y Max','horizontalalignment','left','fontunits','normalized','fontsize',0.3);
+            model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.cmax),[],[],java.lang.Double(0.1)));
+            obj.JMaxSpinner =javaObjectEDT(JSpinner(model));
+            [jh,gh]=javacomponent(obj.JMaxSpinner,[0,0,1,1],hp_scale);
+            set(gh,'Units','Norm','Position',[0.62,0.5,0.35,0.5]);
+            set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ScaleSpinnerCallback(obj));
+            
+            
             tabgp=uitabgroup(hp,'units','normalized','position',[0,0.1,1,0.3]);
             tab_display=uitab(tabgp,'title','Display');
             obj.onset_radio=uicontrol('parent',tab_display,'style','radiobutton','string','Onset','value',obj.display_onset,...
@@ -279,6 +345,9 @@ classdef SignalMapWindow < handle
             obj.names_radio=uicontrol('parent',tab_display,'style','radiobutton','string','Channel Names',...
                 'units','normalized','position',[0.5,0.33,0.45,0.33],'value',obj.disp_channel_names,...
                 'callback',@(src,evts) ChannelNamesCallback(obj,src));
+            obj.auto_scale_radio = uicontrol('parent',tab_display,'style','radiobutton','string','Auto Scale',...
+                'units','normalized','position',[0,0,0.45,0.33],'value',obj.auto_scale,...
+                'callback',@(src,evts) AutoScaleCallback(obj,src));
             
             obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.01,0.2,0.08],...
                 'callback',@(src,evts) ComputeCallback(obj));
@@ -561,6 +630,12 @@ classdef SignalMapWindow < handle
             data=data(:,chanind);
             
             ave_sig = [];
+            
+            if obj.auto_scale
+                yl = [obj.cmin, obj.cmax];
+            else
+                yl = [];
+            end
             for j=1:length(channames)
                 sig = [];
                 if obj.data_input==3
@@ -581,7 +656,7 @@ classdef SignalMapWindow < handle
                         err = zeros(size(sig,1),1);
                     end
                     signalmap_grid(obj.SignalMapFig,axe,linspace(-obj.ms_before, obj.ms_after, size(sig,1)),...
-                        mean(sig,2),err,chanpos(j,:),dw,dh,channames{j},[]);
+                        mean(sig,2),err,chanpos(j,:),dw,dh,channames{j},yl);
                     ave_sig = cat(2, ave_sig, mean(sig,2));
                 end
             end
@@ -593,7 +668,7 @@ classdef SignalMapWindow < handle
                        err = zeros(size(obj.mat.data,1),1);
                 end
                 signalmap_grid(obj.SignalMapFig,axe,linspace(-obj.ms_before, obj.ms_after, size(obj.mat.data, 1)),...
-                    mean(mean(obj.mat.data,3),2),err,chanpos,dw,dh,'Average',[]);
+                    mean(mean(obj.mat.data,3),2),err,chanpos,dw,dh,'Average',yl);
                 ave_sig = mean(mean(obj.mat.data,3),2);
 %                 cmax=max(max(abs(ave_sig)));
                 a=findobj(obj.SignalMapFig,'Type','Axes');
@@ -664,6 +739,40 @@ classdef SignalMapWindow < handle
         
         function PlotErrorCallback(obj, src)
             obj.plot_error_ = get(src,'value');
+        end
+        
+        function AutoScaleCallback(obj,src)
+            obj.auto_scale_=get(src,'value');
+            
+            h=findobj(obj.SignalMapFig,'-regexp','Tag','SignalMapAxes*');
+            if obj.auto_scale
+                axis(h, 'auto y');
+            else
+            end
+        end
+        
+        function val=NoMapFig(obj)
+            val=isempty(obj.SignalMapFig)||~all(ishandle(obj.SignalMapFig))||~all(strcmpi(get(obj.SignalMapFig,'Tag'),'Act'));
+        end
+        
+        function ScaleSpinnerCallback(obj)
+            if obj.auto_scale
+                return;
+            end
+            min=obj.JMinSpinner.getValue();
+            max=obj.JMaxSpinner.getValue();
+            
+            if min<max
+                obj.cmin=min;
+                obj.cmax=max;
+                
+                if ~NoMapFig(obj)
+                    h=findobj(obj.SignalMapFig,'-regexp','Tag','SignalMapAxes');
+                    if ~isempty(h)
+                        set(h,'ylim',[obj.cmin,obj.cmax]);
+                    end
+                end
+            end
         end
         
     end

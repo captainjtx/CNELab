@@ -144,8 +144,6 @@ for s=1:25
             TsCI=CVc.test(n);
             TsOI=CVo.test(n);
             
-            
-            
             trC=10*log10(squeeze(sum(sum(dc1(:,Chi1,TrCI).^2,1),2)));
             trO=10*log10(squeeze(sum(sum(do1(:,Chi1,TrOI).^2,1),2)));
             

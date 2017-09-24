@@ -10,10 +10,10 @@ text(x+dw/2,y+dh,channame,...
 
 h=axes('parent',fig,'units','normalized','Position',[x,y,dw,dh*0.9],'Visible','off');
 
-shadedErrorBar(t,sig,err,{'LineStyle','-','color','k','linewidth',0.8},0,h);
+shadedErrorBar(t,sig,err,'LineStyle','-','color','k','linewidth',0.8,'transparent',0,'parent',h);
 
 if ~isempty(yl)
-    set(h,'YLim',yl);
+    axis(h, 'auto y');
 end
 
 set(h,'XLim',[min(t) max(t)]);
