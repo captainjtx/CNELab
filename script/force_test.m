@@ -4,7 +4,8 @@ Squeeze = load('/Users/tengi/Desktop/Projects/data/China/force/S2/squeeze.mat','
 %%
 data = Squeeze.data;
 fs = Squeeze.fs;
-force = squeeze(Squeeze.data(:, strcmpi(Squeeze.channame,'force'),:));
+force = squeeze(Squeeze.data(:, strcmpi(Squeeze.channame,'force'), :));
+emg = squeeze(Squeeze.data(:, strcmpi(Squeeze.channame,'Bipolar EMG'), :));
 
 chans = cell(120,1);
 for i=1:120
@@ -16,12 +17,15 @@ data = data(:, CHi, :);
 
 [b1, a1]=butter(2,[60 200]/(fs/2));
 [b2, a2] = butter(2, 0.01/(fs/2),'high');
+[b3, a3] = butter(2, 30/(fs/2), 'high');
+[b4, a4] = butter(2, [8, 32]/(fs/2));
 
 fdata = data;
 for i=1:size(data,3)
     fdata(:,:,i)=filter_symmetric(b1, a1, data(:,:,i),[],0,'iir');
-    force(:, i) = filter_symmetric(b2, a2, force(:, i), [], 0, 'iir');
 end
+force = filter_symmetric(b2, a2, force, [], 0, 'iir');
+emg = filter_symmetric(b3, a3, emg, [], 0, 'iir');
 %%
 baseline_start = 0;
 baseline_end = 0.5;
@@ -52,8 +56,9 @@ base = mean(mean(proj(baseline,:),2),1);
 
 force_base = mean(mean(force(baseline, :), 1), 2);
 normalized_force = force-force_base;
-
 normalized_force = 20*normalized_force / max(max(normalized_force));
+
+normalized_emg = 10*emg/max(max(emg))-10;
 
 normalized_proj = proj/base;
 normalized_proj = 20*normalized_proj/max(max(normalized_proj));
@@ -69,11 +74,14 @@ for r = 1:row
         ind = (r-1)*col+c;
         if ind <= size(proj,2)
             subplot(row,col,ind)
-            plot(t, normalized_proj(:, ind));
+            line('XData',t, 'YData',normalized_proj(:, ind),'Color','k');
             hold on
-            plot(t, normalized_force(:, ind));
-            axis tight
-            ylim([-10,20])
+            line('XData',t, 'YData',normalized_force(:, ind),'Color','b');
+            hold on
+            line('XData',t, 'YData', normalized_emg(:, ind), 'Color', 'r');
+            
+            xlim([min(t), max(t)]);
+            ylim([-20,20]);
         end
     end
 end

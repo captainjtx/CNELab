@@ -114,7 +114,10 @@ for i=1:length(dd)
     for t=1:size(sorted_bsp_selection,2)
         len=sorted_bsp_selection(2,t)-sorted_bsp_selection(1,t)+1;
         if needfilter
-            tmpd=preprocessedData(obj,dd(i),alldata(count:count+len-1,:));
+            %%detrend can solve the large DC shift problem of the data,
+            %%however it means you will always get a DC free data no matter
+            %%what filter you apply
+            tmpd=preprocessedData(obj,dd(i),detrend(alldata(count:count+len-1,:)));
         else
             tmpd=alldata(count:count+len-1,:);
         end

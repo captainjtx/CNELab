@@ -1195,6 +1195,7 @@ classdef TFMapWindow < handle
                     'CloseRequestFcn',@(src,evts) CloseTFMapFig(obj,src));
             else
                 figure(obj.TFMapFig);
+                set(gcf, 'Name', obj.event);
                 clf
             end
             
