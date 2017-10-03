@@ -1,4 +1,4 @@
-function spatialmap_grid(fig,mapv,interp_scatter,pos_x,pos_y,w,h,sl,sh,colbar,ratio)
+function spatialmap_grid(fig,mapv,interp_scatter,pos_x,pos_y,w,h,sl,sh,colbar,ratio, extrap)
 %TFMAP_GRID Summary of this function goes here
 %   Detailed explanation goes here
 %Orign of postion is top left corner
@@ -15,8 +15,17 @@ w=round(w);
 
 [x,y]=meshgrid((1:w)/w,(1:h)/h);
 
-F= scatteredInterpolant(col(:),row(:),mapv(:),'natural','linear');
+F= scatteredInterpolant(col(:),row(:),mapv(:),'natural', extrap);
 mapvq=F(x,y);
+
+% 
+% mapvq = ones(20, round(20*w/h))*nan;
+% for i = 1:length(mapv)
+%     mapvq(ceil(row(i)*size(mapvq,1)), ceil(col(i)*size(mapvq,2))) = mapv(i);
+% end
+% 
+% mapvq=ezsmoothn(mapvq);
+
 
 figure(fig)
 clf

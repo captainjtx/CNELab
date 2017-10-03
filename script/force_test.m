@@ -1,14 +1,15 @@
 %maximum foce is defined as the maximum force after 3 seconds of onset
 % decode force level / force trend
-Squeeze = load('/Users/tengi/Desktop/Projects/data/China/force/S2/squeeze.mat','-mat');
+% Squeeze = load('/Users/tengi/Desktop/Projects/data/China/force/S2/squeeze.mat','-mat');
+Squeeze = load('/Users/tengi/Desktop/Projects/data/MDAnderson/03282017/squeeze.mat','-mat');
 %%
 data = Squeeze.data;
 fs = Squeeze.fs;
 force = squeeze(Squeeze.data(:, strcmpi(Squeeze.channame,'force'), :));
-emg = squeeze(Squeeze.data(:, strcmpi(Squeeze.channame,'Bipolar EMG'), :));
+emg = squeeze(Squeeze.data(:, strcmpi(Squeeze.channame,'Bipolar EMG')|strcmpi(Squeeze.channame,'EMG'), :));
 
-chans = cell(120,1);
-for i=1:120
+chans = cell(length(Squeeze.channame),1);
+for i=1:150
     chans{i} = ['C', num2str(i)]; 
 end
 
@@ -17,7 +18,7 @@ data = data(:, CHi, :);
 
 [b1, a1]=butter(2,[60 200]/(fs/2));
 [b2, a2] = butter(2, 0.01/(fs/2),'high');
-[b3, a3] = butter(2, 30/(fs/2), 'high');
+[b3, a3] = butter(2, 50/(fs/2), 'high');
 [b4, a4] = butter(2, [8, 32]/(fs/2));
 
 fdata = data;
@@ -32,7 +33,7 @@ baseline_end = 0.5;
 
 move_start = Squeeze.ms_before/1000-0.25;
 move_end = Squeeze.ms_before/1000+0.75;
-
+ 
 baseline = max(round(baseline_start*fs:baseline_end*fs),1);
 move = max(round(move_start*fs:move_end*fs),1);
 
@@ -66,7 +67,7 @@ normalized_proj = 20*normalized_proj/max(max(normalized_proj));
 
 t = linspace(-Squeeze.ms_before, Squeeze.ms_after, size(proj,1));
 %%
-figure('name', 'S2')
+figure('name', 'MDA')
 col = ceil(sqrt(size(proj,2)));
 row = ceil(size(proj, 2)/col);
 for r = 1:row

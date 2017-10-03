@@ -53,8 +53,11 @@ classdef RawMapWindow < handle
         JMaxSpinner
         JMinSpinner
         
+        extrap_radio
+        
         cmax_
         cmin_
+        extrap_
     end
     
     properties (Dependent)
@@ -70,6 +73,7 @@ classdef RawMapWindow < handle
         VideoTimerPeriod
         cmax
         cmin
+        extrap
     end
     
     methods
@@ -91,6 +95,7 @@ classdef RawMapWindow < handle
             obj.cmin_=0;
             obj.cmax_=1;
             obj.speed_=10;
+            obj.extrap_ = 0;
         end
         
         function buildfig(obj)
@@ -149,6 +154,10 @@ classdef RawMapWindow < handle
             obj.interp_missing_radio=uicontrol('parent',disp_tab,'style','radiobutton','string','Interpolate Missing',...
                 'units','normalized','position',[0.5,0.66,0.45,0.33],'value',obj.interp_missing,...
                 'callback',@(src,evts) InterpMissingCallback(obj,src));
+            
+            obj.extrap_radio=uicontrol('parent',disp_tab,'style','radiobutton','string','Extrapolate',...
+                'units','normalized','position',[0.5,0.33,0.45,0.33],'value',obj.extrap_,...
+                'callback',@(src,evts) ExtrapolateCallback(obj,src));
             
             obj.compute_btn=uicontrol('parent',obj.fig,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.01,0.2,0.04],...
                 'callback',@(src,evts) ComputeCallback(obj));
@@ -275,6 +284,21 @@ classdef RawMapWindow < handle
         end
         function KeyPress(obj,src,evt)
             
+        end
+        
+        function val=get.extrap(obj)
+            if obj.extrap_
+                val = 'linear';
+            else
+                val = 'none';
+            end
+        end
+        
+        function set.extrap(obj,val)
+            obj.extrap_=val;
+            if obj.valid
+                set(obj.extrap_radio,'value',val);
+            end
         end
         
         function val=get.interp_missing(obj)
@@ -441,7 +465,7 @@ classdef RawMapWindow < handle
             obj.cmax=max(map_mapv);
             
             spatialmap_grid(obj.RawMapFig,map_mapv,obj.interp_scatter,...
-                map_pos(:,1),map_pos(:,2),obj.width,obj.height,obj.cmin,obj.cmax,obj.color_bar,1);
+                map_pos(:,1),map_pos(:,2),obj.width,obj.height,obj.cmin,obj.cmax,obj.color_bar,1, obj.extrap);
             ColormapCallback(obj);
             h=findobj(obj.RawMapFig,'-regexp','tag','SpatialMapAxes');
             
@@ -477,12 +501,12 @@ classdef RawMapWindow < handle
                     
                     if strcmp(obj.interp_scatter,'interp')
                         [x,y]=meshgrid((1:obj.width)/obj.width,(1:obj.height)/obj.height);
-                        F= scatteredInterpolant(map_pos(:,1),map_pos(:,2),map_mapv(:),'natural','linear');
+                        F= scatteredInterpolant(map_pos(:,1),map_pos(:,2),map_mapv(:),'natural', obj.extrap);
                         mapvq=F(x,y);
                         
                         if isempty(imagehandle)
                             spatialmap_grid(obj.RawMapFig,map_mapv,obj.interp_scatter,...
-                                map_pos(:,1),map_pos(:,2),obj.width,obj.height,obj.min_clim,obj.max_clim,obj.color_bar,obj.resize);
+                                map_pos(:,1),map_pos(:,2),obj.width,obj.height,obj.min_clim,obj.max_clim,obj.color_bar,obj.resize, obj.extrap);
                             h=findobj(obj.RawMapFig,'-regexp','Tag','SpatialMapAxes');
                         else
                             set(imagehandle,'CData',single(mapvq),'visible','on');
@@ -558,7 +582,10 @@ classdef RawMapWindow < handle
             obj.interp_missing_=get(src,'value');
             UpdateFigure(obj,src);
         end
-        
+        function ExtrapolateCallback(obj,src)
+            obj.extrap_=get(src,'value');
+            UpdateFigure(obj,src);
+        end
         
         function ContactCallback(obj,src)
             if ~isempty(src)

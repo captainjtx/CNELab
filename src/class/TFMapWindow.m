@@ -1097,7 +1097,7 @@ classdef TFMapWindow < handle
                 set(obj.TFMapFig,'name',[name,' Old'])
             end
             obj.TFMapFig=figure('Name',obj.event,'NumberTitle','off',...
-                'color','w','DockControls','off','Tag','Act','CloseRequestFcn',@(src,evts) CloseTFMapFig(obj,src));
+                'color','w','DockControls','off','Tag','Act');
         end
         
         
@@ -1191,8 +1191,7 @@ classdef TFMapWindow < handle
             if isempty(obj.TFMapFig)||~ishandle(obj.TFMapFig)
                 delete(obj.TFMapFig(ishandle(obj.TFMapFig)));
                 obj.TFMapFig=figure('Name',obj.event,'NumberTitle','off',...
-                    'color','w','DockControls','off','Tag','Act','position',[fpos(1)+fpos(3)+20,fpos(2),650,450],...
-                    'CloseRequestFcn',@(src,evts) CloseTFMapFig(obj,src));
+                    'color','w','DockControls','off','Tag','Act','position',[fpos(1)+fpos(3)+20,fpos(2),650,450]);
             else
                 figure(obj.TFMapFig);
                 set(gcf, 'Name', obj.event);

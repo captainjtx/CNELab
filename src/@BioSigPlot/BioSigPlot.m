@@ -402,15 +402,6 @@ classdef BioSigPlot < hgsetget
             %%
             g=varargin;
             
-            
-            n=find(strcmpi('WinLength',g(1:2:end)))*2;
-            if ~isempty(n)
-                obj.WinLength_=g{n};
-                g(n-1:n)=[];
-            else
-                obj.WinLength_=15;
-            end
-            
             n=find(strcmpi('SRate',g(1:2:end)))*2;
             if ~isempty(n)
                 obj.SRate_=g{n};
@@ -426,6 +417,16 @@ classdef BioSigPlot < hgsetget
             else
                 obj.TotalSample=size(obj.Data{1},1);
             end
+            
+            n=find(strcmpi('WinLength',g(1:2:end)))*2;
+            if ~isempty(n)
+                obj.WinLength_=g{n};
+                g(n-1:n)=[];
+            else
+                obj.WinLength_=15;
+            end
+            
+            obj.WinLength_ = min(obj.WinLength_, obj.TotalTime);
             %%
             obj.buildfig;
             

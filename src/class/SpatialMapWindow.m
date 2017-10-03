@@ -47,12 +47,10 @@ classdef SpatialMapWindow < handle
         scale_event_text
         max_freq_edit
         min_freq_edit
-        max_clim_edit
-        min_clim_edit
         max_freq_slider
         min_freq_slider
-        max_clim_slider
-        min_clim_slider
+        JMinSpinner
+        JMaxSpinner
         erd_radio
         ers_radio
         erd_edit
@@ -79,6 +77,7 @@ classdef SpatialMapWindow < handle
         event_list_listbox
         event_group_listbox
         interp_missing_radio
+        extrap_radio
         symmetric_scale_radio
         
         center_mass_radio
@@ -119,10 +118,8 @@ classdef SpatialMapWindow < handle
         
         max_freq_
         min_freq_
-        max_clim_
-        min_clim_
-        clim_slider_max_
-        clim_slider_min_
+        cmax_
+        cmin_
         event_list_
         
         erd_
@@ -140,6 +137,7 @@ classdef SpatialMapWindow < handle
         auto_refresh_
         color_bar_
         interp_missing_
+        extrap_
         symmetric_scale_
         center_mass_
         peak_
@@ -176,10 +174,8 @@ classdef SpatialMapWindow < handle
         
         max_freq
         min_freq
-        max_clim
-        min_clim
-        clim_slider_max
-        clim_slider_min
+        cmin
+        cmax
         event_list
         
         erd
@@ -206,10 +202,11 @@ classdef SpatialMapWindow < handle
         map_val
         erd_chan
         ers_chan
-        cmax
+        vmax
         
         Act_ievent
         interp_missing
+        extrap
         symmetric_scale
         center_mass
         peak
@@ -393,7 +390,22 @@ classdef SpatialMapWindow < handle
             end
         end
         
-        function val=get.cmax(obj)
+        function val=get.extrap(obj)
+            if obj.extrap_
+                val = 'linear';
+            else
+                val = 'none';
+            end
+        end
+        
+        function set.extrap(obj,val)
+            obj.extrap_=val;
+            if obj.valid
+                set(obj.extrap_radio,'value',val);
+            end
+        end
+        
+        function val=get.vmax(obj)
             val=-inf;
             tf=obj.tfmat;
             
@@ -930,92 +942,31 @@ classdef SpatialMapWindow < handle
             obj.min_freq_=val;
         end
         
-        function val=get.clim_slider_min(obj)
-            val=obj.clim_slider_min_;
+        function val=get.cmin(obj)
+            val=obj.cmin_;
         end
-        function set.clim_slider_min(obj,val)
-            obj.clim_slider_min_=val;
-            if obj.min_clim<val
-                obj.min_clim=val;
-            end
-            if obj.valid
-                set(obj.max_clim_slider,'min',val);
-                set(obj.min_clim_slider,'min',val);
-                %                 set(obj.erd_slider,'min',val);
-                %                 set(obj.ers_slider,'min',val);
-            end
+        function val=get.cmax(obj)
+            val=obj.cmax_;
         end
         
-        function val=get.clim_slider_max(obj)
-            val=obj.clim_slider_max_;
-        end
-        function set.clim_slider_max(obj,val)
-            obj.clim_slider_max_=val;
-            if obj.max_clim>val
-                obj.max_clim=val;
+        function set.cmin(obj,val)
+            if(val>obj.cmax)
+                return
             end
-            if obj.valid
-                set(obj.max_clim_slider,'max',val);
-                set(obj.min_clim_slider,'max',val);
-                %                 set(obj.erd_slider,'max',val);
-                %                 set(obj.ers_slider,'max',val);
-            end
-        end
-        function val=get.max_clim(obj)
-            val=obj.max_clim_;
-        end
-        function set.max_clim(obj,val)
-            if val>obj.clim_slider_max
-                val=obj.clim_slider_max;
-            elseif val<obj.clim_slider_min
-                val=obj.clim_slider_min;
-            end
-            
-            if obj.symmetric_scale
-                val=abs(val);
-                obj.min_clim_=obj.clim_slider_max+obj.clim_slider_min-val;
-            else
-                if obj.min_clim>=val
-                    obj.min_clim_=val-1;
-                end
-            end
-            if obj.valid
-                set(obj.max_clim_edit,'string',num2str(val));
-                set(obj.max_clim_slider,'value',val);
-                
-                set(obj.min_clim_edit,'string',num2str(obj.min_clim_));
-                set(obj.min_clim_slider,'value',obj.min_clim_);
-            end
-            obj.max_clim_=val;
+            obj.cmin_=val;
+            obj.JMinSpinner.setValue(java.lang.Double(val));
+            obj.JMinSpinner.getModel().setStepSize(java.lang.Double(abs(val)/10));
+            drawnow
         end
         
-        function val=get.min_clim(obj)
-            val=obj.min_clim_;
-        end
-        function set.min_clim(obj,val)
-            if val>obj.clim_slider_max
-                val=obj.clim_slider_max;
-            elseif val<obj.clim_slider_min
-                val=obj.clim_slider_min;
+        function set.cmax(obj,val)
+            if(val<obj.cmin)
+                return
             end
-            
-            if obj.symmetric_scale
-                val=-abs(val);
-                obj.max_clim_=obj.clim_slider_max+obj.clim_slider_min-val;
-            else
-                if obj.max_clim<=val
-                    obj.max_clim_=val+1;
-                end
-            end
-            
-            if obj.valid
-                set(obj.min_clim_edit,'string',num2str(val));
-                set(obj.min_clim_slider,'value',val);
-                
-                set(obj.max_clim_edit,'string',num2str(obj.max_clim_));
-                set(obj.max_clim_slider,'value',obj.max_clim_);
-            end
-            obj.min_clim_=val;
+            obj.cmax_=val;
+            obj.JMaxSpinner.setValue(java.lang.Double(val));
+            obj.JMaxSpinner.getModel().setStepSize(java.lang.Double(abs(val)/10));
+            drawnow
         end
         
         function val=get.event_list(obj)
@@ -1173,10 +1124,8 @@ classdef SpatialMapWindow < handle
             obj.normalization_event_='';
             obj.max_freq_=obj.fs/2;
             obj.min_freq_=0;
-            obj.clim_slider_max_=10;
-            obj.clim_slider_min_=-10;
-            obj.max_clim_=10;
-            obj.min_clim_=-10;
+            obj.cmin_=-10;
+            obj.cmax_=10;
             obj.erd_=0;
             obj.ers_=0;
             obj.erd_t_=1;
@@ -1195,7 +1144,8 @@ classdef SpatialMapWindow < handle
             obj.unit='dB';
             obj.p=0.05;
             obj.bind_valid=0;
-            obj.interp_missing_=0;
+            obj.interp_missing_ = 0;
+            obj.extrap_ = 0;
             obj.symmetric_scale_=1;
             obj.center_mass_=0;
             obj.peak_=1;
@@ -1221,6 +1171,8 @@ classdef SpatialMapWindow < handle
             obj.fdr=obj.p;
         end
         function buildfig(obj)
+            import javax.swing.JSpinner;
+            import javax.swing.SpinnerNumberModel;
             if obj.valid
                 figure(obj.fig);
                 return
@@ -1344,22 +1296,24 @@ classdef SpatialMapWindow < handle
                 'min',0,'max',obj.fs/2,'sliderstep',[0.005,0.02],'value',obj.max_freq);
             
             
-            hp_clim=uipanel('parent',hp,'title','Scale','units','normalized','position',[0,0.39,1,0.1]);
+            hp_scale=uipanel('parent',hp,'title','Scale','units','normalized','position',[0,0.39,1,0.1]);
             
-            uicontrol('parent',hp_clim,'style','text','string','Min','units','normalized',...
-                'position',[0,0.6,0.1,0.3]);
-            uicontrol('parent',hp_clim,'style','text','string','Max','units','normalized',...
-                'position',[0,0.1,0.1,0.3]);
-            obj.min_clim_edit=uicontrol('parent',hp_clim,'style','edit','string',num2str(obj.min_clim),'units','normalized',...
-                'position',[0.15,0.55,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
-            obj.min_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
-                'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
-                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.min_clim,'sliderstep',[0.01,0.05]);
-            obj.max_clim_edit=uicontrol('parent',hp_clim,'style','edit','string',num2str(obj.max_clim),'units','normalized',...
-                'position',[0.15,0.05,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
-            obj.max_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
-                'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
-                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.max_clim,'sliderstep',[0.01,0.05]);
+            uicontrol('parent',hp_scale,'style','text','units','normalized','position',[0,0.2,0.12,0.5],...
+                'string','Min','horizontalalignment','left','fontunits','normalized','fontsize',0.4);
+            model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.cmin),[],[],java.lang.Double(abs(obj.cmin)/10)));
+            obj.JMinSpinner =javaObjectEDT(JSpinner(model));
+            [jh,gh]=javacomponent(obj.JMinSpinner,[0,0,1,1],hp_scale);
+            set(gh,'Units','Norm','Position',[0.12,0.2,0.35,0.6]);
+            set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ScaleSpinnerCallback(obj));
+            
+            uicontrol('parent',hp_scale,'style','text','units','normalized','position',[0.5,0.2,0.12,0.5],...
+                'string','Max','horizontalalignment','left','fontunits','normalized','fontsize',0.4);
+            model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.cmax),[],[],java.lang.Double(abs(obj.cmax)/10)));
+            obj.JMaxSpinner =javaObjectEDT(JSpinner(model));
+            [jh,gh]=javacomponent(obj.JMaxSpinner,[0,0,1,1],hp_scale);
+            set(gh,'Units','Norm','Position',[0.62,0.2,0.35,0.6]);
+            set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ScaleSpinnerCallback(obj));
+            
             
             tgp=uitabgroup(hp,'units','normalized','position',[0,0.24,1,0.14],'tablocation','top');
             
@@ -1468,6 +1422,10 @@ classdef SpatialMapWindow < handle
             obj.interp_missing_radio=uicontrol('parent',advance_tab,'style','radiobutton','string','Interpolate Missing',...
                 'units','normalized','position',[0,0.33,0.45,0.33],'value',obj.interp_missing,...
                 'callback',@(src,evts) InterpMissingCallback(obj,src));
+            
+            obj.extrap_radio=uicontrol('parent',advance_tab,'style','radiobutton','string','Extrapolate',...
+                'units','normalized','position',[0,0,0.45,0.33],'value',obj.extrap_,...
+                'callback',@(src,evts) ExtrapolateCallback(obj,src));
             
             obj.auto_refresh_radio=uicontrol('parent',advance_tab,'style','radiobutton','string','Auto Refresh',...
                 'units','normalized','position',[0.5,0.33,0.45,0.33],'value',obj.auto_refresh,...
@@ -1648,51 +1606,31 @@ classdef SpatialMapWindow < handle
                     obj.min_freq=round(get(src,'value')*10)/10;
             end
             
-            %             obj.clim_slider_max=obj.cmax*1.5;
-            %             obj.clim_slider_min=-obj.cmax*1.5;
-            
             if obj.auto_refresh
                 UpdateFigure(obj,src)
             end
         end
-        function ClimCallback(obj,src)
-            switch src
-                case obj.max_clim_slider
-                    obj.max_clim=get(src,'value');
-                case obj.min_clim_slider
-                    obj.min_clim=get(src,'value');
-                case obj.max_clim_edit
-                    t=str2double(get(src,'string'));
-                    if isnan(t)
-                        t=obj.max_clim;
-                    end
-                    obj.max_clim=t;
-                case obj.min_clim_edit
-                    t=str2double(get(src,'string'));
-                    if isnan(t)
-                        t=obj.min_clim;
-                    end
-                    obj.min_clim=t;
-            end
-            
+        
+        function ScaleSpinnerCallback(obj)
             if ~obj.auto_refresh
-                return
+                return;
             end
+            min=obj.JMinSpinner.getValue();
+            max=obj.JMaxSpinner.getValue();
             
-            if ~NoSpatialMapFig(obj)
-                h=findobj(obj.SpatialMapFig,'-regexp','Tag','SpatialMapAxes');
+            if min<max
+                obj.cmin=min;
+                obj.cmax=max;
                 
-                sl=obj.min_clim;
-                sh=obj.max_clim;
-                
-                if sl<sh
-                    set(h,'CLim',[sl,sh]);
+                if ~NoSpatialMapFig(obj)
+                    h=findobj(obj.SpatialMapFig,'-regexp','Tag','SpatialMapAxes');
+                    if ~isempty(h)
+                        set(h,'clim',[obj.cmin,obj.cmax]);
+                    end
                 end
-                %                 figure(obj.SpatialMapFig);
-            end
-            
-            if strcmp(obj.interp_scatter,'scatter')
-                UpdateFigure(obj,src)
+                if strcmp(obj.interp_scatter,'scatter')
+                    UpdateFigure(obj,src)
+                end
             end
         end
         
@@ -1853,14 +1791,8 @@ classdef SpatialMapWindow < handle
                 get_relative_chanpos(chanpos(:,1),chanpos(:,2),chanpos(:,3),obj.width,obj.height);
             %set default parameter*****************************************************
             
-            s=[obj.min_clim obj.max_clim];
-            if s(1)>=s(2)
-                s(1)=s(2)-abs(s(2))*0.1;
-                obj.min_clim=s(1);
-            end
-            
-            sl=obj.min_clim;
-            sh=obj.max_clim;
+            sl=obj.cmin;
+            sh=obj.cmax;
             
             freq=[obj.min_freq obj.max_freq];
             if freq(1)>=freq(2)
@@ -2054,12 +1986,9 @@ classdef SpatialMapWindow < handle
             obj.pos_y=chanpos(:,2);
             obj.radius=chanpos(:,3);
             
-            if ~obj.scale_by_max
-                obj.clim_slider_max=obj.cmax;
-                obj.clim_slider_min=-obj.cmax;
-            else
-                obj.clim_slider_max=1;
-                obj.clim_slider_min=-1;
+            if obj.scale_by_max
+                obj.cmin=1;
+                obj.cmax=-1;
             end
             mapv=obj.map_val;
             
@@ -2104,7 +2033,7 @@ classdef SpatialMapWindow < handle
             
             for e=1:length(evt)
                 spatialmap_grid(obj.SpatialMapFig(e),map_mapv{e},obj.interp_scatter,...
-                    map_pos(:,1),map_pos(:,2),obj.width,obj.height,sl,sh,obj.color_bar,obj.resize);
+                    map_pos(:,1),map_pos(:,2),obj.width,obj.height,sl,sh,obj.color_bar,obj.resize, obj.extrap);
                 h=findobj(obj.SpatialMapFig(e),'-regexp','tag','SpatialMapAxes');
                 
                 if obj.contact||strcmp(obj.interp_scatter,'scatter')
@@ -2182,14 +2111,6 @@ classdef SpatialMapWindow < handle
         
         function ScaleByMaxCallback(obj,src)
             obj.scale_by_max_=get(src,'value');
-            
-            if obj.scale_by_max
-                obj.clim_slider_max=1;
-                obj.clim_slider_min=-1;
-            else
-                obj.clim_slider_max=obj.cmax;
-                obj.clim_slider_min=-obj.cmax;
-            end
             if ~obj.auto_refresh
                 return
             end
@@ -2390,12 +2311,12 @@ classdef SpatialMapWindow < handle
                         
                         if strcmp(obj.interp_scatter,'interp')
                             [x,y]=meshgrid((1:obj.width)/obj.width,(1:obj.height)/obj.height);
-                            F= scatteredInterpolant(map_pos(:,1),map_pos(:,2),map_mapv{i}(:),'natural','linear');
+                            F= scatteredInterpolant(map_pos(:,1),map_pos(:,2),map_mapv{i}(:),'natural',obj.extrap);
                             mapvq=F(x,y);
                             
                             if isempty(imagehandle)
                                 spatialmap_grid(obj.SpatialMapFig(i),map_mapv{i},obj.interp_scatter,...
-                                    map_pos(:,1),map_pos(:,2),obj.width,obj.height,obj.min_clim,obj.max_clim,obj.color_bar,obj.resize);
+                                    map_pos(:,1),map_pos(:,2),obj.width,obj.height,obj.cmin,obj.cmax,obj.color_bar,obj.resize, obj.extrap);
                                 h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
                             else
                                 set(imagehandle,'CData',single(mapvq),'visible','on');
@@ -2417,7 +2338,7 @@ classdef SpatialMapWindow < handle
                                 ~ismember(obj.all_chan_pos,chanpos,'rows'),erdchan{i},erschan{i});
                         end
                         
-                        set(h,'clim',[obj.min_clim,obj.max_clim]);
+                        set(h,'clim',[obj.cmin,obj.cmax]);
                         set(h,'xlim',[1,obj.width]);
                         set(h,'ylim',[1,obj.height]);
                         
@@ -2632,6 +2553,13 @@ classdef SpatialMapWindow < handle
                 UpdateFigure(obj,src);
             end
         end
+        
+        function ExtrapolateCallback(obj,src)
+            obj.extrap_=get(src,'value');
+            if obj.auto_refresh
+                UpdateFigure(obj,src);
+            end
+        end
         function SymmetricScaleCallback(obj,src)
             obj.symmetric_scale_=get(src,'value');
         end
@@ -2715,7 +2643,7 @@ classdef SpatialMapWindow < handle
                         delete(findobj(h,'Tag','contact'));
                         delete(findobj(h,'Tag','names'));
                         figure(obj.SpatialMapFig(i))
-                        if obj.contact||strcmp(obj.interp_scatter,'interp')
+                        if obj.contact
                             if obj.disp_channel_names
                                 plot_contact(h,[],obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,obj.all_chan_names,...
                                     ~ismember(obj.all_chan_pos,chanpos,'rows'),obj.erd_chan{i},obj.ers_chan{i});
