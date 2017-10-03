@@ -97,7 +97,7 @@ classdef BioSigPlot < hgsetget
         MenuLoadVideo
         MenuLoadFilter
         MenuLoadChannelPosition
-        MenuLoadSpatialMaps
+        MenuLoadMaps
         
         MenuExport
         MenuExportData
@@ -162,9 +162,9 @@ classdef BioSigPlot < hgsetget
         MenuAdvanceEventsRefresh
         MenuAdvanceEventsFunction
         
-        MenuSignalMap
+        MenuTriggerMap
         MenuTFMap
-        MenuSpatialMap
+        MenuSpectralMap
         MenuPSD
         MenuCrossCorr
         MenuCrossCorrRaw
@@ -179,7 +179,7 @@ classdef BioSigPlot < hgsetget
         MenuTemporalPCA
         MenuRemovePulse
         MenuSpatialPCA
-        MenuRawMap
+        MenuAmplitudeMap
         
         MenuInterpolate
         
@@ -375,10 +375,10 @@ classdef BioSigPlot < hgsetget
         IconPause
         WinVideo
         TFMapWin
-        SignalMapWin
+        TriggerMapWin
         PSDWin
-        SpatialMapWin
-        RawMapWin
+        SpectralMapWin
+        AmplitudeMapWin
         InterpolateWin
         
         ExportTrialWin
@@ -446,9 +446,9 @@ classdef BioSigPlot < hgsetget
             redrawEvts(obj);
             
             obj.TFMapWin=TFMapWindow(obj);
-            obj.SpatialMapWin=SpatialMapWindow(obj);
-            obj.RawMapWin=RawMapWindow(obj);
-            obj.SignalMapWin = SignalMapWindow(obj);
+            obj.SpectralMapWin=SpectralMapWindow(obj);
+            obj.AmplitudeMapWin=AmplitudeMapWindow(obj);
+            obj.TriggerMapWin = TriggerMapWindow(obj);
             
             obj.InterpolateWin=InterpWin(obj);
             
@@ -552,16 +552,16 @@ classdef BioSigPlot < hgsetget
                 obj.TFMapWin.OnClose();
             end
             
-            if obj.SignalMapWin.valid
-                obj.SignalMapWin.OnClose();
+            if obj.TriggerMapWin.valid
+                obj.TriggerMapWin.OnClose();
             end
             
-            if obj.SpatialMapWin.valid
-                obj.SpatialMapWin.OnClose();
+            if obj.SpectralMapWin.valid
+                obj.SpectralMapWin.OnClose();
             end
             
-            if obj.RawMapWin.valid
-                obj.RawMapWin.OnClose();
+            if obj.AmplitudeMapWin.valid
+                obj.AmplitudeMapWin.OnClose();
             end
             
             if obj.InterpolateWin.valid

@@ -1,4 +1,4 @@
-classdef SpatialMapWindow < handle
+classdef SpectralMapWindow < handle
     %TFMAPWINDOW Summary of this class goes here
     %   Detailed explanation goes here
     properties
@@ -19,11 +19,12 @@ classdef SpatialMapWindow < handle
         map_interp_menu
         map_scatter_menu
         cov_menu
+        smooth_menu
         
         valid
         bind_valid
         
-        SpatialMapFig
+        SpectralMapFig
         bsp
         fig
         bind_fig
@@ -34,7 +35,6 @@ classdef SpatialMapWindow < handle
         event_text
         ms_before_text
         ms_after_text
-        
         
         normalization_popup
         scale_start_text
@@ -84,7 +84,7 @@ classdef SpatialMapWindow < handle
         peak_radio
         contact_radio
         names_radio
-        
+        smooth_radio
         
         pos_radio
         pos_edit
@@ -156,6 +156,9 @@ classdef SpatialMapWindow < handle
         el_
         
         interp_scatter_
+        smooth_
+        smooth_row_
+        smooth_col_
     end
     
     properties (Dependent)
@@ -223,6 +226,9 @@ classdef SpatialMapWindow < handle
         el
         
         interp_scatter
+        smooth
+        smooth_row
+        smooth_col
     end
     properties
         width
@@ -238,6 +244,7 @@ classdef SpatialMapWindow < handle
         all_chan_names
         chan_names
         
+        
         need_recalculate
         
         event_group
@@ -252,6 +259,40 @@ classdef SpatialMapWindow < handle
         export_movie_win
     end
     methods
+        function val = get.smooth(obj)
+            val = obj.smooth_;
+        end
+        
+        function set.smooth(obj, val)
+            obj.smooth_=val;
+            
+            if obj.valid
+                set(obj.smooth_radio,'value',val);
+            end
+        end
+        
+        function val = get.smooth_row(obj)
+            if obj.smooth_
+                val = obj.smooth_row_;
+            else
+                val = [];
+            end
+        end
+        
+        function set.smooth_row(obj, val)
+            obj.smooth_row_=val;
+        end
+        function val = get.smooth_col(obj)
+            if obj.smooth_
+                val = obj.smooth_col_;
+            else
+                val = [];
+            end
+        end
+        
+        function set.smooth_col(obj, val)
+            obj.smooth_col_=val;
+        end
         function val=get.event_group(obj)
             if isempty(obj.event_group)
                 val={obj.event};
@@ -670,19 +711,19 @@ classdef SpatialMapWindow < handle
             erdchan=obj.erd_chan;
             erschan=obj.ers_chan;
             
-            if ~NoSpatialMapFig(obj)
+            if ~NoSpectralMapFig(obj)
                 mapv=obj.map_val;
                 
-                for i=1:length(obj.SpatialMapFig)
-                    if ishandle(obj.SpatialMapFig(i))
-                        fpos=get(obj.SpatialMapFig(i),'position');
-                        set(obj.SpatialMapFig(i),'position',[fpos(1),fpos(2),obj.fig_w,obj.fig_h]);
-                        h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                for i=1:length(obj.SpectralMapFig)
+                    if ishandle(obj.SpectralMapFig(i))
+                        fpos=get(obj.SpectralMapFig(i),'position');
+                        set(obj.SpectralMapFig(i),'position',[fpos(1),fpos(2),obj.fig_w,obj.fig_h]);
+                        h=findobj(obj.SpectralMapFig(i),'-regexp','Tag','MapAxes');
                         if ~isempty(h)
                             if ~obj.erd&&~obj.ers
                                 delete(findobj(h,'Tag','contact'));
                                 delete(findobj(h,'Tag','names'));
-                                figure(obj.SpatialMapFig(i))
+                                figure(obj.SpectralMapFig(i))
                                 if obj.disp_channel_names
                                     channames=obj.all_chan_names;
                                 else
@@ -1095,7 +1136,7 @@ classdef SpatialMapWindow < handle
     end
     
     methods
-        function obj=SpatialMapWindow(bsp)
+        function obj=SpectralMapWindow(bsp)
             obj.bsp=bsp;
             if ~isempty(bsp.Evts)
                 obj.event_list_=unique(bsp.Evts(:,2));
@@ -1168,7 +1209,10 @@ classdef SpatialMapWindow < handle
             obj.export_movie_win=ExportMovieWindow(obj);
             
             obj.interp_scatter='interp';
-            obj.fdr=obj.p;
+            obj.fdr = obj.p;
+            obj.smooth_ = 0;
+            obj.smooth_row_ = 5;
+            obj.smooth_col_ = 5;
         end
         function buildfig(obj)
             import javax.swing.JSpinner;
@@ -1195,6 +1239,8 @@ classdef SpatialMapWindow < handle
             
             obj.p_menu=uimenu(obj.advance_menu,'label','P-Value','callback',@(src,evts) PCallback(obj));
             obj.fdr_menu=uimenu(obj.advance_menu,'label','FDR-Level','callback',@(src,evts) FDRCallback(obj));
+            
+            obj.smooth_menu = uimenu(obj.advance_menu, 'label', 'Smooth Kernel', 'callback', @(src, evts) SmoothMenuCallback(obj, src));
             
             obj.more_menu=uimenu(obj.fig,'label','More');
             
@@ -1409,6 +1455,10 @@ classdef SpatialMapWindow < handle
                 'units','normalized','position',[0,0,0.45,0.33],'value',obj.disp_channel_names,...
                 'callback',@(src,evts) ChannelNamesCallback(obj,src));
             
+            obj.smooth_radio=uicontrol('parent',disp_tab,'style','radiobutton','string','Smooth',...
+                'units','normalized','position',[0.5,0,0.45,0.33],'value',obj.smooth,...
+                'callback',@(src,evts) SmoothCallback(obj,src));
+            
             advance_tab=uitab(setgp,'title','Advance');
             
             obj.scale_by_max_radio=uicontrol('parent',advance_tab,'style','radiobutton','string','Scale By Maximum',...
@@ -1461,7 +1511,7 @@ classdef SpatialMapWindow < handle
                 delete(h);
             end
             
-            h = obj.SpatialMapFig;
+            h = obj.SpectralMapFig;
             if ishandle(h)
                 delete(h);
             end
@@ -1586,6 +1636,43 @@ classdef SpatialMapWindow < handle
             end
         end
         
+        function SmoothCallback(obj, src)
+            obj.smooth_=get(src,'value');
+            if obj.auto_refresh
+                UpdateFigure(obj,src);
+            end
+        end
+        
+        function SmoothMenuCallback(obj, src)
+            prompt={'Row', 'Column'};
+            def={num2str(obj.smooth_row_), num2str(obj.smooth_col_)};
+            
+            title='Smooth Kernal Size';
+            
+            answer=inputdlg(prompt,title,1,def);
+            
+            if isempty(answer)
+                return
+            end
+            tmp=str2double(answer{1});
+            if isempty(tmp)||isnan(tmp)
+                tmp=obj.smooth_row_;
+            end
+            
+            obj.smooth_row_=max(0,tmp);
+            
+            tmp=str2double(answer{2});
+            if isempty(tmp)||isnan(tmp)
+                tmp=obj.smooth_col_;
+            end
+            
+            obj.smooth_col_=max(0,tmp);
+            
+            if obj.auto_refresh
+                UpdateFigure(obj,src);
+            end
+        end
+        
         function FreqCallback(obj,src)
             switch src
                 case obj.max_freq_edit
@@ -1622,8 +1709,8 @@ classdef SpatialMapWindow < handle
                 obj.cmin=min;
                 obj.cmax=max;
                 
-                if ~NoSpatialMapFig(obj)
-                    h=findobj(obj.SpatialMapFig,'-regexp','Tag','SpatialMapAxes');
+                if ~NoSpectralMapFig(obj)
+                    h=findobj(obj.SpectralMapFig,'-regexp','Tag','MapAxes');
                     if ~isempty(h)
                         set(h,'clim',[obj.cmin,obj.cmax]);
                     end
@@ -1677,32 +1764,32 @@ classdef SpatialMapWindow < handle
             end
         end
         function NewCallback(obj)
-            if ~NoSpatialMapFig(obj)
-                for i=1:length(obj.SpatialMapFig)
-                    name=get(obj.SpatialMapFig(i),'Name');
-                    set(obj.SpatialMapFig(i),'Name',[name ' Old']);
-                    set(obj.SpatialMapFig(i),'Tag','Old');
+            if ~NoSpectralMapFig(obj)
+                for i=1:length(obj.SpectralMapFig)
+                    name=get(obj.SpectralMapFig(i),'Name');
+                    set(obj.SpectralMapFig(i),'Name',[name ' Old']);
+                    set(obj.SpectralMapFig(i),'Tag','Old');
                 end
                 
             end
-            NewSpatialMapFig(obj);
+            NewSpectralMapFig(obj);
         end
         
-        function NewSpatialMapFig(obj)
-            %             delete(obj.SpatialMapFig(ishandle(obj.SpatialMapFig)));
+        function NewSpectralMapFig(obj)
+            %             delete(obj.SpectralMapFig(ishandle(obj.SpectralMapFig)));
             
             fpos=get(obj.fig,'position');
             
-            obj.SpatialMapFig=[];
+            obj.SpectralMapFig=[];
             if obj.data_input==3
                 
                 for i=1:length(obj.event_group)
-                    obj.SpatialMapFig(i)=figure('Name',[obj.event_group{i}],'NumberTitle','off',...
+                    obj.SpectralMapFig(i)=figure('Name',[obj.event_group{i}],'NumberTitle','off',...
                         'units','pixels','position',[fpos(1)+fpos(3)+20+(obj.fig_w+20)*(i-1),fpos(2),obj.fig_w,obj.fig_h],'Resize','off',...
                         'doublebuffer','off','Tag','Act');
                 end
             else
-                obj.SpatialMapFig=figure('Name',[obj.event],'NumberTitle','off',...
+                obj.SpectralMapFig=figure('Name',[obj.event],'NumberTitle','off',...
                     'units','pixels','position',[fpos(1)+fpos(3)+20,fpos(2),obj.fig_w,obj.fig_h],'Resize','off',...
                     'doublebuffer','off','Tag','Act');
             end
@@ -1800,15 +1887,15 @@ classdef SpatialMapWindow < handle
                 obj.min_freq=freq(1);
             end
             
-            delete(obj.SpatialMapFig(ishandle(obj.SpatialMapFig)));
-            NewSpatialMapFig(obj);
+            delete(obj.SpectralMapFig(ishandle(obj.SpectralMapFig)));
+            NewSpectralMapFig(obj);
             
             wd=obj.stft_winlen;
             ov=obj.stft_overlap;
             
-            for i=1:length(obj.SpatialMapFig)
-                clf(obj.SpatialMapFig(i));
-                set(obj.SpatialMapFig(i),'Name',evt{i});
+            for i=1:length(obj.SpectralMapFig)
+                clf(obj.SpectralMapFig(i));
+                set(obj.SpectralMapFig(i),'Name',evt{i});
             end
             %Normalizatin**************************************************************
             if obj.normalization==1
@@ -2032,9 +2119,10 @@ classdef SpatialMapWindow < handle
             end
             
             for e=1:length(evt)
-                spatialmap_grid(obj.SpatialMapFig(e),map_mapv{e},obj.interp_scatter,...
-                    map_pos(:,1),map_pos(:,2),obj.width,obj.height,sl,sh,obj.color_bar,obj.resize, obj.extrap);
-                h=findobj(obj.SpatialMapFig(e),'-regexp','tag','SpatialMapAxes');
+                spatialmap_grid(obj.SpectralMapFig(e),map_mapv{e},obj.interp_scatter,...
+                    map_pos(:,1),map_pos(:,2),obj.width,obj.height,sl,sh,obj.color_bar,obj.resize, ...
+                    obj.extrap, obj.smooth_row, obj.smooth_col);
+                h=findobj(obj.SpectralMapFig(e),'-regexp','tag','MapAxes');
                 
                 if obj.contact||strcmp(obj.interp_scatter,'scatter')
                     if obj.disp_channel_names
@@ -2167,15 +2255,15 @@ classdef SpatialMapWindow < handle
             %                 return
             %             end
             
-            if ~NoSpatialMapFig(obj)
-                for i=1:length(obj.SpatialMapFig)
-                    ppos=get(obj.SpatialMapFig(i),'position');
-                    set(obj.SpatialMapFig(i),'position',...
+            if ~NoSpectralMapFig(obj)
+                for i=1:length(obj.SpectralMapFig)
+                    ppos=get(obj.SpectralMapFig(i),'position');
+                    set(obj.SpectralMapFig(i),'position',...
                         [ppos(1),ppos(2),obj.fig_w,obj.fig_h]);
                     
-                    a=findobj(obj.SpatialMapFig(i),'Tag','SpatialMapAxes');
+                    a=findobj(obj.SpectralMapFig(i),'Tag','MapAxes');
                     if ~isempty(a)
-                        h=figure(obj.SpatialMapFig(i));
+                        h=figure(obj.SpectralMapFig(i));
                         fpos=get(h,'position');
                         if obj.color_bar
                             %optional color bar
@@ -2192,8 +2280,8 @@ classdef SpatialMapWindow < handle
             end
         end
         
-        function val=NoSpatialMapFig(obj)
-            val=isempty(obj.SpatialMapFig)||~all(ishandle(obj.SpatialMapFig))||~all(strcmpi(get(obj.SpatialMapFig,'Tag'),'Act'));
+        function val=NoSpectralMapFig(obj)
+            val=isempty(obj.SpectralMapFig)||~all(ishandle(obj.SpectralMapFig))||~all(strcmpi(get(obj.SpectralMapFig,'Tag'),'Act'));
         end
         
         function STFTCallback(obj,src)
@@ -2255,7 +2343,7 @@ classdef SpatialMapWindow < handle
         end
         
         function UpdateFigure(obj,src)
-            if ~NoSpatialMapFig(obj)
+            if ~NoSpectralMapFig(obj)
                 
                 mapv=obj.map_val;
                 erdchan=obj.erd_chan;
@@ -2302,8 +2390,8 @@ classdef SpatialMapWindow < handle
                     channames=[];
                 end
                             
-                for i=1:length(obj.SpatialMapFig)
-                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                for i=1:length(obj.SpectralMapFig)
+                    h=findobj(obj.SpectralMapFig(i),'-regexp','Tag','MapAxes');
                     if ~isempty(h)
                         col=obj.pos_x;
                         row=obj.pos_y;
@@ -2313,13 +2401,18 @@ classdef SpatialMapWindow < handle
                             [x,y]=meshgrid((1:obj.width)/obj.width,(1:obj.height)/obj.height);
                             F= scatteredInterpolant(map_pos(:,1),map_pos(:,2),map_mapv{i}(:),'natural',obj.extrap);
                             mapvq=F(x,y);
+                            if ~isempty(obj.smooth_row) && ~isempty(obj.smooth_col)
+                                mapvq = smooth2a(mapvq, obj.smooth_row, obj.smooth_col);
+                            end
                             
                             if isempty(imagehandle)
-                                spatialmap_grid(obj.SpatialMapFig(i),map_mapv{i},obj.interp_scatter,...
-                                    map_pos(:,1),map_pos(:,2),obj.width,obj.height,obj.cmin,obj.cmax,obj.color_bar,obj.resize, obj.extrap);
-                                h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                                spatialmap_grid(obj.SpectralMapFig(i),map_mapv{i},obj.interp_scatter,...
+                                    map_pos(:,1),map_pos(:,2),obj.width,obj.height,obj.cmin,obj.cmax,obj.color_bar,obj.resize, ...
+                                    obj.extrap, obj.smooth_row, obj.smooth_col);
+                                h=findobj(obj.SpectralMapFig(i),'-regexp','Tag','MapAxes');
                             else
                                 set(imagehandle,'CData',single(mapvq),'visible','on');
+                                set(imagehandle, 'AlphaData', ~isnan(mapvq))
                             end
                             
                             if ismember(src,[obj.map_interp_menu,obj.map_scatter_menu])
@@ -2349,7 +2442,7 @@ classdef SpatialMapWindow < handle
                             if obj.erd||obj.ers||ismember(src,[obj.erd_radio,obj.ers_radio])
                                 delete(findobj(h,'Tag','contact'));
                                 delete(findobj(h,'Tag','names'));
-                                figure(obj.SpatialMapFig(i))
+                                figure(obj.SpectralMapFig(i))
                                 if obj.contact||strcmp(obj.interp_scatter,'scatter')
                                     plot_contact(h,[],obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,channames,...
                                         ~ismember(obj.all_chan_pos,chanpos,'rows'),erdchan{i},erschan{i});
@@ -2377,8 +2470,8 @@ classdef SpatialMapWindow < handle
         
         function redrawNetwork(obj)
             chanpos=[obj.pos_x,obj.pos_y,obj.radius];
-            for i=1:length(obj.SpatialMapFig)
-                h=findobj(obj.SpatialMapFig(i),'-regexp','tag','SpatialMapAxes');
+            for i=1:length(obj.SpectralMapFig)
+                h=findobj(obj.SpectralMapFig(i),'-regexp','tag','MapAxes');
                 %%
                 %Correlation Network
                 if obj.corr_win.pos
@@ -2572,18 +2665,18 @@ classdef SpatialMapWindow < handle
         function CenterMassCallback(obj,src)
             obj.center_mass_=get(src,'value');
             
-            if ~NoSpatialMapFig(obj)
+            if ~NoSpectralMapFig(obj)
                 mapv=obj.map_val;
                 chanpos=[obj.pos_x,obj.pos_y,obj.radius];
                 erdchan=obj.erd_chan;
                 erschan=obj.ers_chan;
-                for i=1:length(obj.SpatialMapFig)
-                    delete(findobj(obj.SpatialMapFig(i),'tag','mass'));
+                for i=1:length(obj.SpectralMapFig)
+                    delete(findobj(obj.SpectralMapFig(i),'tag','mass'));
                     
-                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                    h=findobj(obj.SpectralMapFig(i),'-regexp','Tag','MapAxes');
                     if ~isempty(h)
                         if obj.erd||obj.ers
-                            %                             figure(obj.SpatialMapFig(i))
+                            %                             figure(obj.SpectralMapFig(i))
                             [obj.erd_center{i},obj.ers_center{i}]=plot_mass_center(h,mapv{i},round(chanpos(:,1)*obj.width),...
                                 round(chanpos(:,2)*obj.height),erdchan{i},erschan{i},obj.center_mass,obj.resize,...
                                 obj.erd_center{i},obj.ers_center{i});
@@ -2595,10 +2688,10 @@ classdef SpatialMapWindow < handle
         
         function PeakCallback(obj,src)
             obj.peak_=get(src,'value');
-            if ~NoSpatialMapFig(obj)
+            if ~NoSpectralMapFig(obj)
                 mapv=obj.map_val;
-                for i=1:length(obj.SpatialMapFig)
-                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                for i=1:length(obj.SpectralMapFig)
+                    h=findobj(obj.SpectralMapFig(i),'-regexp','Tag','MapAxes');
                     if ~isempty(h)
                         col=obj.pos_x;
                         row=obj.pos_y;
@@ -2636,13 +2729,13 @@ classdef SpatialMapWindow < handle
             end
             
             chanpos=[obj.pos_x,obj.pos_y,obj.radius];
-            if ~NoSpatialMapFig(obj)
-                for i=1:length(obj.SpatialMapFig)
-                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+            if ~NoSpectralMapFig(obj)
+                for i=1:length(obj.SpectralMapFig)
+                    h=findobj(obj.SpectralMapFig(i),'-regexp','Tag','MapAxes');
                     if ~isempty(h)
                         delete(findobj(h,'Tag','contact'));
                         delete(findobj(h,'Tag','names'));
-                        figure(obj.SpatialMapFig(i))
+                        figure(obj.SpectralMapFig(i))
                         if obj.contact
                             if obj.disp_channel_names
                                 plot_contact(h,[],obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,obj.all_chan_names,...
@@ -2663,8 +2756,8 @@ classdef SpatialMapWindow < handle
             obj.disp_channel_names_=get(src,'value');
             badchan=~ismember(obj.all_chan_pos,[obj.pos_x,obj.pos_y,obj.radius],'rows');
             
-            for i=1:length(obj.SpatialMapFig)
-                h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+            for i=1:length(obj.SpectralMapFig)
+                h=findobj(obj.SpectralMapFig(i),'-regexp','Tag','MapAxes');
                 
                 if ~isempty(h)
                     delete(findobj(h,'Tag','names'));
@@ -2879,8 +2972,8 @@ classdef SpatialMapWindow < handle
                     end
                     obj.el=val;
             end
-            for i=1:length(obj.SpatialMapFig)
-                h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+            for i=1:length(obj.SpectralMapFig)
+                h=findobj(obj.SpectralMapFig(i),'-regexp','Tag','MapAxes');
                 if ~isempty(h)
                     view(h,obj.az,obj.el);
                 end

@@ -1,10 +1,10 @@
-classdef RawMapWindow < handle
-    %RAWMAPWINDOW Summary of this class goes here
+classdef AmplitudeMapWindow < handle
+    %AmplitudeMapWINDOW Summary of this class goes here
     %   Detailed explanation goes here
     properties
         bsp
         fig
-        RawMapFig
+        AmplitudeMapFig
         
         compute_btn
         
@@ -27,6 +27,9 @@ classdef RawMapWindow < handle
         JToolbar
         JSpeedSpinner
         JStepSpinner
+        
+        JSmoothRowSpinner
+        JSmoothColSpinner
         
         pos_x
         pos_y
@@ -58,6 +61,8 @@ classdef RawMapWindow < handle
         cmax_
         cmin_
         extrap_
+        smooth_row_
+        smooth_col_
     end
     
     properties (Dependent)
@@ -74,10 +79,12 @@ classdef RawMapWindow < handle
         cmax
         cmin
         extrap
+        smooth_row
+        smooth_col
     end
     
     methods
-        function obj=RawMapWindow(bsp)
+        function obj=AmplitudeMapWindow(bsp)
             obj.bsp=bsp;
             varinitial(obj);
             addlistener(obj.bsp,'VideoLineChange',@(src,evt) UpdateFigure(obj,[]));
@@ -96,6 +103,9 @@ classdef RawMapWindow < handle
             obj.cmax_=1;
             obj.speed_=10;
             obj.extrap_ = 0;
+            obj.smooth_row_ = 4;
+            obj.smooth_col_ = 4;
+            
         end
         
         function buildfig(obj)
@@ -110,19 +120,19 @@ classdef RawMapWindow < handle
                 'Resize','on','DockControls','off','WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt));
             obj.advance_menu=uimenu(obj.fig,'label','Settings');
             obj.map_menu=uimenu(obj.advance_menu,'label','Visualization');
-            obj.map_interp_menu=uimenu(obj.map_menu,'label','Interpolate','callback',@(src,evt) MapCallback(obj,src));
-            obj.map_scatter_menu=uimenu(obj.map_menu,'label','Scatter','callback',@(src,evt) MapCallback(obj,src));
+            obj.map_interp_menu=uimenu(obj.map_menu,'label','Interpolate','callback',@(src,evt) InterpScatterCallback(obj,src));
+            obj.map_scatter_menu=uimenu(obj.map_menu,'label','Scatter','callback',@(src,evt) InterpScatterCallback(obj,src));
             
             hp_clim=uipanel('parent',obj.fig,'title','Scale','units','normalized','position',[0,0.85,1,0.15]);
             %volume colormap
             uicontrol('parent',hp_clim,'style','text','units','normalized','position',[0,0.5,0.25,0.5],...
-                'string','Colormap','horizontalalignment','left','fontunits','normalized','fontsize',0.4);
+                'string','Colormap','horizontalalignment','left','fontunits','normalized','fontsize',0.35);
             obj.JColorMapPopup = colormap_popup('Parent',hp_clim,'units','normalized','position',[0.25,0.5,0.75,0.5]);
             set(obj.JColorMapPopup,'Value',4,'Callback',@(src,evt)ColormapCallback(obj));
             %%
             % color data limit
             uicontrol('parent',hp_clim,'style','text','units','normalized','position',[0,0,0.12,0.5],...
-                'string','Min','horizontalalignment','left','fontunits','normalized','fontsize',0.4);
+                'string','Min','horizontalalignment','left','fontunits','normalized','fontsize',0.35);
             model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.cmin),[],[],java.lang.Double(0.1)));
             obj.JMinSpinner =javaObjectEDT(JSpinner(model));
             [jh,gh]=javacomponent(obj.JMinSpinner,[0,0,1,1],hp_clim);
@@ -130,13 +140,32 @@ classdef RawMapWindow < handle
             set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ScaleSpinnerCallback(obj));
             
             uicontrol('parent',hp_clim,'style','text','units','normalized','position',[0.5,0,0.12,0.5],...
-                'string','Max','horizontalalignment','left','fontunits','normalized','fontsize',0.4);
+                'string','Max','horizontalalignment','left','fontunits','normalized','fontsize',0.35);
             model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.cmax),[],[],java.lang.Double(0.1)));
             obj.JMaxSpinner =javaObjectEDT(JSpinner(model));
             [jh,gh]=javacomponent(obj.JMaxSpinner,[0,0,1,1],hp_clim);
             set(gh,'Units','Norm','Position',[0.62,0,0.35,0.5]);
             set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ScaleSpinnerCallback(obj));
 
+            hp_smooth=uipanel('parent',obj.fig,'title','Smooth','units','normalized','position',[0,0.74,1,0.1]);
+            % color data limit
+            uicontrol('parent',hp_smooth,'style','text','units','normalized','position',[0,0,0.1,0.8],...
+                'string','Row','horizontalalignment','left','fontunits','normalized','fontsize',0.35);
+            model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.smooth_row),java.lang.Double(0.0),[],java.lang.Double(2)));
+            obj.JSmoothRowSpinner =javaObjectEDT(JSpinner(model));
+            [jh,gh]=javacomponent(obj.JSmoothRowSpinner,[0,0,1,1],hp_smooth);
+            set(gh,'Units','Norm','Position',[0.12,0.05,0.35,0.9]);
+            set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) SmoothSpinnerCallback(obj, gh));
+            
+            uicontrol('parent',hp_smooth,'style','text','units','normalized','position',[0.5,0,0.1,0.8],...
+                'string','Col','horizontalalignment','left','fontunits','normalized','fontsize',0.35);
+            model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.smooth_col),java.lang.Double(0),[],java.lang.Double(2)));
+            obj.JSmoothColSpinner =javaObjectEDT(JSpinner(model));
+            [jh,gh]=javacomponent(obj.JSmoothColSpinner,[0,0,1,1],hp_smooth);
+            set(gh,'Units','Norm','Position',[0.62,0.05,0.35,0.9]);
+            set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) SmoothSpinnerCallback(obj, gh));
+            
+            
             setgp=uitabgroup(obj.fig,'units','normalized','position',[0,0.06,1,0.3]);
             disp_tab=uitab(setgp,'title','Display');
             obj.color_bar_radio=uicontrol('parent',disp_tab,'style','radiobutton','string','Color Bar',...
@@ -166,7 +195,7 @@ classdef RawMapWindow < handle
             drawnow
             obj.JToolbar=get(get(obj.Toolbar,'JavaContainer'),'ComponentPeer');
             obj.makeToolbar();
-            obj.VideoTimer = timer('TimerFcn',@ (src,evts) PlayRawMap(obj),...
+            obj.VideoTimer = timer('TimerFcn',@ (src,evts) PlayAmplitudeMap(obj),...
                 'ExecutionMode','fixedRate','BusyMode','queue','period',obj.VideoTimerPeriod_);
             obj.ComputeCallback();
         end
@@ -262,7 +291,7 @@ classdef RawMapWindow < handle
                 delete(h);
             end
             
-            h = obj.RawMapFig;
+            h = obj.AmplitudeMapFig;
             if ishandle(h)
                 delete(h);
             end
@@ -284,6 +313,27 @@ classdef RawMapWindow < handle
         end
         function KeyPress(obj,src,evt)
             
+        end
+        
+        function val = get.smooth_row(obj)
+            val = obj.smooth_row_;
+        end
+        function set.smooth_row(obj, val)
+            obj.smooth_row_=val;
+            if obj.valid
+                obj.JSmoothRowSpinner.setValue(java.lang.Double(val));
+                drawnow
+            end
+        end
+        function val = get.smooth_col(obj)
+            val = obj.smooth_col_;
+        end
+        function set.smooth_col(obj,val)
+            obj.smooth_col_=val;
+            if obj.valid
+                obj.JSmoothColSpinner.setValue(java.lang.Double(val));
+                drawnow
+            end
         end
         
         function val=get.extrap(obj)
@@ -376,8 +426,10 @@ classdef RawMapWindow < handle
                 return
             end
             obj.cmin_=val;
-            obj.JMinSpinner.setValue(java.lang.Double(val));
-            obj.JMinSpinner.getModel().setStepSize(java.lang.Double(abs(val)/10));
+            if obj.valid
+                obj.JMinSpinner.setValue(java.lang.Double(val));
+                obj.JMinSpinner.getModel().setStepSize(java.lang.Double(abs(val)/10));
+            end
             drawnow
         end
         
@@ -386,8 +438,10 @@ classdef RawMapWindow < handle
                 return
             end
             obj.cmax_=val;
-            obj.JMaxSpinner.setValue(java.lang.Double(val));
-            obj.JMaxSpinner.getModel().setStepSize(java.lang.Double(abs(val)/10));
+            if obj.valid
+                obj.JMaxSpinner.setValue(java.lang.Double(val));
+                obj.JMaxSpinner.getModel().setStepSize(java.lang.Double(abs(val)/10));
+            end
             drawnow
         end
         
@@ -458,16 +512,17 @@ classdef RawMapWindow < handle
             end
             %draw things
             
-            delete(obj.RawMapFig(ishandle(obj.RawMapFig)));
-            NewRawMapFig(obj);
+            delete(obj.AmplitudeMapFig(ishandle(obj.AmplitudeMapFig)));
+            NewAmplitudeMapFig(obj);
             
             obj.cmin=min(map_mapv);
             obj.cmax=max(map_mapv);
             
-            spatialmap_grid(obj.RawMapFig,map_mapv,obj.interp_scatter,...
-                map_pos(:,1),map_pos(:,2),obj.width,obj.height,obj.cmin,obj.cmax,obj.color_bar,1, obj.extrap);
+            spatialmap_grid(obj.AmplitudeMapFig,map_mapv,obj.interp_scatter,...
+                map_pos(:,1),map_pos(:,2),obj.width,obj.height,obj.cmin,obj.cmax,obj.color_bar,1, ...
+                obj.extrap, obj.smooth_row, obj.smooth_col);
             ColormapCallback(obj);
-            h=findobj(obj.RawMapFig,'-regexp','tag','SpatialMapAxes');
+            h=findobj(obj.AmplitudeMapFig,'-regexp','tag','MapAxes');
             
             if obj.contact||strcmp(obj.interp_scatter,'scatter')
                 if obj.disp_channel_names
@@ -495,7 +550,7 @@ classdef RawMapWindow < handle
                 else
                     channames=[];
                 end
-                h=findobj(obj.RawMapFig,'-regexp','Tag','SpatialMapAxes');
+                h=findobj(obj.AmplitudeMapFig,'-regexp','Tag','MapAxes');
                 if ~isempty(h)
                     imagehandle=findobj(h,'Tag','ImageMap');
                     
@@ -503,13 +558,18 @@ classdef RawMapWindow < handle
                         [x,y]=meshgrid((1:obj.width)/obj.width,(1:obj.height)/obj.height);
                         F= scatteredInterpolant(map_pos(:,1),map_pos(:,2),map_mapv(:),'natural', obj.extrap);
                         mapvq=F(x,y);
-                        
+                        if ~isempty(obj.smooth_row) && ~isempty(obj.smooth_col)
+                                mapvq = smooth2a(mapvq, obj.smooth_row, obj.smooth_col);
+                        end
+                            
                         if isempty(imagehandle)
-                            spatialmap_grid(obj.RawMapFig,map_mapv,obj.interp_scatter,...
-                                map_pos(:,1),map_pos(:,2),obj.width,obj.height,obj.min_clim,obj.max_clim,obj.color_bar,obj.resize, obj.extrap);
-                            h=findobj(obj.RawMapFig,'-regexp','Tag','SpatialMapAxes');
+                            spatialmap_grid(obj.AmplitudeMapFig,map_mapv,obj.interp_scatter,...
+                                map_pos(:,1),map_pos(:,2),obj.width,obj.height,obj.min_clim,obj.max_clim,obj.color_bar,obj.resize, ...
+                                obj.extrap, obj.smooth_row, obj.smooth_col);
+                            h=findobj(obj.AmplitudeMapFig,'-regexp','Tag','MapAxes');
                         else
                             set(imagehandle,'CData',single(mapvq),'visible','on');
+                            set(imagehandle, 'AlphaData', ~isnan(mapvq))
                         end
                         
                         if ismember(src,[obj.map_interp_menu,obj.map_scatter_menu])
@@ -540,29 +600,29 @@ classdef RawMapWindow < handle
             end
         end
         
-        function NewRawMapFig(obj)
+        function NewAmplitudeMapFig(obj)
             fpos=get(obj.fig,'position');
             
-            obj.RawMapFig=[];
-            obj.RawMapFig=figure('Name','Raw Map','NumberTitle','off',...
+            obj.AmplitudeMapFig=[];
+            obj.AmplitudeMapFig=figure('Name','Raw Map','NumberTitle','off',...
                 'units','pixels','position',[fpos(1)+fpos(3)+20,fpos(2),obj.fig_w,obj.fig_h],'Resize','off',...
                 'doublebuffer','off','Tag','Act');
         end
         function val=NoMapFig(obj)
-            val=isempty(obj.RawMapFig)||~all(ishandle(obj.RawMapFig))||~all(strcmpi(get(obj.RawMapFig,'Tag'),'Act'));
+            val=isempty(obj.AmplitudeMapFig)||~all(ishandle(obj.AmplitudeMapFig))||~all(strcmpi(get(obj.AmplitudeMapFig,'Tag'),'Act'));
         end
         
         function ColorBarCallback(obj,src)
             obj.color_bar_=get(src,'value');
             if ~NoMapFig(obj)
-                for i=1:length(obj.RawMapFig)
-                    ppos=get(obj.RawMapFig(i),'position');
-                    set(obj.RawMapFig(i),'position',...
+                for i=1:length(obj.AmplitudeMapFig)
+                    ppos=get(obj.AmplitudeMapFig(i),'position');
+                    set(obj.AmplitudeMapFig(i),'position',...
                         [ppos(1),ppos(2),obj.fig_w,obj.fig_h]);
                     
-                    a=findobj(obj.RawMapFig(i),'Tag','SpatialMapAxes');
+                    a=findobj(obj.AmplitudeMapFig(i),'Tag','MapAxes');
                     if ~isempty(a)
-                        h=figure(obj.RawMapFig(i));
+                        h=figure(obj.AmplitudeMapFig(i));
                         fpos=get(h,'position');
                         if obj.color_bar
                             %optional color bar
@@ -598,11 +658,11 @@ classdef RawMapWindow < handle
             
             chanpos=[obj.pos_x,obj.pos_y,obj.radius];
             if ~NoMapFig(obj)
-                h=findobj(obj.RawMapFig,'-regexp','Tag','SpatialMapAxes');
+                h=findobj(obj.AmplitudeMapFig,'-regexp','Tag','MapAxes');
                 if ~isempty(h)
                     delete(findobj(h,'Tag','contact'));
                     delete(findobj(h,'Tag','names'));
-                    figure(obj.RawMapFig)
+                    figure(obj.AmplitudeMapFig)
                     if obj.contact
                         if obj.disp_channel_names
                             plot_contact(h,[],obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,obj.all_chan_names,...
@@ -619,8 +679,8 @@ classdef RawMapWindow < handle
             obj.disp_channel_names_=get(src,'value');
             badchan=~ismember(obj.all_chan_pos,[obj.pos_x,obj.pos_y,obj.radius],'rows');
             
-            for i=1:length(obj.RawMapFig)
-                h=findobj(obj.RawMapFig(i),'-regexp','Tag','SpatialMapAxes');
+            for i=1:length(obj.AmplitudeMapFig)
+                h=findobj(obj.AmplitudeMapFig(i),'-regexp','Tag','MapAxes');
                 
                 if ~isempty(h)
                     delete(findobj(h,'Tag','names'));
@@ -642,17 +702,16 @@ classdef RawMapWindow < handle
                 end
             end
         end
-        function MapCallback(obj,src)
+        function InterpScatterCallback(obj,src)
             switch src
                 case obj.map_interp_menu
                     obj.interp_scatter='interp';
                 case obj.map_scatter_menu
                     obj.interp_scatter='scatter';
             end
-            
             UpdateFigure(obj,src);
         end
-        function PlayRawMap(obj)
+        function PlayAmplitudeMap(obj)
             obj.bsp.VideoLineTime=obj.bsp.VideoLineTime+obj.JStepSpinner.getValue()/obj.fs;
             if(obj.bsp.VideoLineTime>obj.bsp.Time+obj.bsp.WinLength)
                 obj.bsp.Time=obj.bsp.Time+floor((obj.bsp.VideoLineTime-obj.bsp.Time)/obj.bsp.WinLength)*obj.bsp.WinLength;
@@ -660,7 +719,7 @@ classdef RawMapWindow < handle
         end
         
         function PlayNext(obj)
-            PlayRawMap(obj);
+            PlayAmplitudeMap(obj);
         end
         function PlayBack(obj)
             obj.bsp.VideoLineTime=obj.bsp.VideoLineTime-obj.JStepSpinner.getValue()/obj.fs;
@@ -688,7 +747,7 @@ classdef RawMapWindow < handle
             cmapName=cmapName{listIdx};
             
             if ~NoMapFig(obj)
-                    h=findobj(obj.RawMapFig,'-regexp','Tag','SpatialMapAxes');
+                    h=findobj(obj.AmplitudeMapFig,'-regexp','Tag','MapAxes');
                     if ~isempty(h)
                         colormap(h,lower(cmapName));
                     end
@@ -703,12 +762,22 @@ classdef RawMapWindow < handle
                 obj.cmax=max;
                 
                 if ~NoMapFig(obj)
-                    h=findobj(obj.RawMapFig,'-regexp','Tag','SpatialMapAxes');
+                    h=findobj(obj.AmplitudeMapFig,'-regexp','Tag','MapAxes');
                     if ~isempty(h)
                         set(h,'clim',[obj.cmin,obj.cmax]);
                     end
                 end
             end
+        end
+        function SmoothSpinnerCallback(obj, src)
+            Nr=obj.JSmoothRowSpinner.getValue();
+            Nc=obj.JSmoothColSpinner.getValue();
+            
+            obj.smooth_row_=Nr;
+            obj.smooth_col_=Nc;
+            
+            UpdateFigure(obj,src);
+            
         end
     end
     

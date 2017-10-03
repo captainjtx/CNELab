@@ -13,7 +13,7 @@ obj.MenuLoadMontage=uimenu(obj.MenuLoad,'Label','Montage','Callback',@(src,evt) 
 obj.MenuLoadFilter=uimenu(obj.MenuLoad,'Label','Filter','Callback',@(src,evt) obj.LoadFilter);
 obj.MenuLoadVideo=uimenu(obj.MenuLoad,'Label','Video','Callback',@(src,evt) obj.LoadVideo);
 obj.MenuLoadChannelPosition=uimenu(obj.MenuLoad,'Label','Position','Callback',@(src,evt) obj.LoadChannelPosition);
-obj.MenuLoadSpatialMaps=uimenu(obj.MenuLoad,'Label','Spatial Maps','Callback',@(src,evt) obj.AverageMapWin.buildfig());
+obj.MenuLoadMaps=uimenu(obj.MenuLoad,'Label','Maps','Callback',@(src,evt) obj.AverageMapWin.buildfig());
 
 obj.MenuSave=uimenu(obj.MenuFile,'Label','Save');
 obj.MenuSaveEvents=uimenu(obj.MenuSave,'Label','Events','Callback',@(src,evt) SaveData(obj,src),'Accelerator','e');
@@ -117,13 +117,13 @@ obj.MenuApp=uimenu(obj.Fig,'Label','Apps');
 
 
 %**************TFMap*******************************************************
-obj.MenuPSD=uimenu(obj.MenuApp,'Label','Power Spectrum Density','callback',@(src,evt)obj.PSDWin.buildfig());
-obj.MenuTFMap=uimenu(obj.MenuApp,'Label','Time Frequency Map','callback',@(src,evt)obj.TFMapWin.buildfig());
-obj.MenuSpatialMap=uimenu(obj.MenuApp,'Label','Spatial Spectral Map','callback',@(src,evt) obj.SpatialMapWin.buildfig());
-obj.MenuRawMap=uimenu(obj.MenuApp,'Label','Spatial Data Map','callback',@(src,evt) obj.RawMapWin.buildfig());
-obj.MenuSignalMap=uimenu(obj.MenuApp,'Label','Trigger Map','callback',@(src,evt)obj.SignalMapWin.buildfig());
+obj.MenuPSD=uimenu(obj.MenuApp,'Label','PSD','callback',@(src,evt)obj.PSDWin.buildfig());
+obj.MenuTFMap=uimenu(obj.MenuApp,'Label','TF Map','callback',@(src,evt)obj.TFMapWin.buildfig());
+obj.MenuSpectralMap=uimenu(obj.MenuApp,'Label','Spectral Map','callback',@(src,evt) obj.SpectralMapWin.buildfig());
+obj.MenuAmplitudeMap=uimenu(obj.MenuApp,'Label','Amp Map','callback',@(src,evt) obj.AmplitudeMapWin.buildfig());
+obj.MenuTriggerMap=uimenu(obj.MenuApp,'Label','Trigger Map','callback',@(src,evt)obj.TriggerMapWin.buildfig());
 
-obj.MenuCrossCorr=uimenu(obj.MenuApp,'Label','Cross Correlation');
+obj.MenuCrossCorr=uimenu(obj.MenuApp,'Label','XCorr');
 
 obj.MenuCrossCorrRaw=uimenu(obj.MenuCrossCorr,'Label','Raw Data',...
     'Callback', @(src,evt) CrossCorrelation(obj,src));
@@ -137,7 +137,7 @@ obj.MenuCohereRaw=uimenu(obj.MenuCohere,'Label','Raw Data',...
 obj.MenuCohereEnv=uimenu(obj.MenuCohere,'Label','Envelope',...
     'Callback',@(src,evt) Coherence(obj,src));
 
-obj.MenuCSP=uimenu(obj.MenuApp,'Label','Common Spatial Pattern',...
+obj.MenuCSP=uimenu(obj.MenuApp,'Label','CSP',...
     'Callback', @(src,evt) obj.CSPMapWin.buildfig());
 
 obj.MenuAppDenoise=uimenu(obj.MenuApp,'Label','Denoise','Separator','on');

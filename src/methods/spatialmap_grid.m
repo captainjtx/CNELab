@@ -1,4 +1,4 @@
-function spatialmap_grid(fig,mapv,interp_scatter,pos_x,pos_y,w,h,sl,sh,colbar,ratio, extrap)
+function spatialmap_grid(fig,mapv,interp_scatter,pos_x,pos_y,w,h,sl,sh,colbar,ratio, extrap, smooth_row, smooth_column)
 %TFMAP_GRID Summary of this function goes here
 %   Detailed explanation goes here
 %Orign of postion is top left corner
@@ -15,9 +15,14 @@ w=round(w);
 
 [x,y]=meshgrid((1:w)/w,(1:h)/h);
 
+if isempty(extrap)
+    extrap = 'none';
+end
 F= scatteredInterpolant(col(:),row(:),mapv(:),'natural', extrap);
 mapvq=F(x,y);
-
+if ~isempty(smooth_row) && ~isempty(smooth_column)
+    mapvq = smooth2a(mapvq, smooth_row, smooth_column);
+end
 % 
 % mapvq = ones(20, round(20*w/h))*nan;
 % for i = 1:length(mapv)
@@ -36,7 +41,8 @@ a=axes('units','normalized','position',[10/400*w/fpos(3),15/300*h/fpos(4),w/fpos
     'xlimmode','manual','ylimmode','manual');
 
 if strcmp(interp_scatter,'interp')
-    imagesc('CData',mapvq,'Parent',a,'Tag','ImageMap');
+    h=imagesc('CData',mapvq,'Parent',a,'Tag','ImageMap');
+    set(h, 'AlphaData', ~isnan(mapvq))
 end
 
 set(a,'XLim',[1,size(mapvq,2)]);
@@ -55,7 +61,7 @@ if colbar
     set(a,'Position',[10/400*w/fpos(3),15/300*h/fpos(4),w/fpos(3),h/fpos(4)]);
     set(cb,'Position',[(w+20/400*w)/fpos(3),15/300*h/fpos(4),0.04,cbpos(4)]);
 end                
-set(a,'Tag','SpatialMapAxes');
+set(a,'Tag','MapAxes');
 drawnow
 
 end

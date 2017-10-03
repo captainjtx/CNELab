@@ -1,10 +1,10 @@
-classdef SignalMapWindow < handle
-    %SignalMapWINDOW Summary of this class goes here
+classdef TriggerMapWindow < handle
+    %TriggerMapWINDOW Summary of this class goes here
     %   Detailed explanation goes here
     properties
         bsp
         fig
-        SignalMapFig
+        TriggerMapFig
         method_popup
         data_popup
         event_popup
@@ -246,7 +246,7 @@ classdef SignalMapWindow < handle
     end
     
     methods
-        function obj=SignalMapWindow(bsp)
+        function obj=TriggerMapWindow(bsp)
             obj.bsp=bsp;
             if ~isempty(bsp.Evts)
                 obj.event_list_=unique(bsp.Evts(:,2));
@@ -365,7 +365,7 @@ classdef SignalMapWindow < handle
             end
             obj.fig=[];
             
-            h = obj.SignalMapFig;
+            h = obj.TriggerMapFig;
             if ishandle(h)
                 delete(h);
             end
@@ -443,8 +443,8 @@ classdef SignalMapWindow < handle
             end
             
             tonset=0;
-            if ~isempty(obj.SignalMapFig) && ishandle(obj.SignalMapFig)
-                h=findobj(obj.SignalMapFig,'-regexp','Tag','SignalMapAxes*');
+            if ~isempty(obj.TriggerMapFig) && ishandle(obj.TriggerMapFig)
+                h=findobj(obj.TriggerMapFig,'-regexp','Tag','TriggerMapAxes*');
                 if obj.display_onset
                     for i=1:length(h)
                         %                         axes(h(i))
@@ -465,8 +465,8 @@ classdef SignalMapWindow < handle
         
         function EventCallback(obj,src)
             obj.event_=obj.event_list{get(src,'value')};
-            if ~isempty(obj.SignalMapFig)&&ishandle(obj.SignalMapFig)
-                set(obj.SignalMapFig,'name',obj.event_);
+            if ~isempty(obj.TriggerMapFig)&&ishandle(obj.TriggerMapFig)
+                set(obj.TriggerMapFig,'name',obj.event_);
             end
         end
         function UpdateEventSelected(obj)
@@ -474,19 +474,19 @@ classdef SignalMapWindow < handle
                 obj.event=obj.bsp.Evts{obj.bsp.SelectedEvent(1),2};
             end
         end
-        function CloseSignalMapFig(obj,src)
+        function CloseTriggerMapFig(obj,src)
             delete(src);
-            obj.SignalMapFig=[];
+            obj.TriggerMapFig=[];
             
         end
         function NewCallback(obj)
-            if ~isempty(obj.SignalMapFig)&&ishandle(obj.SignalMapFig)
-                name=get(obj.SignalMapFig,'Name');
-                set(obj.SignalMapFig,'Tag','Old');
-                set(obj.SignalMapFig,'name',[name,' Old'])
+            if ~isempty(obj.TriggerMapFig)&&ishandle(obj.TriggerMapFig)
+                name=get(obj.TriggerMapFig,'Name');
+                set(obj.TriggerMapFig,'Tag','Old');
+                set(obj.TriggerMapFig,'name',[name,' Old'])
             end
-            obj.SignalMapFig=figure('Name',obj.event,'NumberTitle','off',...
-                'color','w','DockControls','off','Tag','Act','CloseRequestFcn',@(src,evts) CloseSignalMapFig(obj,src));
+            obj.TriggerMapFig=figure('Name',obj.event,'NumberTitle','off',...
+                'color','w','DockControls','off','Tag','Act','CloseRequestFcn',@(src,evts) CloseTriggerMapFig(obj,src));
         end
         
         function ComputeCallback(obj,src)
@@ -548,13 +548,13 @@ classdef SignalMapWindow < handle
                 fpos=[100 100 300 600];
             end
             
-            if isempty(obj.SignalMapFig)||~ishandle(obj.SignalMapFig)
-                delete(obj.SignalMapFig(ishandle(obj.SignalMapFig)));
-                obj.SignalMapFig=figure('Name',obj.event,'NumberTitle','off',...
+            if isempty(obj.TriggerMapFig)||~ishandle(obj.TriggerMapFig)
+                delete(obj.TriggerMapFig(ishandle(obj.TriggerMapFig)));
+                obj.TriggerMapFig=figure('Name',obj.event,'NumberTitle','off',...
                     'color','w','DockControls','off','Tag','Act','position',[fpos(1)+fpos(3)+20,fpos(2),650,450],...
-                    'CloseRequestFcn',@(src,evts) CloseSignalMapFig(obj,src));
+                    'CloseRequestFcn',@(src,evts) CloseTriggerMapFig(obj,src));
             else
-                figure(obj.SignalMapFig);
+                figure(obj.TriggerMapFig);
                 clf
             end
             %**************************************************************************
@@ -608,7 +608,7 @@ classdef SignalMapWindow < handle
                     dh=dy/(y_len+dy);
             end
             %**************************************************************
-            axe = axes('Parent',obj.SignalMapFig,'units','normalized','Position',[0 0 1 1],...
+            axe = axes('Parent',obj.TriggerMapFig,'units','normalized','Position',[0 0 1 1],...
                 'XLim',[0,1],'YLim',[0,1],'visible','off','tag','back');
             sel=[];
             
@@ -655,7 +655,7 @@ classdef SignalMapWindow < handle
                     else
                         err = zeros(size(sig,1),1);
                     end
-                    signalmap_grid(obj.SignalMapFig,axe,linspace(-obj.ms_before, obj.ms_after, size(sig,1)),...
+                    TriggerMap_grid(obj.TriggerMapFig,axe,linspace(-obj.ms_before, obj.ms_after, size(sig,1)),...
                         mean(sig,2),err,chanpos(j,:),dw,dh,channames{j},yl);
                     ave_sig = cat(2, ave_sig, mean(sig,2));
                 end
@@ -667,11 +667,11 @@ classdef SignalMapWindow < handle
                  else
                        err = zeros(size(obj.mat.data,1),1);
                 end
-                signalmap_grid(obj.SignalMapFig,axe,linspace(-obj.ms_before, obj.ms_after, size(obj.mat.data, 1)),...
+                TriggerMap_grid(obj.TriggerMapFig,axe,linspace(-obj.ms_before, obj.ms_after, size(obj.mat.data, 1)),...
                     mean(mean(obj.mat.data,3),2),err,chanpos,dw,dh,'Average',yl);
                 ave_sig = mean(mean(obj.mat.data,3),2);
 %                 cmax=max(max(abs(ave_sig)));
-                a=findobj(obj.SignalMapFig,'Type','Axes');
+                a=findobj(obj.TriggerMapFig,'Type','Axes');
                 set(a,'visible','on');
                 set(axe,'visible','off');
                 
@@ -711,8 +711,8 @@ classdef SignalMapWindow < handle
                 obj.disp_axis_=get(src,'value');
             end
             
-            if ~isempty(obj.SignalMapFig)&&ishandle(obj.SignalMapFig)
-                h=findobj(obj.SignalMapFig,'-regexp','Tag','SignalMapAxes*');
+            if ~isempty(obj.TriggerMapFig)&&ishandle(obj.TriggerMapFig)
+                h=findobj(obj.TriggerMapFig,'-regexp','Tag','TriggerMapAxes*');
                 if obj.disp_axis
                     set(h,'visible','on');
                 else
@@ -725,7 +725,7 @@ classdef SignalMapWindow < handle
             if(~isempty(src)&&ishandle(src))
                 obj.disp_channel_names_=get(src,'value');
             end
-            if ~isempty(obj.SignalMapFig)&&ishandle(obj.SignalMapFig)
+            if ~isempty(obj.TriggerMapFig)&&ishandle(obj.TriggerMapFig)
                 if ishandle(obj.background_axe)
                     h=findobj(obj.background_axe,'-regexp','Tag','names');
                     if obj.disp_channel_names
@@ -744,7 +744,7 @@ classdef SignalMapWindow < handle
         function AutoScaleCallback(obj,src)
             obj.auto_scale_=get(src,'value');
             
-            h=findobj(obj.SignalMapFig,'-regexp','Tag','SignalMapAxes*');
+            h=findobj(obj.TriggerMapFig,'-regexp','Tag','TriggerMapAxes*');
             if obj.auto_scale
                 axis(h, 'auto y');
             else
@@ -752,7 +752,7 @@ classdef SignalMapWindow < handle
         end
         
         function val=NoMapFig(obj)
-            val=isempty(obj.SignalMapFig)||~all(ishandle(obj.SignalMapFig))||~all(strcmpi(get(obj.SignalMapFig,'Tag'),'Act'));
+            val=isempty(obj.TriggerMapFig)||~all(ishandle(obj.TriggerMapFig))||~all(strcmpi(get(obj.TriggerMapFig,'Tag'),'Act'));
         end
         
         function ScaleSpinnerCallback(obj)
@@ -767,7 +767,7 @@ classdef SignalMapWindow < handle
                 obj.cmax=max;
                 
                 if ~NoMapFig(obj)
-                    h=findobj(obj.SignalMapFig,'-regexp','Tag','SignalMapAxes');
+                    h=findobj(obj.TriggerMapFig,'-regexp','Tag','TriggerMapAxes');
                     if ~isempty(h)
                         set(h,'ylim',[obj.cmin,obj.cmax]);
                     end
