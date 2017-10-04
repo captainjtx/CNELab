@@ -5,6 +5,7 @@ classdef TFMapWindow < handle
         bsp
         fig
         TFMapFig
+        OldFig
         method_popup
         data_popup
         event_popup
@@ -822,7 +823,13 @@ classdef TFMapWindow < handle
                 delete(h.fig);
             end
             
-            
+            for i = 1:length(obj.OldFig)
+                try
+                    delete(obj.OldFig(i))
+                catch
+                    continue
+                end
+            end
         end
         function MethodCallback(obj,src)
             obj.method=get(src,'value');
@@ -1091,6 +1098,8 @@ classdef TFMapWindow < handle
             
         end
         function NewCallback(obj)
+            obj.OldFig = cat(1, obj.OldFig, obj.TFMapFig(:));
+            
             if ~isempty(obj.TFMapFig)&&ishandle(obj.TFMapFig)
                 name=get(obj.TFMapFig,'Name');
                 set(obj.TFMapFig,'Tag','Old');

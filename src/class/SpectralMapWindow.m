@@ -257,6 +257,7 @@ classdef SpectralMapWindow < handle
         cov_win
         export_picture_win
         export_movie_win
+        OldFig
     end
     methods
         function val = get.smooth(obj)
@@ -1540,6 +1541,15 @@ classdef SpectralMapWindow < handle
             if obj.export_movie_win.valid
                 delete(obj.export_movie_win.fig);
             end
+            
+            
+            for i = 1:length(obj.OldFig)
+                try
+                    delete(obj.OldFig(i))
+                catch
+                    continue
+                end
+            end
         end
         
         function DataPopUpCallback(obj,src)
@@ -1780,7 +1790,7 @@ classdef SpectralMapWindow < handle
             
             fpos=get(obj.fig,'position');
             
-            obj.SpectralMapFig=[];
+            obj.OldFig = cat(1, obj.OldFig, obj.SpectralMapFig(:));
             if obj.data_input==3
                 
                 for i=1:length(obj.event_group)

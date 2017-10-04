@@ -5,6 +5,7 @@ classdef TriggerMapWindow < handle
         bsp
         fig
         TriggerMapFig
+        OldFig
         method_popup
         data_popup
         event_popup
@@ -369,6 +370,13 @@ classdef TriggerMapWindow < handle
             if ishandle(h)
                 delete(h);
             end
+            for i = 1:length(obj.OldFig)
+                try
+                    delete(obj.OldFig(i))
+                catch
+                    continue
+                end
+            end
         end
         function MethodCallback(obj,src)
             obj.method=get(src,'value');
@@ -480,6 +488,7 @@ classdef TriggerMapWindow < handle
             
         end
         function NewCallback(obj)
+            obj.OldFig = cat(1, obj.OldFig, obj.TriggerMapFig(:));
             if ~isempty(obj.TriggerMapFig)&&ishandle(obj.TriggerMapFig)
                 name=get(obj.TriggerMapFig,'Name');
                 set(obj.TriggerMapFig,'Tag','Old');

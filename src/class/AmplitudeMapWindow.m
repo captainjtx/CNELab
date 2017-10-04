@@ -5,8 +5,10 @@ classdef AmplitudeMapWindow < handle
         bsp
         fig
         AmplitudeMapFig
+        OldFig
         
         compute_btn
+        new_btn
         
         width
         height
@@ -188,8 +190,10 @@ classdef AmplitudeMapWindow < handle
                 'units','normalized','position',[0.5,0.33,0.45,0.33],'value',obj.extrap_,...
                 'callback',@(src,evts) ExtrapolateCallback(obj,src));
             
-            obj.compute_btn=uicontrol('parent',obj.fig,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.01,0.2,0.04],...
+            obj.compute_btn=uicontrol('parent',obj.fig,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.005,0.2,0.05],...
                 'callback',@(src,evts) ComputeCallback(obj));
+            obj.new_btn=uicontrol('parent',obj.fig,'style','pushbutton','string','New','units','normalized','position',[0.01,0.005,0.2,0.05],...
+                'callback',@(src,evts) NewCallback(obj));
             
             obj.Toolbar=uitoolbar(obj.fig);
             drawnow
@@ -294,6 +298,14 @@ classdef AmplitudeMapWindow < handle
             h = obj.AmplitudeMapFig;
             if ishandle(h)
                 delete(h);
+            end
+            
+            for i = 1:length(obj.OldFig)
+                try
+                    delete(obj.OldFig(i))
+                catch
+                    continue
+                end
             end
         end
         function StartPlay(obj)
@@ -603,7 +615,7 @@ classdef AmplitudeMapWindow < handle
         function NewAmplitudeMapFig(obj)
             fpos=get(obj.fig,'position');
             
-            obj.AmplitudeMapFig=[];
+            obj.OldFig = cat(1, obj.OldFig, obj.AmplitudeMapFig(:));
             obj.AmplitudeMapFig=figure('Name','Raw Map','NumberTitle','off',...
                 'units','pixels','position',[fpos(1)+fpos(3)+20,fpos(2),obj.fig_w,obj.fig_h],'Resize','off',...
                 'doublebuffer','off','Tag','Act');
@@ -777,7 +789,17 @@ classdef AmplitudeMapWindow < handle
             obj.smooth_col_=Nc;
             
             UpdateFigure(obj,src);
-            
+        end
+        function NewCallback(obj)
+            if ~NoMapFig(obj)
+                for i=1:length(obj.AmplitudeMapFig)
+                    name=get(obj.AmplitudeMapFig(i),'Name');
+                    set(obj.AmplitudeMapFig(i),'Name',[name ' Old']);
+                    set(obj.AmplitudeMapFig(i),'Tag','Old');
+                end
+                
+            end
+            NewAmplitudeMapFig(obj);
         end
     end
     
