@@ -25,6 +25,8 @@ classdef BrainMapGUI<handle
         IconStop
         JTogPlay
         anno_count
+        
+        save_data_time
     end
     properties(Dependent)
         AnnotationDir
@@ -37,6 +39,8 @@ classdef BrainMapGUI<handle
         function obj=BrainMapGUI()
             obj.buildfig();
             obj.anno_count = 0;
+            obj.save_data_time = 0;
+            
         end
         function buildfig(obj)
             screensize=get(0,'ScreenSize');
@@ -133,19 +137,23 @@ classdef BrainMapGUI<handle
             set_param(strcat(obj.ModelNameWithoutExtension,'/FileSave'),'Value',num2str(s));
             
             modelTime = get_param(obj.ModelNameWithoutExtension,'SimulationTime');
-            anno=['DataSave',num2str(s)];
-            obj.Annotations=cat(1,obj.Annotations,{modelTime,anno});
+            obj.save_data_time = modelTime;
+            
+            anno = ['%Save data at ' num2str(modelTime) ' (absolute time)'];
+            
+            %directly write into text file
             try
-                fprintf(obj.AnnotationFileID,'%f,%s\n',modelTime,anno);
+                fprintf(obj.AnnotationFileID,'%s\n',anno);
             catch
                 disp('Creating new annotation file');
                 obj.anno_count = obj.anno_count+1;
                 obj.AnnotationFileID=fopen(fullfile(obj.AnnotationDir,[obj.ModelNameWithoutExtension,'-',num2str(obj.anno_count),'.txt']),'at');
-                fprintf(obj.AnnotationFileID,'%f,%s\n',modelTime,anno);
+                fprintf(obj.AnnotationFileID,'%s\n',anno);
             end
         end
         function insertAnnotation(obj)
             modelTime = get_param(obj.ModelNameWithoutExtension,'SimulationTime');
+            modelTime = modelTime-obj.save_data_time;
             anno=get(obj.EditAnnotation,'string');
             if isempty(modelTime)||isempty(anno)
                 return
