@@ -24,6 +24,7 @@ classdef BrainMapGUI<handle
         IconPlay
         IconStop
         JTogPlay
+        anno_count
     end
     properties(Dependent)
         AnnotationDir
@@ -35,6 +36,7 @@ classdef BrainMapGUI<handle
     methods
         function obj=BrainMapGUI()
             obj.buildfig();
+            obj.anno_count = 0;
         end
         function buildfig(obj)
             screensize=get(0,'ScreenSize');
@@ -137,7 +139,8 @@ classdef BrainMapGUI<handle
                 fprintf(obj.AnnotationFileID,'%f,%s\n',modelTime,anno);
             catch
                 disp('Creating new annotation file');
-                obj.AnnotationFileID=fopen(fullfile(obj.AnnotationDir,[obj.ModelNameWithoutExtension,'-',datetime('now'),'.txt']),'at');
+                obj.anno_count = obj.anno_count+1;
+                obj.AnnotationFileID=fopen(fullfile(obj.AnnotationDir,[obj.ModelNameWithoutExtension,'-',num2str(obj.anno_count),'.txt']),'at');
                 fprintf(obj.AnnotationFileID,'%f,%s\n',modelTime,anno);
             end
         end
@@ -158,7 +161,8 @@ classdef BrainMapGUI<handle
                 fprintf(obj.AnnotationFileID,'%f,%s\n',modelTime,anno);
             catch
                 disp('Creating new annotation file');
-                obj.AnnotationFileID=fopen(fullfile(obj.AnnotationDir,[obj.ModelNameWithoutExtension,'-',datetime('now'),'.txt']),'at');
+                obj.anno_count = obj.anno_count+1;
+                obj.AnnotationFileID=fopen(fullfile(obj.AnnotationDir,[obj.ModelNameWithoutExtension,'-',num2str(obj.anno_count),'.txt']),'at');
                 fprintf(obj.AnnotationFileID,'%f,%s\n',modelTime,anno);
             end
         end
@@ -192,7 +196,8 @@ classdef BrainMapGUI<handle
                 if exist(obj.AnnotationDir,'dir')~=7
                     mkdir(obj.ModelDir,'events');
                 end
-                obj.AnnotationFileID=fopen(fullfile(obj.AnnotationDir,[obj.ModelNameWithoutExtension,'-',datetime('now'),'.txt']),'at');
+                obj.AnnotationFileID=fopen(fullfile(obj.AnnotationDir,[obj.ModelNameWithoutExtension,'-',num2str(obj.anno_count),'.txt']),'at');
+                
             end
             
             figure(obj.Fig);
