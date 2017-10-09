@@ -39,8 +39,7 @@ classdef BrainMapGUI<handle
         function obj=BrainMapGUI()
             obj.buildfig();
             obj.anno_count = 0;
-            obj.save_data_time = 0;
-            
+            obj.save_data_time = 0;  
         end
         function buildfig(obj)
             screensize=get(0,'ScreenSize');

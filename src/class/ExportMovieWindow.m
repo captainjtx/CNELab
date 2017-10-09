@@ -352,7 +352,7 @@ classdef ExportMovieWindow < handle
         
         function ExportCallback(obj,src)
             %recalculating stft********************************************
-            if obj.smw.NoSpatialMapFig()
+            if obj.smw.NoSpectralMapFig()
                 obj.smw.ComputeCallback();
             end
             %**************************************************************
@@ -372,29 +372,29 @@ classdef ExportMovieWindow < handle
                 mov_height=0;
                 
                 mov_fig=figure('Name','Movie','NumberTitle','off','Resize','off','units','pixels');
-                panel=zeros(length(obj.smw.SpatialMapFig),1);
+                panel=zeros(length(obj.smw.SpectralMapFig),1);
                 
-                for i=1:length(obj.smw.SpatialMapFig)
-                    delete(findobj(obj.smw.SpatialMapFig(i),'tag','mass'));
-                    pos=get(obj.smw.SpatialMapFig(i),'position');
+                for i=1:length(obj.smw.SpectralMapFig)
+                    delete(findobj(obj.smw.SpectralMapFig(i),'tag','mass'));
+                    pos=get(obj.smw.SpectralMapFig(i),'position');
                     
                     panel(i)=uipanel('parent',mov_fig,'units','pixels','Position',[mov_width,45,pos(3),pos(4)]);
                     mov_height=pos(4);
                     mov_width=mov_width+pos(3)+10;
                     
-                    child_axes=findobj(obj.smw.SpatialMapFig(i),'type','axes');
-                    child_colorbar=findobj(obj.smw.SpatialMapFig(i),'type','colorbar');
+                    child_axes=findobj(obj.smw.SpectralMapFig(i),'type','axes');
+                    child_colorbar=findobj(obj.smw.SpectralMapFig(i),'type','colorbar');
                     copyobj([child_axes,child_colorbar],panel(i));
                     
                 end
                 name_panel=uipanel('parent',mov_fig,'units','pixels','position',[0,45+pos(4),mov_width,30]);
                 axes('parent',name_panel,'units','normalized','position',[0,0,1,1],'xlim',[0,1],'ylim',[0,1],'visible','off');
-                for i=1:length(obj.smw.SpatialMapFig)
-                    text('position',[(2*i-1)/(2*length(obj.smw.SpatialMapFig)),0.5],'string',...
-                        get(obj.smw.SpatialMapFig(i),'name'),'FontSize',12,'HorizontalAlignment','center');
-                    %                 uicontrol('style','text','string',get(obj.SpatialMapFig(i),'name'),...
+                for i=1:length(obj.smw.SpectralMapFig)
+                    text('position',[(2*i-1)/(2*length(obj.smw.SpectralMapFig)),0.5],'string',...
+                        get(obj.smw.SpectralMapFig(i),'name'),'FontSize',12,'HorizontalAlignment','center');
+                    %                 uicontrol('style','text','string',get(obj.SpectralMapFig(i),'name'),...
                     %                     'units','normalized','position',...
-                    %                     [(2*i-2)/(2*length(obj.SpatialMapFig)),0.2,1/length(obj.SpatialMapFig),0.6],...
+                    %                     [(2*i-2)/(2*length(obj.SpectralMapFig)),0.2,1/length(obj.SpectralMapFig),0.6],...
                     %                     'FontSize',12,'HorizontalAlignment','center');
                     
                 end
@@ -435,7 +435,7 @@ classdef ExportMovieWindow < handle
                 delta_t=[];
                 
                 for i=1:length(panel)
-                    new_axes(i)=findobj(panel(i),'-regexp','tag','SpatialMapAxes');
+                    new_axes(i)=findobj(panel(i),'-regexp','tag','MapAxes');
                 end
                 for k=loop_start:loop_end
                     
@@ -450,13 +450,13 @@ classdef ExportMovieWindow < handle
                     
                     set(obj.smw.act_start_edit,'string',num2str(t));
                     obj.smw.ActCallback(obj.smw.act_start_edit);
-                    for i=1:length(obj.smw.SpatialMapFig)
+                    for i=1:length(obj.smw.SpectralMapFig)
                         delete(findobj(panel(i),'-regexp','tag','ImageMap'));
-                        new_h=copyobj(findobj(obj.smw.SpatialMapFig(i),'-regexp','tag','ImageMap'),new_axes(i));
+                        new_h=copyobj(findobj(obj.smw.SpectralMapFig(i),'-regexp','tag','ImageMap'),new_axes(i));
                         uistack(new_h,'bottom')
                         
                         delete(findobj(panel(i),'-regexp','tag','peak'));
-                        copyobj(findobj(obj.smw.SpatialMapFig(i),'-regexp','tag','peak'),new_axes(i));
+                        copyobj(findobj(obj.smw.SpectralMapFig(i),'-regexp','tag','peak'),new_axes(i));
                     end
                     
                     t=t+step;

@@ -133,7 +133,7 @@ classdef ExportPictureWindow < handle
             val=obj.t_start_;
         end
         function set.t_start(obj,val)
-            obj.t_start_=max(0,val);
+            obj.t_start_=val;
             
             if obj.t_start>obj.t_end
                 obj.t_end=val;
@@ -151,7 +151,7 @@ classdef ExportPictureWindow < handle
             val=obj.t_end_;
         end
         function set.t_end(obj,val)
-            obj.t_end_=max(0,val);
+            obj.t_end_=val;
             
             if obj.t_start>obj.t_end
                 obj.t_start=val;
@@ -362,23 +362,23 @@ classdef ExportPictureWindow < handle
                     waitbar((t-obj.t_start)/(obj.t_end-obj.t_start));
                     set(obj.smw.act_start_edit,'string',num2str(t));
                     obj.smw.ActCallback(obj.smw.act_start_edit)
-                    for i=1:length(obj.smw.SpatialMapFig)
-                        figname=get(obj.smw.SpatialMapFig(i),'Name');
+                    for i=1:length(obj.smw.SpectralMapFig)
+                        figname=get(obj.smw.SpectralMapFig(i),'Name');
                         fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',obj.auto_file_name]);
                         
-                        set(obj.smw.SpatialMapFig(i),'color','white');
-                        export_fig(obj.smw.SpatialMapFig(i),['-',pic_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);
+                        set(obj.smw.SpectralMapFig(i),'color','white');
+                        export_fig(obj.smw.SpectralMapFig(i),['-',pic_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);
                     end
                 end
             
             else
-                for i=1:length(obj.smw.SpatialMapFig)
-                    waitbar(i/length(obj.smw.SpatialMapFig));
-                    figname=get(obj.smw.SpatialMapFig(i),'Name');
+                for i=1:length(obj.smw.SpectralMapFig)
+                    waitbar(i/length(obj.smw.SpectralMapFig));
+                    figname=get(obj.smw.SpectralMapFig(i),'Name');
                     fname=fullfile(obj.dest_dir,[obj.filename,'_',figname,'_',obj.auto_file_name]);
                     
-                    set(obj.smw.SpatialMapFig(i),'color','white');
-                    export_fig(obj.smw.SpatialMapFig(i),['-',pic_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);
+                    set(obj.smw.SpectralMapFig(i),'color','white');
+                    export_fig(obj.smw.SpectralMapFig(i),['-',pic_format],'-nocrop','-opengl',['-r',num2str(obj.res_ppi)],fname);
                 end
             end
             close(wait_bar_h);
