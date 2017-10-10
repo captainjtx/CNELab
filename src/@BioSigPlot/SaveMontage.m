@@ -1,8 +1,8 @@
 function SaveMontage(obj)
 %UNTITLED2 Summary of this function goes here
 %   Detailed explanation goes here
-
-[chanNames,dataset,~,~,~,groupnames]=get_selected_datainfo(obj);
+omitMask=true;
+[chanNames,dataset,~,~,~,groupnames]=get_selected_datainfo(obj,omitMask);
 dd=unique(dataset);
 
 if exist([obj.FileDir,'/montage'],'dir')~=7

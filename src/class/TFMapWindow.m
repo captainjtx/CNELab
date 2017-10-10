@@ -30,18 +30,15 @@ classdef TFMapWindow < handle
         stft_overlap_edit
         max_freq_edit
         min_freq_edit
-        max_clim_edit
-        min_clim_edit
         max_freq_slider
         min_freq_slider
-        max_clim_slider
-        min_clim_slider
         onset_radio
         compute_btn
         new_btn
         symmetric_scale_radio
         auto_scale_radio
-        
+        JMinSpinner
+        JMaxSpinner
         file_menu
         save_menu
         save_fig_menu
@@ -76,10 +73,6 @@ classdef TFMapWindow < handle
         stft_overlap_
         max_freq_
         min_freq_
-        max_clim_
-        min_clim_
-        clim_slider_max_
-        clim_slider_min_
         event_list_
         symmetric_scale_
         auto_scale_
@@ -87,6 +80,8 @@ classdef TFMapWindow < handle
         smooth_y_
         disp_axis_
         disp_channel_names_
+        cmax_
+        cmin_
     end
     
     properties (Dependent)
@@ -109,10 +104,6 @@ classdef TFMapWindow < handle
         stft_overlap
         max_freq
         min_freq
-        max_clim
-        min_clim
-        clim_slider_max
-        clim_slider_min
         event_list
         symmetric_scale
         auto_scale
@@ -120,6 +111,8 @@ classdef TFMapWindow < handle
         smooth_y
         disp_axis
         disp_channel_names
+        cmax
+        cmin
     end
     properties
         tfmat
@@ -430,92 +423,32 @@ classdef TFMapWindow < handle
             end
             obj.min_freq_=val;
         end
-        
-        function val=get.clim_slider_min(obj)
-            val=obj.clim_slider_min_;
+        function val=get.cmin(obj)
+            val=obj.cmin_;
         end
-        function set.clim_slider_min(obj,val)
-            obj.clim_slider_min_=val;
-            if obj.min_clim<val
-                obj.min_clim=val;
-            end
-            if obj.valid
-                set(obj.max_clim_slider,'min',val);
-                set(obj.min_clim_slider,'min',val);
-            end
+        function val=get.cmax(obj)
+            val=obj.cmax_;
         end
         
-        function val=get.clim_slider_max(obj)
-            val=obj.clim_slider_max_;
-        end
-        function set.clim_slider_max(obj,val)
-            obj.clim_slider_max_=val;
-            if obj.max_clim>val
-                obj.max_clim=val;
+        function set.cmin(obj,val)
+            if(val>obj.cmax)
+                return
             end
-            if obj.valid
-                set(obj.max_clim_slider,'max',val);
-                set(obj.min_clim_slider,'max',val);
-            end
-        end
-        function val=get.max_clim(obj)
-            val=obj.max_clim_;
-        end
-        function set.max_clim(obj,val)
-            if val>obj.clim_slider_max
-                val=obj.clim_slider_max;
-            elseif val<obj.clim_slider_min
-                val=obj.clim_slider_min;
-            end
-            
-            if obj.symmetric_scale
-                val=abs(val);
-                obj.min_clim_=obj.clim_slider_max+obj.clim_slider_min-val;
-            else
-                if obj.min_clim>=val
-                    obj.min_clim_=val-1;
-                end
-            end
-            if obj.valid
-                set(obj.max_clim_edit,'string',num2str(val));
-                set(obj.max_clim_slider,'value',val);
-                
-                set(obj.min_clim_edit,'string',num2str(obj.min_clim_));
-                set(obj.min_clim_slider,'value',obj.min_clim_);
-            end
-            obj.max_clim_=val;
+            obj.cmin_=val;
+            obj.JMinSpinner.setValue(java.lang.Double(val));
+            obj.JMinSpinner.getModel().setStepSize(java.lang.Double(abs(val)/10));
+            drawnow
         end
         
-        function val=get.min_clim(obj)
-            val=obj.min_clim_;
+        function set.cmax(obj,val)
+            if(val<obj.cmin)
+                return
+            end
+            obj.cmax_=val;
+            obj.JMaxSpinner.setValue(java.lang.Double(val));
+            obj.JMaxSpinner.getModel().setStepSize(java.lang.Double(abs(val)/10));
+            drawnow
         end
-        
-        function set.min_clim(obj,val)
-            if val>obj.clim_slider_max
-                val=obj.clim_slider_max;
-            elseif val<obj.clim_slider_min
-                val=obj.clim_slider_min;
-            end
-            
-            if obj.symmetric_scale
-                val=-abs(val);
-                obj.max_clim_=obj.clim_slider_max+obj.clim_slider_min-val;
-            else
-                if obj.max_clim<=val
-                    obj.max_clim_=val+1;
-                end
-            end
-            
-            if obj.valid
-                set(obj.min_clim_edit,'string',num2str(val));
-                set(obj.min_clim_slider,'value',val);
-                
-                set(obj.max_clim_edit,'string',num2str(obj.max_clim_));
-                set(obj.max_clim_slider,'value',obj.max_clim_);
-            end
-            obj.min_clim_=val;
-        end
-        
         function val=get.event_list(obj)
             val=obj.event_list_;
         end
@@ -618,10 +551,8 @@ classdef TFMapWindow < handle
             obj.display_onset_=1;
             obj.max_freq_=obj.fs/2;
             obj.min_freq_=0;
-            obj.clim_slider_max_=10;
-            obj.clim_slider_min_=-10;
-            obj.max_clim_=6;
-            obj.min_clim_=-6;
+            obj.cmin_=-10;
+            obj.cmax_=10;
             obj.stft_winlen_=round(obj.fs/3);
             obj.stft_overlap_=round(obj.stft_winlen*0.9);
             obj.symmetric_scale_=1;
@@ -633,6 +564,8 @@ classdef TFMapWindow < handle
             obj.TFMapSaveWin=TFMapFigureSave(obj);
         end
         function buildfig(obj)
+            import javax.swing.JSpinner;
+            import javax.swing.SpinnerNumberModel;
             if obj.valid
                 figure(obj.fig);
                 return
@@ -726,22 +659,23 @@ classdef TFMapWindow < handle
             
             
             
-            hp_clim=uipanel('parent',hp,'title','Scale','units','normalized','position',[0,0.36,1,0.11]);
+            hp_scale=uipanel('parent',hp,'title','Scale','units','normalized','position',[0,0.36,1,0.11]);
             
-            uicontrol('parent',hp_clim,'style','text','string','Min','units','normalized',...
-                'position',[0,0.6,0.1,0.3]);
-            uicontrol('parent',hp_clim,'style','text','string','Max','units','normalized',...
-                'position',[0,0.1,0.1,0.3]);
-            obj.min_clim_edit=uicontrol('parent',hp_clim,'style','edit','string',num2str(obj.min_clim),'units','normalized',...
-                'position',[0.15,0.55,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
-            obj.min_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
-                'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
-                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.min_clim,'sliderstep',[0.01,0.05]);
-            obj.max_clim_edit=uicontrol('parent',hp_clim,'style','edit','string',num2str(obj.max_clim),'units','normalized',...
-                'position',[0.15,0.05,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
-            obj.max_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
-                'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
-                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.max_clim,'sliderstep',[0.01,0.05]);
+            uicontrol('parent',hp_scale,'style','text','units','normalized','position',[0,0.2,0.12,0.5],...
+                'string','Min','horizontalalignment','left','fontunits','normalized','fontsize',0.4);
+            model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.cmin),[],[],java.lang.Double(abs(obj.cmin)/10)));
+            obj.JMinSpinner =javaObjectEDT(JSpinner(model));
+            [jh,gh]=javacomponent(obj.JMinSpinner,[0,0,1,1],hp_scale);
+            set(gh,'Units','Norm','Position',[0.12,0.2,0.35,0.6]);
+            set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ScaleSpinnerCallback(obj,'min'));
+            
+            uicontrol('parent',hp_scale,'style','text','units','normalized','position',[0.5,0.2,0.12,0.5],...
+                'string','Max','horizontalalignment','left','fontunits','normalized','fontsize',0.4);
+            model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.cmax),[],[],java.lang.Double(abs(obj.cmax)/10)));
+            obj.JMaxSpinner =javaObjectEDT(JSpinner(model));
+            [jh,gh]=javacomponent(obj.JMaxSpinner,[0,0,1,1],hp_scale);
+            set(gh,'Units','Norm','Position',[0.62,0.2,0.35,0.6]);
+            set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ScaleSpinnerCallback(obj,'max'));
             
             resgp=uitabgroup(hp,'units','normalized','position',[0,0.22,1,0.13]);
             tab_stft=uitab(resgp,'title','STFT');
@@ -988,33 +922,30 @@ classdef TFMapWindow < handle
             end
         end
         
-        function ClimCallback(obj,src)
-            switch src
-                case obj.max_clim_slider
-                    obj.max_clim=get(src,'value');
-                case obj.min_clim_slider
-                    obj.min_clim=get(src,'value');
-                case obj.max_clim_edit
-                    t=str2double(get(src,'string'));
-                    if isnan(t)
-                        t=obj.max_clim;
-                    end
-                    obj.max_clim=t;
-                case obj.min_clim_edit
-                    t=str2double(get(src,'string'));
-                    if isnan(t)
-                        t=obj.min_clim;
-                    end
-                    obj.min_clim=t;
+        function ScaleSpinnerCallback(obj, max_min)
+            min=obj.JMinSpinner.getValue();
+            max=obj.JMaxSpinner.getValue();
+            
+            if obj.symmetric_scale
+                if strcmpi(max_min, 'max')
+                    min = -max;
+                elseif strcmpi(max_min, 'min')
+                    max = -min;
+                end
             end
             
-            if ~isempty(obj.TFMapFig)&&ishandle(obj.TFMapFig)
-                h=findobj(obj.TFMapFig,'-regexp','Tag','TFMapAxes*');
+            if min<max
+                obj.cmin=min;
+                obj.cmax=max;
                 
-                if obj.min_clim<obj.max_clim
-                    set(h,'CLim',[obj.min_clim,obj.max_clim]);
+                if ~isempty(obj.TFMapFig)&&ishandle(obj.TFMapFig)
+                    h=findobj(obj.TFMapFig,'-regexp','Tag','TFMapAxes*');
+                    
+                    if obj.cmin<obj.cmax
+                        set(h,'CLim',[obj.cmin,obj.cmax]);
+                    end
+                    %                 figure(obj.TFMapFig);
                 end
-                %                 figure(obj.TFMapFig);
             end
         end
         
@@ -1177,10 +1108,10 @@ classdef TFMapWindow < handle
             obj.stft_overlap=ov;
             %**************************************************************************
             
-            s=[obj.min_clim obj.max_clim];
+            s=[obj.cmin obj.cmax];
             if s(1)>=s(2)
                 s(1)=s(2)-abs(s(2))*0.1;
-                obj.min_clim=s(1);
+                obj.cmin=s(1);
             end
             
             freq=[obj.min_freq obj.max_freq];
@@ -1372,9 +1303,8 @@ classdef TFMapWindow < handle
                     
             end
             %**************************************************************
-            sl=obj.min_clim;
-            sh=obj.max_clim;
-            cmax=-inf;
+            sl=obj.cmin;
+            sh=obj.cmax;
             
             axe = axes('Parent',obj.TFMapFig,'units','normalized','Position',[0 0 1 1],'XLim',[0,1],'YLim',[0,1],'visible','off','tag','back');
             
@@ -1462,9 +1392,6 @@ classdef TFMapWindow < handle
                 obj.tfmat_channel=channel(chanind);
                 obj.tfmat_dataset=dataset(chanind);
                 obj.tfmat_channame=channames;
-                if ~isempty(tfm)&&option==2
-                    cmax=max(max(max(abs(tfm))),cmax);
-                end
             end
             
             if option==1
@@ -1478,7 +1405,7 @@ classdef TFMapWindow < handle
                 end
 
                 tfmap_grid(obj.TFMapFig,axe,t-obj.ms_before/1000,f,average_tf,chanpos,dw,dh,'',sl,sh,freq,obj.smooth_x,obj.smooth_y,obj.auto_scale);
-                cmax=max(max(abs(average_tf)));
+                
                 colorbar
                 a=findobj(obj.TFMapFig,'Type','Axes');
                 set(a,'visible','on');
@@ -1492,14 +1419,6 @@ classdef TFMapWindow < handle
             
             AxisCallback(obj,[]);
             obj.DisplayOnsetCallback([]);
-            
-            
-            if isnan(cmax)||isempty(cmax)||isinf(cmax)
-                cmax=15;
-            end
-            
-            obj.clim_slider_max=cmax;
-            obj.clim_slider_min=-cmax;
             
             if obj.auto_scale
                 a=findobj(obj.TFMapFig,'-regexp','Tag','TFMapAxes*');
@@ -1515,8 +1434,8 @@ classdef TFMapWindow < handle
                     sl=axes_clim(1);
                     sh=axes_clim(2);
                 end
-                obj.min_clim=min(sl);
-                obj.max_clim=max(sh);
+                obj.cmin=min(sl);
+                obj.cmax=max(sh);
             end
             
             obj.background_axe=axe;
@@ -1548,16 +1467,8 @@ classdef TFMapWindow < handle
             if obj.auto_scale
                 obj.symmetric_scale=0;
                 set(obj.symmetric_scale_radio,'enable','off');
-                set(obj.max_clim_edit,'enable','off');
-                set(obj.min_clim_edit,'enable','off');
-                set(obj.max_clim_slider,'enable','off');
-                set(obj.min_clim_slider,'enable','off');
             else
                 set(obj.symmetric_scale_radio,'enable','on');
-                set(obj.max_clim_edit,'enable','on');
-                set(obj.min_clim_edit,'enable','on');
-                set(obj.max_clim_slider,'enable','on');
-                set(obj.min_clim_slider,'enable','on');
             end
             obj.ComputeCallback();
         end
