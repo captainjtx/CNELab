@@ -1,4 +1,4 @@
-function spatialmap_grid(fig,mapv,interp_scatter,pos_x,pos_y,w,h,sl,sh,colbar,ratio, extrap, smooth_row, smooth_column)
+function spatialmap_grid(fig,mapv,interp_scatter,pos_x,pos_y,width,height,sl,sh,colbar,ratio, extrap, smooth_row, smooth_column)
 %TFMAP_GRID Summary of this function goes here
 %   Detailed explanation goes here
 %Orign of postion is top left corner
@@ -10,10 +10,10 @@ function spatialmap_grid(fig,mapv,interp_scatter,pos_x,pos_y,w,h,sl,sh,colbar,ra
 col=pos_x;
 row=pos_y;
 
-h=round(h);
-w=round(w);
+height=round(height);
+width=round(width);
 
-[x,y]=meshgrid((1:w)/w,(1:h)/h);
+[x,y]=meshgrid((1:width)/width,(1:height)/height);
 
 if isempty(extrap)
     extrap = 'none';
@@ -37,12 +37,11 @@ clf
 
 fpos=get(fig,'position');
 
-a=axes('units','normalized','position',[10/400*w/fpos(3),15/300*h/fpos(4),w/fpos(3),h/fpos(4)],'Visible','off','parent',fig,...
+a=axes('units','normalized','position',[10/400*width/fpos(3),15/300*height/fpos(4),width/fpos(3),height/fpos(4)],'Visible','off','parent',fig,...
     'xlimmode','manual','ylimmode','manual');
 
 if strcmp(interp_scatter,'interp')
-    h=imagesc('CData',mapvq,'Parent',a,'Tag','ImageMap');
-    set(h, 'AlphaData', ~isnan(mapvq))
+    imagesc('CData',mapvq,'Parent',a,'Tag','ImageMap', 'AlphaData', ~isnan(mapvq));
 end
 
 set(a,'XLim',[1,size(mapvq,2)]);
@@ -58,8 +57,8 @@ if colbar
     %optional color bar
     cb=colorbar('Units','normalized','FontSize',round(15*ratio));
     cbpos=get(cb,'Position');
-    set(a,'Position',[10/400*w/fpos(3),15/300*h/fpos(4),w/fpos(3),h/fpos(4)]);
-    set(cb,'Position',[(w+20/400*w)/fpos(3),15/300*h/fpos(4),0.04,cbpos(4)]);
+    set(a,'Position',[10/400*width/fpos(3),15/300*height/fpos(4),width/fpos(3),height/fpos(4)]);
+    set(cb,'Position',[(width+20/400*width)/fpos(3),15/300*height/fpos(4),0.04,cbpos(4)]);
 end                
 set(a,'Tag','MapAxes');
 drawnow
