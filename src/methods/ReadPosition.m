@@ -24,5 +24,9 @@ else
     r=C{4};
 end
 
+channelname = channelname(:);
+pos_x = pos_x(:);
+pos_y = pos_y(:);
+r = r(:);
 end
 

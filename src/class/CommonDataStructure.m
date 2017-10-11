@@ -778,7 +778,22 @@ classdef CommonDataStructure < handle
                     data=squeeze(data);
                     fs=st.('SR');
                 else
-                    h=msgbox('Unrecognized data structure, it contains more than one field','CommonDataStructure','error');
+                    prompt={'Please specify the field path for the data: '};
+                    def={''};
+                    
+                    title='Unknow Data Structure !';
+                    
+                    answer=inputdlg(prompt,title,1,def);
+                    
+                    if isempty(answer)
+                        return;
+                    end
+                    try
+                        data = st.(answer{1});
+                    catch
+                        errordlg('Field does not exist !');
+                        return;
+                    end
                 end
             else
                 data=st.(field{1});
