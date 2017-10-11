@@ -166,8 +166,7 @@ if ~isempty(erscol)
     end
 end
                         
-hold on
-
+hold(axe, 'on');
 imgh=image(I,'parent',axe);
 A=rgb2gray(I);
 

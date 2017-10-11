@@ -28,22 +28,16 @@ else
     t=obj.VideoLineTime+obj.VideoTimerPeriod*obj.PlaySpeed;
 end
 %stop if exceeds data length
-if t>obj.TotalTime
-    PausePlay(obj);
-    error('Data time exceeds video length');
+if (t < 0 && obj.PlaySpeed <= 0) || (t > obj.TotalTime && obj.PlaySpeed >= 0)
+    obj.PausePlay();
 end
-if t<0
-    obj.VideoLineTime=0;
-%     set(obj,'Time',0);
-    updateVideo(obj);
-    return
-end
+
+t = min(max(t,0), obj.TotalTime);
 
 obj.VideoLineTime=t;
 
-if (t-obj.Time)>obj.WinLength
-    set(obj,'Time',t);
-elseif t<obj.Time
+if (t-obj.Time)>obj.WinLength || t<obj.Time
     set(obj,'Time',t)
 end
+
 end
