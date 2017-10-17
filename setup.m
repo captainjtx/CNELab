@@ -4,8 +4,8 @@ clear functions
 
 java_version=version('-java');
 
-if ~strcmp(java_version(6:8),'1.7')
-    error('Matlab Java version mismatch !');
+if str2double(java_version(6:8)) < 1.7
+    error('Matlab Java version older than 1.7 !');
 end
 
 while 1
