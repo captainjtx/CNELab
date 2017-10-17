@@ -778,10 +778,10 @@ classdef CommonDataStructure < handle
                     data=squeeze(data);
                     fs=st.('SR');
                 else
-                    prompt={'Please specify the field path for the data: '};
+                    prompt={'Specify the field path for the data: '};
                     def={''};
                     
-                    title='Unknow Data Structure !';
+                    title='Unknown Structure !';
                     
                     answer=inputdlg(prompt,title,1,def);
                     
