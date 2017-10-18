@@ -166,6 +166,7 @@ classdef BioSigPlot < hgsetget
         MenuTFMap
         MenuSpectralMap
         MenuPSD
+        MenuCFC
         MenuCrossCorr
         MenuCrossCorrRaw
         MenuCrossCorrEnv
@@ -377,6 +378,7 @@ classdef BioSigPlot < hgsetget
         TFMapWin
         TriggerMapWin
         PSDWin
+        CFCWin
         SpectralMapWin
         AmplitudeMapWin
         InterpolateWin
@@ -456,6 +458,7 @@ classdef BioSigPlot < hgsetget
             
             obj.CSPMapWin=CSPMapWindow(obj);
             obj.PSDWin=PSDWindow(obj);
+            obj.CFCWin=CFCWindow(obj);
             obj.AverageMapWin=AverageMapWindow(obj);
             obj.WinFastEvts=FastEventWindow(obj);
             addlistener(obj.WinFastEvts,'FastEvtsChange',@(src,evt) set(obj,'FastEvts',obj.WinFastEvts.FastEvts));
@@ -574,6 +577,10 @@ classdef BioSigPlot < hgsetget
             
             if obj.PSDWin.valid
                 obj.PSDWin.OnClose();
+            end
+            
+            if obj.CFCWin.valid
+                obj.CFCWin.OnClose();
             end
             
             if obj.AverageMapWin.valid

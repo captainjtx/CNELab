@@ -122,6 +122,7 @@ obj.MenuTFMap=uimenu(obj.MenuApp,'Label','TF Map','callback',@(src,evt)obj.TFMap
 obj.MenuSpectralMap=uimenu(obj.MenuApp,'Label','Spectral Map','callback',@(src,evt) obj.SpectralMapWin.buildfig());
 obj.MenuAmplitudeMap=uimenu(obj.MenuApp,'Label','Amp Map','callback',@(src,evt) obj.AmplitudeMapWin.buildfig());
 obj.MenuTriggerMap=uimenu(obj.MenuApp,'Label','Trigger Map','callback',@(src,evt)obj.TriggerMapWin.buildfig());
+obj.MenuCFC=uimenu(obj.MenuApp,'Label','CFC','callback',@(src,evt)obj.CFCWin.buildfig());
 
 obj.MenuCrossCorr=uimenu(obj.MenuApp,'Label','XCorr');
 
