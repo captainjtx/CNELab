@@ -133,7 +133,7 @@ classdef CFCWindow < handle
             obj.surr_num_edit = uicontrol('parent',hp_surr,'style','edit','string',num2str(obj.surr_num),...
                 'units', 'normalized','position',[0.61,0.05,0.3,0.9]);
             uicontrol('Parent',hp_surr,'style','text','String','Surrogate Number','units','normalized',...
-                'position',[0.01,0.05,0.5,0.9],'HorizontalAlignment','Left');
+                'position',[0.01,0.05,0.5,0.5],'HorizontalAlignment','Left');
             
             % colorscale controls
             hp_clim = uipanel('Parent',hp,'Title', 'Color Scale','units', 'normalized','position',[0,0.18,1,0.1]);
