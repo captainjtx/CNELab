@@ -159,8 +159,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
     int threadNum=8;
     double* data;
     
-    int nb;
-    int na;
+    size_t nb;
+    size_t na;
     
     const mxArray* b;
     const mxArray* a;
@@ -268,7 +268,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
         ia= mxGetCell(a,i);
         
         const mwSize* tmp = mxGetDimensions(ib);
-        int fnum=MAX(tmp[0],tmp[1]);
+        size_t fnum=MAX(tmp[0],tmp[1]);
         
 //         cout<<fnum<<" filters in chan "<<i<<endl;
         for(int f=0;f<fnum;++f)
@@ -276,10 +276,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
             ib_f=mxGetCell(ib,f);
             ia_f=mxGetCell(ia,f);
             
-            const int* ib_dim=mxGetDimensions(ib_f);
+            const size_t* ib_dim=mxGetDimensions(ib_f);
             ib_n=MAX(ib_dim[0],ib_dim[1]);
             
-            const int* ia_dim=mxGetDimensions(ia_f);
+            const size_t* ia_dim=mxGetDimensions(ia_f);
             ia_n=MAX(ia_dim[0],ia_dim[1]);
             
             new_fp=new FilterParameter(ib_n,ia_n,mxGetPr(ib_f),mxGetPr(ia_f));
