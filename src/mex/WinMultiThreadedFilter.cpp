@@ -149,12 +149,12 @@ void mexFunction(int nlhs, mxArray *plhs[],
     mxArray *ia;
     mxArray* ib_f;
     mxArray* ia_f;
-    int ib_n;
-    int ia_n;
+    size_t ib_n;
+    size_t ia_n;
     void *args[6];
     int chancount[1];
     
-    int padding=0;
+    size_t padding=0;
     
     int threadNum=8;
     double* data;
