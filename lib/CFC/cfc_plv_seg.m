@@ -4,6 +4,8 @@ xbins = length(ph_freq_vec);
 ybins = length(amp_freq_vec);
 seg_num = length(sig_amp);
 
+fprintf('CFC generation \t')
+fprintf('1/4 filtering amp freq \t')
 amp_filt_signals=cell(ybins,1);
 for jj = 1:ybins
     [b,a] = butter(3,[amp_freq_vec(jj)-BW_amp amp_freq_vec(jj)+BW_amp]/(0.5*Fs)); % Band-pass filtering of high frequency components
@@ -16,6 +18,7 @@ for jj = 1:ybins
     amp_filt_signals{jj} = env;
 end
 
+fprintf('2/4 filtering ph freq \t')
 ph_filt_signals=cell(xbins,1);
 for ii = 1:xbins
     [b,a] = butter(3,[ph_freq_vec(ii)-BW_ph ph_freq_vec(ii)+BW_ph]/(0.5*Fs)); %Band-pass filtering of slow frequency component
@@ -28,6 +31,7 @@ for ii = 1:xbins
     ph_filt_signals{ii} = phs; 
 end
 
+fprintf('3/4 generating CFC map \t')
 pacmat = zeros(ybins,xbins);
 for ii = 1:xbins
     for jj = 1:ybins
@@ -37,6 +41,7 @@ for ii = 1:xbins
     end
 end
 
+fprintf('3/4 generating surrogates \n')
 shf_pacmat_final = ones(surr_num,ybins,xbins);
 % for ss = 1:surr_num % surrogate analysis
 %     fprintf('Surrogate Num:%d\n',ss);
