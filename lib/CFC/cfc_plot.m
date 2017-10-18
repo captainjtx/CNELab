@@ -7,7 +7,7 @@ smooth_kernel = fspecial('gaussian',[smooth_row smooth_col],1.5); % for smoothin
 m1 = abs(pacmat);
 m2 = sw_pacmat;
 if std(m2) == 0
-    fprintf('STD of surrogate is 0! Plotting raw map instead');
+    fprintf('STD of surrogate is 0! Plotting raw map instead \n');
     m3=m1;
 else
     m3 = (m1-squeeze(mean(m2)))./squeeze(std(m2)); %normalization

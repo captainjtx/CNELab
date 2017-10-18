@@ -136,10 +136,11 @@ classdef CFCWindow < handle
                 'position',[0.01,0.05,0.5,0.9],'HorizontalAlignment','Left');
             
             % colorscale controls
+            clim_step = (obj.cmax-obj.cmin)/10;
             hp_clim = uipanel('Parent',hp,'Title', 'Color Scale','units', 'normalized','position',[0,0.18,1,0.1]);
             uicontrol('parent',hp_clim,'style','text','units','normalized','position',[0,0,0.1,0.8],...
                 'string','Min','horizontalalignment','left','fontunits','normalized','fontsize',0.6);
-            model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.cmin),[],[],java.lang.Double(0.1)));
+            model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.cmin),[],[],java.lang.Double(clim_step)));
             obj.JMinSpinner =javaObjectEDT(JSpinner(model));
             [jh,gh]=javacomponent(obj.JMinSpinner,[0,0,1,1],hp_clim);
             set(gh,'Units','Norm','Position',[0.12,0.05,0.35,0.9]);
@@ -147,7 +148,7 @@ classdef CFCWindow < handle
             
             uicontrol('parent',hp_clim,'style','text','units','normalized','position',[0.5,0,0.1,0.8],...
                 'string','Max','horizontalalignment','left','fontunits','normalized','fontsize',0.6);
-            model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.cmax),[],[],java.lang.Double(0.1)));
+            model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.cmax),[],[],java.lang.Double(clim_step)));
             obj.JMaxSpinner =javaObjectEDT(JSpinner(model));
             [jh,gh]=javacomponent(obj.JMaxSpinner,[0,0,1,1],hp_clim);
             set(gh,'Units','Norm','Position',[0.62,0.05,0.35,0.9]);
@@ -240,8 +241,8 @@ classdef CFCWindow < handle
             set(gca,'Tag','CFCMapAxes');
             
             
-            obj.cmin=min(min(pacmat));
-            obj.cmax=max(max(pacmat));
+            obj.cmin=min(min(abs(pacmat)));
+            obj.cmax=max(max(abs(pacmat)));
             
         end 
         
