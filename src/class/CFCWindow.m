@@ -7,6 +7,7 @@ classdef CFCWindow < handle
         ph_bw
         amp_vector_str
         amp_bw
+        surr_num
         CFCmap_counter
         cmin_
         cmax_
@@ -29,15 +30,16 @@ classdef CFCWindow < handle
         amp_freq_edit
         amp_bw_edit
         
+        surr_num_edit
+        
+        new_btn
+        compute_btn
         
         JMinSpinner
         JMaxSpinner
         JSmoothRowSpinner
         JSmoothColSpinner
-        
-        
-        new_btn
-        compute_btn
+            
     end
     
     properties (Dependent)
@@ -65,6 +67,7 @@ classdef CFCWindow < handle
             obj.ph_bw = 5;
             obj.amp_vector_str = '150:10:400';
             obj.amp_bw = 50;
+            obj.surr_num = 100;
             obj.CFCmap_counter = 0;
             obj.fig_w = 560;
             obj.fig_h = 420;
@@ -126,8 +129,12 @@ classdef CFCWindow < handle
                 'position',[0.01,0.01,0.5,0.3],'HorizontalAlignment','Left');
             
              % surrogate numbers
-            hp_surrogate = uipanel('Parent',hp,'Title', '','units', 'normalized','position',[0,0.285,1,0.1]);
-
+            hp_surr = uipanel('Parent',hp,'Title', '','units', 'normalized','position',[0,0.285,1,0.1]);
+            obj.surr_num_edit = uicontrol('parent',hp_surr,'style','edit','string',num2str(obj.surr_num),...
+                'units', 'normalized','position',[0.61,0.05,0.3,0.9]);
+            uicontrol('Parent',hp_surr,'style','text','String','Surrogate Number','units','normalized',...
+                'position',[0.01,0.05,0.5,0.9],'HorizontalAlignment','Left');
+            
             % colorscale controls
             hp_clim = uipanel('Parent',hp,'Title', 'Color Scale','units', 'normalized','position',[0,0.18,1,0.1]);
             uicontrol('parent',hp_clim,'style','text','units','normalized','position',[0,0,0.1,0.8],...
@@ -219,7 +226,7 @@ classdef CFCWindow < handle
                 sig_amp{i} = sig_amp_mat(seg_ind==val(i));
             end
             surr_num =0;
-            [pacmat, shf_pacmat_final] = cfc_plv_seg(sig_ph,sig_amp, obj.fs, obj.ph_vector, obj.amp_vector,obj.ph_bw, obj.ph_bw, surr_num);
+            [pacmat, shf_pacmat_final] = cfc_plv_seg(sig_ph,sig_amp, obj.fs, obj.ph_vector, obj.amp_vector,obj.ph_bw, obj.ph_bw, obj.surr_num);
             
             if ~NoCFCMapFig(obj)
                 figure(obj.CFCMapFig);
