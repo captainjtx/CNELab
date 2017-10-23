@@ -19,6 +19,8 @@ for i=1:size(eeg,2)
     tfm=tfm+tf;
 end
 
+tfm = tfm/size(eeg,2);
+
 if ~isempty(baseline)
     rtf=0;
     for i=1:size(baseline,2)

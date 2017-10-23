@@ -3,10 +3,17 @@ function d=preprocessedData(obj,varargin)
 if nargin==2
     n=varargin{1};
     d=double(obj.Data{n}*(obj.Montage{n}(obj.MontageRef(n)).mat)');
+    chanind = 1:size(d,2);
 elseif nargin==3
     n=varargin{1};
     %make sure the data is montage transformed
     d=double(varargin{2});
+    chanind = 1:size(d,2);
+elseif nargin==4
+    n=varargin{1};
+    %make sure the data is montage transformed
+    d=double(varargin{2});
+    chanind = varargin{3};
 else
     d=[];
     return
@@ -26,10 +33,11 @@ fn=obj.FilterNotch{n};
 fcum=obj.FilterCustomIndex{n};
 
 fchan=[];
-for i=1:size(d,2)
-    if obj.Filtering{n}(i)
-        fl=obj.FilterLow{n}(i);
-        fh=obj.FilterHigh{n}(i);
+for i=1:length(chanind)
+    c = chanind(i);
+    if obj.Filtering{n}(c)
+        fl=obj.FilterLow{n}(c);
+        fh=obj.FilterHigh{n}(c);
         
         if fl==0||isempty(fl)||isnan(fl)||isinf(fl)
             if fh~=0
@@ -55,14 +63,14 @@ for i=1:size(d,2)
             end
         end
         
-        if ~isnan(fn(i))&&fn(i)~=0
-            if fn(i)>1&&fn(i)<fs/2-1
+        if ~isnan(fn(c))&&fn(c)~=0
+            if fn(c)>1&&fn(c)<fs/2-1
                 if notch_single
-                    [notch_b,notch_a]=butter(order,[fn(i)-1,fn(i)+1]/(fs/2),'stop');
+                    [notch_b,notch_a]=butter(order,[fn(c)-1,fn(c)+1]/(fs/2),'stop');
                     b{i}=cat(1,b{i},{notch_b});
                     a{i}=cat(1,a{i},{notch_a});
                 else
-                    [notch_b,notch_a]=butter_harmonic(fn(i),fs,order);
+                    [notch_b,notch_a]=butter_harmonic(fn(c),fs,order);
                     b{i}=cat(1,b{i},notch_b);
                     a{i}=cat(1,a{i},notch_a);
                 end

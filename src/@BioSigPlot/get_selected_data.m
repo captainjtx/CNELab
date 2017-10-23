@@ -117,7 +117,7 @@ for i=1:length(dd)
             %%detrend can solve the large DC shift problem of the data,
             %%however it means you will always get a DC free data no matter
             %%what filter you apply
-            tmpd=preprocessedData(obj,dd(i),detrend(alldata(count:count+len-1,:)));
+            tmpd=preprocessedData(obj,dd(i),detrend(alldata(count:count+len-1,:), 'constant'), chan);
         else
             tmpd=alldata(count:count+len-1,:);
         end
