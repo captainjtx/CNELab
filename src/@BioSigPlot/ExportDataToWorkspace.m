@@ -47,13 +47,6 @@ for s=1:length(seg)
     cds.Montage.GroupNames=groupnames;
     cds.Montage.ChannelPosition=pos;
     
-    maskchan=obj.MontageChanNames{dd(1)}(obj.Mask{dd(1)}==0);
-    for i=2:length(dd)
-        maskchan=cat(2,maskchan,obj.MontageChanNames{dd(i)}(obj.Mask{dd(i)}==0));
-    end
-    
-    cds.Montage.MaskChanNames=maskchan;
-    
     sel{s}=cds;
 end
 

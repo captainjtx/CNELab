@@ -114,8 +114,9 @@ else
         
         maskchan=obj.MontageChanNames{dd(1)}(obj.Mask{dd(1)}==0);
         for i=2:length(dd)
-            maskchan=cat(2,maskchan,obj.MontageChanNames{dd(i)}(obj.Mask{dd(i)}==0));
+            maskchan=cat(1,maskchan(:),obj.MontageChanNames{dd(i)}(obj.Mask{dd(i)}==0));
         end
+        maskchan = maskchan(ismember(maskchan, chanNames));
         
         cds.Montage.MaskChanNames=maskchan;
         
