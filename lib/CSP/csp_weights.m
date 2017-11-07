@@ -14,17 +14,6 @@ if nargin <4
     mode=0;
 end
 
-if size(varargin) == 1
-    X_trial_weight = varargin{1};
-    Y_trial_weight = varargin{1};
-elseif size(varargin) == 2
-    X_trial_weight = varargin{1};
-    Y_trial_weight = varargin{2};
-end
-
-X_trial_weight = X_trial_weight/sum(X_trial_weight);
-Y_trial_weight = Y_trial_weight/sum(Y_trial_weight);
-
 TrX=size(X,3);
 TrY=size(Y,3);
 Nx=size(X,1);
@@ -32,6 +21,17 @@ Ny=size(Y,1);
 Nch=length(CHi);
 cx=zeros(Nch,Nch);
 cy=zeros(Nch,Nch);
+
+if nargin <= 4
+    X_trial_weight = ones(TrX, 1)/TrX;
+    Y_trial_weight = ones(TrY, 1)/TrY;
+elseif size(varargin) == 1
+    X_trial_weight = varargin{1};
+    Y_trial_weight = varargin{1};
+elseif size(varargin) == 2
+    X_trial_weight = varargin{1};
+    Y_trial_weight = varargin{2};
+end
 
 for i=1:TrX
     x=X(:,CHi,i);
