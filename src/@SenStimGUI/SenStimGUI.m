@@ -84,13 +84,23 @@ classdef SenStimGUI<handle
             obj.DEFAULT_PORT=11260;
             obj.udp_fid=udp('127.0.0.1',obj.DEFAULT_PORT);
             fopen(obj.udp_fid);
-            obj.log_fid=fopen('stim.log','w');
-            obj.anno_fid=fopen('anno.stim','w');
+            obj.log_fid=fopen('stim.log','a');
+            obj.anno_fid=fopen('anno.stim','a');
             obj.stim_timer = timer('TimerFcn',@ (src,evts) EnableStim(obj),'BusyMode','queue','StartDelay',obj.DEFAULT_TL/1000);
             try
                 fprintf(obj.log_fid,'%%COUNT stim string\n\r');
+            catch
+                disp('Opening stim file');
+                obj.log_fid=fopen('stim.log','a');
+                fprintf(obj.log_fid,'%%COUNT stim string\n\r');
+            end
+            
+            try
                 fprintf(obj.anno_fid,'%%COUNT elec    amplitude(mA)    phase duration(ms)    frequency(Hz)    train length(ms)\n\r');
             catch
+                disp('Opening stim anno file');
+                obj.log_fid=fopen('anno.stim','a');
+                fprintf(obj.anno_fid,'%%COUNT elec    amplitude(mA)    phase duration(ms)    frequency(Hz)    train length(ms)\n\r');
             end
         end
         function buildfig(obj)
@@ -576,6 +586,15 @@ classdef SenStimGUI<handle
                             st.freq,...
                             st.tl);
                     catch
+                        disp('Opening stim anno file');
+                        obj.log_fid=fopen('anno.stim','a');
+                        fprintf(obj.anno_fid,'%d,%s,%f,%f,%d,%f\n\r',...
+                            obj.STIM_COUNT,...
+                            num2str(st.elec),...
+                            st.amp,...
+                            st.dur,...
+                            st.freq,...
+                            st.tl);
                     end
                 
                     st=divideCurrent(obj,st);
@@ -612,6 +631,15 @@ classdef SenStimGUI<handle
                         stim.freq,...
                         stim.tl);
                 catch
+                    disp('Opening stim anno file');
+                    obj.log_fid=fopen('anno.stim','a');
+                    fprintf(obj.anno_fid,'%d,%s,%f,%f,%d,%f\n\r',...
+                        obj.STIM_COUNT,...
+                        num2str(stim.elec),...
+                        stim.amp,...
+                        stim.dur,...
+                        stim.freq,...
+                        stim.tl);
                 end
                 
                 %map electrodes
@@ -629,6 +657,9 @@ classdef SenStimGUI<handle
             try
                 fprintf(obj.log_fid,'%d    %s\n\r',obj.STIM_COUNT,stim_str);
             catch
+                disp('Opening stim log file');
+                obj.log_fid=fopen('stim.log','a');
+                fprintf(obj.log_fid,'%d    %s\n\r',obj.STIM_COUNT,stim_str);
             end
         end
         
@@ -687,7 +718,7 @@ classdef SenStimGUI<handle
         end
         
         function saveConfig(obj)
-            fid=fopen('frontend.cfg','w');
+            fid=fopen('frontend.cfg','a');
             ports={'A','B','C','D'};
             for port=1:4
                 for num=1:4
