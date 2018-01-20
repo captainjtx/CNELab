@@ -95,14 +95,14 @@ for i=1:length(mapv)
 end
 
 if isempty(mapv)
-    I = insertShape(background,'Circle',circles,'Color',[0,0,0],'LineWidth',1);
+    I = insertShape(background,'Circle',circles,'Color',[0,0,0],'LineWidth',2);
 else
-    I = insertShape(background,'FilledCircle',circles,'Color',cmapv(~erdchan&~erschan,:),'LineWidth',1);
+    I = insertShape(background,'FilledCircle',circles,'Color',cmapv(~erdchan&~erschan,:),'LineWidth',2);
 end
 
 if ~isempty(badcol)
     circles=[badcol,badrow,badr];
-    I = insertShape(I,'Circle',circles,'Color',[100,100,100],'LineWidth',1);
+    I = insertShape(I,'Circle',circles,'Color',[100,100,100],'LineWidth',2);
 end
 
 alpha=pi/4;
@@ -132,9 +132,9 @@ if ~isempty(erdcol)
     end
     
     if isempty(mapv)
-        I = insertShape(I,'Polygon',triangles,'Color',[0,0,0],'LineWidth',1);
+        I = insertShape(I,'Polygon',triangles,'Color',[0,0,0],'LineWidth',2);
     else
-        I = insertShape(I,'FilledPolygon',triangles,'Color',cmapv(erdchan,:),'LineWidth',1);
+        I = insertShape(I,'FilledPolygon',triangles,'Color',cmapv(erdchan,:),'LineWidth',2);
     end
     
 end
@@ -160,9 +160,9 @@ if ~isempty(erscol)
     end
     
     if isempty(mapv)
-        I = insertShape(I,'Polygon',triangles,'Color',[0,0,0],'LineWidth',1);
+        I = insertShape(I,'Polygon',triangles,'Color',[0,0,0],'LineWidth',2);
     else
-        I = insertShape(I,'FilledPolygon',triangles,'Color',cmapv(erschan,:),'LineWidth',1);
+        I = insertShape(I,'FilledPolygon',triangles,'Color',cmapv(erschan,:),'LineWidth',2);
     end
 end
                         

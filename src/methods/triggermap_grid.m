@@ -1,4 +1,4 @@
-function h=signalmap_grid(fig,axe,t,sig,err,pos,dw,dh,channame,yl)
+function h=triggermap_grid(fig,axe,t,sig,err,pos,dw,dh,channame,yl)
 %TFMAP_GRID Summary of this function goes here
 %   Detailed explanation goes here
 %Orign of postion is top left corner

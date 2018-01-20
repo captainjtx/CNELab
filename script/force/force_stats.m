@@ -3,8 +3,8 @@
 clear
 clc
 
-squeeze_mat = load('/Users/tengi/Desktop/Projects/data/China/force/S1/squeeze.mat','-mat');
-relax_mat = load('/Users/tengi/Desktop/Projects/data/China/force/S1/relax.mat','-mat');
+squeeze_mat = load('/Users/tengi/Desktop/Projects/data/China/force/S2/squeeze.mat','-mat');
+relax_mat = load('/Users/tengi/Desktop/Projects/data/China/force/S2/relax.mat','-mat');
 %%
 squeeze_data = squeeze_mat.data;
 relax_data = relax_mat.data;
@@ -14,7 +14,7 @@ S1_ERS_Squeeze = {'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C13', 'C14', 'C15', 'C16'
 s1_bad_hold_trial = [4, 15, 18, 24];
 S2_ERS_Squeeze = {'C110', 'C109', 'C97', 'C86', 'C85', 'C75', 'C74', 'C73', 'C25'};
 s2_bad_hold_trial = [5, 13];
-ecog_ind = find(ismember(relax_mat.channame, S1_ERS_Squeeze));
+ecog_ind = find(ismember(relax_mat.channame, S2_ERS_Squeeze));
 
 fs = relax_mat.fs;
 %%

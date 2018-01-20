@@ -664,7 +664,7 @@ classdef TriggerMapWindow < handle
                     else
                         err = zeros(size(sig,1),1);
                     end
-                    TriggerMap_grid(obj.TriggerMapFig,axe,linspace(-obj.ms_before, obj.ms_after, size(sig,1)),...
+                    triggermap_grid(obj.TriggerMapFig,axe,linspace(-obj.ms_before, obj.ms_after, size(sig,1)),...
                         mean(sig,2),err,chanpos(j,:),dw,dh,channames{j},yl);
                     ave_sig = cat(2, ave_sig, mean(sig,2));
                 end
@@ -676,7 +676,7 @@ classdef TriggerMapWindow < handle
                  else
                        err = zeros(size(obj.mat.data,1),1);
                 end
-                TriggerMap_grid(obj.TriggerMapFig,axe,linspace(-obj.ms_before, obj.ms_after, size(obj.mat.data, 1)),...
+                triggermap_grid(obj.TriggerMapFig,axe,linspace(-obj.ms_before, obj.ms_after, size(obj.mat.data, 1)),...
                     mean(mean(obj.mat.data,3),2),err,chanpos,dw,dh,'Average',yl);
                 ave_sig = mean(mean(obj.mat.data,3),2);
 %                 cmax=max(max(abs(ave_sig)));

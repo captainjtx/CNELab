@@ -24,10 +24,6 @@ classdef AverageMapWindow  < handle
         neg_radio
         neg_slider
         
-        max_clim_edit
-        max_clim_slider
-        min_clim_edit
-        min_clim_slider
         resize_edit
         resize_slider
         
@@ -42,6 +38,9 @@ classdef AverageMapWindow  < handle
         average_radio
         color_bar_radio
         scale_by_max_radio
+        
+        JMinSpinner
+        JMaxSpinner
         
         BtnDelete
         BtnLoad
@@ -59,12 +58,7 @@ classdef AverageMapWindow  < handle
         pos_
         neg_
         
-        max_clim_
-        min_clim_
-        clim_slider_max_
-        clim_slider_min_
         resize_
-        
         scale_by_max_
         average_
         color_bar_
@@ -91,7 +85,8 @@ classdef AverageMapWindow  < handle
         all_chan_names
         
         export_picture_win
-        cmax
+        cmax_
+        cmin_
         style_menu
         map_interp_menu
         map_scatter_menu
@@ -106,10 +101,9 @@ classdef AverageMapWindow  < handle
         fig_y
         fig_w
         fig_h
-        max_clim
-        min_clim
-        clim_slider_max
-        clim_slider_min
+        cmax
+        cmin
+        
         resize
         scale_by_max
         average
@@ -140,13 +134,8 @@ classdef AverageMapWindow  < handle
         end
         
         function varinitial(obj)
-            obj.cmax=10;
-            obj.clim_slider_max_=1;
-            obj.clim_slider_min_=-1;
-            obj.max_clim_=1;
-            obj.min_clim_=-1;
             obj.resize_=1;
-            obj.scale_by_max_=1;
+            obj.scale_by_max_=0;
             obj.average_=1;
             obj.color_bar_=0;
             obj.width=300;
@@ -159,7 +148,8 @@ classdef AverageMapWindow  < handle
             obj.center_mass_=1;
             obj.peak_=1;
             obj.contact_=1;
-            
+            obj.cmin_ = -10;
+            obj.cmax_ = 10;
             obj.neg_=0;
             obj.pos_=0;
             obj.neg_t=1;
@@ -167,14 +157,14 @@ classdef AverageMapWindow  < handle
             obj.position_file='None';
             obj.position=[];
             
-            
-            
             obj.average_=1;
             
             obj.export_picture_win=AverageMapSaveWindow(obj);
         end
         
         function buildfig(obj)
+            import javax.swing.JSpinner;
+            import javax.swing.SpinnerNumberModel;
             if obj.valid
                 figure(obj.fig);
                 return
@@ -252,22 +242,23 @@ classdef AverageMapWindow  < handle
                 'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) TCallback(obj,src),...
                 'min',1,'max',10,'value',obj.neg_t,'sliderstep',[0.01,0.05],'interruptible','off');
             
-            hp_clim=uipanel('parent',hp,'title','Scale','units','normalized','position',[0,0.29,1,0.1]);
+            hp_scale=uipanel('parent',hp,'title','Scale','units','normalized','position',[0,0.29,1,0.1]);
             
-            uicontrol('parent',hp_clim,'style','text','string','Min','units','normalized',...
-                'position',[0,0.6,0.1,0.3]);
-            uicontrol('parent',hp_clim,'style','text','string','Max','units','normalized',...
-                'position',[0,0.1,0.1,0.3]);
-            obj.min_clim_edit=uicontrol('parent',hp_clim,'style','edit','string',num2str(obj.min_clim),'units','normalized',...
-                'position',[0.15,0.55,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
-            obj.min_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
-                'position',[0.4,0.6,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
-                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.min_clim,'sliderstep',[0.01,0.05]);
-            obj.max_clim_edit=uicontrol('parent',hp_clim,'style','edit','string',num2str(obj.max_clim),'units','normalized',...
-                'position',[0.15,0.05,0.2,0.4],'horizontalalignment','center','callback',@(src,evts) ClimCallback(obj,src));
-            obj.max_clim_slider=uicontrol('parent',hp_clim,'style','slider','units','normalized',...
-                'position',[0.4,0.1,0.55,0.3],'callback',@(src,evts) ClimCallback(obj,src),...
-                'min',obj.clim_slider_min,'max',obj.clim_slider_max,'value',obj.max_clim,'sliderstep',[0.01,0.05]);
+            uicontrol('parent',hp_scale,'style','text','units','normalized','position',[0,0.2,0.12,0.5],...
+                'string','Min','horizontalalignment','left','fontunits','normalized','fontsize',0.4);
+            model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.cmin),[],[],java.lang.Double(abs(obj.cmin)/10)));
+            obj.JMinSpinner =javaObjectEDT(JSpinner(model));
+            [jh,gh]=javacomponent(obj.JMinSpinner,[0,0,1,1],hp_scale);
+            set(gh,'Units','Norm','Position',[0.12,0.2,0.35,0.6]);
+            set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ScaleSpinnerCallback(obj));
+            
+            uicontrol('parent',hp_scale,'style','text','units','normalized','position',[0.5,0.2,0.12,0.5],...
+                'string','Max','horizontalalignment','left','fontunits','normalized','fontsize',0.4);
+            model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(obj.cmax),[],[],java.lang.Double(abs(obj.cmax)/10)));
+            obj.JMaxSpinner =javaObjectEDT(JSpinner(model));
+            [jh,gh]=javacomponent(obj.JMaxSpinner,[0,0,1,1],hp_scale);
+            set(gh,'Units','Norm','Position',[0.62,0.2,0.35,0.6]);
+            set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ScaleSpinnerCallback(obj));
             
             
             hp_s=uipanel('parent',hp,'title','Window Scale','units','normalized','position',[0,0.21,1,0.07]);
@@ -429,9 +420,10 @@ classdef AverageMapWindow  < handle
             ind=[];
             for i=1:length(maps)
                 sm=ReadSpatialMap(maps{i});
-                [~,ib]=ismember(sm.name,allchannames);
+                [ia,ib]=ismember(sm.name,allchannames);
+                ib = ib(ib ~= 0);
                 ind=union(ind,ib);
-                mapv(ib,i)=sm.val;
+                mapv(ib,i)=sm.val(ia);
             end
             obj.map_val=mapv;
             obj.all_chan_pos=allchanpos;
@@ -461,10 +453,11 @@ classdef AverageMapWindow  < handle
                     val=mv(:,i);
                 end
                 %*********************
+                
                 spatialmap_grid(obj.SpatialMapFig(i),val,obj.interp_scatter,...
                     map_pos(:,1),map_pos(:,2),obj.width,obj.height,...
-                    obj.min_clim,obj.max_clim,obj.color_bar,obj.resize);
-                h=findobj(obj.SpatialMapFig(i),'-regexp','tag','SpatialMapAxes');
+                    obj.cmin,obj.cmax,obj.color_bar,obj.resize, 'none', [], []);
+                h=findobj(obj.SpatialMapFig(i),'-regexp','tag','MapAxes');
                 
                 if obj.contact||strcmp(obj.interp_scatter,'scatter')
                     if obj.contact
@@ -474,6 +467,7 @@ classdef AverageMapWindow  < handle
                     end
                     
                     if strcmp(obj.interp_scatter,'scatter')
+                        
                         plot_contact(h,mapv,allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.height,obj.width,cn,...
                             ~ismember(allchanpos,chanpos,'rows'),[],[]);
                     else
@@ -487,11 +481,7 @@ classdef AverageMapWindow  < handle
                     text(map_pos(I,1)*obj.width,map_pos(I,2)*obj.height,'p','parent',h,'fontsize',round(20*obj.resize),'color','w',...
                         'tag','peak','horizontalalignment','center','fontweight','bold');
                 end
-                vmax=max(vmax,max(abs(val)));
             end
-            obj.clim_slider_max=vmax;
-            obj.clim_slider_min=-vmax;
-            obj.cmax=vmax;
         end
         function val=NoSpatialMapFig(obj)
             val=isempty(obj.SpatialMapFig)||~all(ishandle(obj.SpatialMapFig))||~all(strcmpi(get(obj.SpatialMapFig,'Tag'),'Act'));
@@ -564,6 +554,32 @@ classdef AverageMapWindow  < handle
                 set(obj.Table,'Data',tmp);
             end
         end
+        function val=get.cmin(obj)
+            val=obj.cmin_;
+        end
+        function val=get.cmax(obj)
+            val=obj.cmax_;
+        end
+        
+        function set.cmin(obj,val)
+            if(val>obj.cmax)
+                return
+            end
+            obj.cmin_=val;
+            obj.JMinSpinner.setValue(java.lang.Double(val));
+            obj.JMinSpinner.getModel().setStepSize(java.lang.Double(abs(val)/10));
+            drawnow
+        end
+        
+        function set.cmax(obj,val)
+            if(val<obj.cmin)
+                return
+            end
+            obj.cmax_=val;
+            obj.JMaxSpinner.setValue(java.lang.Double(val));
+            obj.JMaxSpinner.getModel().setStepSize(java.lang.Double(abs(val)/10));
+            drawnow
+        end
         function val=get.select(obj)
             val=obj.select_;
         end
@@ -592,97 +608,6 @@ classdef AverageMapWindow  < handle
             catch
                 val=0;
             end
-        end
-        
-        function val=get.clim_slider_min(obj)
-            val=obj.clim_slider_min_;
-        end
-        function set.clim_slider_min(obj,val)
-            obj.clim_slider_min_=val;
-            if obj.min_clim<val
-                obj.min_clim=val;
-            end
-            if obj.valid
-                set(obj.max_clim_slider,'min',val);
-                set(obj.min_clim_slider,'min',val);
-                %                 set(obj.erd_slider,'min',val);
-                %                 set(obj.ers_slider,'min',val);
-            end
-        end
-        
-        function val=get.clim_slider_max(obj)
-            val=obj.clim_slider_max_;
-        end
-        function set.clim_slider_max(obj,val)
-            obj.clim_slider_max_=val;
-            if obj.max_clim>val
-                obj.max_clim=val;
-            end
-            if obj.valid
-                set(obj.max_clim_slider,'max',val);
-                set(obj.min_clim_slider,'max',val);
-                %                 set(obj.erd_slider,'max',val);
-                %                 set(obj.ers_slider,'max',val);
-            end
-        end
-        
-        function val=get.max_clim(obj)
-            val=obj.max_clim_;
-        end
-        
-        function set.max_clim(obj,val)
-            if val>obj.clim_slider_max
-                val=obj.clim_slider_max;
-            elseif val<obj.clim_slider_min
-                val=obj.clim_slider_min;
-            end
-            
-            if obj.symmetric_scale
-                val=abs(val);
-                obj.min_clim_=obj.clim_slider_max+obj.clim_slider_min-val;
-            else
-                if obj.min_clim>=val
-                    obj.min_clim_=val-1;
-                end
-            end
-            if obj.valid
-                set(obj.max_clim_edit,'string',num2str(val));
-                set(obj.max_clim_slider,'value',val);
-                
-                set(obj.min_clim_edit,'string',num2str(obj.min_clim_));
-                set(obj.min_clim_slider,'value',obj.min_clim_);
-            end
-            obj.max_clim_=val;
-        end
-        
-        
-        function val=get.min_clim(obj)
-            val=obj.min_clim_;
-        end
-        function set.min_clim(obj,val)
-            if val>obj.clim_slider_max
-                val=obj.clim_slider_max;
-            elseif val<obj.clim_slider_min
-                val=obj.clim_slider_min;
-            end
-            
-            if obj.symmetric_scale
-                val=-abs(val);
-                obj.max_clim_=obj.clim_slider_max+obj.clim_slider_min-val;
-            else
-                if obj.max_clim<=val
-                    obj.max_clim_=val+1;
-                end
-            end
-            
-            if obj.valid
-                set(obj.min_clim_edit,'string',num2str(val));
-                set(obj.min_clim_slider,'value',val);
-                
-                set(obj.max_clim_edit,'string',num2str(obj.max_clim_));
-                set(obj.max_clim_slider,'value',obj.max_clim_);
-            end
-            obj.min_clim_=val;
         end
         
         function val=get.peak(obj)
@@ -805,7 +730,7 @@ classdef AverageMapWindow  < handle
                     if ishandle(obj.SpatialMapFig(i))
                         fpos=get(obj.SpatialMapFig(i),'position');
                         set(obj.SpatialMapFig(i),'position',[fpos(1),fpos(2),obj.fig_w,obj.fig_h]);
-                        h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                        h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','MapAxes');
                         if ~isempty(h)
                             delete(findobj(h,'Tag','contact'));
                             figure(obj.SpatialMapFig(i))
@@ -976,14 +901,6 @@ classdef AverageMapWindow  < handle
         function ScaleByMaxCallback(obj,src)
             obj.scale_by_max_=get(src,'value');
             
-            if obj.scale_by_max
-                obj.clim_slider_max=1;
-                obj.clim_slider_min=-1;
-            else
-                obj.clim_slider_max=obj.cmax;
-                obj.clim_slider_min=-obj.cmax;
-            end
-            
             UpdateFigure(obj,src);
         end
         
@@ -1002,7 +919,7 @@ classdef AverageMapWindow  < handle
                 chanpos=obj.all_chan_pos(obj.chan_ind,:);
                 mapv=obj.map_val(obj.chan_ind);
                 for i=1:length(obj.SpatialMapFig)
-                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','MapAxes');
                     if ~isempty(h)
                         delete(findobj(h,'tag','peak'));
                         if obj.peak
@@ -1020,7 +937,7 @@ classdef AverageMapWindow  < handle
             chanpos=obj.all_chan_pos(obj.chan_ind,:);
             if ~NoSpatialMapFig(obj)
                 for i=1:length(obj.SpatialMapFig)
-                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','MapAxes');
                     if ~isempty(h)
                         figure(obj.SpatialMapFig(i))
                         delete(findobj(h,'Tag','names'));
@@ -1047,7 +964,7 @@ classdef AverageMapWindow  < handle
                     set(obj.SpatialMapFig(i),'position',...
                         [posi(1),posi(2),obj.fig_w,obj.fig_h]);
                     
-                    a=findobj(obj.SpatialMapFig(i),'Tag','SpatialMapAxes');
+                    a=findobj(obj.SpatialMapFig(i),'Tag','MapAxes');
                     if ~isempty(a)
                         h=figure(obj.SpatialMapFig(i));
                         fpos=get(h,'position');
@@ -1065,38 +982,27 @@ classdef AverageMapWindow  < handle
                 end
             end
         end
-        function ClimCallback(obj,src)
-            switch src
-                case obj.max_clim_slider
-                    obj.max_clim=get(src,'value');
-                case obj.min_clim_slider
-                    obj.min_clim=get(src,'value');
-                case obj.max_clim_edit
-                    t=str2double(get(src,'string'));
-                    if isnan(t)
-                        t=obj.max_clim;
-                    end
-                    obj.max_clim=t;
-                case obj.min_clim_edit
-                    t=str2double(get(src,'string'));
-                    if isnan(t)
-                        t=obj.min_clim;
-                    end
-                    obj.min_clim=t;
-            end
+        function ScaleSpinnerCallback(obj)
+            min=obj.JMinSpinner.getValue();
+            max=obj.JMaxSpinner.getValue();
             
-            if ~NoSpatialMapFig(obj)
-                h=findobj(obj.SpatialMapFig,'-regexp','Tag','SpatialMapAxes');
+            if min<max
+                obj.cmin=min;
+                obj.cmax=max;
                 
-                sl=obj.min_clim;
-                sh=obj.max_clim;
-                
-                if sl<sh
-                    set(h,'CLim',[sl,sh]);
+                if ~NoSpatialMapFig(obj)
+                    h=findobj(obj.SpatialMapFig,'-regexp','Tag','MapAxes');
+                    if ~isempty(h)
+                        set(h,'clim',[obj.cmin,obj.cmax]);
+                    end
                 end
-                %                 figure(obj.SpatialMapFig);
+                if strcmp(obj.interp_scatter,'scatter')
+                    UpdateFigure(obj,[])
+                end
             end
         end
+        
+        
         function set.map_val(obj,val)
             obj.map_val_=val;
         end
@@ -1148,7 +1054,7 @@ classdef AverageMapWindow  < handle
                         val=mapv(:,i);
                     end
                     %*********************
-                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','MapAxes');
                     if ~isempty(h)
                         if strcmpi(obj.interp_scatter,'natural')
                             [x,y]=meshgrid((1:obj.width)/obj.width,(1:obj.height)/obj.height);
@@ -1161,7 +1067,7 @@ classdef AverageMapWindow  < handle
                         end
                         
                         imagehandle=findobj(h,'Tag','ImageMap');
-                        set(h,'clim',[obj.min_clim,obj.max_clim]);
+                        set(h,'clim',[obj.cmin,obj.cmax]);
                         set(h,'xlim',[1,obj.width]);
                         set(h,'ylim',[1,obj.height]);
                         set(imagehandle,'CData',single(mapvq));
@@ -1202,7 +1108,7 @@ classdef AverageMapWindow  < handle
                 for i=1:length(obj.SpatialMapFig)
                     delete(findobj(obj.SpatialMapFig(i),'tag','mass'));
                     
-                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','SpatialMapAxes');
+                    h=findobj(obj.SpatialMapFig(i),'-regexp','Tag','MapAxes');
                     if ~isempty(h)
                         %                             figure(obj.SpatialMapFig(i))
                         plot_mass_center(h,mapv(:,i),round(chanpos(:,1)*obj.width),...

@@ -118,6 +118,7 @@ for i=1:length(dd)
             %%however it means you will always get a DC free data no matter
             %%what filter you apply
             tmpd=preprocessedData(obj,dd(i),detrend(alldata(count:count+len-1,:), 'constant'), chan);
+%             tmpd=preprocessedData(obj,dd(i),alldata(count:count+len-1,:), chan);
         else
             tmpd=alldata(count:count+len-1,:);
         end
