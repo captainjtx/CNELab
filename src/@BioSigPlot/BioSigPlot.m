@@ -48,6 +48,7 @@ classdef BioSigPlot < hgsetget
         JBtnTFMap
         JBtnPCA
         JBtnICA
+        JBtnPlayAsSound
         
         JBtnPlaySlower
         JBtnPlayFaster
@@ -2375,10 +2376,11 @@ classdef BioSigPlot < hgsetget
         CrossCorrelation(obj,src)
         MnuNotchFilter(obj,src)
         MnuDownSample(obj,src)
-        SelectCurrentWindow(obj);
-        ExportObjToWorkspace(obj);
-        MnuOverwritePreprocess(obj);
-        NewEvent(obj);
+        SelectCurrentWindow(obj)
+        ExportObjToWorkspace(obj)
+        MnuOverwritePreprocess(obj)
+        NewEvent(obj)
+        PlayDataAsSound(obj)
     end
     
     methods

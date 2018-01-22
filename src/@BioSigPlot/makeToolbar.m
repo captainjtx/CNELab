@@ -185,6 +185,11 @@ obj.JBtnICA=javaObjectEDT(PushButton([obj.cnelab_path,'/db/icon/ica.png'],btn_d,
 set(handle(obj.JBtnICA,'CallbackProperties'),'MousePressedCallback',@(h,e) SPF_Analysis(obj,'ica'));
 obj.JToolbar.add(obj.JBtnICA);
 
+obj.JToolbar.addSeparator();
+
+obj.JBtnPlayAsSound=javaObjectEDT(PushButton([obj.cnelab_path,'/db/icon/sound.png'],btn_d,char('Play As Audio'),col));
+set(handle(obj.JBtnPlayAsSound,'CallbackProperties'),'MousePressedCallback',@(h,e) PlayDataAsSound(obj));
+obj.JToolbar.add(obj.JBtnPlayAsSound);
 
 
 group=javaObjectEDT(ButtonGroup());
