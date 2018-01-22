@@ -5,5 +5,5 @@ if length(chanNames)>1
     errdlg('Please select only 1 channel!')
 end
 fs=max(min(obj.SRate,384000),1000);
-sound(data,fs)
+sound((data./max(abs(data))),fs)
 end
