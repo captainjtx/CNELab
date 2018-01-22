@@ -5,7 +5,7 @@ names={f.name};
 input_files={};
 
 for i=1:length(names)
-    if regexp(names{i},'motor_.*.mat')
+    if regexp(names{i},'SL_LeftSTN_SUA.*.mat')
         input_files=cat(1,input_files,names(i));
     end
 end
