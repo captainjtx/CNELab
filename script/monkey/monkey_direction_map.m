@@ -1,25 +1,27 @@
 clear
 clc
-title = 'M1 Go Aligned';
+title = 'PMd Go Aligned';
 step = 1; %step in sample
-framerate = 10; %frames per second
+framerate = 15; %frames per second
 res_ppi = 150; % resolution ppi
 colbar = true; %add colorbar
 contact = true; %plot contact
-cmin=-6; %scale
-cmax=6;
+cmin=-5; %scale
+cmax=5;
 %video output 
-video_name = 'H564_8-32_Go_M1.mp4';
+video_name = 'H564_8-32_Go_PMd.mp4';
 profile = 'MPEG-4';
 video_quality = 100;
 %% get data
 data_file = 'H564_8-32_Go.mat';
 % bad_channel = [4, 9, 21, 30];
-bad_channel = [21];
+bad_channel_m1 = [4, 9, 21, 30];
+bad_channel_pmd = [67, 101];
 mat = load(data_file);
 fs = 1000;
 sig = mat.data;
-sig_pm_ind = [1:20,22:64];
+sig_pm_ind = setdiff(1:64, bad_channel_m1);
+sig_pmd_ind = setdiff(65:128, bad_channel_pmd);
 
 i_start = 1; %start and end in samples
 i_end = length(mat.ts); 
@@ -51,8 +53,8 @@ chanpos_file = 'H564_Electrode_Positions_CNELab.csv';
 [channelname,pos_x,pos_y,radius] = ReadPosition(chanpos_file);
 
 chan_num = cellfun(@str2num,channelname);
-pm_ind = chan_num>0 & chan_num<65 & chan_num ~= 21;
-pmd_ind = chan_num>64;
+pm_ind = chan_num>0 & chan_num<65 & ~ismember(chan_num, bad_channel_m1);
+pmd_ind = chan_num>64 & ~ismember(chan_num, bad_channel_pmd);
 chanpos_pm = [pos_x(pm_ind), pos_y(pm_ind), radius(pm_ind)];
 channame_pm = channelname(pm_ind);
 chanpos_pmd = [pos_x(pmd_ind), pos_y(pmd_ind), radius(pmd_ind)];
@@ -90,7 +92,7 @@ open(writerObj);
             
 for ind = i_start:step:i_end
     for drc = 1:8
-        plot_map(axe_pm(drc), sig(drc).ep(ind,sig_pm_ind), chanpos_pm, cmin, cmax, contact, grid_height, grid_width);
+        plot_map(axe_pm(drc), sig(drc).ep(ind,sig_pmd_ind), chanpos_pmd, cmin, cmax, contact, grid_height, grid_width);
     end
     drawnow
     set(time_text, 'String', ['Time: ',num2str(timestamps(ind),'%-5.3f'),' s']);

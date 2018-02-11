@@ -17,7 +17,7 @@ if ~isempty(yl)
 end
 
 set(h,'XLim',[min(t) max(t)]);
-set(h,'Tag',['SignalMapAxes-' channame]);
+set(h,'Tag',['TriggerMapAxes-' channame]);
 drawnow
 end
 

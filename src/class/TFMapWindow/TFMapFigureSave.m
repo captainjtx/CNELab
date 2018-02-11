@@ -196,7 +196,7 @@ classdef TFMapFigureSave<handle
         
         function fname=auto_file_name(obj)
             fname=['f_',num2str(obj.parent.min_freq),'_',num2str(obj.parent.max_freq),...
-                '_c_',num2str(obj.parent.min_clim),'_',num2str(obj.parent.max_clim)];
+                '_c_',num2str(obj.parent.cmin),'_',num2str(obj.parent.cmax)];
         end
         
         function ExportCallback(obj)
