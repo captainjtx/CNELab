@@ -212,7 +212,11 @@ classdef TriggerMapWindow < handle
         end
         
         function val=get.event_list(obj)
-            val=obj.event_list_;
+            if isempty(obj.event_list_)
+               val={'none'};
+            else
+                val=obj.event_list_;
+            end
         end
         
         function set.event_list(obj,val)
@@ -249,10 +253,6 @@ classdef TriggerMapWindow < handle
     methods
         function obj=TriggerMapWindow(bsp)
             obj.bsp=bsp;
-            if ~isempty(bsp.Evts)
-                obj.event_list_=unique(bsp.Evts(:,2));
-            end
-            
             varinitial(obj);
             addlistener(bsp,'EventListChange',@(src,evts)UpdateEventList(obj));
             addlistener(bsp,'SelectedEventChange',@(src,evts)UpdateEventSelected(obj));
@@ -260,10 +260,26 @@ classdef TriggerMapWindow < handle
         end
         function UpdateEventList(obj)
             if ~isempty(obj.bsp.Evts)
-                obj.event_list=unique(obj.bsp.Evts(:,2));
+                if isempty(obj.event_list_)
+                    if obj.valid
+                        set(obj.data_popup,'String',{'Selection', 'Single Event', 'Average Event'});
+                    end
+                end
+                obj.event_list = unique(obj.bsp.Evts(:,2));
+            else
+                if obj.valid
+                    set(obj.data_popup,'String',{'Selection'}, 'Value', 1);
+                    DataPopUpCallback(obj, obj.data_popup);
+                end
+                obj.event_list_ = {};
             end
         end
         function varinitial(obj)
+            if ~isempty(obj.bsp.Evts)
+                obj.event_list_=unique(obj.bsp.Evts(:,2));
+            else
+                obj.event_list_ = {};
+            end
             obj.method_=1;
             obj.data_input_=1;%selection
             obj.ms_before_=1500;
@@ -355,7 +371,7 @@ classdef TriggerMapWindow < handle
             
             obj.new_btn=uicontrol('parent',hp,'style','pushbutton','string','New','units','normalized','position',[0.01,0.01,0.2,0.08],...
                 'callback',@(src,evts) NewCallback(obj));
-            DataPopUpCallback(obj,obj.data_popup);
+            UpdateEventList(obj);
             
             obj.event=obj.event_;
         end
@@ -385,11 +401,19 @@ classdef TriggerMapWindow < handle
                     obj.data_input=1;
                     DataPopUpCallback(obj,obj.data_popup);
                 case 2
-                    obj.data_input=3;
+                    if ~isempty(obj.event_list_)
+                        obj.data_input = 3;
+                    else
+                        obj.data_input = 1;
+                    end
                     DataPopUpCallback(obj,obj.data_popup);
             end
         end
         function DataPopUpCallback(obj,src)
+            if isempty(src)
+                return
+            end
+            
             obj.data_input=get(src,'value');
             switch get(src,'value')
                 case 1
