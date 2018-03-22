@@ -101,11 +101,6 @@ classdef PSDWindow < handle
             obj.bsp=bsp;
             obj.width=300;
             obj.height=410;
-            
-            if ~isempty(bsp.Evts)
-                obj.event_list_=unique(bsp.Evts(:,2));
-            end
-            
             varinitial(obj);
             addlistener(bsp,'EventListChange',@(src,evts)UpdateEventList(obj));
             addlistener(bsp,'SelectedEventChange',@(src,evts)UpdateEventSelected(obj));
@@ -113,7 +108,18 @@ classdef PSDWindow < handle
         
         function UpdateEventList(obj)
             if ~isempty(obj.bsp.Evts)
-                obj.event_list=unique(obj.bsp.Evts(:,2));
+                if isempty(obj.event_list_)
+                    if obj.valid
+                        set(obj.data_popup,'String',{'Selection', 'Single Event', 'Average Event'});
+                    end
+                end
+                obj.event_list = unique(obj.bsp.Evts(:,2));
+            else
+                if obj.valid
+                    set(obj.data_popup,'String',{'Selection'}, 'Value', 1);
+                    DataPopUpCallback(obj, obj.data_popup);
+                end
+                obj.event_list_ = {};
             end
         end
         
@@ -123,6 +129,12 @@ classdef PSDWindow < handle
             end
         end
         function varinitial(obj)
+            if ~isempty(obj.bsp.Evts)
+                obj.event_list_=unique(obj.bsp.Evts(:,2));
+            else
+                obj.event_list_ = {};
+            end
+            
             obj.layout_=1;%average
             obj.winlen_=round(obj.fs);
             obj.overlap_=round(obj.winlen*0.5);
@@ -164,8 +176,9 @@ classdef PSDWindow < handle
             
             hp_layout=uipanel('Parent',hp,'Title','','units','normalized','Position',[0,0.9,1,0.09],'title','Layout');
             
+            % Grid compute is not implemented yet
             obj.layout_popup=uicontrol('Parent',hp_layout,'Style','popup',...
-                'String',{'Average','Channel','Grid'},'units','normalized','Position',[0.01,0.2,0.59,0.8],'value',obj.layout,...
+                'String',{'Average','Channel'},'units','normalized','Position',[0.01,0.2,0.59,0.8],'value',obj.layout,...
                 'callback',@(src,evts) LayoutCallback(obj,src));
             
             obj.hold_radio=uicontrol('Parent',hp_layout,'Style','radiobutton',...
@@ -267,7 +280,7 @@ classdef PSDWindow < handle
             else
                 UnitRadioCallback(obj,obj.unit_mag_radio);
             end
-            DataPopUpCallback(obj,obj.data_popup);
+            UpdateEventList(obj);
             obj.event=obj.event_;
             MaskCallback(obj,obj.harmonic_radio);
         end
@@ -546,7 +559,11 @@ classdef PSDWindow < handle
         
         
         function val=get.event_list(obj)
-            val=obj.event_list_;
+            if isempty(obj.event_list_)
+               val={'none'};
+            else
+                val=obj.event_list_;
+            end
         end
         
         function set.event_list(obj,val)
@@ -639,6 +656,10 @@ classdef PSDWindow < handle
             end
         end
         function DataPopUpCallback(obj,src)
+            if isempty(src)
+                return;
+            end
+            
             obj.data_input=get(src,'value');
             switch get(src,'value')
                 case 1

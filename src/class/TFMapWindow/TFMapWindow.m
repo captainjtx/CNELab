@@ -450,7 +450,11 @@ classdef TFMapWindow < handle
             drawnow
         end
         function val=get.event_list(obj)
-            val=obj.event_list_;
+            if isempty(obj.event_list_)
+               val={'none'};
+            else
+                val=obj.event_list_;
+            end
         end
         
         function set.event_list(obj,val)
@@ -521,10 +525,6 @@ classdef TFMapWindow < handle
     methods
         function obj=TFMapWindow(bsp)
             obj.bsp=bsp;
-            if ~isempty(bsp.Evts)
-                obj.event_list_=unique(bsp.Evts(:,2));
-            end
-            
             varinitial(obj);
             addlistener(bsp,'EventListChange',@(src,evts)UpdateEventList(obj));
             addlistener(bsp,'SelectedEventChange',@(src,evts)UpdateEventSelected(obj));
@@ -532,10 +532,29 @@ classdef TFMapWindow < handle
         end
         function UpdateEventList(obj)
             if ~isempty(obj.bsp.Evts)
-                obj.event_list=unique(obj.bsp.Evts(:,2));
+                if isempty(obj.event_list_)
+                    if obj.valid
+                        set(obj.data_popup,'String',{'Selection', 'Single Event', 'Average Event'});
+                        set(obj.normalization_popup,'String',{'None','Average Event','External Baseline'});
+                    end
+                end
+                obj.event_list = unique(obj.bsp.Evts(:,2));
+            else
+                if obj.valid
+                    set(obj.data_popup,'String',{'Selection'}, 'Value', 1);
+                    set(obj.normalization_popup, 'String', {'None'}, 'Value', 1);
+                    DataPopUpCallback(obj, obj.data_popup);
+                    NormalizationCallback(obj, obj.normalization_popup);
+                end
+                obj.event_list_ = {};
             end
         end
         function varinitial(obj)
+            if ~isempty(obj.bsp.Evts)
+                obj.event_list_ = unique(obj.bsp.Evts(:,2));
+            else
+                obj.event_list_ = {};
+            end
             obj.method_=1;
             obj.data_input_=1;%selection
             obj.ms_before_=1500;
@@ -606,7 +625,7 @@ classdef TFMapWindow < handle
             
             hp_scale=uipanel('Parent',hp,'Title','Baseline','units','normalized','position',[0,0.66,1,0.125]);
             obj.normalization_popup=uicontrol('Parent',hp_scale,'style','popup','units','normalized',...
-                'string',{'None','Within Segment','External Baseline'},'callback',@(src,evts) NormalizationCallback(obj,src),...
+                'string',{'None','Average Event','External Baseline'},'callback',@(src,evts) NormalizationCallback(obj,src),...
                 'position',[0.01,0.6,0.59,0.35],'value',obj.normalization);
             
             obj.scale_event_text=uicontrol('Parent',hp_scale,'Style','text','string','Event: ','units','normalized','position',[0.01,0.3,0.35,0.3],...
@@ -723,7 +742,7 @@ classdef TFMapWindow < handle
             
             obj.new_btn=uicontrol('parent',hp,'style','pushbutton','string','New','units','normalized','position',[0.01,0.01,0.2,0.04],...
                 'callback',@(src,evts) NewCallback(obj));
-            DataPopUpCallback(obj,obj.data_popup);
+            UpdateEventList(obj);
             NormalizationCallback(obj,obj.normalization_popup);
             if strcmpi(obj.unit,'dB')
                 set(obj.unit_db_radio,'value',1);
@@ -772,11 +791,19 @@ classdef TFMapWindow < handle
                     obj.data_input=1;
                     DataPopUpCallback(obj,obj.data_popup);
                 case 2
-                    obj.data_input=3;
+                    if ~isempty(obj.event_list_)
+                        obj.data_input = 3;
+                    else
+                        obj.data_input = 1;
+                    end
                     DataPopUpCallback(obj,obj.data_popup);
             end
         end
         function DataPopUpCallback(obj,src)
+            if isempty(src)
+                return
+            end
+            
             obj.data_input=get(src,'value');
             switch get(src,'value')
                 case 1
@@ -858,6 +885,10 @@ classdef TFMapWindow < handle
         end
         
         function NormalizationCallback(obj,src)
+            if isempty(src)
+                return
+            end
+            
             obj.normalization=get(src,'value');
             switch get(src,'value')
                 case 1

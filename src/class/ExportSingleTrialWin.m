@@ -227,8 +227,12 @@ classdef ExportSingleTrialWin<handle
             output.ms_before=obj.ms_before;
             output.ms_after=obj.ms_after;
             
-            assignin('base',obj.var,output);
-            
+            try
+                assignin('base',obj.var,output);
+            catch
+                cprintf('Errors', "Saving to variable: 'single_trials' ... ");
+                assignin('base','single_trials',output);
+            end
         end
         
         function MSCallback(obj,src)

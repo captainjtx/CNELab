@@ -1012,15 +1012,14 @@ classdef SpectralMapWindow < handle
         end
         
         function val=get.event_list(obj)
-            %             if isempty(obj.event_list_)
-            %                 val={'none'};
-            %             else
-            val=obj.event_list_;
-            %             end
+            if isempty(obj.event_list_)
+               val={'none'};
+            else
+                val=obj.event_list_;
+            end
         end
         
         function set.event_list(obj,val)
-            
             if (length(obj.event_list)==length(val))&&all(strcmpi(sort(obj.event_list),sort(val)))
                 return
             end
@@ -1139,9 +1138,6 @@ classdef SpectralMapWindow < handle
     methods
         function obj=SpectralMapWindow(bsp)
             obj.bsp=bsp;
-            if ~isempty(bsp.Evts)
-                obj.event_list_=unique(bsp.Evts(:,2));
-            end
             varinitial(obj);
             addlistener(bsp,'EventListChange',@(src,evts)UpdateEventList(obj));
             addlistener(bsp,'SelectedEventChange',@(src,evts)UpdateEventSelected(obj));
@@ -1150,10 +1146,29 @@ classdef SpectralMapWindow < handle
         end
         function UpdateEventList(obj)
             if ~isempty(obj.bsp.Evts)
-                obj.event_list=unique(obj.bsp.Evts(:,2));
+                if isempty(obj.event_list_)
+                    if obj.valid
+                        set(obj.data_popup,'String',{'Selection', 'Single Event', 'Average Event'});
+                        set(obj.normalization_popup,'String',{'None','Average Event','External Baseline'});
+                    end
+                end
+                obj.event_list = unique(obj.bsp.Evts(:,2));
+            else
+                if obj.valid
+                    set(obj.data_popup,'String',{'Selection'}, 'Value', 1);
+                    set(obj.normalization_popup, 'String', {'None'}, 'Value', 1);
+                    DataPopUpCallback(obj, obj.data_popup);
+                    NormalizationCallback(obj, obj.normalization_popup);
+                end
+                obj.event_list_ = {};
             end
         end
         function varinitial(obj)
+            if ~isempty(obj.bsp.Evts)
+                obj.event_list_=unique(obj.bsp.Evts(:,2));
+            else
+                obj.event_list_ = {};
+            end
             obj.data_input_=3;%average event
             obj.ms_before_=1500;
             obj.ms_after_=1500;
@@ -1492,7 +1507,7 @@ classdef SpectralMapWindow < handle
             obj.refresh_btn=uicontrol('parent',hp,'style','pushbutton','string','Refresh','units','normalized','position',[0.4,0.005,0.2,0.04],...
                 'callback',@(src,evts) UpdateFigure(obj,src));
             
-            DataPopUpCallback(obj,obj.data_popup);
+            UpdateEventList(obj);
             NormalizationCallback(obj,obj.normalization_popup);
             
             obj.event=obj.event_;
@@ -1553,6 +1568,10 @@ classdef SpectralMapWindow < handle
         end
         
         function DataPopUpCallback(obj,src)
+            if isempty(src)
+                return
+            end
+            
             obj.data_input=get(src,'value');
             switch get(src,'value')
                 case 1
@@ -1607,6 +1626,10 @@ classdef SpectralMapWindow < handle
         end
         
         function NormalizationCallback(obj,src)
+            if isempty(src)
+                return
+            end
+            
             obj.normalization=get(src,'value');
             switch get(src,'value')
                 case 1
@@ -1806,6 +1829,7 @@ classdef SpectralMapWindow < handle
         end
         function ComputeCallback(obj)
             obj.tfmat=[];
+            i_event = [];
             %==========================================================================
             nL=round(obj.ms_before*obj.fs/1000);
             nR=round(obj.ms_after*obj.fs/1000);
@@ -2046,7 +2070,11 @@ classdef SpectralMapWindow < handle
             else
                 for j=1:length(channames)
                     waitbar(j/length(channames));
-                    [tfm,f,t]=tfpower(data(:,j),baseline(:,j),obj.fs,wd,ov,nref);
+                    if isempty(baseline)
+                        [tfm,f,t]=tfpower(data(:,j),[],obj.fs,wd,ov,nref);
+                    else
+                        [tfm,f,t]=tfpower(data(:,j),baseline(:,j),obj.fs,wd,ov,nref);
+                    end
                     
                     obj.tfmat.mat{j}=tfm;
                     if obj.data_input==2
