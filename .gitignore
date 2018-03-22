@@ -5,6 +5,7 @@ Thumbs.db
 demo/behv.avi
 *.m~
 db/cfg/cnelab.cfg
+db/cfg/defaultconfig.cfg
 db/icon/dev.pptx
 db/cfg/user.cfg
 lib/vlc-matlab
