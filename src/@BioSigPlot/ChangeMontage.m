@@ -13,13 +13,28 @@ end
 
 set(src,'checked','on');
 
+%keep mask if transit from 
+if ~((obj.MontageRef_(data) == 1 && mtgref == 2) || (obj.MontageRef_(data) == 2 && mtgref == 1))
+    obj.Mask_{data}=ones(obj.MontageChanNumber(data),1);
+end
+% if transit from raw to mean ref, update the montage to exclude mask
+if obj.MontageRef_(data) == 1 && mtgref == 2
+    mask = obj.Mask_{data};
+    channum = sum(mask);
+    totalchannum = size(obj.Montage_{data}(2).mat, 1);
+    
+    mat=eye(totalchannum)-1/channum*ones(totalchannum,totalchannum);
+    mat(:, ~mask) = 0;
+    obj.Montage_{data}(2).mat = mat;
+end
+
 obj.MontageRef_(data)=mtgref;
 
 obj.ChanSelect2Edit_{data}=[];
 
 obj.Gain_{data}=ones(obj.MontageChanNumber(data),1);
 
-obj.Mask_{data}=ones(obj.MontageChanNumber(data),1);
+
 
 obj.Filtering_{data}=zeros(obj.MontageChanNumber(data),1);
 obj.FilterLow_{data}=zeros(obj.MontageChanNumber(data),1);

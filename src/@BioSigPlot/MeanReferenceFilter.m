@@ -1,6 +1,6 @@
-function Mean_Reference_Filter(obj)
+function MeanReferenceFilter(obj)
 omitMask=true;
-[data,chanNames,dataset,channel,sample]=get_selected_data(obj,omitMask);
+[data,~,dataset,channel,sample]=get_selected_data(obj,omitMask);
 
 data=data*(eye(size(data,2))-1/size(data,2)*ones(size(data,2),size(data,2)));
 
