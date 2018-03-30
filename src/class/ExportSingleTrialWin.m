@@ -230,7 +230,7 @@ classdef ExportSingleTrialWin<handle
             try
                 assignin('base',obj.var,output);
             catch
-                cprintf('Errors', "Saving to variable: 'single_trials' ... ");
+                cprintf('Errors', 'Saving to variable: single_trials ... ');
                 assignin('base','single_trials',output);
             end
         end

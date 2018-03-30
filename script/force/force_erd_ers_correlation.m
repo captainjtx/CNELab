@@ -1,6 +1,7 @@
 clear
 clc
-mat = load('/Users/tengi/Desktop/Projects/data/China/force/S1/squeeze.mat','-mat');
+% mat = load('/Users/tengi/Desktop/Projects/data/China/force/S1/squeeze.mat','-mat');
+mat = load('/Users/tengi/Desktop/Projects/data/MDAnderson/03282017/squeeze.mat','-mat');
 
 data = mat.data;
 fs = mat.fs;
@@ -11,17 +12,27 @@ forceName = {'Force'};
 force_ind = ismember(mat.channame, forceName);
 
 force = squeeze(data(:, force_ind, :));
+% To transform from voltage (V) to Kg
 % force = force*16.45-0.118; % transform into kg 
 % use relative force changes
 
-force = (force-median(mean(force(1000:2000, :), 1)))*16.45;
+% To transform from teensy analog read (0-5 V to 0-1023) to Kg
+% force = force/1023*5*16.45-intercept, 1kg = 12.4377
+
+% by the new calibration 1kg = 16.8328 in measurement
+
+force = (force-median(mean(force(1000:2000, :), 1)))/16.8328;
+
 max_force = max(force, [], 1);
 
 S1_ERS_Squeeze = {'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C13', 'C14', 'C15', 'C16', 'C17', 'C18', 'C19', 'C29', 'C30', 'C42', 'C43', 'C55'};
 % S1_ERS_Relax = {'C2', 'C3', 'C14', 'C15', 'C18', 'C19', 'C30', 'C43'};
 
 S2_ERS_Squeeze = {'C110', 'C109', 'C97', 'C86', 'C85', 'C75', 'C74', 'C73', 'C25'};
-ecog_ind = find(ismember(mat.channame, S1_ERS_Squeeze));
+
+S3_ERS_Squeeze = {'C5', 'C19', 'C20', 'C21', 'C36', 'C37', 'C54', 'C55', 'C68', 'C69', 'C70', 'C85', 'C86', 'C101', 'C102', 'C117', 'C118'};
+
+ecog_ind = find(ismember(mat.channame, S3_ERS_Squeeze));
 
 [b1, a1]=butter(2,[8, 32]/(fs/2));
 [b2, a2] = butter(2, [60, 200]/(fs/2));
@@ -68,7 +79,7 @@ plot(x, p(1)*x+p(2), 'linewidth', 2)
 ylabel('ERS (dB)')
 xlabel('Force (kg)')
 title(['R: ', num2str(r2(1, 2), '%.2g'), ', P: ', num2str(p2(1, 2), '%.2g')])
-xlim([0, max(max_force)*1.1])
+xlim([0, max(max_force)*2])
 ylim([0, 7])
 set(gca, 'fontsize', 16)
 

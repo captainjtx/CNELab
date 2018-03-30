@@ -2,12 +2,11 @@
 % decode force level / force trend
 clear
 clc
-base_mat = load('/Users/tengi/Desktop/Projects/data/China/force/S2/squeeze.mat','-mat');
-mat = load('/Users/tengi/Desktop/Projects/data/China/force/S2/relax.mat','-mat');
+% base_mat = load('/Users/tengi/Desktop/Projects/data/China/force/S2/squeeze.mat','-mat');
+% mat = load('/Users/tengi/Desktop/Projects/data/China/force/S2/relax.mat','-mat');
 
-% base_mat = load('/Users/tengi/Desktop/Projects/data/MDAnderson/03282017/squeeze.mat','-mat');
-% mat = load('/Users/tengi/Desktop/Projects/data/MDAnderson/03282017/relax.mat','-mat');
-
+base_mat = load('/Users/tengi/Desktop/Projects/data/MDAnderson/03282017/squeeze.mat','-mat');
+mat = load('/Users/tengi/Desktop/Projects/data/MDAnderson/03282017/relax.mat','-mat');
 
 %%
 base_data = base_mat.data;
@@ -25,7 +24,7 @@ S2_ERS_Squeeze = {'C110', 'C109', 'C97', 'C86', 'C85', 'C75', 'C74', 'C73', 'C25
 
 S3_ERS_Squeeze = {'C5', 'C19', 'C20', 'C21', 'C36', 'C37', 'C54', 'C55', 'C68', 'C69', 'C70', 'C85', 'C86', 'C101', 'C102', 'C117', 'C118'};
 
-ecog_ind = find(ismember(mat.channame, S2_ERS_Squeeze));
+ecog_ind = find(ismember(mat.channame, S3_ERS_Squeeze));
 fs = mat.fs;
 %%
 
@@ -67,8 +66,8 @@ ers = mean(tfm(hfb_ix, :), 1)./mean(mean(base_tfm(hfb_ix, base_ix)));
 % figure('position',[100,100,600,450])
 figure('position',[100,100,480,450])
 colorder = get(gca,'colororder');
-shift_force = 50;
-% shift_force = 0;
+shift_force = 0;
+% shift_force = 50;
 
 t = tf_t-mat.ms_before/1000;
 h1=plot(t,10*log10(erd),'-','Color',colorder(1,:),'LineWidth',7);
@@ -101,10 +100,18 @@ set(gcf,'color','white');
 hold on
 yyaxis right
 a.YColor=[0,0,0];
-ylim([-20, 20]);
-fforce = force-mean(force(end-2000:end));% change to fdata(end-400:end, :) for offset
+ylim([-2, 2]);
+fforce = force-mean(force(end-2000:end));
 % fforce = force-mean(force(1:2000));
-fforce_scale = fforce*16.45;% scale it for S1 and S2
+
+% To transform from voltage (V) to Kg
+% force = force*16.45-0.118; % transform into kg 
+% use relative force changes
+
+% To transform from teensy analog read (0-5 V to 0-1023) to Kg
+% force = force/1023*5*16.45-intercept
+
+fforce_scale = fforce/18.58;% scale it
 
 h3=plot(linspace(-mat.ms_before/1000+shift_force/1000, mat.ms_after/1000+shift_force/1000,size(fforce,1)), fforce_scale, 'Color', [0, 0, 0], 'linestyle', '-.', 'linewidth', 5);
 
@@ -114,8 +121,8 @@ emg_env_scale = emg_envv*3300;
 % h4=plot(linspace(-mat.ms_before/1000, mat.ms_after/1000,size(emg_env,1)), emg_env_scale, 'Color', [0, 0, 0], 'linestyle','-.', 'linewidth', 5);
 a.FontWeight='bold';
 a.LineWidth=5;
-xlim([-1, t(end)]);
-% xlim([-0.5, t(end)]);
+% xlim([-1, t(end)]);
+xlim([-0.5, t(end)]);
 ylabel('Force (kg)','rot',-90, 'fontsize', 22, 'VerticalAlignment','cap')
 title(['P1 ', mat.event])
 xlabel('Time (s)', 'fontsize', 22)
