@@ -48,7 +48,6 @@ classdef BioSigPlot < hgsetget
         JBtnTFMap
         JBtnPCA
         JBtnICA
-        JBtnPlayAsSound
         
         JBtnPlaySlower
         JBtnPlayFaster
@@ -115,6 +114,9 @@ classdef BioSigPlot < hgsetget
         MenuFigurePosition
         MenuVideo
         MenuVideoOnTop
+        MenuVideoContainer
+        MenuWMPActx
+        MenuVLCActx
         MenuNotchFilter
         MenuNotchFilterSingle
         MenuNotchFilterHarmonics
@@ -237,7 +239,7 @@ classdef BioSigPlot < hgsetget
         LineDefaultColors
         
         DataView                %View Mode {'Vertical'|'Horizontal'|'DAT*'}
-        MontageRef              %N° Montage
+        MontageRef              %NÂ° Montage
         XGrid                   %true : show Grid line on each sec
         YGrid                   %true : show Grid line on each channel
         EventsDisplay           %true : show Events
@@ -367,6 +369,7 @@ classdef BioSigPlot < hgsetget
         MouseChan                   %(Read-Only) The channel on which the mouse is in
         MouseDataset                %(Read-Only) The dataset on which the mouse is in
         FilterOrder
+        VideoActxOpt
     end
  
     properties
@@ -1754,6 +1757,14 @@ classdef BioSigPlot < hgsetget
                 obj.JWindowTimeSpinner.getModel().setMaximum(java.lang.Double(obj.TotalTime));
             end
         end
+        
+        function val = get.VideoActxOpt(obj)
+            if strcmpi(get(obj.MenuWMPActx, 'checked'), 'on')
+                val = 'WMP';
+            elseif strcmpi(get(obj.MenuVLCActx, 'checked'), 'on')
+                val = 'VLC';
+            end
+        end
     end
     
     methods (Access=protected)
@@ -1863,7 +1874,7 @@ classdef BioSigPlot < hgsetget
                 figure(obj.WinVideo.Fig)
             else
                 if ~isempty(obj.VideoFile)&& exist(obj.VideoFile,'file')==2
-                    obj.WinVideo=VideoWindow(obj.VideoFile); %VLC or WMPlayer
+                    obj.WinVideo=VideoWindow(obj.VideoFile, obj.VideoActxOpt); %VLC or WMPlayer
                     addlistener(obj.WinVideo,'VideoChangeTime',@(src,evt) SynchDataWithVideo(obj));
                     addlistener(obj.WinVideo,'VideoChangeState',@(src,ect) SynchVideoState(obj));
                     addlistener(obj.WinVideo,'VideoClosed',@(src,evt) StopPlay(obj));
@@ -1963,7 +1974,19 @@ classdef BioSigPlot < hgsetget
             if isa(obj.WinVideo,'VideoWindow') && obj.WinVideo.valid
                 obj.WinVideo.IsOnTop=ontop;
             end
-            
+        end
+        
+        function MnuVideoContainer(obj, src)
+            set(src, 'checked', 'on');
+            if src == obj.MenuWMPActx
+                set(obj.MenuVLCActx, 'checked', 'off');
+            elseif src == obj.MenuVLCActx
+                set(obj.MenuWMPActx, 'checked', 'off');
+            end
+            if isa(obj.WinVideo,'VideoWindow') && obj.WinVideo.valid
+                obj.WinVideo.OnClose();
+                WinVideoFcn(obj);
+            end
         end
         function MnuPlay(obj)
             %**************************************************************
@@ -2376,11 +2399,10 @@ classdef BioSigPlot < hgsetget
         CrossCorrelation(obj,src)
         MnuNotchFilter(obj,src)
         MnuDownSample(obj,src)
-        SelectCurrentWindow(obj)
-        ExportObjToWorkspace(obj)
-        MnuOverwritePreprocess(obj)
-        NewEvent(obj)
-        PlayDataAsSound(obj)
+        SelectCurrentWindow(obj);
+        ExportObjToWorkspace(obj);
+        MnuOverwritePreprocess(obj);
+        NewEvent(obj);
     end
     
     methods
