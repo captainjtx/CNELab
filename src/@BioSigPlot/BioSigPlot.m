@@ -48,6 +48,7 @@ classdef BioSigPlot < hgsetget
         JBtnTFMap
         JBtnPCA
         JBtnICA
+        JBtnPlayAsSound
         
         JBtnPlaySlower
         JBtnPlayFaster
@@ -2403,6 +2404,7 @@ classdef BioSigPlot < hgsetget
         ExportObjToWorkspace(obj);
         MnuOverwritePreprocess(obj);
         NewEvent(obj);
+        PlayDataAsSound(obj);
     end
     
     methods
