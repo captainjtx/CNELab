@@ -52,6 +52,9 @@ obj.MenuOverwritePreprocess=uimenu(obj.MenuSettings,'Label','Overwrite Preproces
     'Callback',@(src,evt) MnuOverwritePreprocess(obj),'Accelerator','o');
 
 obj.MenuVideo=uimenu(obj.MenuSettings,'Label','Video');
+obj.MenuVideoContainer = uimenu(obj.MenuVideo, 'Label', 'Container');
+obj.MenuWMPActx = uimenu(obj.MenuVideoContainer, 'Label', 'Windows Media Player', 'Callback', @(src, evt) MnuVideoContainer(obj, src));
+obj.MenuVLCActx = uimenu(obj.MenuVideoContainer, 'Label', 'VLC Player', 'Callback', @(src, evt) MnuVideoContainer(obj, src));
 
 obj.MenuPlaySpeed=uimenu(obj.MenuVideo,'Label','Speed','Callback',@(src,evt) MnuPlay(obj));
 obj.MenuVideoStartEnd=uimenu(obj.MenuVideo,'Label','Start&End','Callback',@(src,evt) MnuVideoStartEnd(obj));
