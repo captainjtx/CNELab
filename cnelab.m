@@ -2,7 +2,8 @@ function cnelab()
 cnelab_path=which('cnelab','-all');
 
 if iscell(cnelab_path)&&length(cnelab_path)>1
-    errordlg(['Multiple CNELAB found: ',[cnelab_path{:}]]);
+    str = cat(1, 'Multiple CNELab found, remove duplicates from Matlab Paths !', cnelab_path);
+    errordlg(str);
     return
 end
 
