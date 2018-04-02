@@ -32,6 +32,15 @@ obj.ControlPanel=uipanel(obj.Fig,'units','pixels','BorderType','none','visible',
 makeControls(obj);
 obj.makeMenu();
 
+info=actxcontrollist;
+if ismember('VideoLAN.VLCPlugin.2',info(:,2))
+    %try VLC first
+    set(obj.MenuVLCActx, 'checked', 'on');
+else
+    set(obj.MenuVLCActx, 'Enable', 'off');
+    set(obj.MenuWMPActx, 'checked', 'on');
+end
+
 obj.WinEvts=EventWindow(obj);
 obj.Toolbar=uitoolbar(obj.Fig);
 drawnow
