@@ -32,19 +32,14 @@ classdef VideoWindow  < handle
                 val=0;
             end
         end
-        function obj=VideoWindow(file)
+    
+        function obj=VideoWindow(file, actx)
             obj.NotifyVideoChangeTime=true;
             
 %             videoobj=VideoReader(file);
 %             lastFrame = read(videoobj, inf);
 %             obj.TotalFrameNumber=videoobj.NumberOfFrames;
-            info=actxcontrollist;
-            if ismember('VideoLAN.VLCPlugin.2',info(:,2))
-                %try VLC first
-                obj.ActxOpt='VLC';
-            else
-                obj.ActxOpt='WMP';
-            end
+            obj.ActxOpt = actx;
 
             if strcmpi(obj.ActxOpt,'WMP')
                 obj.ActxName='WMPlayer.OCX.7';
@@ -92,7 +87,6 @@ classdef VideoWindow  < handle
             
             obj.IsOnTop=true;
         end
-        
         function OnClose(obj)
             % Delete the figure
             
