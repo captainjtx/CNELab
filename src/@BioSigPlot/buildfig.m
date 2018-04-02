@@ -31,14 +31,16 @@ obj.ControlPanel=uipanel(obj.Fig,'units','pixels','BorderType','none','visible',
 
 makeControls(obj);
 obj.makeMenu();
-
-info=actxcontrollist;
-if ismember('VideoLAN.VLCPlugin.2',info(:,2))
-    %try VLC first
-    set(obj.MenuVLCActx, 'checked', 'on');
-else
-    set(obj.MenuVLCActx, 'Enable', 'off');
-    set(obj.MenuWMPActx, 'checked', 'on');
+set(obj.MenuWMPActx, 'checked', 'on');
+if ~isempty(regexp(computer,'WIN','ONCE'))
+    info=actxcontrollist;
+    if ismember('VideoLAN.VLCPlugin.2',info(:,2))
+        %try VLC first
+        set(obj.MenuVLCActx, 'checked', 'on');
+        set(obj.MenuWMPActx, 'checked', 'off');
+    else
+        set(obj.MenuVLCActx, 'Enable', 'off');
+    end
 end
 
 obj.WinEvts=EventWindow(obj);
