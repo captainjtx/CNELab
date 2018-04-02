@@ -1760,6 +1760,7 @@ classdef BioSigPlot < hgsetget
         end
         
         function val = get.VideoActxOpt(obj)
+            val = 'WMP'; % default as windows media player
             if strcmpi(get(obj.MenuWMPActx, 'checked'), 'on')
                 val = 'WMP';
             elseif strcmpi(get(obj.MenuVLCActx, 'checked'), 'on')
