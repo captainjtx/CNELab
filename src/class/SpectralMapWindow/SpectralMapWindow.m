@@ -57,8 +57,9 @@ classdef SpectralMapWindow < handle
         ers_edit
         erd_slider
         ers_slider
-        resize_edit
-        resize_slider
+        JResizeSpinner
+        JContactSpinner
+        
         compute_btn
         refresh_btn
         scale_by_max_radio
@@ -126,9 +127,7 @@ classdef SpectralMapWindow < handle
         ers_
         erd_t_
         ers_t_
-        
-        resize_
-        
+                
         scale_by_max_
         
         %         display_mask_channel_
@@ -229,6 +228,8 @@ classdef SpectralMapWindow < handle
         smooth
         smooth_row
         smooth_col
+        radius
+        all_chan_pos
     end
     properties
         width
@@ -239,8 +240,9 @@ classdef SpectralMapWindow < handle
         
         pos_x
         pos_y
-        radius
-        all_chan_pos
+        radius_
+        
+        all_chan_pos_
         all_chan_names
         chan_names
         
@@ -327,6 +329,23 @@ classdef SpectralMapWindow < handle
             if obj.valid
                 set(obj.peak_radio,'value',val);
             end
+        end
+        
+        function set.radius(obj, val)
+            obj.radius_ = val;
+        end
+        
+        function val = get.radius(obj)
+            val = obj.radius_*obj.JContactSpinner.getValue();
+        end
+        
+        function set.all_chan_pos(obj, val)
+            obj.all_chan_pos_ = val;
+        end
+        
+        function val = get.all_chan_pos(obj)
+            val = obj.all_chan_pos_;
+            val(:, 3) = val(:, 3)*obj.JContactSpinner.getValue();
         end
         
         function val=get.stft_winlen(obj)
@@ -580,14 +599,14 @@ classdef SpectralMapWindow < handle
         end
         function val=get.fig_w(obj)
             if obj.color_bar
-                val=obj.width+80/400*obj.width;
+                val=(obj.width+80/400*obj.width)*obj.resize;
             else
-                val=obj.width+20/400*obj.width;
+                val=(obj.width+20/400*obj.width)*obj.resize;
             end
         end
         
         function val=get.fig_h(obj)
-            val=obj.height+30/300*obj.height;
+            val=(obj.height+30/300*obj.height)*obj.resize;
         end
         
         function val=get.color_bar(obj)
@@ -693,68 +712,7 @@ classdef SpectralMapWindow < handle
         end
         
         function val=get.resize(obj)
-            val=obj.resize_;
-        end
-        function set.resize(obj,val)
-            oldval=obj.resize;
-            obj.resize_=val;
-            
-            if obj.valid
-                set(obj.resize_edit,'string',num2str(val));
-                set(obj.resize_slider,'value',val);
-            end
-            
-            obj.width=round(obj.width/oldval*val);
-            obj.height=round(obj.height/oldval*val);
-            
-            chanpos=[obj.pos_x,obj.pos_y,obj.radius];
-            
-            erdchan=obj.erd_chan;
-            erschan=obj.ers_chan;
-            
-            if ~NoSpectralMapFig(obj)
-                mapv=obj.map_val;
-                
-                for i=1:length(obj.SpectralMapFig)
-                    if ishandle(obj.SpectralMapFig(i))
-                        fpos=get(obj.SpectralMapFig(i),'position');
-                        set(obj.SpectralMapFig(i),'position',[fpos(1),fpos(2),obj.fig_w,obj.fig_h]);
-                        h=findobj(obj.SpectralMapFig(i),'-regexp','Tag','MapAxes');
-                        if ~isempty(h)
-                            if ~obj.erd&&~obj.ers
-                                delete(findobj(h,'Tag','contact'));
-                                delete(findobj(h,'Tag','names'));
-                                figure(obj.SpectralMapFig(i))
-                                if obj.disp_channel_names
-                                    channames=obj.all_chan_names;
-                                else
-                                    channames=[];
-                                end
-                                
-                                if obj.contact||strcmp(obj.interp_scatter,'scatter')
-                                    if strcmp(obj.interp_scatter,'scatter')
-                                        plot_contact(h,mapv{i},obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,channames,...
-                                            ~ismember(obj.all_chan_pos,chanpos,'rows'),erdchan{i},erschan{i});
-                                    else
-                                        plot_contact(h,[],obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,channames,...
-                                            ~ismember(obj.all_chan_pos,chanpos,'rows'),erdchan{i},erschan{is});
-                                    end
-                                end
-                                
-                            end
-                        end
-                    end
-                end
-            end
-            
-            if obj.color_bar
-                obj.color_bar=0;
-                ColorBarCallback(obj,obj.color_bar_radio);
-                obj.color_bar=1;
-                ColorBarCallback(obj,obj.color_bar_radio);
-            end
-            
-            UpdateFigure(obj,obj.resize_edit);
+            val=obj.JResizeSpinner.getValue();
         end
         
         function val=get.scale_by_max(obj)
@@ -1169,7 +1127,7 @@ classdef SpectralMapWindow < handle
             else
                 obj.event_list_ = {};
             end
-            obj.data_input_=3;%average event
+            obj.data_input_=1;%average event
             obj.ms_before_=1500;
             obj.ms_after_=1500;
             obj.event_='';
@@ -1187,7 +1145,6 @@ classdef SpectralMapWindow < handle
             obj.ers_=0;
             obj.erd_t_=1;
             obj.ers_t_=1;
-            obj.resize_=1;
             obj.scale_by_max_=0;
             %             obj.display_mask_channel_=0;
             obj.act_start_=0;
@@ -1429,23 +1386,30 @@ classdef SpectralMapWindow < handle
             
             hp_shape=uitab(tgp,'title','Shape');
             
-            uicontrol('parent',hp_shape,'style','text','string','Size','units','normalized',...
-                'position',[0,0.6,0.18,0.36]);
-            obj.resize_edit=uicontrol('parent',hp_shape,'style','edit','string',num2str(obj.resize),'units','normalized',...
-                'position',[0.2,0.55,0.15,0.4],'horizontalalignment','center','callback',@(src,evts) ResizeCallback(obj,src));
-            obj.resize_slider=uicontrol('parent',hp_shape,'style','slider','units','normalized',...
-                'position',[0.4,0.55,0.55,0.4],'callback',@(src,evts) ResizeCallback(obj,src),...
-                'min',0.1,'max',2,'value',obj.resize,'sliderstep',[0.01,0.05]);
+            uicontrol('parent',hp_shape,'style','text','string','Fig Size','units','normalized',...
+                'horizontalalignment', 'left', 'position',[0,0.6,0.18,0.36]);
+ 
+            model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(1),java.lang.Double(0.1),java.lang.Double(3),java.lang.Double(0.1)));
+            obj.JResizeSpinner =javaObjectEDT(JSpinner(model));
+            [jh,gh]=javacomponent(obj.JResizeSpinner,[0,0,1,1],hp_shape);
+            set(gh,'Units','Norm','Position',[0.2,0.525,0.28,0.45]);
+            set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ResizeSpinnerCallback(obj));
             
-            uicontrol('parent',hp_shape,'style','text','string','View','units','normalized',...
-                'position',[0,0.1,0.18,0.36]);
+            uicontrol('parent',hp_shape,'style','text','units','normalized','position',[0,0.1,0.18,0.36],'string','Elec Size',...
+                'horizontalalignment', 'left');
+            model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(1),java.lang.Double(0.01),[],java.lang.Double(0.1)));
+            obj.JContactSpinner =javaObjectEDT(JSpinner(model));
+            [jh,gh]=javacomponent(obj.JContactSpinner,[0,0,1,1],hp_shape);
+            set(gh,'Units','Norm','Position',[0.2,0.025,0.28,0.45]);
+            set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ContactSpinnerCallback(obj));
             
-            uicontrol('parent',hp_shape,'style','text','string','az: ','units','normalized',...
-                'position',[0.2,0.1,0.1,0.36]);
+            
+            uicontrol('parent',hp_shape,'style','text','string','View AZ','units','normalized',...
+                'position',[0.5,0.6,0.18,0.36]);
             obj.az_edit=uicontrol('parent',hp_shape,'style','edit','string',num2str(obj.az),'units','normalized',...
-                'position',[0.3,0.05,0.2,0.4],'callback',@(src,evts) ViewCallback(obj,src));
-            uicontrol('parent',hp_shape,'style','text','string','el: ','units','normalized',...
-                'position',[0.6,0.1,0.1,0.36]);
+                'position',[0.7,0.55,0.2,0.4],'callback',@(src,evts) ViewCallback(obj,src));
+            uicontrol('parent',hp_shape,'style','text','string','View EL','units','normalized',...
+                'position',[0.5,0.1,0.18,0.36]);
             obj.el_edit=uicontrol('parent',hp_shape,'style','edit','string',num2str(obj.el),'units','normalized',...
                 'position',[0.7,0.05,0.2,0.4],'callback',@(src,evts) ViewCallback(obj,src));
             
@@ -1508,8 +1472,8 @@ classdef SpectralMapWindow < handle
                 'callback',@(src,evts) UpdateFigure(obj,src));
             
             UpdateEventList(obj);
+            DataPopUpCallback(obj,obj.data_popup);
             NormalizationCallback(obj,obj.normalization_popup);
-            
             obj.event=obj.event_;
             obj.normalization_start_event=obj.normalization_start_event_;
             obj.normalization_end_event=obj.normalization_end_event_;
@@ -2171,10 +2135,10 @@ classdef SpectralMapWindow < handle
                     
                     if strcmp(obj.interp_scatter,'scatter')
                         plot_contact(h,mapv{e},allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.height,obj.width,channames,...
-                            ~ismember(allchanpos,chanpos,'rows'),erdchan{e},erschan{e});
+                            ~ismember(allchanpos(:, 1:2),chanpos(:, 1:2),'rows'),erdchan{e},erschan{e});
                     else
                         plot_contact(h,[],allchanpos(:,1),allchanpos(:,2),allchanpos(:,3),obj.height,obj.width,channames,...
-                            ~ismember(allchanpos,chanpos,'rows'),erdchan{e},erschan{e});
+                            ~ismember(allchanpos(:, 1:2),chanpos(:, 1:2),'rows'),erdchan{e},erschan{e});
                     end
                 end
                 if obj.peak
@@ -2220,19 +2184,58 @@ classdef SpectralMapWindow < handle
                 UpdateFigure(obj,src);
             end
         end
-        function ResizeCallback(obj,src)
-            switch src
-                case obj.resize_edit
-                    t=str2double(get(src,'string'));
-                    if isnan(t)
-                        t=obj.resize;
+        function ContactSpinnerCallback(obj)
+            ContactCallback(obj,[]);
+        end
+        function ResizeSpinnerCallback(obj)
+            chanpos=[obj.pos_x,obj.pos_y,obj.radius];
+            
+            erdchan=obj.erd_chan;
+            erschan=obj.ers_chan;
+            
+            if ~NoSpectralMapFig(obj)
+                mapv=obj.map_val;
+                
+                for i=1:length(obj.SpectralMapFig)
+                    if ishandle(obj.SpectralMapFig(i))
+                        fpos=get(obj.SpectralMapFig(i),'position');
+                        set(obj.SpectralMapFig(i),'position',[fpos(1),fpos(2),obj.fig_w,obj.fig_h]);
+                        h=findobj(obj.SpectralMapFig(i),'-regexp','Tag','MapAxes');
+                        if ~isempty(h)
+                            if ~obj.erd&&~obj.ers
+                                delete(findobj(h,'Tag','contact'));
+                                delete(findobj(h,'Tag','names'));
+                                figure(obj.SpectralMapFig(i))
+                                if obj.disp_channel_names
+                                    channames=obj.all_chan_names;
+                                else
+                                    channames=[];
+                                end
+                                
+                                if obj.contact||strcmp(obj.interp_scatter,'scatter')
+                                    if strcmp(obj.interp_scatter,'scatter')
+                                        plot_contact(h,mapv{i},obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,channames,...
+                                            ~ismember(obj.all_chan_pos(:, 1:2), chanpos(:, 1:2),'rows'),erdchan{i},erschan{i});
+                                    else
+                                        plot_contact(h,[],obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,channames,...
+                                            ~ismember(obj.all_chan_pos(:, 1:2), chanpos(:, 1:2),'rows'),erdchan{i},erschan{i});
+                                    end
+                                end
+                                
+                            end
+                        end
                     end
-                    t=max(0.1,min(t,3));
-                    
-                    obj.resize=t;
-                case obj.resize_slider
-                    obj.resize=get(src,'value');
+                end
             end
+            
+            if obj.color_bar
+                obj.color_bar=0;
+                ColorBarCallback(obj,obj.color_bar_radio);
+                obj.color_bar=1;
+                ColorBarCallback(obj,obj.color_bar_radio);
+            end
+            
+            UpdateFigure(obj, []);
         end
         
         function ScaleByMaxCallback(obj,src)
@@ -2457,7 +2460,7 @@ classdef SpectralMapWindow < handle
                                 delete(findobj(h,'Tag','contact'));
                                 delete(findobj(h,'Tag','names'));
                                 plot_contact(h,[],obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,channames,...
-                                    ~ismember(obj.all_chan_pos,chanpos,'rows'),erdchan{i},erschan{i});
+                                    ~ismember(obj.all_chan_pos(:, 1:2),chanpos(:, 1:2),'rows'),erdchan{i},erschan{i});
                             end
                         else
                             
@@ -2466,7 +2469,7 @@ classdef SpectralMapWindow < handle
                             delete(findobj(h,'Tag','contact'));
                             delete(findobj(h,'Tag','names'));
                             plot_contact(h,mapv{i},obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,channames,...
-                                ~ismember(obj.all_chan_pos,chanpos,'rows'),erdchan{i},erschan{i});
+                                ~ismember(obj.all_chan_pos(:, 1:2),chanpos(:, 1:2),'rows'),erdchan{i},erschan{i});
                         end
                         
                         set(h,'clim',[obj.cmin,obj.cmax]);
@@ -2477,13 +2480,13 @@ classdef SpectralMapWindow < handle
                         drawnow
                         
                         if strcmp(obj.interp_scatter,'interp')
-                            if obj.erd||obj.ers||ismember(src,[obj.erd_radio,obj.ers_radio])
+                            if obj.erd||obj.ers||(~isempty(src)&&ismember(src,[obj.erd_radio,obj.ers_radio]))
                                 delete(findobj(h,'Tag','contact'));
                                 delete(findobj(h,'Tag','names'));
                                 figure(obj.SpectralMapFig(i))
                                 if obj.contact||strcmp(obj.interp_scatter,'scatter')
                                     plot_contact(h,[],obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,channames,...
-                                        ~ismember(obj.all_chan_pos,chanpos,'rows'),erdchan{i},erschan{i});
+                                        ~ismember(obj.all_chan_pos(:, 1:2),chanpos(:, 1:2),'rows'),erdchan{i},erschan{i});
                                 end
                             end
                         end
@@ -2758,7 +2761,7 @@ classdef SpectralMapWindow < handle
         end
         
         function ContactCallback(obj,src)
-            if ~isempty(src)
+            if src == obj.contact_radio
                 obj.contact_=get(src,'value');
             end
             
@@ -2777,10 +2780,10 @@ classdef SpectralMapWindow < handle
                         if obj.contact
                             if obj.disp_channel_names
                                 plot_contact(h,[],obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,obj.all_chan_names,...
-                                    ~ismember(obj.all_chan_pos,chanpos,'rows'),obj.erd_chan{i},obj.ers_chan{i});
+                                    ~ismember(obj.all_chan_pos(:, 1:2),chanpos(:, 1:2),'rows'),obj.erd_chan{i},obj.ers_chan{i});
                             else
                                 plot_contact(h,[],obj.all_chan_pos(:,1),obj.all_chan_pos(:,2),obj.all_chan_pos(:,3),obj.height,obj.width,[],...
-                                    ~ismember(obj.all_chan_pos,chanpos,'rows'),obj.erd_chan{i},obj.ers_chan{i});
+                                    ~ismember(obj.all_chan_pos(:, 1:2),chanpos(:, 1:2),'rows'),obj.erd_chan{i},obj.ers_chan{i});
                             end
                             
                         end
@@ -2792,7 +2795,7 @@ classdef SpectralMapWindow < handle
         
         function ChannelNamesCallback(obj,src)
             obj.disp_channel_names_=get(src,'value');
-            badchan=~ismember(obj.all_chan_pos,[obj.pos_x,obj.pos_y,obj.radius],'rows');
+            badchan=~ismember(obj.all_chan_pos(:, 1:2),[obj.pos_x,obj.pos_y],'rows');
             
             for i=1:length(obj.SpectralMapFig)
                 h=findobj(obj.SpectralMapFig(i),'-regexp','Tag','MapAxes');
