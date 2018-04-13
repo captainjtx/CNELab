@@ -102,6 +102,7 @@ classdef VideoWindow  < handle
             else
                 return
             end
+            obj.Fig = [];
         end
         
         function resize(obj)
