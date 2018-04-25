@@ -249,7 +249,7 @@ while (1)
             
             dt=data(:,:,t);
             
-            fdata=filter_symmetric(b,a,dt,fs,0,'iir');
+            fdata=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,dt,fs,0,'iir');
             
             base_data=fdata(baseline_sample,:);
             fdata=fdata(move_sample,:);

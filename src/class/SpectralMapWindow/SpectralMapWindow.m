@@ -79,7 +79,6 @@ classdef SpectralMapWindow < handle
         event_group_listbox
         interp_missing_radio
         extrap_radio
-        symmetric_scale_radio
         
         center_mass_radio
         peak_radio
@@ -137,7 +136,6 @@ classdef SpectralMapWindow < handle
         color_bar_
         interp_missing_
         extrap_
-        symmetric_scale_
         center_mass_
         peak_
         contact_
@@ -209,7 +207,6 @@ classdef SpectralMapWindow < handle
         Act_ievent
         interp_missing
         extrap
-        symmetric_scale
         center_mass
         peak
         contact
@@ -428,16 +425,6 @@ classdef SpectralMapWindow < handle
         
         function val=get.fs(obj)
             val=obj.bsp.SRate;
-        end
-        
-        function val=get.symmetric_scale(obj)
-            val=obj.symmetric_scale_;
-        end
-        function set.symmetric_scale(obj,val)
-            obj.symmetric_scale_=val;
-            if obj.valid
-                set(obj.symmetric_scale_radio,'value',val);
-            end
         end
         
         function val=get.interp_missing(obj)
@@ -1160,7 +1147,7 @@ classdef SpectralMapWindow < handle
             obj.bind_valid=0;
             obj.interp_missing_ = 0;
             obj.extrap_ = 0;
-            obj.symmetric_scale_=1;
+  
             obj.center_mass_=0;
             obj.peak_=1;
             obj.contact_=1;
@@ -1386,7 +1373,7 @@ classdef SpectralMapWindow < handle
             
             hp_shape=uitab(tgp,'title','Shape');
             
-            uicontrol('parent',hp_shape,'style','text','string','Fig Size','units','normalized',...
+            uicontrol('parent',hp_shape,'style','text','string','Map Size','units','normalized',...
                 'horizontalalignment', 'left', 'position',[0,0.6,0.18,0.36]);
  
             model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(1),java.lang.Double(0.1),java.lang.Double(3),java.lang.Double(0.1)));
@@ -1395,7 +1382,7 @@ classdef SpectralMapWindow < handle
             set(gh,'Units','Norm','Position',[0.2,0.525,0.28,0.45]);
             set(handle(jh,'CallbackProperties'),'StateChangedCallback',@(h,e) ResizeSpinnerCallback(obj));
             
-            uicontrol('parent',hp_shape,'style','text','units','normalized','position',[0,0.1,0.18,0.36],'string','Elec Size',...
+            uicontrol('parent',hp_shape,'style','text','units','normalized','position',[0,0.1,0.18,0.36],'string','Circle Size',...
                 'horizontalalignment', 'left');
             model = javaObjectEDT(SpinnerNumberModel(java.lang.Double(1),java.lang.Double(0.01),[],java.lang.Double(0.1)));
             obj.JContactSpinner =javaObjectEDT(JSpinner(model));
@@ -1445,10 +1432,6 @@ classdef SpectralMapWindow < handle
                 'units','normalized','position',[0,0.66,0.45,0.33],'value',obj.scale_by_max,...
                 'callback',@(src,evts) ScaleByMaxCallback(obj,src));
             
-            obj.symmetric_scale_radio=uicontrol('parent',advance_tab,'style','radiobutton','string','Symmetric Scale',...
-                'units','normalized','position',[0.5,0.66,0.45,0.33],'value',obj.symmetric_scale,...
-                'callback',@(src,evts) SymmetricScaleCallback(obj,src));
-            
             obj.interp_missing_radio=uicontrol('parent',advance_tab,'style','radiobutton','string','Interpolate Missing',...
                 'units','normalized','position',[0,0.33,0.45,0.33],'value',obj.interp_missing,...
                 'callback',@(src,evts) InterpMissingCallback(obj,src));
@@ -1458,7 +1441,7 @@ classdef SpectralMapWindow < handle
                 'callback',@(src,evts) ExtrapolateCallback(obj,src));
             
             obj.auto_refresh_radio=uicontrol('parent',advance_tab,'style','radiobutton','string','Auto Refresh',...
-                'units','normalized','position',[0.5,0.33,0.45,0.33],'value',obj.auto_refresh,...
+                'units','normalized','position',[0.5,0.66,0.45,0.33],'value',obj.auto_refresh,...
                 'callback',@(src,evts) AutoRefreshCallback(obj,src));
             
             obj.compute_btn=uicontrol('parent',hp,'style','pushbutton','string','Compute','units','normalized','position',[0.79,0.005,0.2,0.04],...
@@ -2693,9 +2676,6 @@ classdef SpectralMapWindow < handle
             if obj.auto_refresh
                 UpdateFigure(obj,src);
             end
-        end
-        function SymmetricScaleCallback(obj,src)
-            obj.symmetric_scale_=get(src,'value');
         end
         
         function ExportMovieCallback(obj)

@@ -1,5 +1,5 @@
-function [W,e,D]=pcaWeights(data,typ)
-% [W,e]=pcaWeights(data,typ)
+function [W,e,D]=cnelab_pcaWeights(data,typ)
+% [W,e]=cnelab_pcaWeights(data,typ)
 % Returns the Principal Component Eigenvectors (W) for projection
 % The PCA Vectors are sorted from the largest to the smallest eigenvalue
 % (e)

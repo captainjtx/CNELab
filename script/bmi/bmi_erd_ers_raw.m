@@ -50,7 +50,7 @@ for i=1:length(movements)
     for s=1:size(seg,3)
         
         [b,a]=butter(2,[lc hc]/(fs/2));
-        seg_f=filter_symmetric(b,a,seg(:,:,s),fs,0,'iir');
+        seg_f=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,seg(:,:,s),fs,0,'iir');
         
         evts=cat(1,evts,{size(data,1)/fs,'Rest'});
         evts=cat(1,evts,{size(data,1)/fs+length(baseline_sample)/fs,movements{i}});

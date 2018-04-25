@@ -16,7 +16,7 @@ if length(varargin)==1
     timestamp=varargin{1};
 end
 
-[Tr,RisingIdx,FallingIdx]=extract_AC_trg(trigger,fs,0.2);
+[Tr,RisingIdx,FallingIdx]=cnelab_extract_AC_trg(trigger,fs,0.2);
 
 
 time=cat(1,reshape(RisingIdx,length(RisingIdx),1),reshape(FallingIdx,length(FallingIdx),1));

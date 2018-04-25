@@ -58,7 +58,7 @@ baseline=round(baseline(1)*fs:baseline(2)*fs)+1;
 
 % [b,a]=butter(2,1.5/(fs/2),'high');
 % for i=1:size(close.data,3)
-%     close.data(:,:,i)=filter_symmetric(b,a,close.data(:,:,i),fs,0,'iir');
+%     close.data(:,:,i)=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,close.data(:,:,i),fs,0,'iir');
 % end
 
 baseline_pxx=0;

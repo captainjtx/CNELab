@@ -1,4 +1,4 @@
-function trg=replace_with_localmax(trg,N)
+function trg=cnelab_replace_with_localmax(trg,N)
 % function lm=remplace_with_localmax(trg,N)
 % Replaces the data which is different than zero with the local max
 % of a window length of N

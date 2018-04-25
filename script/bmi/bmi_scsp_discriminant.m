@@ -65,7 +65,7 @@ for i=1:length(movements)
     seg=segments{i}.(movements{i}).data;
     for j=1:size(seg,3)
         [b,a]=butter(2,[lc hc]/(fs/2));
-        segments{i}.(movements{i}).data(:,:,j)=filter_symmetric(b,a,seg(:,:,j),fs,0,'iir');
+        segments{i}.(movements{i}).data(:,:,j)=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,seg(:,:,j),fs,0,'iir');
     end
 end
 %==========================================================================

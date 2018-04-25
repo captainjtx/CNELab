@@ -79,7 +79,7 @@ for pt=1:length(pid)
                     axes('Units','Pixels','Position',[140+(j-1)*210,180*(3-i)+20,180,140]);
                     t=tfmat.t{i,j};
                     f=tfmat.f{i,j};
-                    [SMOOTHED] = TF_Smooth((ave_tfmap{i,j}/num)./(repmat(ave_tfmap{i,4},1,size(ave_tfmap{i,j},2))/bnum),'gaussian',[4,10]);
+                    [SMOOTHED] = cnelab_TF_Smooth((ave_tfmap{i,j}/num)./(repmat(ave_tfmap{i,4},1,size(ave_tfmap{i,j},2))/bnum),'gaussian',[4,10]);
                     imagesc(t,f,20*log10(SMOOTHED),[-10 10]);
                     %                 ylabel('Frequency(Hz)')
                     ylim([f(1),100])

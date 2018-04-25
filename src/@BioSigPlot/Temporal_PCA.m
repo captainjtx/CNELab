@@ -76,7 +76,7 @@ selection=[reshape(i_label-nL,1,length(i_label));reshape(i_label+nR,1,length(i_l
 for d=1:size(data,2)
     chan=data(:,d);
     
-    [data_a,~] = getaligneddata(chan,i_label,[-nL,nR]);
+    [data_a,~] = cnelab_getaligneddata(chan,i_label,[-nL,nR]);
     
     data_a=permute(data_a,[1 3 2]);
     

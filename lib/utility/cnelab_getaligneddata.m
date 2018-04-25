@@ -1,5 +1,5 @@
-function [alligned,allignedIndex] = getaligneddata(data,index,range,artifact)
-% [alligned] = getaligneddata(data,index,range)
+function [alligned,allignedIndex] = cnelab_getaligneddata(data,index,range,artifact)
+% [alligned] = cnelab_getaligneddata(data,index,range)
 % index Tx1 = The sample index of the trigger
 % range 1x2 = range(1) samples before and range(2) samples after the
 % trigger index

@@ -140,7 +140,7 @@ for fb=1:length(fl)
                 WL=round(WL);
                 WR=round(WR);
                 
-                data=getaligneddata(BpData,alignInd,[-WL,WR]);
+                data=cnelab_getaligneddata(BpData,alignInd,[-WL,WR]);
                 fdata(target).(Alignment)=squeeze(data);
             end
         end

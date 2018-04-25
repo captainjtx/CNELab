@@ -162,7 +162,7 @@ for m=1:length(movements)
         
         dt=data(:,:,t);
         
-        fdata=filter_symmetric(b,a,dt,fs,0,'iir');
+        fdata=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,dt,fs,0,'iir');
         
         base_data=fdata(baseline_sample,:);
         
@@ -218,7 +218,7 @@ for m=1:length(movements)
         
         dt=data(:,:,t);
         
-        fdata=filter_symmetric(b,a,dt,fs,0,'iir');
+        fdata=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,dt,fs,0,'iir');
         
         fdata=fdata(move_sample,:);
         

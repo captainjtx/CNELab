@@ -11,7 +11,7 @@ text(x+dw/2,y+1.1*dh,channame,...
 h=axes('parent',fig,'units','normalized','Position',[x,y,dw,dh],'Visible','off');
 
 if smooth_x~=0&&smooth_y~=0
-tf = TF_Smooth(tf,'gaussian',[smooth_x,smooth_y]);
+tf = cnelab_TF_Smooth(tf,'gaussian',[smooth_x,smooth_y]);
 end
 
 imagesc('XData',t,'YData',f,'CData',tf,'Parent',h);

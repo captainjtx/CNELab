@@ -40,7 +40,7 @@ data = data(:, ecog_ind, :);
 %%
 fdata = data;
 for i=1:size(data,3)
-    fdata(:,:,i)=filter_symmetric(b2, a2, data(:,:,i),[],0,'iir');
+    fdata(:,:,i)=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b2, a2, data(:,:,i),[],0,'iir');
 end
 
 baseline = round(0.5*fs : 1.25*fs);

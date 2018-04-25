@@ -1,4 +1,4 @@
-function [Tr,RisingIdx,FallingIdx]=extract_AC_trg(trigger,fs,param_1,param_2,param_3,fig)
+function [Tr,RisingIdx,FallingIdx]=cnelab_extract_AC_trg(trigger,fs,param_1,param_2,param_3,fig)
 %
 % This function finds the rising and falling edges of the AC trigger.
 % Param_1 is the threshold.
@@ -21,7 +21,7 @@ triggerf=filtfilt(b,a,trigger);
 trg=abs(hilbert(triggerf));
 trg(trg<param_1)=0; 
 rTriggerData = round(trg*param_2);
-rTriggerData=replace_with_localmax(rTriggerData,10);
+rTriggerData=cnelab_replace_with_localmax(rTriggerData,10);
 dTriggerData = find(rTriggerData(1:end-1)~=rTriggerData(2:end))+1;
 D=diff(dTriggerData);
 F=find(D<5);
@@ -45,9 +45,9 @@ FF=find(diff(dTriggerData)<th)+1;
 dTriggerData(FF) = [];
 Trigger = dTriggerData(1:end);
 if param_3>=0.1*fs
-    trg2=envelope(triggerf,fs);
+    trg2=cnelab_envelope(triggerf,fs);
     ap= round(trg2*2);
-    ap=replace_with_localmax(ap,16);
+    ap=cnelab_replace_with_localmax(ap,16);
     ap=round(ap/2);
     amp=ap(Trigger(:,1));
     Trigger=[Trigger zeros(length(Trigger),1) amp];

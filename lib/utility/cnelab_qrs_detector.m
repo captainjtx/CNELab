@@ -1,10 +1,10 @@
-function [r,d,pat]=qrs_detector(ecg,Fs)
-% [r,d,pat]=qrs_detector(ecg,Fs)
+function [r,d,pat]=cnelab_qrs_detector(ecg,Fs)
+% [r,d,pat]=cnelab_qrs_detector(ecg,Fs)
 %
 wl=fix(Fs*.3); %300ms Window of left side of the R Point
 wr=fix(Fs*.4); %400ms Window of right side of the R Point
 ecgd=(diff(ecg)); % Derivative of the ECG signal
-thr=threshold(ecgd,Fs); % Finds the threshold
+thr=cnelab_threshold(ecgd,Fs); % Finds the threshold
 Q=16; % QRS search window;
 %close;
 

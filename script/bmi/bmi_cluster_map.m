@@ -116,7 +116,7 @@ while (1)
             %common averaged
             dt=dt-repmat(mean(dt,2),1,size(dt,2));
             
-            fdata=filter_symmetric(b,a,dt,fs,0,'iir');
+            fdata=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,dt,fs,0,'iir');
             
             base_data=fdata(baseline_sample,:);
             

@@ -62,10 +62,10 @@ for fi=1:length(f1)
     data1=segments{1}.(movements{1}).data;
     data2=segments{2}.(movements{2}).data;
     for i=1:size(data1,3)
-        data1(:,:,i)=filter_symmetric(b,a,data1(:,:,i),[],0,'iir');
+        data1(:,:,i)=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,data1(:,:,i),[],0,'iir');
     end
     for i=1:size(data2,3)
-        data2(:,:,i)=filter_symmetric(b,a,data2(:,:,i),[],0,'iir');
+        data2(:,:,i)=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,data2(:,:,i),[],0,'iir');
     end
     for sp=1:length(SpL)
         %**************************************************************************

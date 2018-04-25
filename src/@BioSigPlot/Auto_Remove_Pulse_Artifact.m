@@ -41,7 +41,7 @@ end
 
 
 
-fdata=Remove_Pulse_Artifact(data,obj.SRate,ECG_Indx,LFP_Indx,S);
+fdata=cnelab_Remove_Pulse_Artifact(data,obj.SRate,ECG_Indx,LFP_Indx,S);
 
 for i=1:size(fdata,2)
     obj.PreprocData{dataset(i)}(sample,channel(i))=fdata(:,i);

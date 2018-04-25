@@ -15,11 +15,11 @@ fonset = onset;
 foffset = offset;
 
 for i=1:size(fonset,3)
-    fonset(:,:,i)=filter_symmetric(b2, a2, fonset(:,:,i),[],0,'iir');
+    fonset(:,:,i)=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b2, a2, fonset(:,:,i),[],0,'iir');
 end
 
 for i=1:size(foffset,3)
-    foffset(:,:,i)=filter_symmetric(b2, a2, foffset(:,:,i),[],0,'iir');
+    foffset(:,:,i)=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b2, a2, foffset(:,:,i),[],0,'iir');
 end
 %%
 

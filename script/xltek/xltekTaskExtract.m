@@ -156,12 +156,12 @@ if downsample==4
     %band pass filter
     % fc=fs/downsample/2;
     % [b,a]=butter(order,fc*2/fs,'low');
-    % datamat=filter_symmetric(b,a,datamat,fs,0,'iir');
+    % datamat=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,datamat,fs,0,'iir');
     
     fir_lowpass_220_2000=load('FIR_LowPass_Filter_220Hz_Fs_2000Hz');
     a=1;
     b=fir_lowpass_220_2000.hL;
-    datamat=filter_symmetric(b,a,datamat,fs,0,'fir');
+    datamat=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,datamat,fs,0,'fir');
     
     %down sampling the data
     datamat=datamat(1:downsample:end,:);
@@ -174,7 +174,7 @@ if downsample==4
     
     for i=1:length(notchFilters)
         b=notchFilters(i).hNotch;
-        datamat=filter_symmetric(b,a,datamat,fs,0,'fir');
+        datamat=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,datamat,fs,0,'fir');
     end
     
 

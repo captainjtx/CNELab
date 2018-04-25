@@ -76,12 +76,12 @@ Chi1=find(ismember(close.channame,motorerschannel));
 Chi2=find(ismember(close.channame,motorchannel));
 
 for i=1:size(ecogC,3)
-    ecogC1(:,:,i)=filter_symmetric(b1,a1,ecogC(:,:,i),[],0,'iir');
-    ecogC2(:,:,i)=filter_symmetric(b2,a2,ecogC(:,:,i),[],0,'iir');
+    ecogC1(:,:,i)=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b1,a1,ecogC(:,:,i),[],0,'iir');
+    ecogC2(:,:,i)=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b2,a2,ecogC(:,:,i),[],0,'iir');
 end
 for i=1:size(ecogO,3)
-    ecogO1(:,:,i)=filter_symmetric(b1,a1,ecogO(:,:,i),[],0,'iir');
-    ecogO2(:,:,i)=filter_symmetric(b2,a2,ecogO(:,:,i),[],0,'iir');
+    ecogO1(:,:,i)=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b1,a1,ecogO(:,:,i),[],0,'iir');
+    ecogO2(:,:,i)=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b2,a2,ecogO(:,:,i),[],0,'iir');
 end
 %%
 %**************************************************************************

@@ -34,7 +34,7 @@ order=2;
 ext=2*fs;
 phs=0;
 ftyp='iir';
-data=filter_symmetric(b,a,data,ext,phs,ftyp);
+data=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,data,ext,phs,ftyp);
 
 anno=load(annofile,'-mat');
 

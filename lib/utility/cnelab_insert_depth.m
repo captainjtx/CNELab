@@ -1,4 +1,4 @@
-function [new_stamp,new_text,RisingIdx,FallingIdx]=insert_depth(depth_data,fs,text,stamp)
+function [new_stamp,new_text,RisingIdx,FallingIdx]=cnelab_insert_depth(depth_data,fs,text,stamp)
 % This function finds the depth values of the data, and returns new
 % annotations. The conversion between pulse duration and depth value might
 % be incorrect. The calculation was based on 'xltekdepthfind' function.
@@ -10,7 +10,7 @@ function [new_stamp,new_text,RisingIdx,FallingIdx]=insert_depth(depth_data,fs,te
 if size(depth_data,1)==1
     depth_data=depth_data';
 end
-[~,RisingIdx,FallingIdx]=extract_ac_trigger(depth_data,fs,1,50);
+[~,RisingIdx,FallingIdx]=cnelab_extract_ac_trigger(depth_data,fs,1,50);
 depth=FallingIdx-RisingIdx;
 depth = (5*depth/fs)-5;
 for i=1:length(depth)

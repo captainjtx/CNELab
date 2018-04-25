@@ -1,11 +1,11 @@
-function eeg=filter_symmetric(b,a,eeg,ext,phs,ftyp)
+function eeg=cnelab_filter_symmetric(b,a,eeg,ext,phs,ftyp)
 % Symmetrically filter on the first nonsingleton dimension of eeg signal
 % It is worthwhile to note that multidimensional filtering of Matlab
 % function 'filter' and 'filtfilt' convert N-D matrix to 2-D matrix by
 % reshape. It is not reasonalbe for us to suqeeze and different trials 
 % It is better to loop outside of this function
 
-% function eeg=filter_symmetric(b,a,eeg,ext,phs,ftyp);
+% function eeg=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,eeg,ext,phs,ftyp);
 % extends the signal on the edges symetrically with ext number of samples:
 % [eeg(ext+1) ... eeg(2) eeg eeg(end-1) ... eeg(end-ext)]
 % b and a are filter parameters.

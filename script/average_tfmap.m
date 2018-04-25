@@ -23,7 +23,7 @@ for i=1:length(tfw.tfmat_channame)
 end
 
 tfmat=10*log10(tfmat/length(sig_chan));
-tfmat = TF_Smooth(tfmat,'gaussian',[10,10]);
+tfmat = cnelab_TF_Smooth(tfmat,'gaussian',[10,10]);
 
 figure
 imagesc(t-1.5,f,tfmat,[-8,8])

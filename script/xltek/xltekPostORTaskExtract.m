@@ -848,11 +848,11 @@ try
                         % Process data here
                         notchFilter = [load('FIR_Notch_Filter_60Hz_Fs_512Hz') load('FIR_Notch_Filter_120Hz_Fs_512Hz') load('FIR_Notch_Filter_180Hz_Fs_512Hz')];
                         LPFilter = load('FIR_LowPass_Filter_220Hz_Fs_1024Hz');
-                        signal = filter_symmetric(LPFilter.hL,1,signal,[],0,'fir');
+                        signal = cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(LPFilter.hL,1,signal,[],0,'fir');
                         signal = signal(1:nDownSample:end,:);
-                        signal = filter_symmetric(notchFilter(1).hNotch,1,signal,[],0,'fir');
-                        signal = filter_symmetric(notchFilter(2).hNotch,1,signal,[],0,'fir');
-                        signal = filter_symmetric(notchFilter(3).hNotch,1,signal,[],0,'fir');
+                        signal = cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(notchFilter(1).hNotch,1,signal,[],0,'fir');
+                        signal = cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(notchFilter(2).hNotch,1,signal,[],0,'fir');
+                        signal = cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(notchFilter(3).hNotch,1,signal,[],0,'fir');
                         signal(:,TriggerChannelId) = TriggerData(1:nDownSample:end);
                     end
                     patientInfo.Task = task;

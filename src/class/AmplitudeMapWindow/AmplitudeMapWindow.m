@@ -145,7 +145,7 @@ classdef AmplitudeMapWindow < handle
             %volume colormap
             uicontrol('parent',hp_clim,'style','text','units','normalized','position',[0,0.5,0.25,0.5],...
                 'string','Colormap','horizontalalignment','left','fontunits','normalized','fontsize',0.35);
-            obj.JColorMapPopup = colormap_popup('Parent',hp_clim,'units','normalized','position',[0.25,0.5,0.75,0.5]);
+            obj.JColorMapPopup = cnelab_colormap_popup('Parent',hp_clim,'units','normalized','position',[0.25,0.5,0.75,0.5]);
             set(obj.JColorMapPopup,'Value',4,'Callback',@(src,evt)ColormapCallback(obj));
             %%
             % color data limit

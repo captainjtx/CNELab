@@ -1,4 +1,4 @@
-function envmax=envelope(sig,fs)
+function envmax=cnelab_envelope(sig,fs)
 % Generates the envelope of the signal.
 % sliu@uh.edu
 

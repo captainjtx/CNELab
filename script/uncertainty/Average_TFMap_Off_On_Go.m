@@ -67,7 +67,7 @@ for s=1:length(state)
     
     ave_tfmap=ave_tfmap./repmat(mean(base_tfmap,2),1,size(ave_tfmap,2));
     
-    [SMOOTHED] = TF_Smooth(ave_tfmap,'gaussian',[4,10]);
+    [SMOOTHED] = cnelab_TF_Smooth(ave_tfmap,'gaussian',[4,10]);
     t=t-1;
     imagesc(t,f,20*log10(SMOOTHED),[-6 6]);
     %                 ylabel('Frequency(Hz)')

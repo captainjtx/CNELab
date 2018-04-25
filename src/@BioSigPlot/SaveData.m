@@ -83,7 +83,7 @@ else
             order=3;
             
             [b,a]=butter(order,freq/(obj.SRate/downsample/2),'low');
-            data=filter_symmetric(b,a,data,obj.SRate/downsample,0,'iir');
+            data=cnelab_filter_symmetric(b,a,data,obj.SRate/downsample,0,'iir');
         end
     end
     

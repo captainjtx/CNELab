@@ -36,7 +36,7 @@ behvSynch=detrend(behvSynch);
 
 %high pass the synch signal from neuro-system
 [b,a]=butter(order,fc/sampleRate*2,'high');
-synch_f=filter_symmetric(b,a,neuroSynch,sampleRate,0,'iir');
+synch_f=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,neuroSynch,sampleRate,0,'iir');
 
 %digitalize synch signal from neuro-system*********************************
 neuroEnv=abs(hilbert(synch_f));

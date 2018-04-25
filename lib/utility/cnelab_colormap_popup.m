@@ -1,4 +1,4 @@
-function h=colormap_popup(varargin)
+function h=cnelab_colormap_popup(varargin)
 cmapList = {'Gray','Bone', 'Copper','Jet', 'HSV', 'Hot', 'Cool', 'Spring', 'Summer', 'Autumn', ...
     'Winter', 'Pink', 'Lines'}';
 varargin=cat(2,varargin,{'style','popup','String',cmapList,'FontName','Courier','BackgroundColor','w'});

@@ -1,5 +1,5 @@
-function data=Remove_ECG_Artifact(data,montage,ECG_Indx,LFP_Indx,th,S)
-% data=Remove_ECG_Artifact(data,montage,ECG_Indx,LFP_Indx,th,S)
+function data=cnelab_Remove_ECG_Artifact(data,montage,ECG_Indx,LFP_Indx,th,S)
+% data=cnelab_Remove_ECG_Artifact(data,montage,ECG_Indx,LFP_Indx,th,S)
 
 if nargin<6
     S=2; % Number of PC to extract
@@ -14,7 +14,7 @@ Fs=montage.SampleRate;
 
 %datab=generate_bipolar_data(data(:,1:17), [1 0.0075 0.02 0.02]);
 %[b,a]=butter(2,[1 50]/Fs*2);
-%data=filter_symmetric(b,a,data,Fs,0,'IIR');
+%data=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,data,Fs,0,'IIR');
 
 if length(ECG_Indx)>1
     ecg=data(:,ECG_Indx(1))-data(:,ECG_Indx(2));
@@ -25,7 +25,7 @@ end
 lfp=data(:,LFP_Indx);
 %N data length, L is the number of channels
 [N,L]=size(lfp);
-[r,d,pat]=qrs_detector(ecg,Fs);
+[r,d,pat]=cnelab_qrs_detector(ecg,Fs);
 
 
 
@@ -39,7 +39,7 @@ Lr=length(r);
 
 if N/(Lr*Fs)<1.5
     Seg=[round(-Fs/Ratio):round(Fs/Ratio)];
-   [lfpa,allignedIndex] = getaligneddata(lfp,r',round([-Fs/Ratio Fs/Ratio]));
+   [lfpa,allignedIndex] = cnelab_getaligneddata(lfp,r',round([-Fs/Ratio Fs/Ratio]));
 
     LSeg=length(Seg);
     lfpa=permute(lfpa,[1 3 2]);

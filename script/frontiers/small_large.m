@@ -50,7 +50,7 @@ baseline=round(baseline(1)*fs:baseline(2)*fs)+1;
 
 % [b,a]=butter(2,1.5/(fs/2),'high');
 % for i=1:size(close.data,3)
-%     close.data(:,:,i)=filter_symmetric(b,a,close.data(:,:,i),fs,0,'iir');
+%     close.data(:,:,i)=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,close.data(:,:,i),fs,0,'iir');
 % end
 
 small_idx=~cellfun(@isempty,regexp(close.channame,'_S'));
@@ -90,10 +90,10 @@ for i=1:size(data,3)
     [b3, a3] = butter(2, [300, 800]/(fs/2));
     [b4, a4] = butter(2, 800/(fs/2),'high');
 
-    lfb_signal(:, :, i) = filter_symmetric(b1, a1, close.data(:,:,i), [], 0, 'iir');
-    hfb_signal(:, :, i) = filter_symmetric(b2, a2, close.data(:,:,i), [], 0, 'iir');
-    ufb_signal(:, :, i) = filter_symmetric(b3, a3, close.data(:,:,i), [], 0, 'iir');
-    rfb_signal(:, :, i) = filter_symmetric(b4, a4, close.data(:,:,i), [], 0, 'iir');
+    lfb_signal(:, :, i) = cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b1, a1, close.data(:,:,i), [], 0, 'iir');
+    hfb_signal(:, :, i) = cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b2, a2, close.data(:,:,i), [], 0, 'iir');
+    ufb_signal(:, :, i) = cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b3, a3, close.data(:,:,i), [], 0, 'iir');
+    rfb_signal(:, :, i) = cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b4, a4, close.data(:,:,i), [], 0, 'iir');
     
 %     [pxx_baseline,~]=pwelch(close.data(baseline,:,i),wd,ov,nfft,fs,'onesided');
 %     [pxx_move,~]=pwelch(close.data(t,:,i),wd,ov,nfft,fs,'onesided');

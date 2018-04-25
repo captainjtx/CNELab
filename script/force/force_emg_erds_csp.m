@@ -23,10 +23,10 @@ data = data(:, CHi, :);
 
 fdata = data;
 for i=1:size(data,3)
-    fdata(:,:,i)=filter_symmetric(b1, a1, data(:,:,i),[],0,'iir');
+    fdata(:,:,i)=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b1, a1, data(:,:,i),[],0,'iir');
 end
-force = filter_symmetric(b2, a2, force, [], 0, 'iir');
-emg = filter_symmetric(b3, a3, emg, [], 0, 'iir');
+force = cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b2, a2, force, [], 0, 'iir');
+emg = cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b3, a3, emg, [], 0, 'iir');
 %%
 baseline_start = 0;
 baseline_end = 0.5;

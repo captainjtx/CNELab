@@ -51,7 +51,7 @@ for i=1:length(files)
         dat=dat(:,ismember(channames,eeg),:);
         
         for t=1:size(dat,3)
-            dat(:,:,t)=filter_symmetric(b,a,dat(:,:,t),fs,0,'iir');
+            dat(:,:,t)=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,dat(:,:,t),fs,0,'iir');
         end
         
         %mean referenced***************************************************

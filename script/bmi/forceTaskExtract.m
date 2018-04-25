@@ -83,7 +83,7 @@ order=2;
 thresh_neuro_coe=80;
 %high pass the synch signal from neuro-system
 [b,a]=butter(order,fc/sampleRate*2,'high');
-synch_f=filter_symmetric(b,a,synch,sampleRate,0,'iir');
+synch_f=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,synch,sampleRate,0,'iir');
 neuroTimeStamp=linspace(0,length(synch_f)/sampleRate,length(synch_f));
 %digitalize synch signal from neuro-system*********************************
 neuroEnv=abs(hilbert(synch_f));

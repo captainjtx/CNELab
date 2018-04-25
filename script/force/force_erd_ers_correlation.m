@@ -43,8 +43,8 @@ trNum = size(data, 3);
 lfb = [];
 hfb = [];
 for i = 1:trNum
-    lfb(:, :, i) = filter_symmetric(b1, a1, squeeze(data(:, ecog_ind, i)), 0, 0, 'iir');
-    hfb(:, :, i) = filter_symmetric(b2, a2, squeeze(data(:, ecog_ind, i)), 0, 0, 'iir');
+    lfb(:, :, i) = cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b1, a1, squeeze(data(:, ecog_ind, i)), 0, 0, 'iir');
+    hfb(:, :, i) = cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b2, a2, squeeze(data(:, ecog_ind, i)), 0, 0, 'iir');
 end
 
 hfb = hfb.^2;

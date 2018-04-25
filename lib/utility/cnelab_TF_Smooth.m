@@ -1,5 +1,5 @@
-function [SMOOTHED] = TF_Smooth(RAW,KERNEL_TYPE,SIZE)
-% TF_Smooth(RAW,KERNEL_TYPE) returns a smoothed version of the RAW TF map
+function [SMOOTHED] = cnelab_TF_Smooth(RAW,KERNEL_TYPE,SIZE)
+% cnelab_TF_Smooth(RAW,KERNEL_TYPE) returns a smoothed version of the RAW TF map
 % obtained by the convolution with a low pass filter  of the type specified by KERNEL_TYPE
 % with dimensions specified by SIZE.
 % 

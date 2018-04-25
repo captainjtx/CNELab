@@ -20,15 +20,15 @@ for i=1:floor(fs/2/freq)
     
     if w1<=0&&w2>0&&w2<1
         [b,a]=butter(order,w2,'high');
-        data=filter_symmetric(b,a,data,ext,0,'iir');
+        data=cnelab_filter_symmetric(b,a,data,ext,0,'iir');
     elseif w2>=1&&w1>0&&w1<1
         [b,a]=butter(order,w1,'low');
-        data=filter_symmetric(b,a,data,ext,0,'iir');
+        data=cnelab_filter_symmetric(b,a,data,ext,0,'iir');
     elseif w1==0&&w2==1
 %         data=data;
     else
         [b,a]=butter(order,[w1,w2],'stop');
-        data=filter_symmetric(b,a,data,ext,0,'iir');
+        data=cnelab_filter_symmetric(b,a,data,ext,0,'iir');
     end
 end
 

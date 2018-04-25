@@ -1,4 +1,4 @@
-function [Trigger,RisingIdx,FallingIdx]=extract_ac_trigger(trigger,fs,param_1,param_2)
+function [Trigger,RisingIdx,FallingIdx]=cnelab_extract_ac_trigger(trigger,fs,param_1,param_2)
 % Use param_1 for better amplitude differentiation. The default
 % number is 4. Param_2 is the neglectable interval (sample number). The 
 % default number is 50 samples.
@@ -8,7 +8,7 @@ end
 if nargin<3
     param_1=4;
 end
-trg=envelope(trigger,fs);
+trg=cnelab_envelope(trigger,fs);
 trg=data_norm(trg);
 trg(trg<1)=0; % 0.75 was identified manually from data by visual inspection
 rTriggerData = round(trg*param_1);

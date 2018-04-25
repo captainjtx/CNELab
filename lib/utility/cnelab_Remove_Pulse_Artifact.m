@@ -1,4 +1,4 @@
-function data=Remove_Pulse_Artifact(data,Fs,ECG_Indx,LFP_Indx,S)
+function data=cnelab_Remove_Pulse_Artifact(data,Fs,ECG_Indx,LFP_Indx,S)
 
 if nargin<6
     S=1; % Number of PC to extract
@@ -13,7 +13,7 @@ end
 lfp=data(:,LFP_Indx);
 %N data length, L is the number of channels
 [N,~]=size(lfp);
-[r,~,~]=qrs_detector(ecg,Fs);
+[r,~,~]=cnelab_qrs_detector(ecg,Fs);
 
 Ratio=median(diff(r))/Fs*3;
 
@@ -29,7 +29,7 @@ if N/(Lr*Fs)<1.5
     for d=1:length(LFP_Indx)
         lfp = data(:,LFP_Indx(d));
         
-        [lfpa,~] = getaligneddata(lfp,r',round([-Fs/Ratio Fs/Ratio]));
+        [lfpa,~] = cnelab_getaligneddata(lfp,r',round([-Fs/Ratio Fs/Ratio]));
         
         lfpa=permute(lfpa,[1 3 2]);
         correlation=0;

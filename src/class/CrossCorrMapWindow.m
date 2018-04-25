@@ -510,15 +510,15 @@ classdef CrossCorrMapWindow < handle
                     
                     if w1<=0&&w2>0&&w2<1
                         [b,a]=butter(2,w2,'low');
-                        fdata=filter_symmetric(b,a,dt,obj.smw.fs,0,'iir');
+                        fdata=cnelab_filter_symmetric(b,a,dt,obj.smw.fs,0,'iir');
                     elseif w2>=1&&w1>0&&w1<1
                         [b,a]=butter(2,w1,'high');
-                        fdata=filter_symmetric(b,a,dt,obj.smw.fs,0,'iir');
+                        fdata=cnelab_filter_symmetric(b,a,dt,obj.smw.fs,0,'iir');
                     elseif w1==0&&w2==1
                         fdata=dt;
                     else
                         [b,a]=butter(2,[w1,w2],'bandpass');
-                        fdata=filter_symmetric(b,a,dt,obj.smw.fs,0,'iir');
+                        fdata=cnelab_filter_symmetric(b,a,dt,obj.smw.fs,0,'iir');
                     end
                     %******************************************************
                     

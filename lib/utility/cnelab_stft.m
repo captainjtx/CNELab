@@ -1,5 +1,5 @@
-function [tfm,t,f]=stft(x,nf,fs,wd,shft,typ)
-% stft(x,nf,fs,wd,shft,typ)
+function [tfm,t,f]=cnelab_stft(x,nf,fs,wd,shft,typ)
+% cnelab_stft(x,nf,fs,wd,shft,typ)
 % Calculates Short Time Fourier Transform of x
 % nf = number of FFT points
 % wd = window width

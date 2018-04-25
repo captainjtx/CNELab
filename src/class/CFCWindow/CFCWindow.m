@@ -88,7 +88,8 @@ classdef CFCWindow < handle
             [chanNames,~,~,~,~,~,~]=get_selected_datainfo(obj.bsp,true);
             % chanNames={'1','2'};
             if isempty(chanNames)
-                errordlg('Channel info returned empty!')
+                return
+                %errordlg('Channel info returned empty!')
             end
             
             % UI elements defined here
@@ -248,7 +249,8 @@ classdef CFCWindow < handle
         function UpdateChannelList(obj)
             [chanNames,~,~,~,~,~,~]=get_selected_datainfo(obj.bsp,true);
             if isempty(chanNames)
-                errordlg('Channel info returned empty!')
+                return
+                %errordlg('Channel info returned empty!')
             end
             set(obj.ph_data_popup,'String',chanNames,'value',1);
             set(obj.amp_data_popup,'String',chanNames,'value',1);

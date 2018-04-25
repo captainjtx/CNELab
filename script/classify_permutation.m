@@ -66,10 +66,10 @@ for fi=1:length(f1)
     Chi=find(ismember(close.channame,motorchannel));
     
     for i=1:size(ecogC,3)
-        ecogC(:,:,i)=filter_symmetric(b,a,ecogC(:,:,i),[],0,'iir');
+        ecogC(:,:,i)=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,ecogC(:,:,i),[],0,'iir');
     end
     for i=1:size(ecogO,3)
-        ecogO(:,:,i)=filter_symmetric(b,a,ecogO(:,:,i),[],0,'iir');
+        ecogO(:,:,i)=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b,a,ecogO(:,:,i),[],0,'iir');
     end
     
     for env=0:1

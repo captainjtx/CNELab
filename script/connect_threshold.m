@@ -28,7 +28,7 @@ threshold=smw.corr_win.multi_pos_t;
 
 for i=1:length(threshold)
     hold on
-    plot([threshold(i),threshold(i)],[0,connect_num(t==threshold(i))],'-.*r');
+    plot([cnelab_threshold(i),cnelab_threshold(i)],[0,connect_num(t==cnelab_threshold(i))],'-.*r');
 end
 fpos=get(gcf,'position');
 set(gcf,'position',[fpos(1),fpos(2),fpos(3),fpos(4)/2]);

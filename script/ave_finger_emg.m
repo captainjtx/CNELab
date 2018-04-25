@@ -22,9 +22,9 @@ fs = mat.fs;
 
 wl = 512;
 
-% emg = filter_symmetric(b2, a2, squeeze(data(:, emg_ind, :)),[],0,'iir')5
+% emg = cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b2, a2, squeeze(data(:, emg_ind, :)),[],0,'iir')5
 emg = squeeze(data(:, emg_ind, :));
-% emg_env = mean(filter_symmetric(b3, a3, envelope(emg), [], 0, 'iir'), 2);
+% emg_env = mean(cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b3, a3, envelope(emg), [], 0, 'iir'), 2);
 % emg_env = mean(envelope(emg, wl, 'rms'),2);
 % emg_env = mean(envelope(emg, wl, 'rms'), 2);
 emg_env = emg;

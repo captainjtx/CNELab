@@ -75,7 +75,7 @@ con=con/length(find(weight));
 %%
 figure('position',[100,100,800,300])
 subplot(1,2,1)
-imagesc(t-1,f,TF_Smooth(10*log10(ip),'gaussian',[8,8]),[-2,2]);
+imagesc(t-1,f,cnelab_TF_Smooth(10*log10(ip),'gaussian',[8,8]),[-2,2]);
 colormap jet
 title('Ipsilateral O1/O2')
 axis xy
@@ -86,7 +86,7 @@ set(gca,'fontsize',20);
 colorbar
 
 subplot(1,2,2)
-imagesc(t-1,f,TF_Smooth(10*log10(con),'gaussian',[8,8]),[-2,2]);
+imagesc(t-1,f,cnelab_TF_Smooth(10*log10(con),'gaussian',[8,8]),[-2,2]);
 title('Contralateral O1/O2');
 colormap jet
 axis xy

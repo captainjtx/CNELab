@@ -1,5 +1,5 @@
-function r=threshold(ecg,Fs)
-%th=threshold(ecg,Fs)
+function r=cnelab_threshold(ecg,Fs)
+%th=cnelab_threshold(ecg,Fs)
 % Fs=Sampling Frequency
 L=length(ecg);
 if L > Fs*5
