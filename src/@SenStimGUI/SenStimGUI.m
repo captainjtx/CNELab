@@ -82,8 +82,7 @@ classdef SenStimGUI<handle
             obj.MAX_FS=100;
             obj.STIM_COUNT=0;
             obj.DEFAULT_PORT=11260;
-            obj.udp_fid=udp('127.0.0.1',obj.DEFAULT_PORT);
-            fopen(obj.udp_fid);
+            obj.udp_fid=pnet('udpsocket', obj.DEFAULT_PORT);
             obj.log_fid=fopen('stim.log','a');
             obj.anno_fid=fopen('anno.stim','a');
             obj.stim_timer = timer('TimerFcn',@ (src,evts) EnableStim(obj),'BusyMode','queue','StartDelay',obj.DEFAULT_TL/1000);
@@ -405,7 +404,7 @@ classdef SenStimGUI<handle
             end
             saveConfig(obj);
             try
-                fclose(obj.udp_fid);
+                pnet(obj.udp_fid, 'close');
             catch
             end
             try
@@ -652,10 +651,11 @@ classdef SenStimGUI<handle
             xippmex('stim',stim_str);
             DisableStim(obj);
             start(obj.stim_timer);
-            fwrite(obj.udp_fid,obj.STIM_COUNT,'double');
+            
+            pnet(obj.udp_fid, 'write', obj.STIM_COUNT, 'native');
+            pnet(obj.udp_fid, 'writepacket', '127.0.0.1', obj.DEFAULT_PORT);
             
             writeToLogFile(obj, sprintf('%d    %s', obj.STIM_COUNT, stim_str));
-            
         end
         
         function stim=divideCurrent(obj,st)
