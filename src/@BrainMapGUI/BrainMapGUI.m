@@ -1,8 +1,8 @@
 classdef BrainMapGUI<handle
     properties
         Fig
-        AnnotationPanel
         
+        EditFileName
         EditAnnotation
         ListAnnotation
         
@@ -60,21 +60,27 @@ classdef BrainMapGUI<handle
                 'WindowButtonMotionFcn',@(src,evt) MouseMovement(obj),'WindowButtonDownFcn',@(src,evt) MouseDown(obj),...
                 'WindowButtonUpFcn',@(src,evt) MouseUp(obj),'ResizeFcn',@(src,evt) Resize(obj),...
                 'WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'WindowKeyReleaseFcn',@(src,evt) KeyRelease(obj,src,evt),'Units','Pixels','Visible','on',...
-                'position',[10,screensize(4)-390,350,300],'Name','BrainMap Simulink Control');
-            obj.RadioSaveFile=uicontrol(obj.Fig,'style','radiobutton','units','normalized','position',[0,0.85,0.5,0.15],'string','Save Data','value',0,...
+                'position',[10,screensize(4)-390,350,200],'Name','BrainMap Simulink Control');
+            
+            file_panel=uipanel(obj.Fig,'units','normalized','BorderType','none','position',[0,0,0.5,1]);
+            
+            uicontrol(file_panel,'String','Mat-file & video name','Style','text','units','normalized','position',[0.05,0.9,0.9,0.08])
+            obj.EditFileName=uicontrol(file_panel,'String','','Style','edit',...
+                'units','normalized','position',[0.05 0.75 0.9 0.15],...
+                'HorizontalAlignment','center','FontUnits','normalized','FontSize',0.4,'callback',@(src,evt)changeFileName(obj));
+           
+            obj.RadioSaveFile=uicontrol(file_panel,'style','radiobutton','units','normalized','position',[0,0.6,1,0.15],'string','Save Data & Video','value',0,...
                 'Callback',@(src,evt)saveFileCallback(obj,src));
+
+            annotation_panel=uipanel(obj.Fig,'units','normalized','BorderType','none','position',[0.5,0,0.5,1]);
             
-            
-            
-            obj.AnnotationPanel=uipanel(obj.Fig,'units','normalized','BorderType','none','position',[0.5,0,0.5,1]);
-            
-            uicontrol(obj.AnnotationPanel,'String','Annotation','Style','text','units','normalized','position',[0.05,0.9,0.9,0.08])
-            obj.EditAnnotation=uicontrol(obj.AnnotationPanel,'String','','Style','edit',...
-                'units','normalized','position',[0.05 0.8 0.9 0.1],...
+            uicontrol(annotation_panel,'String','Annotation','Style','text','units','normalized','position',[0.05,0.9,0.9,0.08])
+            obj.EditAnnotation=uicontrol(annotation_panel,'String','','Style','edit',...
+                'units','normalized','position',[0.05 0.75 0.9 0.15],...
                 'HorizontalAlignment','center','FontUnits','normalized','FontSize',0.4,'callback',@(src,evt)insertAnnotation(obj));
             
-            obj.ListAnnotation=uicontrol(obj.AnnotationPanel,'String','','Style','listbox',...
-                'units','normalized','position',[0.05,0.01,0.9,0.75],...
+            obj.ListAnnotation=uicontrol(annotation_panel,'String','','Style','listbox',...
+                'units','normalized','position',[0.05,0.01,0.9,0.72],...
                 'callback',@(src,evt)listAnnotationCallback(obj));
             
             obj.ModelDir=pwd;
@@ -130,8 +136,12 @@ classdef BrainMapGUI<handle
         end
         
         function StartPlay(obj)
-            status = get_param(obj.ModelNameWithoutExtension,'SimulationStatus');
-            set_param(strcat(obj.ModelNameWithoutExtension,'/FileSave'),'Value',num2str(get(obj.RadioSaveFile,'value')));
+            try
+                status = get_param(obj.ModelNameWithoutExtension,'SimulationStatus');
+                set_param(strcat(obj.ModelNameWithoutExtension,'/FileSave'),'Value',num2str(get(obj.RadioSaveFile,'value')));
+            catch
+                return
+            end
             if strcmp(status,'stopped')
                 set_param(obj.ModelNameWithoutExtension,'SimulationCommand','Start');
                 obj.JTogPlay.setIcon(obj.IconStop);
@@ -149,16 +159,21 @@ classdef BrainMapGUI<handle
                     end
                 end
                 figure(obj.Fig);
+                
+                if get(obj.RadioSaveFile, 'value') == 1
+                    obj.AutoSetVideoFileName();
+                    obj.StartCaptureVideo();
+                end
             end
         end
         function StopPlay(obj)
             status = get_param(obj.ModelNameWithoutExtension,'SimulationStatus');
             if strcmp(status,'running')
+                obj.StopCaptureVideo();
                 set_param(obj.ModelNameWithoutExtension,'SimulationCommand','Stop');
-                obj.JTogPlay.setIcon(obj.IconPlay);
-                set(handle(obj.JTogPlay,'CallbackProperties'),'MousePressedCallback',@(h,e) StartPlay(obj));
             end
-            obj.StopCapture();
+            set(handle(obj.JTogPlay,'CallbackProperties'),'MousePressedCallback',@(h,e) StartPlay(obj));
+            obj.JTogPlay.setIcon(obj.IconPlay);
         end
         
         function writeAnnotationToFile(obj, anno)
@@ -172,56 +187,62 @@ classdef BrainMapGUI<handle
             end
         end
         
-        function StartCapture(obj)
+        function StartCaptureVideo(obj)
             pnet(obj.udp_behv, 'write', 'Video: Start Capture', 'native');
             pnet(obj.udp_behv, 'writepacket', obj.host, obj.port);
         end
         
-        function StopCapture(obj)
+        function StopCaptureVideo(obj)
             pnet(obj.udp_behv, 'write', 'Video: Stop Capture', 'native');
             pnet(obj.udp_behv, 'writepacket', obj.host, obj.port);
         end
         
-        function SetCaptureFileName(obj, filename)
+        function SetVideoCaptureFileName(obj, filename)
             pnet(obj.udp_behv, 'write', sprintf('Video: FileName=%s', filename), 'native');
             pnet(obj.udp_behv, 'writepacket', obj.host, obj.port);
         end
+        
+        function AutoSetVideoFileName(obj)
+            formatOut = 'dd_mm_yyyy_HH_MM_SS';
+            filename=sprintf('%s\\%s_%s.avi', obj.ModelDir, get(obj.EditFileName, 'string'), datestr(now,formatOut));
+            obj.SetVideoCaptureFileName(filename);
+        end
         function saveFileCallback(obj,src)
             s=get(src,'value');
-            set_param(strcat(obj.ModelNameWithoutExtension,'/FileSave'),'Value',num2str(s));
-            
-            modelTime = get_param(obj.ModelNameWithoutExtension,'SimulationTime');
-            obj.save_data_time = modelTime;
-            
-            if s == 0
-                anno = ['%Stop saving data at ' num2str(modelTime) ' (absolute time)'];
-                obj.StopCapture();
-            elseif s == 1
-                defaultVideoName=sprintf('%s\\%s.avi', obj.ModelDir, obj.ModelNameWithoutExtension);
-                [FileName,FilePath,~]=uiputfile({'*.avi','CNELBehv Video Files (*.avi)';...
-                    '*.avi','AVI format (*.avi)'}...
-                    ,'save your Video',defaultVideoName);
-                if FileName~=0
-                    filename=fullfile(FilePath,FileName);
-                    obj.SetCaptureFileName(filename);
-                    obj.StartCapture();
+            try
+                set_param(strcat(obj.ModelNameWithoutExtension,'/FileSave'),'Value',num2str(s));
+                status = get_param(obj.ModelNameWithoutExtension,'SimulationStatus');
+                if strcmp(status,'running')
+                    modelTime = get_param(obj.ModelNameWithoutExtension,'SimulationTime');
+                    obj.save_data_time = modelTime;
+                    if s == 0
+                        obj.StopCaptureVideo();
+                        anno = ['%Stop saving data at ' num2str(modelTime) ' (absolute time)'];
+                    elseif s == 1
+                        obj.AutoSetVideoFileName();
+                        obj.StartCaptureVideo();
+                        anno = ['%Start saving data at ' num2str(modelTime) ' (absolute time)'];
+                    end
+                    %directly write into text file
+                    writeAnnotationToFile(obj, anno);
                 end
-                anno = ['%Start saving data at ' num2str(modelTime) ' (absolute time)'];
+            catch
+                
             end
-            
-            %directly write into text file
-            writeAnnotationToFile(obj, anno);
-            
         end
         
         function ResetMap(obj)
-            val = get_param(strcat(obj.ModelNameWithoutExtension,'/MapReset'), 'Value');
-            if val == '1'
-                newval = '0';
-            elseif val == '0'
-                newval = '1';
+            try
+                val = get_param(strcat(obj.ModelNameWithoutExtension,'/MapReset'), 'Value');
+                if val == '1'
+                    newval = '0';
+                elseif val == '0'
+                    newval = '1';
+                end
+                set_param(strcat(obj.ModelNameWithoutExtension,'/MapReset'),'Value',newval);
+            catch
+                return
             end
-            set_param(strcat(obj.ModelNameWithoutExtension,'/MapReset'),'Value',newval);
         end
         
         function TakeScreenshot(obj)
@@ -245,6 +266,13 @@ classdef BrainMapGUI<handle
             anno_str = sprintf('%f,%s', modelTime, anno);
             writeAnnotationToFile(obj, anno_str)
             
+        end
+        
+        function changeFileName(obj)
+            try
+                set_param(strcat(obj.ModelNameWithoutExtension,'/FileSink'), 'FileName', get(obj.EditFileName, 'str'));
+            catch
+            end
         end
         function listAnnotationCallback(obj)
         end
@@ -278,12 +306,21 @@ classdef BrainMapGUI<handle
                 end
                 obj.AnnotationFileID=fopen(fullfile(obj.AnnotationDir,[obj.ModelNameWithoutExtension,'-',num2str(obj.anno_count),'.txt']),'at');
                 
+                set(obj.EditFileName, 'string', get_param(strcat(obj.ModelNameWithoutExtension,'/FileSink'), 'FileName'));
             end
-            
             figure(obj.Fig);
         end
         
-        
+        function SetVideoCaptureFileUI(obj)
+            defaultVideoName=sprintf('%s\\%s.avi', obj.ModelDir, get(obj.EditFileName, 'string'));
+            [FileName,FilePath,~]=uiputfile({'*.avi','CNELBehv Video Files (*.avi)';...
+                '*.avi','AVI format (*.avi)'}...
+                ,'save your Video',defaultVideoName);
+            if FileName~=0
+                filename=fullfile(FilePath,FileName);
+                obj.SetVideoCaptureFileName(filename);
+            end
+        end
         function val=get.AnnotationDir(obj)
             val=[obj.ModelDir,'/events'];
         end
@@ -315,7 +352,24 @@ classdef BrainMapGUI<handle
         %for future ...
         function OnClose(obj)
             try
-                delete(obj.Fig)
+                obj.StopPlay();
+            catch
+            end
+            
+            try
+                save_system(fullfile(obj.ModelDir,obj.ModelName));
+                disp('Model Saved ... ')
+            catch
+                disp('Model Save Failed !')
+            end
+            
+            try
+                close_system(fullfile(obj.ModelDir,obj.ModelName), 0);
+            catch
+            end
+            
+            try
+                pnet(obj.udp_behv, 'close');
             catch
             end
             
@@ -325,14 +379,7 @@ classdef BrainMapGUI<handle
             end
             
             try
-                save_system(fullfile(obj.ModelDir,obj.ModelName));
-                close_system(fullfile(obj.ModelDir,obj.ModelName));
-            catch
-                display('GUI FORCE CLOSED!!!')
-            end
-            
-            try
-                pnet(obj.udp_behv, 'close');
+                delete(obj.Fig)
             catch
             end
         end
