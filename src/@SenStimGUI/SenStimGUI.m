@@ -120,13 +120,13 @@ classdef SenStimGUI<handle
                 'WindowButtonUpFcn',@(src,evt) MouseUp(obj),'ResizeFcn',@(src,evt) Resize(obj),...
                 'WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'WindowKeyReleaseFcn',@(src,evt) KeyRelease(obj,src,evt),...
                 'Units','Pixels','Visible','on',...
-                'position',[10,screensize(4)-640,350,600],'Name','Ripple Stimulation Control');
+                'position',[10,screensize(4)-640,350,400],'Name','Ripple Stimulation Control');
             
-            tabgp = uitabgroup(obj.Fig,'Position',[0 0.2 1 0.8]);
+            tabgp = uitabgroup(obj.Fig,'Position',[0 0 1 1]);
             
             tab2 = uitab(tabgp,'Title','Stim');
             
-            hp_mono_bipolar=uipanel('parent',tab2,'units','normalized','position',[0,0.85,1,0.15]);
+            hp_mono_bipolar=uipanel('parent',tab2,'units','normalized','position',[0,0.8,1,0.2]);
             
             obj.stim_monopolar_radio=uicontrol('Parent',hp_mono_bipolar,'Style','radiobutton','units','normalized','string','Monopolar','position',[0,0.52,0.3,0.46],...
                 'HorizontalAlignment','left','callback',@(src,evts) MonopolarRadioCallback(obj,src),'value',1);
@@ -243,7 +243,7 @@ classdef SenStimGUI<handle
             obj.stim_btn=uicontrol('parent',tab2,'style','pushbutton','string','Stim','units','normalized','position',[0.74,0.01,0.25,0.07],...
                 'callback',@(src,evts) Stim(obj));
             
-            obj.info_text=uicontrol('parent',obj.Fig,'style','text','String','','units','normalized','position',[0,0,1,0.18]);
+%             obj.info_text=uicontrol('parent',obj.Fig,'style','text','String','','units','normalized','position',[0,0,1,0.18]);
             
             tab1 = uitab(tabgp,'Title','Front end');
             port_names={'Port A','Port B','Port C','Port D'};
