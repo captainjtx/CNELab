@@ -60,7 +60,7 @@ classdef BrainMapGUI<handle
                 'WindowButtonMotionFcn',@(src,evt) MouseMovement(obj),'WindowButtonDownFcn',@(src,evt) MouseDown(obj),...
                 'WindowButtonUpFcn',@(src,evt) MouseUp(obj),'ResizeFcn',@(src,evt) Resize(obj),...
                 'WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'WindowKeyReleaseFcn',@(src,evt) KeyRelease(obj,src,evt),'Units','Pixels','Visible','on',...
-                'position',[10,screensize(4)-390,350,200],'Name','BrainMap Simulink Control');
+                'position',[10,screensize(4)-270,367.5,200],'Name','BrainMap Simulink Control');
             
             file_panel=uipanel(obj.Fig,'units','normalized','BorderType','none','position',[0,0,0.5,1]);
             
@@ -144,16 +144,11 @@ classdef BrainMapGUI<handle
             end
             if strcmp(status,'stopped')
                 set_param(obj.ModelNameWithoutExtension,'SimulationCommand','Start');
-                obj.JTogPlay.setIcon(obj.IconStop);
-                set(handle(obj.JTogPlay,'CallbackProperties'),'MousePressedCallback',@(h,e) StopPlay(obj));
-                
                 try
-                    open_system(strcat(obj.ModelNameWithoutExtension,'/BipolarScope1'),'window');
-                    open_system(strcat(obj.ModelNameWithoutExtension,'/BipolarScope2'),'window');
+                    open_system(strcat(obj.ModelNameWithoutExtension,'/Mono 2-60 Hz'),'window');
                     open_system(strcat(obj.ModelNameWithoutExtension,'/BehvScope'),'window');
                 catch
                     try
-                        open_system(strcat(obj.ModelNameWithoutExtension,'/BipolarScope'),'window');
                         open_system(strcat(obj.ModelNameWithoutExtension,'/BehvScope'),'window');
                     catch
                     end
@@ -165,6 +160,8 @@ classdef BrainMapGUI<handle
                     obj.StartCaptureVideo();
                 end
             end
+            obj.JTogPlay.setIcon(obj.IconStop);
+            set(handle(obj.JTogPlay,'CallbackProperties'),'MousePressedCallback',@(h,e) StopPlay(obj));
         end
         function StopPlay(obj)
             status = get_param(obj.ModelNameWithoutExtension,'SimulationStatus');
