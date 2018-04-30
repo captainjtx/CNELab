@@ -1,4 +1,4 @@
-classdef SenStimGUI<handle
+classdef BrainStimGUI<handle
     properties
         Fig
         conf
@@ -63,7 +63,7 @@ classdef SenStimGUI<handle
     end
     
     methods
-        function obj=SenStimGUI(varargin)
+        function obj=BrainStimGUI(varargin)
             obj.varInit();
             obj.buildfig();
             obj.refresh();
