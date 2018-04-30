@@ -66,7 +66,7 @@ classdef BrainMapGUI<handle
             
             uicontrol(file_panel,'String','Mat-file & video name','Style','text','units','normalized','position',[0.05,0.9,0.9,0.08])
             obj.EditFileName=uicontrol(file_panel,'String','','Style','edit',...
-                'units','normalized','position',[0.05 0.75 0.9 0.15],...
+                'units','normalized','position',[0.05 0.75 0.9 0.15], 'backgroundcolor', 'w',...
                 'HorizontalAlignment','center','FontUnits','normalized','FontSize',0.4,'callback',@(src,evt)changeFileName(obj));
            
             obj.RadioSaveFile=uicontrol(file_panel,'style','radiobutton','units','normalized','position',[0,0.6,1,0.15],'string','Save Data & Video','value',0,...
@@ -76,11 +76,11 @@ classdef BrainMapGUI<handle
             
             uicontrol(annotation_panel,'String','Annotation','Style','text','units','normalized','position',[0.05,0.9,0.9,0.08])
             obj.EditAnnotation=uicontrol(annotation_panel,'String','','Style','edit',...
-                'units','normalized','position',[0.05 0.75 0.9 0.15],...
+                'units','normalized','position',[0.05 0.75 0.9 0.15], 'backgroundcolor', 'w',...
                 'HorizontalAlignment','center','FontUnits','normalized','FontSize',0.4,'callback',@(src,evt)insertAnnotation(obj));
             
             obj.ListAnnotation=uicontrol(annotation_panel,'String','','Style','listbox',...
-                'units','normalized','position',[0.05,0.01,0.9,0.72],...
+                'units','normalized','position',[0.05,0.01,0.9,0.72], 'backgroundcolor', 'w',...
                 'callback',@(src,evt)listAnnotationCallback(obj));
             
             obj.ModelDir=pwd;
@@ -146,7 +146,7 @@ classdef BrainMapGUI<handle
             if strcmp(status,'stopped')
                 set_param(obj.ModelNameWithoutExtension,'SimulationCommand','Start');
                 try
-                    open_system(strcat(obj.ModelNameWithoutExtension,'/Mono 2-60 Hz'),'window');
+                    open_system(strcat(obj.ModelNameWithoutExtension,'/Mono 8-32 Hz'),'window');
                     open_system(strcat(obj.ModelNameWithoutExtension,'/BehvScope'),'window');
                 catch
                     try
@@ -170,7 +170,7 @@ classdef BrainMapGUI<handle
             if strcmp(status,'running')
                 set_param(obj.ModelNameWithoutExtension,'SimulationCommand','Stop');
             end
-            set(handle(obj.JTogPlay,'CallbackProperties'),'MousePressedCallback',@(h,e) SetVideoCapture(obj));
+            set(handle(obj.JTogPlay,'CallbackProperties'),'MousePressedCallback',@(h,e) StartPlay(obj));
             obj.JTogPlay.setIcon(obj.IconPlay);
         end
         
