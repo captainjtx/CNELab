@@ -52,7 +52,6 @@ classdef SenStimGUI<handle
         
         STIM_COUNT
         DEFAULT_PORT
-        udp_fid
         log_fid
         anno_fid
         
@@ -82,7 +81,6 @@ classdef SenStimGUI<handle
             obj.MAX_FS=100;
             obj.STIM_COUNT=0;
             obj.DEFAULT_PORT=11260;
-            obj.udp_fid=pnet('udpsocket', obj.DEFAULT_PORT);
             obj.log_fid=fopen('stim.log','a');
             obj.anno_fid=fopen('anno.stim','a');
             obj.stim_timer = timer('TimerFcn',@ (src,evts) EnableStim(obj),'BusyMode','queue','StartDelay',obj.DEFAULT_TL/1000);
@@ -113,14 +111,13 @@ classdef SenStimGUI<handle
             import javax.swing.JPanel;
             import javax.swing.JRadioButton;
             
-            screensize=get(0,'ScreenSize');
             obj.Fig=figure('MenuBar','none','ToolBar','none','DockControls','off','NumberTitle','off','RendererMode','manual',...
                 'CloseRequestFcn',@(src,evts) OnClose(obj),'WindowScrollWheelFcn',@(src,evts) ScrollWheel(obj,src,evts),...
                 'WindowButtonMotionFcn',@(src,evt) MouseMovement(obj),'WindowButtonDownFcn',@(src,evt) MouseDown(obj),...
                 'WindowButtonUpFcn',@(src,evt) MouseUp(obj),'ResizeFcn',@(src,evt) Resize(obj),...
                 'WindowKeyPressFcn',@(src,evt) KeyPress(obj,src,evt),'WindowKeyReleaseFcn',@(src,evt) KeyRelease(obj,src,evt),...
                 'Units','Pixels','Visible','on',...
-                'position',[10,screensize(4)-640,350,400],'Name','Ripple Stimulation Control');
+                'position',[10,384,367.5,400],'Name','Ripple Stimulation Control');
             
             tabgp = uitabgroup(obj.Fig,'Position',[0 0 1 1]);
             
@@ -404,10 +401,6 @@ classdef SenStimGUI<handle
             end
             saveConfig(obj);
             try
-                pnet(obj.udp_fid, 'close');
-            catch
-            end
-            try
                 fclose(obj.log_fid);
             catch
             end
@@ -651,9 +644,6 @@ classdef SenStimGUI<handle
             xippmex('stim',stim_str);
             DisableStim(obj);
             start(obj.stim_timer);
-            
-            pnet(obj.udp_fid, 'write', obj.STIM_COUNT, 'native');
-            pnet(obj.udp_fid, 'writepacket', '127.0.0.1', obj.DEFAULT_PORT);
             
             writeToLogFile(obj, sprintf('%d    %s', obj.STIM_COUNT, stim_str));
         end
