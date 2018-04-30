@@ -136,6 +136,7 @@ classdef BrainMapGUI<handle
         end
         
         function StartPlay(obj)
+            changeFileName(obj);
             try
                 status = get_param(obj.ModelNameWithoutExtension,'SimulationStatus');
                 set_param(strcat(obj.ModelNameWithoutExtension,'/FileSave'),'Value',num2str(get(obj.RadioSaveFile,'value')));
@@ -164,12 +165,12 @@ classdef BrainMapGUI<handle
             set(handle(obj.JTogPlay,'CallbackProperties'),'MousePressedCallback',@(h,e) StopPlay(obj));
         end
         function StopPlay(obj)
+            obj.StopCaptureVideo();
             status = get_param(obj.ModelNameWithoutExtension,'SimulationStatus');
             if strcmp(status,'running')
-                obj.StopCaptureVideo();
                 set_param(obj.ModelNameWithoutExtension,'SimulationCommand','Stop');
             end
-            set(handle(obj.JTogPlay,'CallbackProperties'),'MousePressedCallback',@(h,e) StartPlay(obj));
+            set(handle(obj.JTogPlay,'CallbackProperties'),'MousePressedCallback',@(h,e) SetVideoCapture(obj));
             obj.JTogPlay.setIcon(obj.IconPlay);
         end
         
@@ -205,6 +206,7 @@ classdef BrainMapGUI<handle
             obj.SetVideoCaptureFileName(filename);
         end
         function saveFileCallback(obj,src)
+            changeFileName(obj);
             s=get(src,'value');
             try
                 set_param(strcat(obj.ModelNameWithoutExtension,'/FileSave'),'Value',num2str(s));
