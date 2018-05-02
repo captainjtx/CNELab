@@ -9,6 +9,7 @@ classdef BrainMapGUI<handle
         Toolbar
         JToolbar
         RadioSaveFile
+        RadioRandomVibrate
         
         MenuFile
         MenuFileOpen
@@ -36,6 +37,7 @@ classdef BrainMapGUI<handle
         udp_behv
         port
         host
+        
     end
     properties(Dependent)
         AnnotationDir
@@ -71,6 +73,9 @@ classdef BrainMapGUI<handle
            
             obj.RadioSaveFile=uicontrol(file_panel,'style','radiobutton','units','normalized','position',[0,0.6,1,0.15],'string','Save Data & Video','value',0,...
                 'Callback',@(src,evt)saveFileCallback(obj,src));
+            
+            obj.RadioRandomVibrate=uicontrol(file_panel,'style','radiobutton','units','normalized','position',[0,0.45,1,0.15],'string','Random Vibration','value',0,...
+                'Callback',@(src,evt)randomVibrateCallback(obj,src));
 
             annotation_panel=uipanel(obj.Fig,'units','normalized','BorderType','none','position',[0.5,0,0.5,1]);
             
@@ -227,6 +232,17 @@ classdef BrainMapGUI<handle
                 end
             catch
                 
+            end
+        end
+        
+        function randomVibrateCallback(obj, src)
+            s=get(src,'value');
+            if s == 1
+                pnet(obj.udp_behv, 'write', 'Teensy: 1,1', 'native');
+                pnet(obj.udp_behv, 'writepacket', obj.host, obj.port);
+            elseif s == 0
+                pnet(obj.udp_behv, 'write', 'Teensy: 0,0', 'native');
+                pnet(obj.udp_behv, 'writepacket', obj.host, obj.port);
             end
         end
         
