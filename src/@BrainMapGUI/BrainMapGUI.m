@@ -10,6 +10,8 @@ classdef BrainMapGUI<handle
         JToolbar
         RadioSaveFile
         RadioRandomVibrate
+        RadioAutoScreenshot
+        EditScreenshotPeriod
         
         MenuFile
         MenuFileOpen
@@ -29,7 +31,7 @@ classdef BrainMapGUI<handle
         JTogPlay
         JBtnResetMap
         JBtnScreenshot
-        
+        to
         anno_count
         
         save_data_time
@@ -38,6 +40,7 @@ classdef BrainMapGUI<handle
         port
         host
         
+        ScreenshotTimer
     end
     properties(Dependent)
         AnnotationDir
@@ -54,6 +57,7 @@ classdef BrainMapGUI<handle
             obj.host = '127.0.0.1';
             obj.port = 27100;
             obj.udp_behv=pnet('udpsocket',obj.port);
+            obj.ScreenshotTimer = timer('TimerFcn',@ (src,evts) TakeScreenshot(obj),'ExecutionMode','fixedRate','BusyMode','queue', 'Period', 30);
         end
         function buildfig(obj)
             screensize=get(0,'ScreenSize');
@@ -76,6 +80,14 @@ classdef BrainMapGUI<handle
             
             obj.RadioRandomVibrate=uicontrol(file_panel,'style','radiobutton','units','normalized','position',[0,0.45,1,0.15],'string','Random Vibration','value',0,...
                 'Callback',@(src,evt)randomVibrateCallback(obj,src));
+            
+            obj.RadioAutoScreenshot=uicontrol(file_panel,'style','radiobutton','units','normalized','position',[0,0.3,1,0.15],'string','Auto Screenshot','value',0,...
+                'Callback',@(src,evt)autoScreenshotCallback(obj,src));
+            
+            
+            obj.EditScreenshotPeriod=uicontrol(file_panel,'style','edit','units','normalized','position',[0.6,0.3,0.3,0.15],'string','30',...
+                'Callback',@(src,evt)changeScreenshotPeriodCallback(obj,src));
+            uicontrol(file_panel, 'style', 'text', 'units', 'normalized', 'position', [0.9,0.3, 0.1, 0.12], 'string', '(s)')
 
             annotation_panel=uipanel(obj.Fig,'units','normalized','BorderType','none','position',[0.5,0,0.5,1]);
             
@@ -91,6 +103,10 @@ classdef BrainMapGUI<handle
             obj.ModelDir=pwd;
             obj.MakeMenu();
             obj.MakeToolbar();
+            
+            if exist(strcat(obj.ModelDir, '/screenshot'),'dir')~=7
+                    mkdir(obj.ModelDir,'screenshot');
+             end
         end
         
         function MakeToolbar(obj)
@@ -164,6 +180,8 @@ classdef BrainMapGUI<handle
                 if get(obj.RadioSaveFile, 'value') == 1
                     obj.AutoSetVideoFileName();
                     obj.StartCaptureVideo();
+                    set(obj.RadioAutoScreenshot, 'value', 1);
+                    obj.autoScreenshotCallback(obj.RadioAutoScreenshot);
                 end
             end
             obj.JTogPlay.setIcon(obj.IconStop);
@@ -175,6 +193,8 @@ classdef BrainMapGUI<handle
             if strcmp(status,'running')
                 set_param(obj.ModelNameWithoutExtension,'SimulationCommand','Stop');
             end
+            set(obj.RadioAutoScreenshot, 'value', 0);
+            obj.autoScreenshotCallback(obj.RadioAutoScreenshot);
             set(handle(obj.JTogPlay,'CallbackProperties'),'MousePressedCallback',@(h,e) StartPlay(obj));
             obj.JTogPlay.setIcon(obj.IconPlay);
         end
@@ -222,10 +242,14 @@ classdef BrainMapGUI<handle
                     if s == 0
                         obj.StopCaptureVideo();
                         anno = ['%Stop saving data at ' num2str(modelTime) ' (absolute time)'];
+                        set(obj.RadioAutoScreenshot, 'value', 0);
+                    obj.autoScreenshotCallback(obj.RadioAutoScreenshot);
                     elseif s == 1
                         obj.AutoSetVideoFileName();
                         obj.StartCaptureVideo();
                         anno = ['%Start saving data at ' num2str(modelTime) ' (absolute time)'];
+                        set(obj.RadioAutoScreenshot, 'value', 1);
+                        obj.autoScreenshotCallback(obj.RadioAutoScreenshot);
                     end
                     %directly write into text file
                     writeAnnotationToFile(obj, anno);
@@ -245,7 +269,25 @@ classdef BrainMapGUI<handle
                 pnet(obj.udp_behv, 'writepacket', obj.host, obj.port);
             end
         end
+        function autoScreenshotCallback(obj, src)
+            s=get(src,'value');
+            if s == 1
+                if strcmpi(obj.ScreenshotTimer.Running,'off')
+                    start(obj.ScreenshotTimer);
+                end
+            elseif s == 0
+                if strcmpi(obj.ScreenshotTimer.Running,'on')
+                    stop(obj.ScreenshotTimer);
+                end
+            end
+        end
         
+        function changeScreenshotPeriodCallback(obj, src)
+            newP = str2double(get(src, 'string'));
+            if ~isnan(newP) && ~isempty(newP)
+                set(obj.ScreenshotTimer, 'period', newP);
+            end
+        end
         function ResetMap(obj)
             try
                 val = get_param(strcat(obj.ModelNameWithoutExtension,'/MapReset'), 'Value');
@@ -261,7 +303,7 @@ classdef BrainMapGUI<handle
         end
         
         function TakeScreenshot(obj)
-            pnet(obj.udp_behv, 'write', sprintf('Screenshot: FileName=%s', [obj.ModelDir, '/']), 'native');
+            pnet(obj.udp_behv, 'write', sprintf('Screenshot: FileName=%s', [obj.ModelDir, '/screenshot/']), 'native');
             pnet(obj.udp_behv, 'writepacket', obj.host, obj.port);
         end
         function insertAnnotation(obj)
@@ -395,6 +437,11 @@ classdef BrainMapGUI<handle
             
             try
                 delete(obj.Fig)
+            catch
+            end
+            
+            try
+                delete(obj.ScreenshotTimer);
             catch
             end
         end
