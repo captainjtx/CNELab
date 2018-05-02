@@ -240,7 +240,7 @@ classdef BioSigPlot < hgsetget
         LineDefaultColors
         
         DataView                %View Mode {'Vertical'|'Horizontal'|'DAT*'}
-        MontageRef              %NÂ° Montage
+        MontageRef              %NÃ‚Â° Montage
         XGrid                   %true : show Grid line on each sec
         YGrid                   %true : show Grid line on each channel
         EventsDisplay           %true : show Events
@@ -601,6 +601,10 @@ classdef BioSigPlot < hgsetget
                 delete(h);
             end
             
+            try 
+                delete(obj.VideoTimer);
+            catch
+            end
             
             if ~isempty(obj.SPFObj)&&ishandle(obj.SPFObj)&&isa(obj.SPFObj,'SPFPlot')
                 delete(obj.SPFObj);
