@@ -330,6 +330,11 @@ classdef BrainMapGUI<handle
                 set_param(strcat(obj.ModelNameWithoutExtension,'/FileSink'), 'FileName', get(obj.EditFileName, 'str'));
             catch
             end
+            
+            try
+                set_param(strcat(obj.ModelNameWithoutExtension,'/Grid Visualizer'), 'task', ['''', get(obj.EditFileName, 'str'), '''']);
+            catch
+            end
         end
         function listAnnotationCallback(obj)
         end
