@@ -1330,7 +1330,7 @@ classdef TFMapWindow < handle
                     chanpos(:,2)=chanpos(:,2)/y_len;
                     
                     dw=dx/(x_len+dx);
-                    dh=dy/(y_len+dy);
+                    dh=dy/(y_len+dy)*0.9;
                     
             end
             %**************************************************************
