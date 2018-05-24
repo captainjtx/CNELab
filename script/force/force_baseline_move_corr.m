@@ -37,8 +37,8 @@ squeeze_hfb = [];
 [b2, a2] = butter(2, [60, 200]/(fs/2));
 
 for i = 1:trNum
-    squeeze_lfb(:, :, i) = cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b1, a1, squeeze(squeeze_data(:, ecog_ind, i)), 0, 0, 'iir');
-    squeeze_hfb(:, :, i) = cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b2, a2, squeeze(squeeze_data(:, ecog_ind, i)), 0, 0, 'iir');
+    squeeze_lfb(:, :, i) = cnelab_filter_symmetric(b1, a1, squeeze(squeeze_data(:, ecog_ind, i)), 0, 0, 'iir');
+    squeeze_hfb(:, :, i) = cnelab_filter_symmetric(b2, a2, squeeze(squeeze_data(:, ecog_ind, i)), 0, 0, 'iir');
 end
 
 squeeze_hfb = squeeze_hfb.^2;
@@ -49,8 +49,8 @@ trNum = size(relax_data, 3);
 relax_lfb = [];
 relax_hfb = [];
 for i = 1:trNum
-    relax_lfb(:, :, i) = cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b1, a1, squeeze(relax_data(:, ecog_ind, i)), 0, 0, 'iir');
-    relax_hfb(:, :, i) = cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b2, a2, squeeze(relax_data(:, ecog_ind, i)), 0, 0, 'iir');
+    relax_lfb(:, :, i) = cnelab_filter_symmetric(b1, a1, squeeze(relax_data(:, ecog_ind, i)), 0, 0, 'iir');
+    relax_hfb(:, :, i) = cnelab_filter_symmetric(b2, a2, squeeze(relax_data(:, ecog_ind, i)), 0, 0, 'iir');
 end
 
 relax_hfb = relax_hfb.^2;

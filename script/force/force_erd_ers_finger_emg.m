@@ -37,11 +37,11 @@ wd = 512;
 ov = 500;
 wl = 128;
 
-emg = cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b2, a2, squeeze(data(:, emg_ind, :)),[],0,'iir');
+emg = cnelab_filter_symmetric(b2, a2, squeeze(data(:, emg_ind, :)),[],0,'iir');
 
-emg_env = mean(cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b3, a3, envelope(emg, wl ,'rms'), [], 0, 'iir'), 2);
+emg_env = mean(cnelab_filter_symmetric(b3, a3, envelope(emg, wl ,'rms'), [], 0, 'iir'), 2);
 
-rforce=cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b1, a1, squeeze(data(:, force_ind,:)),[],0,'iir');
+rforce=cnelab_filter_symmetric(b1, a1, squeeze(data(:, force_ind,:)),[],0,'iir');
 force = mean(rforce, 2);
 
 tfm = 0;
