@@ -334,7 +334,7 @@ end
 %put mask==================================================================
 for i=1:length(cds)
     if ~isempty(fileinfo{i}.masknames)
-        bsp.Mask{i}=~ismember(ChanNames{i},fileinfo{i}.masknames);
+        bsp.Mask{i}=~ismember(ChanNames{i}(:),fileinfo{i}.masknames);
     else
         bsp.Mask{i}=ones(length(ChanNames{i}),1);
     end

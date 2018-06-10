@@ -118,7 +118,7 @@ else
         end
         maskchan = maskchan(ismember(maskchan, chanNames));
         
-        cds.Montage.MaskChanNames=maskchan;
+        cds.Montage.MaskChanNames=maskchan(:);
         
         cds.save('title','Merged Data','folders',false,'FileName',fullfile(FilePath,FileName));
     elseif FilterIndex==2
