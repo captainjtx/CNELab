@@ -335,6 +335,8 @@ classdef BrainMapGUI<handle
                 set_param(strcat(obj.ModelNameWithoutExtension,'/Grid Visualizer'), 'task', ['''', get(obj.EditFileName, 'str'), '''']);
             catch
             end
+            
+            AutoSetVideoFileName(obj);
         end
         function listAnnotationCallback(obj)
         end
