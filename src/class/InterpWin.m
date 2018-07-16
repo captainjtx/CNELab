@@ -55,7 +55,10 @@ classdef InterpWin < handle
 %             allchan=obj.channames;
             
             chanpos=obj.bsp.Montage{obj.ds}(obj.bsp.MontageRef(obj.ds)).position;
-            
+            if isempty(chanpos)
+                errordlg('Cannot find channel positions !');
+                return
+            end
             chanind=~isnan(chanpos(:,1))&~isnan(chanpos(:,2));
             obj.channames=obj.channames(chanind);
             chanpos=chanpos(chanind,:);
