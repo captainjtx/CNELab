@@ -41,6 +41,7 @@ obj.MenuCommands=uimenu(obj.MenuSettings,'Label','Command List',...
 obj.MenuConfigurationState=uimenu(obj.MenuSettings,'Label','Configuration file','Callback',@(src,evt) ConfigWindow(obj));
 obj.MenuColor=uimenu(obj.MenuSettings,'Label','Color');
 obj.MenuSampleRate=uimenu(obj.MenuSettings,'Label','Sample Rate','Callback',@(src,evt) MnuSampleRate(obj),'Accelerator','r');
+obj.MenuAudioSettings=uimenu(obj.MenuSettings,'Label','Audio Settings','Callback',@(src,evt) MnuAudioSettings(obj)); 
 %Second Order Menu of Color
 obj.MenuColorCanvas=uimenu(obj.MenuColor,'Label','Canvas','Accelerator','b',...
     'Callback',@(src,evt) set(obj,'AxesBackgroundColor',uisetcolor(obj.AxesBackgroundColor,'AxesBackground Color')));
