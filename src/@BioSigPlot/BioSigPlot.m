@@ -111,6 +111,7 @@ classdef BioSigPlot < hgsetget
         MenuPlaySpeed
         MenuColors
         MenuSampleRate
+        MenuAudioSettings
         MenuVideoStartEnd
         MenuFigurePosition
         MenuVideo
@@ -240,7 +241,7 @@ classdef BioSigPlot < hgsetget
         LineDefaultColors
         
         DataView                %View Mode {'Vertical'|'Horizontal'|'DAT*'}
-        MontageRef              %NÃ‚Â° Montage
+        MontageRef              %NÃƒâ€šÃ‚Â° Montage
         XGrid                   %true : show Grid line on each sec
         YGrid                   %true : show Grid line on each channel
         EventsDisplay           %true : show Events
@@ -479,10 +480,10 @@ classdef BioSigPlot < hgsetget
             obj.ResizeMode=false;
             obj.AxesResizeMode=[];
             obj.UponAdjustPanel=false;
-
+            obj.AudioSRate=obj.SRate;
+            obj.AudioThreshold=0; 
             obj.VideoLineTime=0;
             obj.VideoStartTime=0;
-            
             obj.IsSelecting=0;
             obj.SelectionStart=[];
             obj.Selection_=ones(2,0);
@@ -2020,6 +2021,24 @@ classdef BioSigPlot < hgsetget
                 end
             end
         end
+        %==================================================================
+        %******************************************************************  
+        function MnuAudioSettings(obj) 
+            %**************************************************************
+            % Dialog box to change the Audio Threshold & Fs for play.
+            %**************************************************************
+            prompt = {'Enter Sampling Rate:','Enter Absolute threshold:'};
+            title = 'Parameters';
+            dims = [1 35];
+            definput = {'0 for default Fs of data','0 for no thresholding'};
+            answer = inputdlg(prompt,title,dims,definput);
+            if ~isempty(answer)
+            answer = cellfun(@str2num,answer);
+            obj.AudioSRate = answer(1);
+            obj.AudioThreshold = answer(2);
+            end
+        end
+        
         
         %==================================================================
         %******************************************************************
@@ -2547,7 +2566,8 @@ classdef BioSigPlot < hgsetget
         VisualBuffer
         EventRef
         JWindowTimeSpinner
-        
+        AudioSRate
+        AudioThreshold
         RecordingTime
     end
     events
