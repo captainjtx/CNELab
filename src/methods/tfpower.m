@@ -1,4 +1,10 @@
-function [tfm,f,t]=tfpower(eeg,baseline,fs,wd,ov,nref)
+function [tfm,f,t]=tfpower(eeg,baseline,fs,wd,ov,nref,varargin)
+if length(varargin) == 1
+    align = varargin{1};
+    assert(align == -1 || align == 1 || align == 0);
+else
+    align = 1; % causal
+end
 %return the power
 nf=2^nextpow2(wd);
 win=hanning(wd);
@@ -14,7 +20,7 @@ end
 for i=1:size(eeg,2)
     [~,f,t,tf]=spectrogram(eeg(:,i),win,ov,nf,fs);
     %s is stft, tf is power
-    
+    t = t+wd/fs/2*align;
     tf=abs(tf);
     tfm=tfm+tf;
 end

@@ -81,7 +81,7 @@ classdef InterpWin < handle
             %**************************************************************
             if ~isempty(obj.selectChan)
                 background=uint8(ones(obj.height,obj.width,3)*255);
-                shapeInserter = vision.ShapeInserter('Shape','Circles','BorderColor','Custom','CustomBorderColor',[0,0,0],...
+                shapeInserter = vision.ShapeInserter('Shape','Circles',...
                     'Fill',true,'FillColor','Custom','CustomFillColor',[255,0,0]);
                 circles = int32([obj.col(obj.selectChan) obj.row(obj.selectChan) obj.r(obj.selectChan)]);
                 I = step(shapeInserter, background, circles);
@@ -122,8 +122,7 @@ classdef InterpWin < handle
             end
             
             background=uint8(ones(obj.height,obj.width,3)*255);
-            shapeInserter = vision.ShapeInserter('Shape','Circles','BorderColor','Custom','CustomBorderColor',[0,0,0],...
-                'Fill',true,'FillColor','Custom','CustomFillColor',[0,255,0],'Antialiasing',true);
+            shapeInserter = vision.ShapeInserter('Shape','Circles','Fill',true,'FillColor','Custom','CustomFillColor',[0,255,0],'Antialiasing',true);
             circles=[];
             
             
@@ -176,8 +175,7 @@ classdef InterpWin < handle
                 obj.selectChan=channel;
                 
                 background=uint8(ones(obj.height,obj.width,3)*255);
-                shapeInserter = vision.ShapeInserter('Shape','Circles','BorderColor','Custom','CustomBorderColor',[0,0,0],...
-                    'Fill',true,'FillColor','Custom','CustomFillColor',[255,0,0],'Antialiasing',true);
+                shapeInserter = vision.ShapeInserter('Shape','Circles','Fill',true,'FillColor','Custom','CustomFillColor',[255,0,0],'Antialiasing',true);
                 
                 circles = int32([obj.col(obj.selectChan) obj.row(obj.selectChan) obj.r(obj.selectChan)]);
                 I = step(shapeInserter, background, circles);

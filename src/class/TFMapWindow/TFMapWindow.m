@@ -28,6 +28,7 @@ classdef TFMapWindow < handle
         scale_event_popup
         stft_winlen_edit
         stft_overlap_edit
+        stft_align_popup
         max_freq_edit
         min_freq_edit
         max_freq_slider
@@ -55,7 +56,6 @@ classdef TFMapWindow < handle
         
     end
     properties
-        
         method_
         data_input_
         ms_before_
@@ -82,6 +82,7 @@ classdef TFMapWindow < handle
         disp_channel_names_
         cmax_
         cmin_
+        stft_align_
     end
     
     properties (Dependent)
@@ -113,6 +114,7 @@ classdef TFMapWindow < handle
         disp_channel_names
         cmax
         cmin
+        stft_align
     end
     properties
         tfmat
@@ -123,6 +125,16 @@ classdef TFMapWindow < handle
         tfmat_channel
     end
     methods
+        function val = get.stft_align(obj)
+            val = obj.stft_align_;
+        end
+        function set.stft_align(obj, val)
+            assert(val == 0 || val == -1 || val == 1);
+            obj.stft_align_ = val;
+            if obj.valid
+                set(obj.stft_align_popup, 'value', val+2);
+            end
+        end
         function val=get.disp_axis(obj)
             val=obj.disp_axis_;
         end
@@ -580,6 +592,7 @@ classdef TFMapWindow < handle
             obj.smooth_y_=8;
             obj.disp_axis_=0;
             obj.disp_channel_names_=1;
+            obj.stft_align_ = 1; % align to right
             obj.TFMapSaveWin=TFMapFigureSave(obj);
         end
         function buildfig(obj)
@@ -698,16 +711,21 @@ classdef TFMapWindow < handle
             
             resgp=uitabgroup(hp,'units','normalized','position',[0,0.22,1,0.13]);
             tab_stft=uitab(resgp,'title','STFT');
-            uicontrol('parent',tab_stft,'style','text','string','Window (sample): ','units','normalized',...
-                'position',[0,0.6,0.5,0.3]);
+            uicontrol('parent',tab_stft,'style','text','string','Window (n): ','units','normalized',...
+                'position',[0.01,0.6,0.25,0.3]);
             obj.stft_winlen_edit=uicontrol('parent',tab_stft,'style','edit','string',num2str(obj.stft_winlen),...
-                'units','normalized','position',[0.1,0.1,0.3,0.45],'HorizontalAlignment','center',...
+                'units','normalized','position',[0.01,0.1,0.25,0.45],'HorizontalAlignment','center',...
                 'callback',@(src,evts) STFTWinlenCallback(obj,src));
-            uicontrol('parent',tab_stft,'style','text','string','Overlap (sample): ',...
-                'units','normalized','position',[0.5,0.6,0.5,0.3]);
+            uicontrol('parent',tab_stft,'style','text','string','Overlap (n): ',...
+                'units','normalized','position',[0.3,0.6,0.3,0.3]);
             obj.stft_overlap_edit=uicontrol('parent',tab_stft,'style','edit','string',num2str(obj.stft_overlap),...
-                'units','normalized','position',[0.6,0.1,0.3,0.45],'HorizontalAlignment','center',...
+                'units','normalized','position',[0.3,0.1,0.25,0.45],'HorizontalAlignment','center',...
                 'callback',@(src,evts) STFTOverlapCallback(obj,src));
+            uicontrol('parent',tab_stft,'style','text','string','Alignment: ',...
+                'units','normalized','position',[0.6,0.6,0.3,0.3]);
+            obj.stft_align_popup=uicontrol('parent',tab_stft,'style','popup','string',{'left', 'middle', 'right'},...
+                'units','normalized','position',[0.6,0.1,0.25,0.45], 'value', obj.stft_align+2,...
+                'callback',@(src,evts) STFTAlignmentCallback(obj,src));
             
             tab_smooth=uitab(resgp,'title','Smooth');
             
@@ -798,6 +816,11 @@ classdef TFMapWindow < handle
                     end
                     DataPopUpCallback(obj,obj.data_popup);
             end
+        end
+        
+        function STFTAlignmentCallback(obj,src)
+            align = get(src, 'value');
+            obj.stft_align_ = align-2;
         end
         function DataPopUpCallback(obj,src)
             if isempty(src)
@@ -1253,7 +1276,7 @@ classdef TFMapWindow < handle
                         tmp=0;
                         for i=1:length(seg)
                             bdata=catbaseline(segment==seg(i),j);
-                            [ttmp,~,~]=tfpower(bdata,[],obj.fs,wd,ov,[]);
+                            [ttmp,~,~]=tfpower(bdata,[],obj.fs,wd,ov,[], obj.stft_align);
                             tmp=tmp+ttmp;
                         end
                         rtfm{j}=tmp/length(seg);
@@ -1384,7 +1407,7 @@ classdef TFMapWindow < handle
                     %******************************************************
                     for i=1:length(i_event)
                         data1=data(segment==i,j);
-                        [tf,f,t]=tfpower(data1,bdata,obj.fs,wd,ov,nref_tmp);
+                        [tf,f,t]=tfpower(data1,bdata,obj.fs,wd,ov,nref_tmp, obj.stft_align);
                         tfm=tfm+tf;
                     end
                     tfm=tfm/length(i_event);
@@ -1401,7 +1424,7 @@ classdef TFMapWindow < handle
                         tfm=tfm./repmat(rtfm1,1,size(tfm,2));
                     end
                 else
-                    [tfm,f,t]=tfpower(data(:,j),bdata,obj.fs,wd,ov,nref);
+                    [tfm,f,t]=tfpower(data(:,j),bdata,obj.fs,wd,ov,nref, obj.stft_align);
                 end
                 
                 average_tf=average_tf+tfm;
