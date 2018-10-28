@@ -96,6 +96,7 @@ classdef SpectralMapWindow < handle
         
         stft_winlen_edit
         stft_overlap_edit
+        stft_align_popup
         
         az_edit
         el_edit
@@ -149,6 +150,7 @@ classdef SpectralMapWindow < handle
         
         stft_winlen_
         stft_overlap_
+        stft_align_
         az_
         el_
         
@@ -156,6 +158,7 @@ classdef SpectralMapWindow < handle
         smooth_
         smooth_row_
         smooth_col_
+        
     end
     
     properties (Dependent)
@@ -217,6 +220,7 @@ classdef SpectralMapWindow < handle
         
         stft_winlen
         stft_overlap
+        stft_align
         
         az
         el
@@ -259,6 +263,16 @@ classdef SpectralMapWindow < handle
         OldFig
     end
     methods
+        function val = get.stft_align(obj)
+            val = obj.stft_align_;
+        end
+        function set.stft_align(obj, val)
+            assert(val == 0 || val == -1 || val == 1);
+            obj.stft_align_ = val;
+            if obj.valid
+                set(obj.stft_align_popup, 'value', val+2);
+            end
+        end
         function val = get.smooth(obj)
             val = obj.smooth_;
         end
@@ -1142,6 +1156,7 @@ classdef SpectralMapWindow < handle
             obj.height=300;
             obj.stft_winlen_=round(obj.fs/3);
             obj.stft_overlap_=round(obj.stft_winlen*0.9);
+            obj.stft_align_ = 1; % align to right
             obj.unit='dB';
             obj.p=0.05;
             obj.bind_valid=0;
@@ -1325,15 +1340,20 @@ classdef SpectralMapWindow < handle
             
             tab_stft=uitab(tgp,'title','STFT');
             
-            uicontrol('parent',tab_stft,'style','text','string','Window (sample): ','units','normalized',...
-                'position',[0,0.6,0.5,0.3]);
+            uicontrol('parent',tab_stft,'style','text','string','Window (n): ','units','normalized',...
+                'position',[0.01,0.6,0.25,0.3]);
             obj.stft_winlen_edit=uicontrol('parent',tab_stft,'style','edit','string',num2str(obj.stft_winlen),...
-                'units','normalized','position',[0.1,0.1,0.3,0.45],'HorizontalAlignment','center',...
+                'units','normalized','position',[0.01,0.1,0.25,0.45],'HorizontalAlignment','center',...
                 'callback',@(src,evts) STFTCallback(obj,src));
-            uicontrol('parent',tab_stft,'style','text','string','Overlap (sample): ',...
-                'units','normalized','position',[0.5,0.6,0.5,0.3]);
+            uicontrol('parent',tab_stft,'style','text','string','Overlap (n): ',...
+                'units','normalized','position',[0.3,0.6,0.3,0.3]);
             obj.stft_overlap_edit=uicontrol('parent',tab_stft,'style','edit','string',num2str(obj.stft_overlap),...
-                'units','normalized','position',[0.6,0.1,0.3,0.45],'HorizontalAlignment','center',...
+                'units','normalized','position',[0.3,0.1,0.25,0.45],'HorizontalAlignment','center',...
+                'callback',@(src,evts) STFTCallback(obj,src));
+            uicontrol('parent',tab_stft,'style','text','string','Alignment: ',...
+                'units','normalized','position',[0.6,0.6,0.3,0.3]);
+            obj.stft_align_popup=uicontrol('parent',tab_stft,'style','popup','string',{'left', 'middle', 'right'},...
+                'units','normalized','position',[0.6,0.1,0.25,0.45], 'value', obj.stft_align+2,...
                 'callback',@(src,evts) STFTCallback(obj,src));
             
             tab_t=uitab(tgp,'title','Threshold');
@@ -1917,7 +1937,7 @@ classdef SpectralMapWindow < handle
                     tmp=0;
                     for i=1:length(seg)
                         bdata=catbaseline(segment==seg(i),j);
-                        [ttmp,~,~]=tfpower(bdata,[],obj.fs,wd,ov,[]);
+                        [ttmp,~,~]=tfpower(bdata,[],obj.fs,wd,ov,[], obj.stft_align);
                         tmp=tmp+ttmp;
                     end
                     rtfm{j}=tmp/length(seg);
@@ -1983,7 +2003,7 @@ classdef SpectralMapWindow < handle
                         
                         raw_data=cat(2,raw_data,data1);
                         
-                        [tf,f,t]=tfpower(data1,tmp_base,obj.fs,wd,ov,nref);
+                        [tf,f,t]=tfpower(data1,tmp_base,obj.fs,wd,ov,nref, obj.stft_align);
                         tmp_tfm{i}=tf;
                     end
                     t=t-obj.ms_before/1000;
@@ -2018,9 +2038,9 @@ classdef SpectralMapWindow < handle
                 for j=1:length(channames)
                     waitbar(j/length(channames));
                     if isempty(baseline)
-                        [tfm,f,t]=tfpower(data(:,j),[],obj.fs,wd,ov,nref);
+                        [tfm,f,t]=tfpower(data(:,j),[],obj.fs,wd,ov,nref, obj.stft_align);
                     else
-                        [tfm,f,t]=tfpower(data(:,j),baseline(:,j),obj.fs,wd,ov,nref);
+                        [tfm,f,t]=tfpower(data(:,j),baseline(:,j),obj.fs,wd,ov,nref, obj.stft_align);
                     end
                     
                     obj.tfmat.mat{j}=tfm;
@@ -2324,6 +2344,9 @@ classdef SpectralMapWindow < handle
                     end
                     
                     obj.stft_overlap=tmp;
+                case obj.stft_align_popup
+                    align = tmp;
+                    obj.stft_align_ = align-2;
             end
         end
         function FDRCallback(obj)

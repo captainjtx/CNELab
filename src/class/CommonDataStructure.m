@@ -1036,6 +1036,11 @@ classdef CommonDataStructure < handle
             names=evt;
             for i=1:length(FileName)
                 [~, name, ext] = fileparts(FileName{i});
+                if name(1) == '.'
+                    % ignore hidden filenames
+                    continue;
+                end
+                
                 if strcmpi(ext,'.txt')||strcmpi(ext,'.csv')||strcmpi(ext,'.evt')
                     FilterIndex=1;
                 elseif strcmpi(ext,'.mat')

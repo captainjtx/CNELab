@@ -3,7 +3,7 @@ if length(varargin) == 1
     align = varargin{1};
     assert(align == -1 || align == 1 || align == 0);
 else
-    align = 1; % causal
+    align = 0; % causal
 end
 %return the power
 nf=2^nextpow2(wd);

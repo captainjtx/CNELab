@@ -5,7 +5,7 @@ names={f.name};
 input_files={};
 
 for i=1:length(names)
-    if regexp(names{i},'SL_LeftSTN_SUA.*.mat')
+    if regexp(names{i},'pos1_forceREAL_11_09_2018_10_35_17_.*.mat')
         input_files=cat(1,input_files,names(i));
     end
 end
@@ -31,11 +31,11 @@ end
 fs=2400;
 
 %output filename
-out_filename='behv';
+out_filename='pos1_force';
 
 video_filename='';
 
 %selected channels (optional)
-chan=148:156;
+chan=2:193;
          
 CommonDataStructure.create_new_data_from_mat(input_files,out_filename,fs,chan,video_filename);

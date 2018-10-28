@@ -1,4 +1,13 @@
 %%
+%%
+fid=fopen('grid_12_16.txt','w');
+for i=1:192
+    row=ceil(i/16);
+    col=i-(row-1)*16;
+    fprintf(fid,'%s,%d,%d,%f\n',[num2str(i)],(16-col)*3,(row)*3,0.5);
+end
+fclose(fid);
+%%
 fid=fopen('grid_12_10.txt','w');
 for i=1:120
     row=ceil(i/12);
