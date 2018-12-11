@@ -3,26 +3,32 @@
 clear
 clc
 
-% squeeze_mat = load('/Users/tengi/Desktop/Projects/data/China/force/S2/squeeze.mat','-mat');
-% relax_mat = load('/Users/tengi/Desktop/Projects/data/China/force/S2/relax.mat','-mat');
+% data_dir = 'E:\Google Drive\Force Paper\03282017\';
+% data_dir = 'E:\Google Drive\Force Paper\05292018\force_pos3\';
+% data_dir = 'E:\Google Drive\Force Paper\08302018\Force Task\';
+data_dir = 'E:\Google Drive\Force Paper\09112018\Force Task\Merged-interpolated Task\';
+pid = 'P4';
 
-squeeze_mat = load('/Users/tengi/Desktop/Projects/data/MDAnderson/03282017/squeeze.mat','-mat');
-relax_mat = load('/Users/tengi/Desktop/Projects/data/MDAnderson/03282017/relax.mat','-mat');
+bad_hold_trial = [];
+
+squeeze_mat = load([data_dir, 'squeeze.mat'],'-mat');
+relax_mat = load([data_dir, 'relax.mat'],'-mat');
+
 %%
 squeeze_data = squeeze_mat.data;
 relax_data = relax_mat.data;
 
-S1_ERS_Squeeze = {'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C13', 'C14', 'C15', 'C16', 'C17', 'C18', 'C19', 'C29', 'C30', 'C42', 'C43', 'C55'};
-% S1_ERS_Relax = {'C2', 'C3', 'C14', 'C15', 'C18', 'C19', 'C30', 'C43'};
-s1_bad_hold_trial = [4, 15, 18, 24];
-S2_ERS_Squeeze = {'C110', 'C109', 'C97', 'C86', 'C85', 'C75', 'C74', 'C73', 'C25'};
-s2_bad_hold_trial = [5, 13];
+squeeze_id = fopen([data_dir, 'montage\squeeze_ers.txt']);
+relax_id = fopen([data_dir, 'montage\relax_ers.txt']);
 
-% S3_ERS_Squeeze = {'C5', 'C20', 'C21', 'C36','C37','C38','C54', 'C70', 'C86', 'C101','C102', 'C117', 'C118'};
-S3_ERS_Squeeze = {'C5', 'C19', 'C20', 'C21', 'C36', 'C37', 'C54', 'C55', 'C68', 'C69', 'C70', 'C85', 'C86', 'C101', 'C102', 'C117', 'C118'};
-s3_bad_hold_trial = [];
+squeeze_chan = textscan(squeeze_id,'%s');
+relax_chan = textscan(relax_id,'%s');
+fclose(squeeze_id);
+fclose(relax_id);
 
-ecog_ind = find(ismember(relax_mat.channame, S3_ERS_Squeeze));
+ERS_Squeeze = union(squeeze_chan{1}, relax_chan{1});
+
+ecog_ind = find(ismember(relax_mat.channame, ERS_Squeeze));
 
 fs = relax_mat.fs;
 %%
@@ -36,26 +42,26 @@ squeeze_tfm = [];
 
 squeeze_tr_num = size(squeeze_data,3);
 for tr = 1:squeeze_tr_num
-    [tmp, ~, ~] = tfpower(squeeze(squeeze_data(:, ecog_ind, tr)), [], fs, wd, ov, []);
+    [tmp, ~, tf_t_sq] = tfpower(squeeze(squeeze_data(:, ecog_ind, tr)), [], fs, wd, ov, []);
     squeeze_tfm = cat(3, squeeze_tfm, tmp);
 end
 
-hold_tfm = squeeze_tfm(:,:,setdiff(1:squeeze_tr_num, s3_bad_hold_trial));
+hold_tfm = squeeze_tfm(:,:,setdiff(1:squeeze_tr_num, bad_hold_trial));
 hold_tr_num = size(hold_tfm, 3);
 
 relax_tr_num = size(relax_data,3);
 for tr = 1:relax_tr_num
-    [tmp, tf_f, tf_t] = tfpower(squeeze(relax_data(:, ecog_ind, tr)), [], fs, wd, ov, []);
+    [tmp, tf_f, tf_t_relax] = tfpower(squeeze(relax_data(:, ecog_ind, tr)), [], fs, wd, ov, []);
     relax_tfm = cat(3, relax_tfm, tmp);
 end
 %%
 lfb_ix = tf_f >= lfb(1) & tf_f <= lfb(2);
 hfb_ix = tf_f >= hfb(1) & tf_f <= hfb(2);
-base_ix = tf_t <= squeeze_mat.ms_before/1000-0.5 & tf_t >= squeeze_mat.ms_before/1000-1;
+base_ix = tf_t_sq <= squeeze_mat.ms_before/1000-0.5 & tf_t_sq >= squeeze_mat.ms_before/1000-1;
 
-squeeze_ix = tf_t >= squeeze_mat.ms_before/1000 & tf_t <= squeeze_mat.ms_before/1000+0.8;
-hold_ix = tf_t >= squeeze_mat.ms_before/1000+1 & tf_t <= squeeze_mat.ms_before/1000+1.8;
-relax_ix = tf_t >= relax_mat.ms_before/1000+0 & tf_t <= relax_mat.ms_before/1000+0.8;
+squeeze_ix = tf_t_sq >= squeeze_mat.ms_before/1000 & tf_t_sq <= squeeze_mat.ms_before/1000+0.8;
+hold_ix = tf_t_sq >= squeeze_mat.ms_before/1000+1 & tf_t_sq <= squeeze_mat.ms_before/1000+1.8;
+relax_ix = tf_t_relax >= relax_mat.ms_before/1000+0 & tf_t_relax <= relax_mat.ms_before/1000+0.8;
 
 lfb_squeeze = 10*log10(squeeze(mean(mean(squeeze_tfm(lfb_ix, squeeze_ix, :), 2), 1)./mean(mean(mean(squeeze_tfm(lfb_ix, base_ix, :), 3), 2), 1)));
 hfb_squeeze = 10*log10(squeeze(mean(mean(squeeze_tfm(hfb_ix, squeeze_ix, :), 2), 1)./mean(mean(mean(squeeze_tfm(hfb_ix, base_ix, :), 3), 2), 1)));
@@ -66,55 +72,73 @@ hfb_hold = 10*log10(squeeze(mean(mean(hold_tfm(hfb_ix, hold_ix, :), 2), 1)./mean
 lfb_relax = 10*log10(squeeze(mean(mean(relax_tfm(lfb_ix, relax_ix, :), 2), 1)./mean(mean(mean(squeeze_tfm(lfb_ix, base_ix, :), 3), 2), 1)));
 hfb_relax = 10*log10(squeeze(mean(mean(relax_tfm(hfb_ix, relax_ix, :), 2), 1)./mean(mean(mean(squeeze_tfm(hfb_ix, base_ix, :), 3), 2), 1)));
 %%
-
-x1 = hfb_squeeze(:);
-x2 = hfb_hold(:);
-x3 = hfb_relax(:);
-
-squeeze_state = cell(squeeze_tr_num,1);
-[squeeze_state{:}]=deal('Onset');
-
-hold_state = cell(hold_tr_num,1);
-[hold_state{:}]=deal('Hold');
-
-relax_state = cell(relax_tr_num,1);
-[relax_state{:}]=deal('Offset');
-
-state = cat(1, squeeze_state, hold_state, relax_state);
-
-figure('position',[100,100,300,200])
-bp=boxplot(cat(1,x1(:), x2(:), x3(:)),...
-    state,'labelverbosity','all','labelorientation','horizontal',...
-    'positions',[1, 2, 3],'OutlierSize',10, 'width', 0.3);
-drawnow;
-
-a=gca;
-ylim([-14,14])
-a.FontSize=18;
-
-txt=findobj(gca,'type','text');
-for i=1:length(txt)
-    p=txt(i).Position;
-    set(txt(i),'FontSize',12);
-    set(txt(i),'VerticalAlignment','cap', 'fontweight', 'bold');
+for k = 1:2
+    if k==1
+        x1 = hfb_squeeze(:);
+        x2 = hfb_hold(:);
+        x3 = hfb_relax(:);
+        fig_name = [pid, ' HFB'];
+        txt_ypos = -4;
+        out_filename = sprintf('E:\\Google Drive\\Force Paper\\pics\\boxplot\\%s_%s', pid, 'HFB');
+        yl = [-12, 12];
+    else
+        x1 = lfb_squeeze(:);
+        x2 = lfb_hold(:);
+        x3 = lfb_relax(:);
+        fig_name = [pid, ' LFB'];
+        txt_ypos = 4;
+        out_filename = sprintf('E:\\Google Drive\\Force Paper\\pics\\boxplot\\%s_%s', pid, 'LFB');
+        yl = [-12, 12];
+    end
+    
+    squeeze_state = cell(squeeze_tr_num,1);
+    [squeeze_state{:}]=deal('Onset');
+    
+    hold_state = cell(hold_tr_num,1);
+    [hold_state{:}]=deal('Hold');
+    
+    relax_state = cell(relax_tr_num,1);
+    [relax_state{:}]=deal('Offset');
+    
+    state = cat(1, squeeze_state, hold_state, relax_state);
+    
+    figure('position',[100,100,400,267])
+    bp=boxplot(cat(1,x1(:), x2(:), x3(:)),...
+        state,'labelverbosity','all','labelorientation','horizontal',...
+        'positions',[1, 2, 3],'OutlierSize',10, 'width', 0.3);
+    drawnow;
+    
+    a=gca;
+    ylim(yl)
+    a.FontSize=18;
+    
+    txt=findobj(gca,'type','text');
+    for i=1:length(txt)
+        p=txt(i).Position;
+        set(txt(i),'FontSize',12);
+        set(txt(i),'VerticalAlignment','cap', 'fontweight', 'bold');
+    end
+    hold on
+    
+    % scatter([1, 2, 3],[mean(lfb_squeeze), mean(hfb_squeeze), mean(lfb_hold), mean(hfb_hold), mean(lfb_relax), mean(hfb_relax)],50,'*r')
+    
+    set(findobj(gca,'type','line'),'linewidth',2)
+    % set(findobj(gca,'type','text'),'fontweight','bold')
+    
+    text(1, txt_ypos,['n=' num2str(squeeze_tr_num)],'horizontalalignment','center','fontsize',16);
+    
+    text(2, txt_ypos,['n=' num2str(hold_tr_num)],'horizontalalignment','center','fontsize',16);
+    
+    text(3, txt_ypos,['n=' num2str(relax_tr_num)],'horizontalalignment','center','fontsize',16);
+    
+    plot([-10,10],[0,0],'--k','linewidth',1)
+    hold on
+    plot([1,2,3], [mean(x1), mean(x2), mean(x3)], '-^k', 'linewidth', 2, 'markeredgecolor', 'k', 'markersize', 8);
+    title(fig_name)
+    ylabel('dB')
+    set(gcf,'color','w')
+    box off
+    
+    export_fig(gcf, '-png', '-opengl', '-nocrop', '-r300', [out_filename, '.png'])
+    saveas(gcf, [out_filename, '.fig'])
 end
-hold on
-
-% scatter([1, 2, 3],[mean(lfb_squeeze), mean(hfb_squeeze), mean(lfb_hold), mean(hfb_hold), mean(lfb_relax), mean(hfb_relax)],50,'*r')
-
-set(findobj(gca,'type','line'),'linewidth',2)
-% set(findobj(gca,'type','text'),'fontweight','bold')
-
-text(1,0,['n=' num2str(squeeze_tr_num)],'horizontalalignment','center','fontsize',16);
-
-text(2,0,['n=' num2str(hold_tr_num)],'horizontalalignment','center','fontsize',16);
-
-text(3,0,['n=' num2str(relax_tr_num)],'horizontalalignment','center','fontsize',16);
-
-plot([-10,10],[0,0],'--k','linewidth',1)
-hold on
-plot([1,2,3], [mean(x1), mean(x2), mean(x3)], '-^k', 'linewidth', 2, 'markeredgecolor', 'k', 'markersize', 8);
-title('P3 LFB')
-ylabel('dB')
-set(gcf,'color','w')
-box off

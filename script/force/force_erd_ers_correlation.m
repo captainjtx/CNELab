@@ -1,12 +1,29 @@
 clear
 clc
-% mat = load('/Users/tengi/Desktop/Projects/data/China/force/S1/squeeze.mat','-mat');
-mat = load('/Users/tengi/Desktop/Projects/data/MDAnderson/03282017/squeeze.mat','-mat');
+
+data_dir = 'E:\Google Drive\Force Paper\03282017\';
+% data_dir = 'E:\Google Drive\Force Paper\05292018\force_pos3\';
+% data_dir = 'E:\Google Drive\Force Paper\08302018\Force Task\';
+% data_dir = 'E:\Google Drive\Force Paper\09112018\Force Task\Merged-interpolated Task\';
+pid = 'P1';
+
+mat = load([data_dir, 'squeeze.mat'],'-mat');
 
 data = mat.data;
 fs = mat.fs;
 
-emgName = {'Bipolar EMG'};
+squeeze_id = fopen([data_dir, 'montage\squeeze_ers_posterior.txt']);
+% relax_id = fopen([data_dir, 'montage\relax_ers.txt']);
+out_filename = sprintf('E:\\Google Drive\\Force Paper\\pics\\corr\\%s_%s_posterior', pid, mat.event);
+
+squeeze_chan = textscan(squeeze_id,'%s');
+% relax_chan = textscan(relax_id,'%s');
+fclose(squeeze_id);
+% fclose(relax_id);
+
+ERS_Squeeze = squeeze_chan{1};
+
+emgName = {'Bipolar EMG', 'EMG', 'Extensor Digitorum'};
 emg_ind = ismember(mat.channame, emgName);
 forceName = {'Force'};
 force_ind = ismember(mat.channame, forceName);
@@ -23,16 +40,9 @@ force = squeeze(data(:, force_ind, :));
 
 force = (force-median(mean(force(1000:2000, :), 1)))/16.8328;
 
-max_force = max(force, [], 1);
+max_force = max(force(1.5*fs:2.5*fs, :), [], 1);
 
-S1_ERS_Squeeze = {'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C13', 'C14', 'C15', 'C16', 'C17', 'C18', 'C19', 'C29', 'C30', 'C42', 'C43', 'C55'};
-% S1_ERS_Relax = {'C2', 'C3', 'C14', 'C15', 'C18', 'C19', 'C30', 'C43'};
-
-S2_ERS_Squeeze = {'C110', 'C109', 'C97', 'C86', 'C85', 'C75', 'C74', 'C73', 'C25'};
-
-S3_ERS_Squeeze = {'C5', 'C19', 'C20', 'C21', 'C36', 'C37', 'C54', 'C55', 'C68', 'C69', 'C70', 'C85', 'C86', 'C101', 'C102', 'C117', 'C118'};
-
-ecog_ind = find(ismember(mat.channame, S3_ERS_Squeeze));
+ecog_ind = find(ismember(mat.channame, ERS_Squeeze));
 
 [b1, a1]=butter(2,[8, 32]/(fs/2));
 [b2, a2] = butter(2, [60, 200]/(fs/2));
@@ -43,8 +53,8 @@ trNum = size(data, 3);
 lfb = [];
 hfb = [];
 for i = 1:trNum
-    lfb(:, :, i) = cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b1, a1, squeeze(data(:, ecog_ind, i)), 0, 0, 'iir');
-    hfb(:, :, i) = cnelab_cnelab_cnelab_cnelab_cnelab_cnelab_filter_symmetric(b2, a2, squeeze(data(:, ecog_ind, i)), 0, 0, 'iir');
+    lfb(:, :, i) = cnelab_filter_symmetric(b1, a1, squeeze(data(:, ecog_ind, i)), 0, 0, 'iir');
+    hfb(:, :, i) = cnelab_filter_symmetric(b2, a2, squeeze(data(:, ecog_ind, i)), 0, 0, 'iir');
 end
 
 hfb = hfb.^2;
@@ -52,7 +62,7 @@ lfb = lfb.^2;
 
 %%
 tf_t = (1:size(data, 1))/fs-mat.ms_before/1000;
-t_ix = tf_t >= -0.15 & tf_t <= 0.85;
+t_ix = tf_t >= 0 & tf_t <= 0.8;
 
 base_ix = tf_t <= -0.5 & tf_t >= -1;
 
@@ -78,9 +88,9 @@ plot(x, p(1)*x+p(2), 'linewidth', 2)
 
 ylabel('ERS (dB)')
 xlabel('Force (kg)')
-title(['R: ', num2str(r2(1, 2), '%.2g'), ', P: ', num2str(p2(1, 2), '%.2g')])
-xlim([0, max(max_force)*2])
-ylim([0, 7])
+title([pid, ': R=', num2str(r2(1, 2), '%.2g'), ', P=', num2str(p2(1, 2), '%.2g')])
+xlim([min(max_force)/2, max(max_force)*1.1])
+ylim([0, 6])
 set(gca, 'fontsize', 16)
 
 subplot(2, 1, 2)
@@ -90,11 +100,14 @@ p = polyfit(max_force,erd,1);
 hold on;
 plot(x, p(1)*x+p(2), 'linewidth', 2)
 
-title(['R: ', num2str(r1(1, 2), '%.2g'), ', P: ', num2str(p1(1, 2), '%.2g')])
+title([pid, ': R=', num2str(r1(1, 2), '%.2g'), ', P=', num2str(p1(1, 2), '%.2g')])
 ylabel('ERD (dB)')
 xlabel('Force (kg)')
-ylim([-15, 0])
-xlim([0, max(max_force)*1.1])
-set(gca, 'fontsize', 16)
+ylim([-12, 0])
+xlim([min(max_force)/2, max(max_force)*1.1])
+set(gca, 'fontsize', 15)
 
 set(gcf, 'color', 'w')
+
+export_fig(gcf, '-png', '-opengl', '-nocrop', '-r300', [out_filename, '.png'])
+saveas(gcf, [out_filename, '.fig'])

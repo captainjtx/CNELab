@@ -25,7 +25,6 @@ set(h,'YLim',freq);
 
 colormap(h,jet);
 
-
 set(h,'Tag',['TFMapAxes-' channame]);
 
 

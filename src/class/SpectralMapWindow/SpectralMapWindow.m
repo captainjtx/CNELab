@@ -2329,23 +2329,23 @@ classdef SpectralMapWindow < handle
         end
         
         function STFTCallback(obj,src)
-            
-            tmp=str2double(get(src,'string'));
             switch src
                 case obj.stft_winlen_edit
+                    tmp=str2double(get(src,'string'));
                     if isempty(tmp)||isnan(tmp)
                         tmp=obj.stft_winlen;
                     end
                     
                     obj.stft_winlen=tmp;
                 case obj.stft_overlap_edit
+                    tmp=str2double(get(src,'string'));
                     if isempty(tmp)||isnan(tmp)
                         tmp=obj.stft_overlap;
                     end
                     
                     obj.stft_overlap=tmp;
                 case obj.stft_align_popup
-                    align = tmp;
+                    align = get(src, 'Value');
                     obj.stft_align_ = align-2;
             end
         end
