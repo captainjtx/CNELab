@@ -13,3 +13,4 @@ lib/vlc-matlab
 demo/demo.cds
 src/@AppWindow/
 demo/sample/*
+db/cfg/defaultconfig.cfg
